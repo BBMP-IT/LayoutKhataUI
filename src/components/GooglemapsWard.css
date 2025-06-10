@@ -1,0 +1,88 @@
+/* Container for the entire map and related UI */
+.map-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Arial', sans-serif;
+    color: #333;
+  }
+  
+  /* Styling the input section */
+  .input-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .location-input {
+    width: 70%;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+  }
+  
+  .go-button {
+    margin-left: 10px;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+  }
+  
+  .go-button:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Result section */
+  .result-section {
+    margin-top: 20px;
+  }
+  
+  .address {
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+  
+  .ward-info {
+    background-color: #f7f7f7;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .ward-name,
+  .ward-number {
+    margin: 5px 0;
+  }
+  
+  /* Nearby Wards section */
+  .nearby-wards-section {
+    margin-top: 30px;
+  }
+  
+  .nearby-ward-card {
+    background-color: #f0f0f0;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+  }
+  
+  .nearby-ward-card:hover {
+    transform: scale(1.02);
+  }
+  
+  .ward-distance {
+    font-style: italic;
+    color: #555;
+  }
+  

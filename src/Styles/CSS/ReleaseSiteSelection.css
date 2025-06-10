@@ -1,0 +1,18 @@
+.table-container {
+  margin: 1.5rem 0;
+  border-radius: 8px;
+  overflow-x: auto;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.react-data-table-component {
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.react-data-table-component .rdt_TableHeadRow {
+  background-color: #f5f5f5;
+}
+.wrap-direction {
+  white-space: normal !important;
+  word-break: break-word !important;
+}

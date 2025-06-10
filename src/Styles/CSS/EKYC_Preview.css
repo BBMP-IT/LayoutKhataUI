@@ -1,0 +1,10 @@
+
+.table th {
+  text-align: center;
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+.table td {
+  vertical-align: middle;
+}
