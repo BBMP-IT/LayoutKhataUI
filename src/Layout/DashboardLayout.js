@@ -207,7 +207,7 @@ const DashboardLayout = ({ children }) => {
 
                 {/* Heading */}
                 <div className="col-md-4 col-12 mb-3">
-                  <h1 className="text-white">{t('translation.eaasthi.bbmpHeading')}</h1>
+                  <h2 className="text-white">{t('translation.eaasthi.bbmpHeading')}</h2>
                 </div>
 
                 {/* BBMP */}

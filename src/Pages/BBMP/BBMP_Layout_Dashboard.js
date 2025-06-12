@@ -66,41 +66,52 @@ const BBMP_Layout_Dashboard = () => {
 
   return (
     <DashboardLayout>
-    <div className="container pt-4 pb-4">
-      {/* Dashboard Cards */}
-      <div className="row">
-        {["New Request", "Send to ARO", "Submitted", "Incomplete"].map((title, idx) => (
-          <div className="col-md-4 col-xl-3" key={idx}>
-            <div className="card bg-c-blue order-card">
-              <div className="card-block">
-                <h3 className="m-b-20">{title}</h3>
-                <h2 className="text-right">
-                  <i className={`fa ${["fa-cart-plus", "fa-rocket", "fa-refresh", "fa-credit-card"][idx]} f-left`}></i>
-                  <span>486</span>
-                </h2>
-              </div>
+      <div className="container pt-4 pb-4">
+
+        {/* Dashboard Cards */}
+        <div className="row">
+          <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
+            <div className="bg-white shadow-md rounded-lg p-4 border border-transparent hover:border-blue-500 transition-all duration-300" style={{ borderRadius: '0.8rem' }}>
+              <center>
+                <h3 className="mb-2 text-black">Create New</h3>
+                <button
+                  className="mt-4 px-4 py-2 bg-blue-600 text-primary rounded hover:bg-blue-600"
+                >
+                  <i className="fa fa-plus"></i>
+                </button>
+              </center>
             </div>
           </div>
-        ))}
-      <div className='col-md-3'>
-       <div className="gradient-border">
-  <div className="card custom-card">
-    <div className="card-block">
-      <h3 className="m-b-20 text-blue">Send to ARO  </h3>
-      <h2 className="text-right">
-        <i className="fa fa-cart-plus f-left"></i>
-        <span className='text-blue'>486</span>
-      </h2>
-    </div>
-  </div>
-</div>
+          <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
+            <div className="bg-white shadow-md rounded-lg p-4 border border-transparent hover:border-blue-500 transition-all duration-300" style={{ borderRadius: '0.8rem' }}>
+              <center>
+                <h3 className="mb-2 text-black">Sent to ARO </h3>
+                <i className="fa fa-recycle mt-4 px-4 py-2 bg-blue-600 text-primary rounded hover:bg-blue-600" style={{fontSize:'30px'}}></i>
+              </center>
+            </div>
+          </div>
+          <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
+            <div className="bg-white shadow-md rounded-lg p-4 border border-transparent hover:border-blue-500 transition-all duration-300" style={{ borderRadius: '0.8rem' }}>
+              <center>
+                <h3 className="mb-2 text-black">Submitted </h3>
+                <i className="fa fa-check-circle mt-4 px-4 py-2 bg-blue-600 text-success rounded hover:bg-blue-600" style={{fontSize:'30px'}}></i>
+              </center>
+            </div>
+          </div>
+          <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
+            <div className="bg-white shadow-md rounded-lg p-4 border border-transparent hover:border-blue-500 transition-all duration-300" style={{ borderRadius: '0.8rem' }}>
+              <center>
+                <h3 className="mb-2 text-black">Incomplete</h3>
+                  <i className="fa fa-clock mt-4 px-4 py-2 bg-blue-600 text-warning rounded hover:bg-blue-600" style={{fontSize:'30px'}}></i>
+              </center>
+            </div>
+          </div>
 
-</div>
+        </div>
+
+        {/* Data Table */}
+
       </div>
-
-      {/* Data Table */}
-     
-    </div>
     </DashboardLayout>
   );
 };

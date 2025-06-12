@@ -178,7 +178,7 @@ const BBMP_LayoutForm = () => {
                                         </div>
 
                                         {/* First Radio Button */}
-                                        <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6" >
+                                        <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mt-3" >
                                             <div className="form-check">
                                                 <label className="form-check-label">
                                                     <input
@@ -196,7 +196,7 @@ const BBMP_LayoutForm = () => {
                                         </div>
 
                                         {/* Second Radio Button */}
-                                        <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                                        <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mt-3">
                                             <div className="form-check">
                                                 <label className="form-check-label">
                                                     <input
@@ -850,7 +850,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
     return (
         <div className={`layout-form-container ${loading ? 'no-interaction' : ''}`}>
             {loading && <Loader />}
-            <div className='row'>
+            <div className='row mt-5'>
 
                 {/* District */}
                 <div className="col-12 col-sm-12 col-md-6 col-lg-2 col-xl-2  mb-3" >
@@ -1648,7 +1648,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
             start_loader();
             const response = await fetch_LKRSID(payload);
 
-            if (response) {
+            if (response && response.khataDetails != null && response.khataOwnerDetails != null) {
                 // The API returns data as per your example:
                 // You want to set EPID_FetchedData based on the response structure
 
@@ -1697,9 +1697,18 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                 setEPIDShowTable(true);
                 onDisableEPIDSection();
                 setIsEPIDSectionSaved(true);
-                if (index !== null) {
-                    setVerifiedNumbers((prev) => ({ ...prev, [index]: true }));
+
+                setOwnerTableData(khataDetailsJson.ownerDetails || []);
+
+                // ✅ Mark all owners as OTP verified if OwnerDetails is present
+                if (Array.isArray(khataDetailsJson.ownerDetails)) {
+                    const verified = {};
+                    khataDetailsJson.ownerDetails.forEach((_, idx) => {
+                        verified[idx] = true;
+                    });
+                    setVerifiedNumbers(verified);
                 }
+
                 console.log("verifiedNumbers", verifiedNumbers);
             } else {
                 Swal.fire({
@@ -3535,14 +3544,9 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
 
     useEffect(() => {
-        console.log("GPS useEffect:", {
-            localLKRSID,
-            isRTCSectionSaved,
-            isEPIDSectionSaved
-        });
+
         const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
         if (localLKRSID && (isRTCSectionSaved || isEPIDSectionSaved)) {
-            console.log("✅ Conditions met—calling fetchSiteDetails & fetchOwners");
             fetchSiteDetails(localLKRSID);
             delay(15000); // 1 second delay
             fetchOwners(localLKRSID);
@@ -4605,16 +4609,32 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
     //save and next proceed btn API
     const handle_Save = () => {
         const totalSitesCount = parseInt(layoutSiteCount, 10);
+
+        // Validate layoutSiteCount
         if (!layoutSiteCount || isNaN(totalSitesCount) || totalSitesCount <= 0) {
             setLayoutSiteCountError("Please enter a valid number of total sites");
             layoutSiteCountRef.current?.focus();
             return;
         }
 
-        // If valid
-        setIsReadOnly(true);          // Make input and Save button readonly/disabled
-        setShowEditBtn(true);         // Show Edit button
+        const storedSiteCount = parseInt(localStorage.getItem("NUMBEROFSITES"), 10);
+        const totalAddedSites = allSites.length;
+
+        // Check if trying to reduce below original count
+        if (totalSitesCount < storedSiteCount || totalAddedSites > totalSitesCount) {
+            Swal.fire({
+                icon: "warning",
+                title: "Invalid Site Count",
+                text: `You cannot reduce the number of sites below the original count: ${storedSiteCount}`,
+            });
+            return; // ❗ Stop execution if invalid
+        }
+
+        // ✅ If all validations passed
+        setIsReadOnly(true);
+        setShowEditBtn(true);
     };
+
 
     //Add site button click API
     const addSites = async (shape) => {
@@ -4696,6 +4716,30 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             sitediM_CREATEDROLE: roleID
         }));
 
+        let no_of_sites = Number(localStorage.getItem("NUMBEROFSITES")) || 0;
+        let updated_sites = "";
+        let status_site = true;
+        const NoofSites = parseInt(layoutSiteCount, 10);
+
+        // ✅ Validate: layoutSiteCount should not be less than no_of_sites
+        if (layoutSiteCount < no_of_sites) {
+            Swal.fire({
+                icon: "warning",
+                title: "Invalid Site Count",
+                text: "You cannot reduce the number of sites below the original count.",
+            });
+            return; // Stop execution if validation fails
+        }
+
+        // ✅ Update logic
+        if (NoofSites === no_of_sites) {
+            updated_sites = NoofSites;
+            status_site = false;
+        } else if (NoofSites != no_of_sites) {
+            updated_sites = NoofSites;
+            status_site = true;
+        }
+
         // Prepare payload
         const payload = {
             sitE_ID: 0,
@@ -4722,6 +4766,8 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             sitE_CREATEDBY: createdBy,
             sitE_CREATEDNAME: createdName,
             sitE_CREATEDROLE: roleID,
+            lkrS_NUMBEROFSITES: updated_sites,
+            updatE_LKRS_NUMBEROFSITES: status_site,
             siteDimensions
         };
 
@@ -4731,11 +4777,13 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
             if (response.responseStatus === true) {
                 await fetchSiteDetails(localLKRSID);
+
                 Swal.fire({
                     title: response.responseMessage,
                     icon: "success",
                     confirmButtonText: "OK",
                 });
+
                 if (isRegular) {
                     resetFormFields();
                 } else {
@@ -4787,10 +4835,16 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
     };
 
     const fetchSiteDetails = async (LKRS_ID) => {
+        const storedSiteCount = localStorage.getItem("NUMBEROFSITES");
+        if (storedSiteCount) {
+            setLayoutSiteCount(storedSiteCount);
+            setIsReadOnly(true);          // Make input and Save button readonly/disabled
+            setShowEditBtn(true);
+        }
         try {
             const listPayload = {
                 level: 1,
-                LkrsId: LKRS_ID, // ✅ use the parameter passed to the function
+                LkrsId: LKRS_ID,
                 SiteID: 0,
             };
             start_loader();
@@ -4798,12 +4852,21 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
             if (Array.isArray(response)) {
                 setAllSites(response);
+                console.log("sitedetails", response);
 
                 if (response.length === 0) {
                     console.log("No site data found.");
-                }
+                } else {
+                    // ✅ Log lkrS_NUMBEROFSITES from the first item (or loop if needed)
+                    const totalSitesFromAPI = response[0]?.lkrS_NUMBEROFSITES;
+                    console.log("Total sites (lkrS_NUMBEROFSITES):", totalSitesFromAPI);
+                    localStorage.setItem("NUMBEROFSITES", totalSitesFromAPI);
+                    // You can also handle this value further
+                    if (typeof totalSitesFromAPI === 'number' && totalSitesFromAPI > 0) {
+                        // Do something if needed
+                    }
 
-                else {
+                    // Show Swal only if you intend to show an error
                     Swal.fire({
                         text: response.responseMessage || "No data found.",
                         icon: "error",
@@ -4811,6 +4874,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                     });
                 }
             }
+
         } catch (error) {
             console.error("Fetch Site Details Error:", error);
 
@@ -4830,6 +4894,56 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             stop_loader();
         }
     };
+
+    //same as previous checkbox
+    const handleCheckboxAndPrefillSite = (e) => {
+        const checked = e.target.checked;
+        setIsChecked(checked);
+
+        if (checked) {
+            const regularSites = allSites.filter(site => site.sitE_SHAPETYPE === "Regular");
+            const sortedByDate = regularSites.sort((a, b) => new Date(b.sitE_CREATEDDATE) - new Date(a.sitE_CREATEDDATE));
+            const latestSite = sortedByDate[0];
+
+            if (latestSite) {
+                setRegular_SiteNumber(latestSite.sitE_NO);
+                setBlockArea(latestSite.sitE_AREA);
+
+                // Handle siteDimensions
+                const siteDims = latestSite.siteDimensions || [];
+                if (siteDims.length >= 2) {
+                    const eastWest = siteDims[0];
+                    const northSouth = siteDims[1];
+
+                    // East-West
+                    setEastwestFeet(eastWest.sitediM_SIDEINFT);
+                    setEastwestMeter(eastWest.sitediM_SIDEINMT);
+                    setSide1RoadFacing(eastWest.sitediM_ROADFACING);
+
+                    // North-South
+                    setNorthsouthFeet(northSouth.sitediM_SIDEINFT);
+                    setNorthsouthMeter(northSouth.sitediM_SIDEINMT);
+                    setSide2RoadFacing(northSouth.sitediM_ROADFACING);
+                }
+
+                setRegularAreaSqFt(latestSite.sitE_AREAINSQFT);
+                setRegularAreaSqM(latestSite.sitE_AREAINSQMT);
+                setCornerSite(latestSite.sitE_CORNERPLOT);
+                setSiteType(latestSite.sitE_TYPEID);
+                setChakbandiEast(latestSite.sitE_EAST);
+                setChakbandiWest(latestSite.sitE_WEST);
+                setChakbandiSouth(latestSite.sitE_SOUTH);
+                setChakbandiNorth(latestSite.sitE_NORTH);
+                setLatitude(latestSite.sitE_LATITUDE);
+                setLongitude(latestSite.sitE_LONGITUDE);
+            }
+        } else {
+            setRegular_SiteNumber("");
+        }
+
+        handleFetchPrevious(e);
+    };
+
 
 
     return (
@@ -4959,10 +5073,8 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                                                     id="fetchPrevious"
                                                     className="form-check-input custom-checkbox"
                                                     checked={isChecked}
-                                                    onChange={(e) => {
-                                                        setIsChecked(e.target.checked);
-                                                        handleFetchPrevious(e);
-                                                    }}
+                                                    onChange={handleCheckboxAndPrefillSite}
+
                                                 />
                                                 <label className="form-check-label custom-label" htmlFor="fetchPrevious">
                                                     Same as Previous site details
@@ -6584,6 +6696,42 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
         }
     }, [LKRS_ID]);
 
+    useEffect(() => {
+        if (localLKRSID) {
+            handleGetLKRSID(localLKRSID);
+        }
+    }, [localLKRSID]);
+
+    const handleGetLKRSID = async (localLKRSID) => {
+        const payload = {
+            level: 1,
+            LkrsId: localLKRSID,
+        };
+        try {
+            start_loader();
+            const response = await fetch_LKRSID(payload);
+
+            if (response && response.lkrS_ECNUMBER) {
+                console.log("lkrS_ECNUMBER", response.lkrS_ECNUMBER);
+                setECNumber(response.lkrS_ECNUMBER); // ✅ set ecNumber from response
+                setIsJDASectionDisabled(true);
+                setShowViewECButton(true);
+                stop_loader();
+            } else {
+                stop_loader();
+
+            }
+        } catch (error) {
+            stop_loader();
+            console.error("Failed to fetch LKRSID data:", error);
+            Swal.fire({
+                text: "Something went wrong. Please try again later.Lkrsid",
+                icon: "error",
+                confirmButtonText: "OK",
+            });
+        }
+    };
+
     const [showViewECButton, setShowViewECButton] = useState(false);
     const [base64Data, setBase64Data] = useState('');
     const [isECReadOnly, setIsECReadOnly] = useState(false);
@@ -6834,7 +6982,7 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
                 jdA_ID: 0,
                 jdA_LKRS_ID: localLKRSID,
                 jdA_ISREGISTERED: JDAReg,
-                jdA_DEED_NO: isRegistered === "yes" ? deedNumber : "",
+                jdA_DEED_NO: isRegistered === true ? deedNumber : "",
                 jdA_REMARKS: "",
                 jdA_ADDITIONALINFO: "",
                 jdA_CREATEDBY: createdBy,
@@ -7260,7 +7408,7 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
                                             <div className="form-group ">
                                                 <label> </label>
                                                 <button
-                                                    className="btn btn-primary btn-block"
+                                                    className="btn btn-info btn-block"
                                                     onClick={handleDeedEditClick}
                                                     disabled={isJDASectionDisabled}
                                                 >
@@ -7274,18 +7422,18 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
                                 <div className='row'>
                                     {showViewDeedButton && (<>
                                         <div className="text-success">
-                                        <strong>Deed Check successfully <i className="fa fa-check-circle"></i></strong>
-                                    </div>
-                                    <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 ">
-                                        
+                                            <strong>Deed Check successfully <i className="fa fa-check-circle"></i></strong>
+                                        </div>
+                                        <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 ">
+
                                             <div className="form-group">
 
                                                 <button className="btn btn-warning btn-block" onClick={handleViewDeed}>
                                                     View Deed
                                                 </button>
                                             </div>
-                                        
-                                    </div>
+
+                                        </div>
                                     </>)}
                                 </div>
 
@@ -7807,6 +7955,8 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
     const [createdName, setCreatedName] = useState('');
     const [roleID, setRoleID] = useState('');
     const [LKRSID, setLKRSID] = useState('');
+    const [jdaRepName, setJdaRepName] = useState('');
+
     useEffect(() => {
         const storedCreatedBy = localStorage.getItem('createdBy');
         const storedCreatedName = localStorage.getItem('createdName');
@@ -8055,6 +8205,11 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
 
     //do EKYC API
     const handleDoEKYC = async () => {
+        if (!jdaRepName.trim()) {
+        Swal.fire('Validation Error', 'Please enter the JDA Representative Name.', 'warning');
+        return;
+    }
+    
         const swalResult = await Swal.fire({
             title: 'Redirecting for e-KYC Verification',
             text: 'You are being redirected to another tab for e-KYC verification. Once the e-KYC verification is complete, please return to this tab and click the verify e-KYC button.',
@@ -8197,12 +8352,15 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
                                     type="text"
                                     className="form-control"
                                     placeholder="Enter the JDA Representative Name"
+                                    value={jdaRepName}
+                                    onChange={(e) => setJdaRepName(e.target.value)}
                                 />
+
                             </div>
-                            <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-4" >
+                            <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2" >
                                 <button className='btn btn-info btn-block' onClick={handleDoEKYC}>Do eKYC</button>
                             </div>
-                            <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-4" >
+                            <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2" >
                                 <button className='btn btn-info btn-block' onClick={fetchEKYC_ResponseDetails}>eKYC Status</button>
                             </div>
                             {ekycUrl && (
