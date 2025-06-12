@@ -1,6 +1,7 @@
 {
   "name": "bbmp-form",
   "version": "0.1.0",
+  "proxy": "https://testapps.bbmpgov.in",
   "homepage": ".",
   "private": true,
   "dependencies": {

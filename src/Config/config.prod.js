@@ -25,6 +25,7 @@ const config = {
         kaveriFetchDetails: '/api/Bhoomi/GetRTCDetailsWithBhoomiVillage',
         insertApprovalInfo: '/api/Approval/fnInsertApprovalinfo',
         listApprovalInfo: '/api/Approval/fnGetApprovalList',
+        deleteApprovalInfo: '/api/Approval/fnDeleteApprovalinfo',
         insertReleaseInfo: '/api/Release/fnInsertReleaseinfo',
         listReleaseInfo: '/api/Release/fnGetReleaseList',
         fileUpload: '/api/Document/fnUploadDocuments',

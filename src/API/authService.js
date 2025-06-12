@@ -297,6 +297,18 @@ export const listApprovalInfo = async ({ level, aprLkrsId, aprId }) => {
     throw error;
   }
 };
+//Delete Approval information
+export const deleteApprovalInfo = async (payload) => {
+  try {
+    const response = await apiService.deleteRequest(`${config.endpoints.deleteApprovalInfo}`,  payload);
+     return response;
+  } catch (error) {
+    console.error("Deleting approval info Details Error:", error);
+    throw error;
+  }
+};
+
+
 //release Order API
 export const insertReleaseInfo = async (payload) => {
   try {

@@ -19,7 +19,7 @@ import apiService from '../../API/apiService';
 import {
     handleFetchDistricts, handleFetchTalukOptions, handleFetchHobliOptions, handleFetchVillageOptions,
     handleFetchHissaOptions, fetchRTCDetailsAPI, handleFetchEPIDDetails, getAccessToken, sendOtpAPI, verifyOtpAPI, submitEPIDDetails, submitsurveyNoDetails,
-    insertApprovalInfo, listApprovalInfo, insertReleaseInfo, listReleaseInfo, fileUploadAPI, fileListAPI, insertJDA_details, ownerEKYC_Details, ekyc_Details, ekyc_Response, ekyc_insertOwnerDetails,
+    insertApprovalInfo, listApprovalInfo, deleteApprovalInfo, insertReleaseInfo, listReleaseInfo, fileUploadAPI, fileListAPI, insertJDA_details, ownerEKYC_Details, ekyc_Details, ekyc_Response, ekyc_insertOwnerDetails,
     individualSiteAPI, individualSiteListAPI, fetchECDetails, fetchDeedDocDetails, fetchDeedDetails, fetchJDA_details, deleteSiteInfo, fetch_LKRSID
 } from '../../API/authService';
 
@@ -48,6 +48,7 @@ const BBMP_LayoutForm = () => {
 
     //EPID section disable
     const [isEPIDSectionDisabled, setIsEPIDSectionDisabled] = useState(false);
+    const [isSurveyNoSectionDisabled, setIsSurveyNoSectionDisabled] = useState(false);
 
     const [selectedLandType, setSelectedLandType] = useState("convertedRevenue");
 
@@ -98,6 +99,9 @@ const BBMP_LayoutForm = () => {
                 toastId: 'app-number',    // Use a unique ID to prevent duplicates (optional)
             });
         }
+        if (LKRS_ID) {
+            handleGetLKRSID(LKRS_ID);
+        }
 
     }, [display_LKRSID]);
 
@@ -112,6 +116,45 @@ const BBMP_LayoutForm = () => {
         }
     };
 
+    //fetching Details from LKRSID
+    const handleGetLKRSID = async (localLKRSID) => {
+        const payload = {
+            level: 1,
+            LkrsId: localLKRSID,
+        };
+        try {
+            start_loader();
+            const response = await fetch_LKRSID(payload);
+
+            if (response) {
+                console.log("firstblock", response);
+
+                // Check the value and update selectedLandType
+                if (response.lkrS_LANDTYPE === "surveyNo") {
+                    setSelectedLandType("convertedRevenue");
+                } else if (response.lkrS_LANDTYPE === "khata") {
+                    setSelectedLandType("bbmpKhata");
+                }
+
+                stop_loader();
+            } else {
+                stop_loader();
+                Swal.fire({
+                    text: "No survey details found12",
+                    icon: "warning",
+                    confirmButtonText: "OK",
+                });
+            }
+        } catch (error) {
+            stop_loader();
+            console.error("Failed to fetch LKRSID data:", error);
+            Swal.fire({
+                text: "Something went wrong. Please try again later.Lkrsid",
+                icon: "error",
+                confirmButtonText: "OK",
+            });
+        }
+    };
 
     return (
         <>
@@ -145,7 +188,7 @@ const BBMP_LayoutForm = () => {
                                                         value="convertedRevenue"
                                                         onChange={() => setSelectedLandType("convertedRevenue")}
                                                         checked={selectedLandType === "convertedRevenue"}
-                                                        disabled={isEPIDSectionDisabled}
+                                                        disabled={isEPIDSectionDisabled || isSurveyNoSectionDisabled}
                                                     />
                                                     Converted Revenue Survey No (No BBMP Khata)
                                                 </label>
@@ -163,7 +206,7 @@ const BBMP_LayoutForm = () => {
                                                         value="bbmpKhata"
                                                         onChange={() => setSelectedLandType("bbmpKhata")}
                                                         checked={selectedLandType === "bbmpKhata"}
-                                                        disabled={isEPIDSectionDisabled}
+                                                        disabled={isEPIDSectionDisabled || isSurveyNoSectionDisabled}
                                                     />
                                                     BBMP A-Khata</label>
                                             </div>
@@ -172,7 +215,7 @@ const BBMP_LayoutForm = () => {
                                         {/* Section for First Radio Button */}
                                         {/* Section for BBMP A-Khata Selection */}
                                         {selectedLandType === "bbmpKhata" && (
-                                            <BBMPKhata onDisableEPIDSection={() => setIsEPIDSectionDisabled(true)} setAreaSqft={setAreaSqft} setLKRS_ID={setLKRS_ID}
+                                            <BBMPKhata onDisableEPIDSection={() => { setIsEPIDSectionDisabled(true); setIsSurveyNoSectionDisabled(true) }} setAreaSqft={setAreaSqft} setLKRS_ID={setLKRS_ID}
                                                 LKRS_ID={LKRS_ID} setDisplay_LKRSID={setDisplay_LKRSID} setIsEPIDSectionSaved={setIsEPIDSectionSaved} />
                                         )}
 
@@ -180,7 +223,7 @@ const BBMP_LayoutForm = () => {
                                         {selectedLandType === "convertedRevenue" && (
                                             <NoBBMPKhata setAreaSqft={setAreaSqft} Language={newLanguage} rtc_AddedData={rtc_AddedData}
                                                 setRtc_AddedData={setRtc_AddedData} setOrderDetails={setOrderDetails}
-                                                onDisableEPIDSection={() => setIsEPIDSectionDisabled(true)} LKRS_ID={LKRS_ID}
+                                                onDisableEPIDSection={() => { setIsEPIDSectionDisabled(true); setIsSurveyNoSectionDisabled(true) }} LKRS_ID={LKRS_ID}
                                                 setDisplay_LKRSID={setDisplay_LKRSID} setLKRS_ID={setLKRS_ID} setIsRTCSectionSaved={setIsRTCSectionSaved} />
                                         )}
 
@@ -196,7 +239,7 @@ const BBMP_LayoutForm = () => {
 
                             <ECDetailsBlock LKRS_ID={LKRS_ID} isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} />
 
-                            <DeclarationBlock rtc_AddedData={rtc_AddedData} approval_details={approval_details} order_details={order_details} />
+                            <DeclarationBlock LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID} />
                         </div>
 
                     </div>
@@ -732,11 +775,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                 stop_loader();
             } else {
                 stop_loader();
-                Swal.fire({
-                    text: "No survey details found.",
-                    icon: "warning",
-                    confirmButtonText: "OK",
-                });
+
             }
         } catch (error) {
             stop_loader();
@@ -1600,7 +1639,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
         }
     }, [localLKRSID]);
     //fetching Details from LKRSID
-    const handleGetLKRSID = async (localLKRSID) => {
+    const handleGetLKRSID = async (localLKRSID, index = null) => {
         const payload = {
             level: 1,
             LkrsId: localLKRSID,
@@ -1654,7 +1693,14 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                 }
 
                 setOwnerTableData(khataDetailsJson.ownerDetails || []);
+                setIsEPIDSectionDisabled(true);
                 setEPIDShowTable(true);
+                onDisableEPIDSection();
+                setIsEPIDSectionSaved(true);
+                if (index !== null) {
+                    setVerifiedNumbers((prev) => ({ ...prev, [index]: true }));
+                }
+                console.log("verifiedNumbers", verifiedNumbers);
             } else {
                 Swal.fire({
                     text: "No survey details found.",
@@ -1758,6 +1804,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                 setIsEPIDSectionDisabled(true);
                 onDisableEPIDSection();
                 setIsEPIDSectionSaved(true);
+
             } else {
                 stop_loader();
                 Swal.fire({
@@ -1882,6 +1929,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
     const [createdName, setCreatedName] = useState('');
     const [roleID, setRoleID] = useState('');
     const [LKRSID, setLKRSID] = useState('');
+
     useEffect(() => {
         const storedCreatedBy = localStorage.getItem('createdBy');
         const storedCreatedName = localStorage.getItem('createdName');
@@ -1893,7 +1941,9 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
 
 
     }, []);
-   const [localLKRSID, setLocalLKRSID] = useState(LKRS_ID || "");
+    const [localLKRSID, setLocalLKRSID] = useState(() => {
+        return localStorage.getItem("LKRSID") || "";
+    });
 
     useEffect(() => {
         if (LKRS_ID) {
@@ -1901,22 +1951,19 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
         }
     }, [LKRS_ID]);
 
+    useEffect(() => {
+        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-    // useEffect(() => {
-    //     if (localLKRSID) {
-    //         fetchApprovalList(localLKRSID);
-    //         fetchReleaseList(localLKRSID);
-    //     }
-    // }, [localLKRSID]);
-useEffect(() => {
-  const loadData = async () => {
-    if (localLKRSID) {
-      await fetchApprovalList(localLKRSID); // wait for this
-      await fetchReleaseList(localLKRSID);  // then call this
-    }
-  };
-  loadData();
-}, [localLKRSID]);
+        const loadData = async () => {
+            if (localLKRSID && (isRTCSectionSaved || isEPIDSectionSaved)) {
+                await fetchApprovalList(localLKRSID);
+                await delay(5000); // 1 second delay
+                await fetchReleaseList(localLKRSID);
+            }
+        };
+
+        loadData();
+    }, [localLKRSID, isRTCSectionSaved, isEPIDSectionSaved]);
 
 
     const fetchApprovalList = async (localLKRSID) => {
@@ -1929,37 +1976,42 @@ useEffect(() => {
             };
 
             const listResponse = await listApprovalInfo(listPayload);
+            console.log("listResponse", listResponse);
 
             const approvalFileResponse = await fileListAPI(3, localLKRSID, 1, 0);
             const approvalMapFileResponse = await fileListAPI(3, localLKRSID, 2, 0);
+            console.log("approvalFileResponse", approvalFileResponse);
+            console.log("approvalMapFileResponse", approvalMapFileResponse);
 
-            if (Array.isArray(listResponse)) {
-                const formattedList = listResponse.map((item, index) => {
-                    // Try to match approval number with current formData if available
-                    const isCurrent = item.apr_Approval_No === formData.layoutApprovalNumber;
+            if (Array.isArray(listResponse) && listResponse.length > 0) {
+                const formattedList = listResponse.map((item, index) => ({
+                    layoutApprovalNumber: item.apr_Approval_No,
+                    dateOfApproval: item.apr_Approval_Date,
+                    approvalOrder: approvalFileResponse[index]?.doctrN_DOCBASE64 || null,
+                    approvalMap: approvalMapFileResponse[index]?.doctrN_DOCBASE64 || null,
+                    approvalAuthority: item.apR_APPROVALDESIGNATION,
+                    approvalID: item.apr_Id,
+                    approvalOrderDocID: approvalFileResponse[index]?.doctrN_ID || null,
+                    approvalOrderMdocID: approvalFileResponse[index]?.doctrN_MDOC_ID || null,
+                    approvalMapDocID: approvalMapFileResponse[index]?.doctrN_ID || null,
+                    approvalMapMdocID: approvalMapFileResponse[index]?.doctrN_MDOC_ID || null,
+                }));
 
-                    return {
-                        layoutApprovalNumber: item.apr_Approval_No,
-                        dateOfApproval: item.apr_Approval_Date,
-                        approvalOrder: approvalFileResponse[index]?.doctrN_DOCBASE64 || null,
-                        approvalMap: approvalMapFileResponse[index]?.doctrN_DOCBASE64 || null,
-                        approvalAuthority: item.apR_APPROVALDESIGNATION,
-                    };
-                });
-
+                console.log("Formatted Approval List", formattedList);
                 setIsEditing(false);
                 setisApprovalEditing(true); // Disable edit button
-                setRecords(formattedList);
+                setRecords(formattedList); // ✅ important
+            } else {
+                console.warn("Empty or invalid approval list");
+                setRecords([]); // clear any stale data
             }
-            stop_loader();
-
         } catch (error) {
-            stop_loader();
             console.error("Error fetching approval list:", error);
         } finally {
             stop_loader();
         }
-    }
+    };
+
     const fetchReleaseList = async (localLKRSID) => {
         start_loader();
         try {
@@ -1973,7 +2025,7 @@ useEffect(() => {
             console.table(listResponse);
             const listFileResponse = await fileListAPI(3, localLKRSID, 3, 0); //level, LKRSID, MdocID, docID
 
-            if (Array.isArray(listResponse)) {
+            if (Array.isArray(listResponse) && listResponse.length > 0) {
                 const formattedList = listResponse.map((item, index) => ({
                     layoutReleaseNumber: item.sitE_RELS_ORDER_NO,
                     dateOfOrder: item.sitE_RELS_DATE,
@@ -2102,6 +2154,55 @@ useEffect(() => {
         setisApprovalEditing(false); // Disable edit button
         setIsEditing(true); // Enable editing mode for area
     }
+    //Approval order delete info button
+    const handleDeleteApproval = async (approvalID, approvalOrderDocID, approvalMapDocID) => {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Yes, delete it!"
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    start_loader();
+
+                    const deletePayload = {
+                        level: 1,
+                        lkrS_ID: localLKRSID,
+                        apr_Id: approvalID,
+                        apr_Remarks: "",
+                        apr_AdditionalInfo: "",
+                        apR_UPDATEDBY: createdBy,
+                        apR_UPDATEDNAME: createdName,
+                        apR_UPDATEDROLE: roleID,
+                        apr_Order_DOCTRN_ID: approvalOrderDocID,
+                        apr_Order_map_DOCTRN_ID: approvalMapDocID
+                    };
+
+                    const response = await deleteApprovalInfo(deletePayload);
+
+                    if (response.responseStatus === true) {
+                        Swal.fire("Deleted!", response.responseMessage, "success");
+                        setisApprovalEditing(false);
+                        setIsEditing(true);
+                        fetchApprovalList(localLKRSID);
+                    } else {
+                        Swal.fire("Error!", "Failed to delete. Please try again.", "error");
+                    }
+                } catch (error) {
+                    console.error("Delete Error:", error);
+                    Swal.fire("Error!", "Something went wrong.", "error");
+                } finally {
+                    stop_loader();
+                }
+            }
+        });
+    };
+
+
     //Approval  Order Save button
     const handleSave = async () => {
         if (!validateForm()) return;
@@ -2113,8 +2214,6 @@ useEffect(() => {
         }
 
         // ✅ Proceed to next step here if any one is true
-
-
         const payload = {
             apR_ID: 0,
             apR_LKRS_ID: localLKRSID,
@@ -2166,27 +2265,23 @@ useEffect(() => {
                         const approvalFileResponse = await fileListAPI(3, localLKRSID, 1, 0); //level, LKRSID, MdocID, docID
                         const approvalMapFileResponse = await fileListAPI(3, localLKRSID, 2, 0); //level, LKRSID, MdocID, docID
 
-                        // Optional: log base64
-                        // approvalFileResponse.forEach((item, index) => {
-                        //     console.log(`File ${index + 1} Base64:`, item.doctrN_DOCBASE64);
-                        // });
-                        //  approvalMapFileResponse.forEach((item, index) => {
-                        //     console.log(`File ${index + 1} Base64:`, item.doctrN_DOCBASE64);
-                        // });
 
                         if (Array.isArray(listResponse)) {
-                            const formattedList = listResponse.map((item, index) => {
-                                // Try to match approval number with current formData if available
-                                const isCurrent = item.apr_Approval_No === formData.layoutApprovalNumber;
 
-                                return {
-                                    layoutApprovalNumber: item.apr_Approval_No,
-                                    dateOfApproval: item.apr_Approval_Date,
-                                    approvalOrder: approvalFileResponse[index]?.doctrN_DOCBASE64 || null,
-                                    approvalMap: approvalMapFileResponse[index]?.doctrN_DOCBASE64 || null,
-                                    approvalAuthority: item.apR_APPROVALDESIGNATION,
-                                };
-                            });
+                            const formattedList = listResponse.map((item, index) => ({
+                                layoutApprovalNumber: item.apr_Approval_No,
+                                dateOfApproval: item.apr_Approval_Date,
+                                approvalOrder: approvalFileResponse[index]?.doctrN_DOCBASE64 || null,
+                                approvalMap: approvalMapFileResponse[index]?.doctrN_DOCBASE64 || null,
+                                approvalAuthority: item.apR_APPROVALDESIGNATION,
+                                approvalID: item.apr_Id,
+                                // 🔽 Include these IDs for delete API
+                                approvalOrderDocID: approvalFileResponse[index]?.doctrN_ID || null,
+                                approvalOrderMdocID: approvalFileResponse[index]?.doctrN_MDOC_ID || null,
+                                approvalMapDocID: approvalMapFileResponse[index]?.doctrN_ID || null,
+                                approvalMapMdocID: approvalMapFileResponse[index]?.doctrN_MDOC_ID || null,
+                            }));
+
 
                             setIsEditing(false);
                             setisApprovalEditing(true); // Disable edit button
@@ -2371,8 +2466,14 @@ useEffect(() => {
                     </button> */}
                     <button
                         className="btn btn-danger btn-sm"
-                        // onClick={() => handleDelete(index)} 
-                        onClick={showImplementationAlert}
+                        // onClick={() => handleDelete(index)}  
+                        onClick={() =>
+                            handleDeleteApproval(
+                                row.approvalID,
+                                row.approvalOrderDocID,
+                                row.approvalMapDocID
+                            )
+                        }
                     >
                         <i className="fa fa-trash"></i>
                     </button>
@@ -2554,6 +2655,7 @@ useEffect(() => {
                     </button> */}
                     <button
                         className="btn btn-danger btn-sm"
+                        disabled={!isOrder_EditingArea}
                         onClick={() => handleOrderDelete(index)}
                     >
                         <i className="fa fa-trash"></i>
@@ -3214,12 +3316,11 @@ useEffect(() => {
                                             checked={release_formData.releaseType === "1"}
                                             onChange={(e) =>
                                                 setRelease_FormData({ ...release_formData, releaseType: e.target.value })
-                                            }
+                                            } disabled={!isOrder_EditingArea}
                                         />
                                         100</label>
                                 </div>
                             </div>
-
                             <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
                                 <div className="form-check">
                                     <label className="form-check-label fw-bold">
@@ -3231,12 +3332,11 @@ useEffect(() => {
                                             checked={release_formData.releaseType === "2"}
                                             onChange={(e) =>
                                                 setRelease_FormData({ ...release_formData, releaseType: e.target.value })
-                                            }
+                                            } disabled={!isOrder_EditingArea}
                                         />
                                         60 * 40</label>
                                 </div>
                             </div>
-
                             <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
                                 <div className="form-check">
                                     <label className="form-check-label fw-bold">
@@ -3248,7 +3348,7 @@ useEffect(() => {
                                             checked={release_formData.releaseType === "3"}
                                             onChange={(e) =>
                                                 setRelease_FormData({ ...release_formData, releaseType: e.target.value })
-                                            }
+                                            } disabled={!isOrder_EditingArea}
                                         />
                                         40 * 30 * 30</label>
                                 </div>
@@ -3433,16 +3533,24 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         }
     }, [LKRS_ID]);
 
-  
+
     useEffect(() => {
-  const loadData = async () => {
-    if (localLKRSID) {
-      await fetchSiteDetails(localLKRSID); // wait for this
-      await fetchOwners(localLKRSID);  // then call this
-    }
-  };
-  loadData();
-}, [localLKRSID]);
+        console.log("GPS useEffect:", {
+            localLKRSID,
+            isRTCSectionSaved,
+            isEPIDSectionSaved
+        });
+        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        if (localLKRSID && (isRTCSectionSaved || isEPIDSectionSaved)) {
+            console.log("✅ Conditions met—calling fetchSiteDetails & fetchOwners");
+            fetchSiteDetails(localLKRSID);
+            delay(15000); // 1 second delay
+            fetchOwners(localLKRSID);
+        } else {
+            console.log("🔄 Waiting in GPS block");
+        }
+    }, [localLKRSID, isRTCSectionSaved, isEPIDSectionSaved]);
+
 
     const sqftToSqm = (sqft) => (sqft ? (parseFloat(sqft) * 0.092903).toFixed(2) : '');
 
@@ -4680,37 +4788,49 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
     const fetchSiteDetails = async (LKRS_ID) => {
         try {
-
             const listPayload = {
                 level: 1,
-                LkrsId: localLKRSID,
+                LkrsId: LKRS_ID, // ✅ use the parameter passed to the function
                 SiteID: 0,
             };
             start_loader();
             const response = await individualSiteListAPI(listPayload);
 
-            if (response.length >= 0) {
-                setAllSites(response); // ✅ Update state with API data
+            if (Array.isArray(response)) {
+                setAllSites(response);
 
+                if (response.length === 0) {
+                    console.log("No site data found.");
+                }
 
-            } else {
-                Swal.fire({
-                    text: response.responseMessage,
-                    icon: "error",
-                    confirmButtonText: "OK",
-                });
+                else {
+                    Swal.fire({
+                        text: response.responseMessage || "No data found.",
+                        icon: "error",
+                        confirmButtonText: "OK",
+                    });
+                }
             }
         } catch (error) {
-            console.error("Failed to insert data:", error);
+            console.error("Fetch Site Details Error:", error);
+
+            if (error.response) {
+                console.error("API responded with error data:", error.response.data);
+            } else if (error.request) {
+                console.error("No response received from API. Request was:", error.request);
+            }
+
             Swal.fire({
-                text: "Something went wrong. Please try again later.site",
+                text: "Something went wrong. Please try again later (site).",
                 icon: "error",
                 confirmButtonText: "OK",
             });
-        } finally {
+        }
+        finally {
             stop_loader();
         }
-    }
+    };
+
 
     return (
         <div> {loading && <Loader />}
@@ -6141,6 +6261,288 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
 
 };
 
+const Preview_siteDetailsTable = ({ data, setData, totalSitesCount, onSave, onEdit, LKRS_ID, createdBy, createdName, roleID }) => {
+
+    useEffect(() => {
+        console.log("🔍 Data received in IndividualRegularTable:", data);
+    }, [data]);
+
+    const [localLKRSID, setLocalLKRSID] = useState("");
+
+    useEffect(() => {
+        if (LKRS_ID) {
+            setLocalLKRSID(LKRS_ID);
+        } else {
+            // fallback to localStorage if needed
+            const id = localStorage.getItem("LKRSID");
+            if (id) setLocalLKRSID(id);
+        }
+    }, [LKRS_ID]);
+
+    const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
+
+    const totalAddedSites = data.length;
+
+
+
+    const columns = React.useMemo(
+        () => [
+
+            {
+                Header: "S.No",
+                id: "serialNo",
+                accessor: (row, index) => index + 1,
+            },
+            {
+                Header: "Shape",
+                accessor: (row) => {
+                    return `${row.sitE_SHAPETYPE} `;
+                },
+            },
+            {
+                Header: "Site Number",
+                accessor: (row) => {
+                    return `${row.sitE_NO}`;
+                },
+            },
+            {
+                Header: "Block/Area",
+                accessor: (row) => {
+                    return `${row.sitE_AREA}`;
+                },
+            },
+            {
+                Header: "Number of sides",
+                accessor: (row) => {
+                    return `${row.sitE_NO_OF_SIDES}`;
+                },
+            },
+            {
+                Header: "Dimension",
+                accessor: (row) => {
+
+                    if (row.sitE_SHAPETYPE === "Regular") {
+                        // Extract arrays for each property
+                        const feetSides = row.siteDimensions.map(dim => dim.sitediM_SIDEINFT);
+                        const meterSides = row.siteDimensions.map(dim => dim.sitediM_SIDEINMT);
+                        const roadFacingStatuses = row.siteDimensions.map(dim => dim.sitediM_ROADFACING ? "yes" : "no");
+
+                        return (
+                            <>
+                                {feetSides.join(" x ")} (ft)<br />
+                                {meterSides.join(" x ")} (mtr)<br />
+                                <b>Road Facing:</b> {roadFacingStatuses.join(", ")}
+                            </>
+                        );
+                    } else if (row.sitE_SHAPETYPE === "Irregular" && Array.isArray(row.siteDimensions)) {
+                        const feetString = row.siteDimensions.map(side => side.sitediM_SIDEINFT).join(' x ');
+                        const meterString = row.siteDimensions.map(side => side.sitediM_SIDEINMT).join(' x ');
+                        const roadFacingString = row.siteDimensions.map(side => side.sitediM_ROADFACING ? "Yes" : "No").join(', ');
+
+                        return (
+                            <div>
+                                <div>{feetString} (ft)</div>
+                                <div>{meterString} (m)</div>
+                                <div><b>Road Facing:</b> {roadFacingString}</div>
+                            </div>
+                        );
+                    }
+
+                },
+            },
+
+            {
+                Header: "Total Area",
+                accessor: (row) => {
+                    return `${row.sitE_AREAINSQFT} [Sq.ft], ${row.sitE_AREAINSQMT} [Sq.mtr]`;
+                },
+            },
+            {
+                Header: "Corner Site",
+                accessor: (row) => {
+                    return row.sitE_CORNERPLOT ? "YES" : "NO";
+                },
+            },
+            {
+                Header: "Type of Site",
+                accessor: (row) => {
+                    return `${row.sitE_TYPEID}`;
+                },
+            },
+            {
+                id: "chakbandi",  // 👈 you must add this
+                Header: (
+                    <>
+                        Chakbandi<br />
+                        [East | West | North | South]
+                    </>
+                ),
+                accessor: (row) => {
+                    return `${row.sitE_EAST} | ${row.sitE_WEST} | ${row.sitE_NORTH} | ${row.sitE_SOUTH}`;
+                },
+            },
+            {
+                Header: "Latitude, Longitude",
+                accessor: (row) => {
+                    return `${row.sitE_LATITUDE}, ${row.sitE_LONGITUDE}`;
+                },
+            },
+        ],
+        []
+    );
+    const {
+        getTableProps,
+        getTableBodyProps,
+        headerGroups,
+        page,
+        prepareRow,
+        canPreviousPage,
+        canNextPage,
+        pageOptions,
+        pageCount,
+        gotoPage,
+        nextPage,
+        previousPage,
+        setPageSize,
+        state: { pageIndex, pageSize },
+    } = useTable(
+        {
+            columns,
+            data,
+            initialState: { pageIndex: 0, pageSize: 5 },
+        },
+        usePagination
+    );
+    const paginationBtnStyle = {
+        padding: "6px 12px",
+        borderRadius: "6px",
+        border: "1px solid #d1d5db",
+        backgroundColor: "#f3f4f6",
+        color: "#1f2937",
+        cursor: "pointer",
+        transition: "background-color 0.2s",
+        fontWeight: "500",
+        margin: "0 2px",
+    };
+    const disabledBtnStyle = {
+        ...paginationBtnStyle,
+        backgroundColor: "#e5e7eb",
+        cursor: "not-allowed",
+        opacity: 0.6,
+    };
+
+    return (
+        <div>
+            {loading && <Loader />}
+            <h4>Layout & Individual sites Details</h4>
+            <div style={{ overflowX: "auto", padding: "1rem" }}>
+                <table
+                    {...getTableProps()}
+                    style={{
+                        borderCollapse: "collapse",
+                        width: "100%",
+                        minWidth: "1500px",
+                        border: "1px solid #e5e7eb",
+                        borderRadius: "8px",
+                        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.05)",
+                    }}
+                >
+                    <thead>
+                        {headerGroups.map((headerGroup, idx) => (
+                            <tr {...headerGroup.getHeaderGroupProps()} key={idx} style={{ backgroundColor: "#f9fafb" }}>
+                                {headerGroup.headers.map((column, i) => (
+                                    <th
+                                        {...column.getHeaderProps()}
+                                        key={i}
+                                        colSpan={column.columns ? column.columns.length : 1}
+                                        style={{
+                                            border: "1px solid #e5e7eb",
+                                            padding: "12px 16px",
+                                            fontWeight: "600",
+                                            textAlign: "center",
+                                            backgroundColor: "#f3f4f6",
+                                            color: "#374151",
+                                        }}
+                                    >
+                                        {column.render("Header")}
+                                    </th>
+                                ))}
+                            </tr>
+                        ))}
+                    </thead>
+                    <tbody {...getTableBodyProps()}>
+                        {page.map((row, rowIndex) => {
+                            prepareRow(row);
+                            return (
+                                <tr
+                                    {...row.getRowProps()}
+                                    key={rowIndex}
+                                    style={{
+                                        backgroundColor: rowIndex % 2 === 0 ? "#ffffff" : "#f9fafb",
+                                        transition: "background 0.3s",
+                                    }}
+                                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e5e7eb")}
+                                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = rowIndex % 2 === 0 ? "#ffffff" : "#f9fafb")}
+                                >
+                                    {row.cells.map((cell, cellIndex) => (
+                                        <td
+                                            {...cell.getCellProps()}
+                                            key={cellIndex}
+                                            style={{
+                                                border: "1px solid #e5e7eb",
+                                                padding: "10px",
+                                                textAlign: "center",
+                                                color: "#374151",
+                                            }}
+                                        >
+                                            {cell.render("Cell")}
+                                        </td>
+                                    ))}
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+
+                {/* Pagination Controls */}
+                <div
+                    style={{
+                        marginTop: "1rem",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        flexWrap: "wrap",
+                        gap: "10px",
+                    }}
+                >
+                    <div>
+                        Page <strong>{pageIndex + 1} of {pageOptions.length}</strong>{" "}&nbsp;
+                        (<strong>Total: {totalAddedSites} records</strong>)
+                    </div>
+
+                    <div style={{ display: "flex", gap: "5px" }}>
+                        <button disabled={!canPreviousPage} onClick={() => gotoPage(0)} style={paginationBtnStyle}>{`<<`}</button>
+                        <button disabled={!canPreviousPage} onClick={() => previousPage()} style={paginationBtnStyle}>{`<`}</button>
+                        <button disabled={!canNextPage} onClick={() => nextPage()} style={paginationBtnStyle}>{`>`}</button>
+                        <button disabled={!canNextPage} onClick={() => gotoPage(pageCount - 1)} style={paginationBtnStyle}>{`>>`}</button>
+                    </div>
+
+                    <div>
+                        <select value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))} style={{ padding: "6px 10px", borderRadius: "6px", border: "1px solid #ccc" }}>
+                            {[5, 10, 20, 50].map(size => (
+                                <option key={size} value={size}>
+                                    Show {size}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+
+};
+
 const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
     const [ecNumber, setECNumber] = useState("");
     const [ecNumberError, setEcNumberError] = useState('');
@@ -6542,8 +6944,6 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
             stop_loader(); // Just in case
         }
     };
-
-
     const handleViewEC = () => {
         const pdfWindow = window.open();
         pdfWindow.document.write(
@@ -6559,8 +6959,6 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
         setECNumber(''); // ← This clears the EC input field
         setEcNumberError(''); // (Optional) Clears any validation error
     };
-
-
     const handleViewDeed = async () => {
         let newTab = window.open('', '_blank'); // Open early to avoid popup block
 
@@ -6627,8 +7025,6 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
             stop_loader();
         }
     };
-
-
     const handleDeedEditClick = () => {
         setIsDEEDReadOnly(false);
         setIsdeedFetchDisabled(false);
@@ -6746,7 +7142,7 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
                             <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-4">
                                 <div className="form-group mt-6">
                                     <button
-                                        className="btn btn-primary btn-block"
+                                        className="btn btn-info btn-block"
                                         onClick={handleEditClick}
                                         disabled={isJDASectionDisabled}
                                     >
@@ -6755,21 +7151,21 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
                                 </div>
                             </div>
                         )}
-
-                        {showViewECButton && (
-                            <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mt-4">
-                                <div className="text-success">
-                                    <strong>EC Check successfully <i className="fa fa-check-circle"></i></strong>
-                                </div>
-                                <div className="form-group">
-                                    <button className="btn btn-primary btn-block" onClick={handleViewEC}>
-                                        View EC
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-
                     </div>
+                    {showViewECButton && (
+                        <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 ">
+                            <div className="text-success">
+                                <strong>EC Check successfully <i className="fa fa-check-circle"></i></strong>
+                            </div>
+                            <div className="form-group">
+                                <button className="btn btn-warning btn-block" onClick={handleViewEC}>
+                                    View EC
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+
                     <div className='row'>
                         <div className='col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6'>
                             <div className="d-flex align-items-center gap-3">
@@ -6876,19 +7272,21 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
 
                                 </div>
                                 <div className='row'>
-                                    <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 ">
-                                        {showViewDeedButton && (
+                                    {showViewDeedButton && (<>
+                                        <div className="text-success">
+                                        <strong>Deed Check successfully <i className="fa fa-check-circle"></i></strong>
+                                    </div>
+                                    <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 ">
+                                        
                                             <div className="form-group">
-                                                <div className="text-success">
-                                                    <strong>Deed Check successfully <i className="fa fa-check-circle"></i></strong>
-                                                </div>
-                                                <button className="btn btn-primary btn-block" onClick={handleViewDeed}>
+
+                                                <button className="btn btn-warning btn-block" onClick={handleViewDeed}>
                                                     View Deed
                                                 </button>
                                             </div>
-                                        )}
+                                        
                                     </div>
-
+                                    </>)}
                                 </div>
 
                             </>
@@ -6919,12 +7317,12 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
                         )}
                     </div>
                     <div className='row'>
-                        <div className="col-0 col-sm-0 col-md-9 col-lg-9 col-xl-9 "></div>
-                        <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 ">
-                            <div className="form-group mt-4">
+                        <div className="col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10 "></div>
+                        <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 ">
+                            <div className="form-group">
                                 <label></label>
-                                <button className="btn btn-primary btn-block mt-2" disabled={isJDASectionDisabled} onClick={() => handleJDASave(jdaFile)}>
-                                    Save & procced next
+                                <button className="btn btn-success btn-block" disabled={isJDASectionDisabled} onClick={() => handleJDASave(jdaFile)}>
+                                    Save and continue
                                 </button>
                             </div>
                         </div>
@@ -6933,25 +7331,25 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
 
                 </div>
             </div>
-            {(hasJDA === false || isRegistered) && <Owner_EKYCBlock />}
+            {(hasJDA === false || isRegistered) && <Owner_EKYCBlock LKRS_ID={LKRS_ID} />}
 
             {isRegistered && (
                 <>
-                    <JDA_EKYCBlock />
+                    <JDA_EKYCBlock LKRS_ID={LKRS_ID} />
 
                 </>
             )}
             {isRegistered === false && (
                 <>
-                    <Owner_EKYCBlock />
-                    <JDA_EKYCBlock />
+                    <Owner_EKYCBlock LKRS_ID={LKRS_ID} />
+                    <JDA_EKYCBlock LKRS_ID={LKRS_ID} />
                 </>
             )}
         </div>
     );
 };
 //Owner EKYC Block
-const Owner_EKYCBlock = () => {
+const Owner_EKYCBlock = ({ LKRS_ID }) => {
     const [selectedOption, setSelectedOption] = useState('owner');
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
     const [phone, setPhone] = useState('');
@@ -6972,13 +7370,22 @@ const Owner_EKYCBlock = () => {
         const storedCreatedName = localStorage.getItem('createdName');
         const storedRoleID = localStorage.getItem('RoleID');
 
-        const LKRSID_session = localStorage.getItem('LKRSID');
-        setLKRSID("126"); //setLKRSID(LKRSID_session);
         setCreatedBy(storedCreatedBy);
         setCreatedName(storedCreatedName);
         setRoleID(storedRoleID);
-        fetchOwners(LKRSID);
-    }, ["1", LKRSID]);
+
+    }, ["1"]);
+    const [localLKRSID, setLocalLKRSID] = useState(() => {
+        return localStorage.getItem("LKRSID") || "";
+    });
+
+    useEffect(() => {
+        if (LKRS_ID) {
+            setLocalLKRSID(LKRS_ID);
+            fetchOwners(LKRS_ID);
+        }
+    }, [LKRS_ID]);
+
 
     const [selectedOwner, setSelectedOwner] = useState(null);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -6994,7 +7401,6 @@ const Owner_EKYCBlock = () => {
 
 
     const [ownerNames, setOwnerNames] = useState('');
-
 
     //multiple owner list fetch
     const fetchOwners = async (LKRSID) => {
@@ -7024,12 +7430,7 @@ const Owner_EKYCBlock = () => {
         setSelectedOption(e.target.value);
     };
 
-
     const [ekycUrl, setEkycUrl] = useState('');
-
-
-
-
     useEffect(() => {
         const handleMessage = (event) => {
             // Check origin
@@ -7046,6 +7447,11 @@ const Owner_EKYCBlock = () => {
 
     //do EKYC API
     const handleDoEKYC = async () => {
+        if (!selectedOwner || !selectedOwner.name) {
+            Swal.fire('Warning', 'Please select an owner before proceeding with e-KYC.', 'warning');
+            return;
+        }
+
         const swalResult = await Swal.fire({
             title: 'Redirecting for e-KYC Verification',
             text: 'You are being redirected to another tab for e-KYC verification. Once the e-KYC verification is complete, please return to this tab and click the verify e-KYC button.',
@@ -7056,12 +7462,17 @@ const Owner_EKYCBlock = () => {
 
         if (swalResult.isConfirmed) {
             try {
+                start_loader();
+
                 let OwnerNumber = 1;
                 let BOOK_APP_NO = 2;
                 let PROPERTY_CODE = 1;
+
                 const response = await ekyc_Details({ OwnerNumber, BOOK_APP_NO, PROPERTY_CODE });
 
                 const resultUrl = await response;
+
+                stop_loader();
 
                 if (resultUrl) {
                     window.open(
@@ -7073,6 +7484,7 @@ const Owner_EKYCBlock = () => {
                     Swal.fire('Error', 'No redirect URL returned', 'error');
                 }
             } catch (error) {
+                stop_loader();
                 Swal.fire('Error', 'eKYC API call failed', 'error');
                 console.error('eKYC API call failed:', error);
             }
@@ -7112,7 +7524,7 @@ const Owner_EKYCBlock = () => {
         console.log(response);
         const payloadOwner = {
             owN_ID: 0,
-            owN_LKRS_ID: LKRSID,
+            owN_LKRS_ID: LKRS_ID,
             owN_NAME_KN: "string",
             owN_NAME_EN: "String",
             owN_IDTYPE: "String",
@@ -7136,6 +7548,7 @@ const Owner_EKYCBlock = () => {
             owN_VAULT_REMARKS: "string",
             owN_ALREADYEXIST_INEAASTHI: true,
             owN_AADHAAR_RESPONSE: JSON.stringify(response),
+            own_OwnOrRep: selectedOption
         }
         try {
             start_loader();
@@ -7369,7 +7782,7 @@ const Owner_EKYCBlock = () => {
         </div>
     );
 };
-const JDA_EKYCBlock = () => {
+const JDA_EKYCBlock = ({ LKRS_ID }) => {
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
 
     const [selectedOption, setSelectedOption] = useState('JDArepresentative');
@@ -7399,13 +7812,22 @@ const JDA_EKYCBlock = () => {
         const storedCreatedName = localStorage.getItem('createdName');
         const storedRoleID = localStorage.getItem('RoleID');
 
-        const LKRSID_session = localStorage.getItem('LKRSID');
-        setLKRSID("126"); //setLKRSID(LKRSID_session);
+
         setCreatedBy(storedCreatedBy);
         setCreatedName(storedCreatedName);
         setRoleID(storedRoleID);
-        fetchOwners(LKRSID);
-    }, ["1", LKRSID]);
+
+    }, ["1"]);
+    const [localLKRSID, setLocalLKRSID] = useState(() => {
+        return localStorage.getItem("LKRSID") || "";
+    });
+
+    useEffect(() => {
+        if (LKRS_ID) {
+            setLocalLKRSID(LKRS_ID);
+            fetchOwners(LKRS_ID);
+        }
+    }, [LKRS_ID]);
 
     const handlePhoneChange = (e) => {
         const value = e.target.value;
@@ -7602,7 +8024,7 @@ const JDA_EKYCBlock = () => {
                 name: owner.owN_NAME_EN,
                 id: owner.owN_ID,
             }));
-
+            console.table(owners);
             setOwnerList(owners);
 
             const ownerNameList = owners.map(o => o.name).join(', ');
@@ -7949,7 +8371,7 @@ const JDA_EKYCBlock = () => {
     );
 };
 //Declaration Block
-const DeclarationBlock = ({ rtc_AddedData, approval_details, order_details }) => {
+const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID }) => {
     const { t, i18n } = useTranslation();
 
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
@@ -7960,7 +8382,7 @@ const DeclarationBlock = ({ rtc_AddedData, approval_details, order_details }) =>
     const closeModal = () => setIsModalOpen(false);
 
 
-    let selectedLandType = "convertedRevenue";
+    const [selectedLandType, setSelectedLandType] = useState("");
     let individualShape = "Regular";
     const thStyle = {
         padding: "10px",
@@ -7985,7 +8407,6 @@ const DeclarationBlock = ({ rtc_AddedData, approval_details, order_details }) =>
         cursor: "pointer",
         fontSize: "16px"
     };
-
 
     const handleDownloadPDF = async () => {
         const input = document.getElementById('modal-content');
@@ -8041,25 +8462,6 @@ const DeclarationBlock = ({ rtc_AddedData, approval_details, order_details }) =>
             console.error('Error generating or saving PDF:', error);
         }
     };
-    useEffect(() => {
-
-
-    }, [rtc_AddedData, approval_details, order_details]);
-
-    const flatData = Array.isArray(rtc_AddedData)
-        ? rtc_AddedData.flat()
-        : [];
-
-
-    const approvalData = Array.isArray(approval_details)
-        ? approval_details.flat()
-        : [];
-
-
-    const orderData = Array.isArray(order_details)
-        ? order_details.flat()
-        : [];
-
 
     const handleFileClick = (file) => {
         console.log(file);  // Check what the file contains
@@ -8069,6 +8471,682 @@ const DeclarationBlock = ({ rtc_AddedData, approval_details, order_details }) =>
             console.error("File is missing:", file);
         }
     };
+
+    const showImplementationAlert = () => {
+        Swal.fire({
+            title: 'Coming Soon!',
+            text: 'Implementation is in progress.',
+            icon: 'info',
+            confirmButtonText: 'OK'
+        });
+    };
+
+    // =======================================================survey no details starts=========================================
+    const [rtcAddedData, setRtcAddedData] = useState([]);
+    const [areaSqft, setAreaSqft] = useState("0");
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(5);
+    const [rtcData, setRtcData] = useState([]);
+    const combinedData = [...rtcAddedData, ...rtcData];
+
+    let totalAcre = 0;
+    let totalGunta = 0;
+    let totalFGunta = 0;
+    let totalSqFt = 0;
+
+    useEffect(() => {
+        combinedData.forEach(row => {
+            const acre = parseFloat(row.ext_acre || 0);
+            const gunta = parseFloat(row.ext_gunta || 0);
+            const fgunta = parseFloat(row.ext_fgunta || 0);
+
+            totalAcre += acre;
+            totalGunta += gunta;
+            totalFGunta += fgunta;
+
+            const sqft = (acre * 43560) + (gunta * 1089) + (fgunta * 68.0625);
+            totalSqFt += sqft;
+        });
+
+        // Normalize fgunta -> gunta and acre
+        totalGunta += Math.floor(totalFGunta / 16);
+        totalFGunta = totalFGunta % 16;
+        totalAcre += Math.floor(totalGunta / 40);
+        totalGunta = totalGunta % 40;
+
+        const totalSqFtRounded = totalSqFt.toFixed(2);
+        setAreaSqft(totalSqFtRounded);
+        localStorage.setItem('areaSqft', totalSqFtRounded);
+        console.log("sqftRounded", totalSqFtRounded);
+    }, [combinedData]);
+
+    const totalPages = Math.ceil(combinedData.length / rowsPerPage);
+    const paginatedData = combinedData.slice(
+        (currentPage - 1) * rowsPerPage,
+        currentPage * rowsPerPage
+    );
+    const goToPage = (page) => {
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        }
+    };
+    const handlePageSizeChange = (e) => {
+        setRowsPerPage(Number(e.target.value));
+        setCurrentPage(1); // Reset to first page when page size changes
+    };
+
+
+    const [localLKRSID, setLocalLKRSID] = useState(LKRS_ID || "");
+    useEffect(() => {
+        if (LKRS_ID) {
+            setLocalLKRSID(LKRS_ID);
+        }
+    }, [LKRS_ID]);
+    useEffect(() => {
+        if (localLKRSID) {
+
+        }
+    }, [localLKRSID]);
+    const mapSurveyDetails = (surveyDetails) => {
+        return surveyDetails.map((item) => ({
+            district: item.suR_DISTRICT_Name || "—",
+            taluk: item.suR_TALUK_Name || "—",
+            hobli: item.suR_HOBLI_Name || "—",
+            village: item.suR_VILLAGE_Name || "—",
+            owner: item.suR_OWNERNAME || "—",
+            survey_no: item.suR_SURVEYNO,
+            surnoc: item.suR_SURNOC,
+            hissa_no: item.suR_HISSA,
+            ext_acre: item.suR_EXTACRE || 0,
+            ext_gunta: item.suR_EXTGUNTA || 0,
+            ext_fgunta: item.suR_EXTFgunta || 0, // Make sure to handle this if needed
+        }));
+    };
+
+
+    // =======================================================Khata details starts=========================================
+    const [epidshowTable, setEPIDShowTable] = useState(false);
+    const [epid_fetchedData, setEPID_FetchedData] = useState(null);
+    const [phoneNumbers, setPhoneNumbers] = useState({});
+    const [ownerTableData, setOwnerTableData] = useState([]);
+
+    const customStyles = {
+        headCells: {
+            style: {
+                fontWeight: 'bold',
+                fontSize: '14px',
+            },
+        },
+        cells: {
+            style: {
+                fontSize: '16px', // table data font size
+            },
+        },
+    };
+    const columns = [
+        { name: 'S.No', selector: (row, index) => index + 1, width: '70px', center: true },
+        { name: 'Property ID', width: '140px', selector: () => epid_fetchedData?.PropertyID, center: true },
+        {
+            name: 'Owner Name', center: true,
+
+            cell: () => (
+                <div style={{
+
+                }}>
+                    {epid_fetchedData?.OwnerDetails?.[0].ownerName || 'N/A'}
+                </div>
+            )
+        },
+
+        { name: 'ID Type', width: '120px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idType || 'N/A', center: true },
+        { name: 'ID Number', width: '220px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idNumber || 'N/A', center: true },
+        {
+            name: 'Validate OTP',
+            width: '250px',
+            cell: (row, index) => (
+                <div className='mb-3'><br />
+                    <input
+                        type="tel"
+                        className="form-control mb-1"
+                        placeholder="Mobile Number"
+                        readOnly
+                        value={
+                            phoneNumbers[index] ??
+                            row.MobileNumber ??
+                            epid_fetchedData?.OwnerDetails?.[0]?.mobileNumber ??
+                            ""
+                        }
+                        maxLength={10}
+                    />
+
+                    <div className="text-success font-weight-bold mt-2">
+                        OTP Verified <i className="fa fa-check-circle"></i>
+                    </div>
+
+                </div>
+            ), center: true
+        }
+    ];
+
+    //fetching Details from LKRSID
+    const handleGetLKRSID = async (localLKRSID) => {
+        const payload = {
+            level: 1,
+            LkrsId: localLKRSID,
+        };
+        try {
+            start_loader();
+            const response = await fetch_LKRSID(payload);
+
+            if (response && response.surveyNumberDetails && response.surveyNumberDetails.length > 0) {
+
+                setSelectedLandType(response.lkrS_LANDTYPE); // ✅ Store the land type
+
+
+                const parsedSurveyDetails = mapSurveyDetails(response.surveyNumberDetails);
+
+                setRtcAddedData(prev => {
+                    const existingKeys = new Set(
+                        prev.map(item => `${item.surveyNumber}_${item.ownerName}`)
+                    );
+
+                    const filteredNewData = parsedSurveyDetails.filter(item => {
+                        const key = `${item.surveyNumber}_${item.ownerName}`;
+                        return !existingKeys.has(key);
+                    });
+
+                    return [...prev, ...filteredNewData];
+                });
+                stop_loader();
+            } else if (response && response.khataDetails && response.khataOwnerDetails && response.khataOwnerDetails.length > 0) {
+                setSelectedLandType(response.lkrS_LANDTYPE); // ✅ Store the land type
+                setEPIDShowTable(true);
+                let khataDetailsJson = {};
+                if (response.khataDetails?.khatA_JSON) {
+                    try {
+                        khataDetailsJson = JSON.parse(response.khataDetails.khatA_JSON);
+                    } catch (err) {
+                        console.warn("Failed to parse khatA_JSON", err);
+                    }
+                }
+
+                setEPID_FetchedData({
+                    PropertyID: response.lkrS_EPID || '',
+                    PropertyCategory: khataDetailsJson.propertyCategory || '',
+                    PropertyClassification: khataDetailsJson.propertyClassification || '',
+                    WardNumber: khataDetailsJson.wardNumber || '',
+                    WardName: khataDetailsJson.wardName || '',
+                    StreetName: khataDetailsJson.streetName || '',
+                    Streetcode: khataDetailsJson.streetcode || '',
+                    SASApplicationNumber: khataDetailsJson.sasApplicationNumber || '',
+                    IsMuation: khataDetailsJson.isMuation || '',
+                    KaveriRegistrationNumber: khataDetailsJson.kaveriRegistrationNumber || [],
+                    AssessmentNumber: khataDetailsJson.assessmentNumber || '',
+                    courtStay: khataDetailsJson.courtStay || '',
+                    enquiryDispute: khataDetailsJson.enquiryDispute || '',
+                    CheckBandi: khataDetailsJson.checkBandi || {},
+                    SiteDetails: khataDetailsJson.siteDetails || {},
+                    OwnerDetails: khataDetailsJson.ownerDetails || [],
+                    // Optionally add raw API response too if needed
+                    rawResponse: response,
+                });
+
+                // Optionally update area sqft if siteDetails present
+                if (khataDetailsJson.siteDetails?.siteArea) {
+                    setAreaSqft(khataDetailsJson.siteDetails.siteArea);
+                    localStorage.setItem('areaSqft', khataDetailsJson.siteDetails.siteArea);
+                } else {
+                    setAreaSqft(0);
+                    localStorage.removeItem('areaSqft');
+                }
+
+                setOwnerTableData(khataDetailsJson.ownerDetails || []);
+            } else {
+                stop_loader();
+                Swal.fire({
+                    text: "No survey details found.",
+                    icon: "warning",
+                    confirmButtonText: "OK",
+                });
+            }
+        } catch (error) {
+            stop_loader();
+            console.error("Failed to fetch LKRSID data:", error);
+            Swal.fire({
+                text: "Something went wrong. Please try again later.Lkrsid",
+                icon: "error",
+                confirmButtonText: "OK",
+            });
+        }
+    };
+
+    // ================================================Approval and release order Details starts=======================
+    const [records, setRecords] = useState([]);
+    const [order_records, setOrder_Records] = useState([]);
+    const order_columns = [
+        {
+            name: t('translation.BDA.table1.slno'),
+            cell: (row, index) => index + 1, // Adding 1 to start serial numbers from 1
+            width: '80px', // Adjust width as needed
+            center: true,
+        },
+        {
+            name: t('translation.BDA.table1.siteOrderNo'),
+            selector: row => row.layoutReleaseNumber,
+            sortable: true, center: true,
+        },
+        {
+            name: t('translation.BDA.table1.dateOforder'),
+            center: true,
+            selector: row => {
+                const date = new Date(row.dateOfOrder);
+
+                // Ensure the date is valid
+                if (isNaN(date)) {
+                    return '';  // Handle invalid date by returning an empty string or a placeholder
+                }
+
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+                const year = date.getFullYear();
+
+                return `${day}-${month}-${year}`;
+            },
+            sortable: true,
+        },
+        {
+            name: t('translation.BDA.table1.siteOrder'),
+            center: true,
+            cell: row => {
+                if (row.orderReleaseFile) {
+                    const blob = base64ToBlob(row.orderReleaseFile);
+
+                    if (blob) {
+                        const fileUrl = URL.createObjectURL(blob);
+                        return (
+                            <a
+                                href={fileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="stableBlueLink"
+                                onClick={() => {
+                                    setTimeout(() => URL.revokeObjectURL(fileUrl), 1000);
+                                }}
+                            >
+                                View File
+                            </a>
+                        );
+                    } else {
+                        return 'Invalid file';
+                    }
+                } else {
+                    return 'No file';
+                }
+            },
+        },
+        {
+            name: t('translation.BDA.table1.approvalAuthority'),
+            selector: row => row.releaseAuthority,
+            sortable: true,
+            center: true,
+        },
+        {
+            name: "Release Type",
+            selector: row => {
+                if (row.releaseType === "1") return "100%";
+                else if (row.releaseType === "2") return "60*40";
+                else if (row.releaseType === "3") return "40*30*30";
+                else return "-";
+            }, center: true,
+            sortable: true,
+        },
+        // {
+        //     name: t('translation.BDA.table1.action'),
+        //     center: true,
+        //     cell: (row, index) => (
+        //         <div>
+        //             {/* <button
+        //                 className="btn btn-warning btn-sm me-2"
+        //                 onClick={() => handleOrderEdit(index)} disabled={!isOrder_Editing}
+        //             >
+        //                 <i className="fa fa-pencil"></i>
+        //             </button> */}
+        //             <button
+        //                 className="btn btn-danger btn-sm"
+
+        //             >
+        //                 <i className="fa fa-trash"></i>
+        //             </button>
+        //         </div>
+        //     ),
+        //     ignoreRowClick: true,
+        //     allowOverflow: true,
+        //     button: true,
+        // },
+
+    ];
+
+    const approval_columns = [
+        {
+            name: t('translation.BDA.table.slno'),
+            cell: (row, index) => index + 1,
+            width: '80px',
+        },
+        {
+            name: t('translation.BDA.table.approvalNo'),
+            selector: row => row.layoutApprovalNumber,
+            sortable: true,
+        },
+        {
+            name: t('translation.BDA.table.dateOfApproval'),
+            selector: row => {
+                const date = new Date(row.dateOfApproval);
+
+                // Ensure the date is valid
+                if (isNaN(date)) {
+                    return '';  // Handle invalid date by returning an empty string or a placeholder
+                }
+
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+                const year = date.getFullYear();
+
+                return `${day}-${month}-${year}`;
+            },
+            sortable: true,
+        },
+        {
+            name: t('translation.BDA.table.approvalOrder'),
+            cell: row => {
+                if (row.approvalOrder) {
+                    const blob = base64ToBlob(row.approvalOrder);
+
+                    if (blob) {
+                        const fileUrl = URL.createObjectURL(blob);
+                        return (
+                            <a
+                                href={fileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="stableBlueLink"
+                                onClick={() => {
+                                    setTimeout(() => URL.revokeObjectURL(fileUrl), 1000);
+                                }}
+                            >
+                                View File
+                            </a>
+                        );
+                    } else {
+                        return 'Invalid file';
+                    }
+                } else {
+                    return 'No file';
+                }
+            },
+        },
+        {
+            name: t('translation.BDA.table.approvalMap'),
+            cell: row => {
+                if (row.approvalMap) {
+                    const blob = base64ToBlob(row.approvalMap);
+
+                    if (blob) {
+                        const fileUrl = URL.createObjectURL(blob);
+                        return (
+                            <a
+                                href={fileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="stableBlueLink"
+                                onClick={() => {
+                                    setTimeout(() => URL.revokeObjectURL(fileUrl), 1000);
+                                }}
+                            >
+                                View File
+                            </a>
+                        );
+                    } else {
+                        return 'Invalid file';
+                    }
+                } else {
+                    return 'No file';
+                }
+            },
+        },
+
+        {
+            name: t('translation.BDA.table.approvalAuthority'),
+            selector: row => row.approvalAuthority,
+            sortable: true,
+        },
+        // {
+        //     name: t('translation.BDA.table.action'),
+        //     cell: (row, index) => (
+        //         <div>
+        //             {/* <button
+        //                 className="btn btn-warning btn-sm me-2"
+        //                 onClick={() => handleEdit(index)} disabled={!isEditing}
+        //             >
+        //                 <i className="fa fa-pencil"></i>
+        //             </button> */}
+        //             <button
+        //                 className="btn btn-danger btn-sm"
+        //                 // onClick={() => handleDelete(index)} 
+        //                 onClick={showImplementationAlert}
+        //             >
+        //                 <i className="fa fa-trash"></i>
+        //             </button>
+        //         </div>
+        //     ),
+        //     ignoreRowClick: true,
+        //     allowOverflow: true,
+        //     button: true,
+        // },
+    ];
+    const base64ToBlob = (dataUrl, mimeType = 'application/pdf') => {
+        try {
+            // If it's a full Data URL, split it
+            const base64 = dataUrl.includes('base64,') ? dataUrl.split('base64,')[1] : dataUrl;
+
+            const byteCharacters = atob(base64);
+            const byteArrays = [];
+
+            for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+                const slice = byteCharacters.slice(offset, offset + 512);
+                const byteNumbers = Array.from(slice).map(char => char.charCodeAt(0));
+                const byteArray = new Uint8Array(byteNumbers);
+                byteArrays.push(byteArray);
+            }
+
+            return new Blob(byteArrays, { type: mimeType });
+        } catch (error) {
+            console.error("Invalid base64 input:", dataUrl);
+            return null; // return null if decoding fails
+        }
+    };
+    const fetchApprovalList = async (localLKRSID) => {
+        start_loader();
+        try {
+            const listPayload = {
+                level: 1,
+                aprLkrsId: localLKRSID,
+                aprId: 0,
+            };
+
+            const listResponse = await listApprovalInfo(listPayload);
+
+            const approvalFileResponse = await fileListAPI(3, localLKRSID, 1, 0);
+            const approvalMapFileResponse = await fileListAPI(3, localLKRSID, 2, 0);
+
+            if (Array.isArray(listResponse)) {
+                const formattedList = listResponse.map((item, index) => {
+                    // Try to match approval number with current formData if available
+                    const isCurrent = item.apr_Approval_No;
+
+                    return {
+                        layoutApprovalNumber: item.apr_Approval_No,
+                        dateOfApproval: item.apr_Approval_Date,
+                        approvalOrder: approvalFileResponse[index]?.doctrN_DOCBASE64 || null,
+                        approvalMap: approvalMapFileResponse[index]?.doctrN_DOCBASE64 || null,
+                        approvalAuthority: item.apR_APPROVALDESIGNATION,
+                    };
+                });
+
+                setRecords(formattedList);
+            }
+            stop_loader();
+
+        } catch (error) {
+            stop_loader();
+            console.error("Error fetching approval list:", error);
+        } finally {
+            stop_loader();
+        }
+    }
+    const fetchReleaseList = async (localLKRSID) => {
+        start_loader();
+        try {
+            const listPayload = {
+                level: 1,
+                lkrsId: localLKRSID,
+                siteRelsId: 0,
+            };
+
+            const listResponse = await listReleaseInfo(listPayload);
+            console.table(listResponse);
+            const listFileResponse = await fileListAPI(3, localLKRSID, 3, 0); //level, LKRSID, MdocID, docID
+
+            if (Array.isArray(listResponse)) {
+                const formattedList = listResponse.map((item, index) => ({
+                    layoutReleaseNumber: item.sitE_RELS_ORDER_NO,
+                    dateOfOrder: item.sitE_RELS_DATE,
+                    orderReleaseFile: listFileResponse[index]?.doctrN_DOCBASE64 || null,
+                    releaseAuthority: item.sitE_RELS_APPROVALDESIGNATION,
+                    releaseType: item.sitE_RELS_SITE_RELSTYPE_ID,
+                }));
+                setOrder_Records(formattedList);
+
+            }
+            stop_loader();
+        } catch (error) {
+            stop_loader();
+            console.error("Error fetching approval list:", error);
+        } finally {
+            stop_loader();
+        }
+    }
+
+
+    // ============================================Individual site details starts==============================
+    const [allSites, setAllSites] = useState([]);
+    const [layoutSiteCount, setLayoutSiteCount] = useState("");
+
+
+    const totalSitesCount = Number(layoutSiteCount);
+
+    const fetchSiteDetails = async (LKRS_ID) => {
+        try {
+
+            const listPayload = {
+                level: 1,
+                LkrsId: localLKRSID,
+                SiteID: 0,
+            };
+            start_loader();
+            const response = await individualSiteListAPI(listPayload);
+
+            if (response.length >= 0) {
+                setAllSites(response); // ✅ Update state with API data
+
+
+            } else {
+                Swal.fire({
+                    text: response.responseMessage,
+                    icon: "error",
+                    confirmButtonText: "OK",
+                });
+            }
+        } catch (error) {
+            console.error("Failed to insert data:", error);
+            Swal.fire({
+                text: "Something went wrong. Please try again later.site",
+                icon: "error",
+                confirmButtonText: "OK",
+            });
+        } finally {
+            stop_loader();
+        }
+    }
+
+    // =============================================OwnerEKYC details starts=====================================
+
+    const [ownerList, setOwnerList] = React.useState([]);
+    const [ownerNames, setOwnerNames] = React.useState('');
+
+    const fetch_ownerDetails = async (localLKRSID) => {
+        try {
+            start_loader(); // Start loader
+            const apiResponse = await ownerEKYC_Details("1", localLKRSID);
+            console.log("multiple Owner", apiResponse);
+
+            // Set full owner list
+            setOwnerList(apiResponse || []);
+
+            // Create comma-separated owner names
+            const ownerNameList = (apiResponse || [])
+                .map(owner => owner.owN_NAME_EN)
+                .filter(name => !!name)  // Filter out null/undefined names
+                .join(', ');
+            setOwnerNames(ownerNameList);
+
+        } catch (error) {
+            console.error("Failed to fetch owner details:", error);
+            Swal.fire({
+                text: "Something went wrong. Please try again later.",
+                icon: "error",
+                confirmButtonText: "OK",
+            });
+        } finally {
+            stop_loader(); // Stop loader
+        }
+    };
+    const owner_columns = [
+        {
+            name: 'Name',
+            selector: row => row.owN_NAME_EN || 'N/A',
+            sortable: true,
+        },
+        {
+            name: 'Aadhar Number',
+            selector: row => row.owN_AADHAARNUMBER || 'N/A',
+        },
+        {
+            name: 'Aadhaar Verification Status',
+            selector: row => row.owN_AADHAARVERISTATUS || 'N/A',
+        },
+        {
+            name: 'ID Type',
+            selector: row => row.owN_IDTYPE || 'N/A',
+        },
+        {
+            name: 'ID Number',
+            selector: row => row.owN_IDNUMBER || 'N/A',
+        },
+    ];
+
+
+
+    const handlePreviewClick = async () => {
+        if (!localLKRSID) return;
+        await handleGetLKRSID(localLKRSID);
+        await fetchApprovalList(localLKRSID);
+        await fetchReleaseList(localLKRSID);
+        await fetchSiteDetails(localLKRSID);
+        await fetch_ownerDetails(localLKRSID);
+        setIsModalOpen(true); // Show modal after fetching
+    };
+
 
     return (
         <div className="card"> {loading && <Loader />}
@@ -8109,7 +9187,7 @@ const DeclarationBlock = ({ rtc_AddedData, approval_details, order_details }) =>
                 </div>
                 <div className='row'>
                     <div className='col-md-3 mt-2'>
-                        <button onClick={() => setIsModalOpen(true)} className='btn btn-warning btn-block'>Preview</button>
+                        <button onClick={handlePreviewClick} className='btn btn-warning btn-block'>Preview</button>
                     </div>
                     <div className='col-md-3 mt-2'>
                         <button className='btn btn-primary btn-block'>{t('translation.buttons.save&submit')}</button>
@@ -8119,399 +9197,216 @@ const DeclarationBlock = ({ rtc_AddedData, approval_details, order_details }) =>
 
 
                 <div id="modal-content">
-                    <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+                    <Modal isOpen={isModalOpen} onClose={closeModal}>
                         <div style={{ padding: '20px' }}>
-                            {selectedLandType === "convertedRevenue" && (
+                            {/* survey number preview block */}
+                            {selectedLandType === "surveyNo" && (
+                                <>
 
-                                <div style={{ overflowX: "auto" }}>
-                                    <table
-                                        className="min-w-[600px] w-full border border-gray-300 table-fixed"
-                                        style={{
-                                            borderCollapse: "collapse",
-                                            width: "100%",
-                                            border: "1px solid #ccc",
-                                            fontFamily: "Georgia, serif",
-                                            tableLayout: "fixed",
-                                            minWidth: "600px",
-                                        }}
-                                    >
-                                        <thead>
-                                            <tr style={{ backgroundColor: "#f5f5f5" }}>
-                                                <th colSpan={7} style={{
-                                                    padding: "10px",
-                                                    textAlign: "center",
-                                                    fontSize: "16px",
-                                                    fontWeight: "bold",
-                                                    fontFamily: "Georgia, serif",
-                                                    color: "#000",
-                                                    border: "1px solid #ccc"
-                                                }}>
-                                                    Converted Revenue Land Details
-                                                </th>
-                                            </tr>
-                                            <tr style={{ backgroundColor: "#f2f2f2" }}>
-                                                <th style={thStyle}>Survey Number / Surnoc / Hissa No</th>
-                                                <th style={thStyle}>Extent [Acre.Gunta.Fgunta]</th>
-                                                <th style={thStyle}>Owner Name</th>
-                                                <th style={thStyle}>District</th>
-                                                <th style={thStyle}>Taluk</th>
-                                                <th style={thStyle}>Hobli</th>
-                                                <th style={thStyle}>Village</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {flatData.length > 0 ? (
-                                                flatData.map((item, index) => (
-                                                    <tr key={index}>
-                                                        <td style={tdStyle}>
-                                                            {item.survey_no}/{item.surnoc}/{item.hissa_no}
-                                                        </td>
-                                                        <td style={tdStyle}>
-                                                            {item.ext_acre}/{item.ext_gunta}/{item.ext_fgunta}
-                                                        </td>
-                                                        <td style={tdStyle}>{item.owner}</td>
-                                                        <td style={tdStyle}>{item.district}</td>
-                                                        <td style={tdStyle}>{item.taluk}</td>
-                                                        <td style={tdStyle}>{item.hobli}</td>
-                                                        <td style={tdStyle}>{item.village}</td>
+                                    {combinedData.length > 0 && (
+                                        <div className="col-12">
+                                            <div className="">
+                                                <div className="d-flex justify-content-between align-items-center mb-3">
+                                                    <h4 className=" m-0">Added Survey No Details</h4>
+                                                    <div className="d-flex align-items-center">
+                                                        <label className="me-2 mb-0">Rows per page:</label>
+                                                        <select
+                                                            className="form-select form-select-sm w-auto"
+                                                            value={rowsPerPage}
+                                                            onChange={handlePageSizeChange}
+                                                        >
+                                                            {[5, 10, 15, 20, 25, 30].map((size) => (
+                                                                <option key={size} value={size}>{size}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                </div>
 
-                                                    </tr>
-                                                ))
-                                            ) : (
-                                                <tr>
-                                                    <td colSpan={5} style={tdStyle}>
-                                                        No data available
-                                                    </td>
-                                                </tr>
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                                <div className="table-responsive custom-scroll-table">
+                                                    <table className="table table-striped table-hover table-bordered rounded-table">
+                                                        <thead className="table-primary sticky-header">
+                                                            <tr>
+                                                                <th hidden>Action</th>
+                                                                <th>S.No</th>
+                                                                <th>District</th>
+                                                                <th>Taluk</th>
+                                                                <th>Hobli</th>
+                                                                <th>Village</th>
+                                                                <th>Owner Name</th>
+                                                                <th>Survey No / Surnoc / Hissa No</th>
+                                                                <th>Extent (Acre.Gunta.Fgunta)</th>
+                                                                <th>SqFt</th>
+                                                                <th>SqM</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {paginatedData.map((row, index) => (
+                                                                <tr key={index}>
+                                                                    <td hidden>
+                                                                    </td>
+                                                                    <td>{index + 1 + (currentPage - 1) * rowsPerPage}</td>
+                                                                    <td>{row.district}</td>
+                                                                    <td>{row.taluk}</td>
+                                                                    <td>{row.hobli}</td>
+                                                                    <td>{row.village}</td>
+                                                                    <td>{row.owner}</td>
+                                                                    <td>{`${row.survey_no}/${row.surnoc}/${row.hissa_no}`}</td>
+                                                                    <td>{`${row.ext_acre}.${row.ext_gunta}.${row.ext_fgunta}`}</td>
+                                                                    <td>
+                                                                        {(
+                                                                            (parseFloat(row.ext_acre) * 43560) +
+                                                                            (parseFloat(row.ext_gunta) * 1089) +
+                                                                            (parseFloat(row.ext_fgunta) * 68.0625)
+                                                                        ).toFixed(2)}
+                                                                    </td>
+                                                                    <td>
+                                                                        {(
+                                                                            (
+                                                                                (parseFloat(row.ext_acre) * 43560) +
+                                                                                (parseFloat(row.ext_gunta) * 1089) +
+                                                                                (parseFloat(row.ext_fgunta) * 68.0625)
+                                                                            ) * 0.092903
+                                                                        ).toFixed(2)}
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                        <tfoot >
+                                                            <tr>
+                                                                <th colSpan={5}></th>
+                                                                <th colSpan={2} className="text-end fw-bold">Total Area:</th>
+                                                                <th className="text-left fw-bold" >{`${totalAcre}.${totalGunta}.${totalFGunta}`}</th>
+                                                                <th className='fw-bold'>{totalSqFt.toFixed(2)}</th>
+                                                                <th className='fw-bold'>{totalSqFt.toFixed(2)}</th>
+                                                            </tr>
+                                                        </tfoot>
+                                                    </table>
+                                                </div>
 
+                                                {/* Pagination Summary and Controls */}
+                                                <div className="d-flex justify-content-between align-items-center mt-3 flex-wrap">
+                                                    <div>
+                                                        Showing {Math.min((currentPage - 1) * rowsPerPage + 1, combinedData.length)}–{Math.min(currentPage * rowsPerPage, combinedData.length)} of {combinedData.length} records
+                                                    </div>
+
+                                                    <div>
+                                                        <button
+                                                            className="btn btn-outline-secondary btn-sm mx-1"
+                                                            onClick={() => goToPage(currentPage - 1)}
+                                                            disabled={currentPage === 1}
+                                                        >
+                                                            Previous
+                                                        </button>
+                                                        {[...Array(totalPages).keys()].map((num) => (
+                                                            <button
+                                                                key={num}
+                                                                className={`btn btn-sm mx-1 ${currentPage === num + 1 ? 'btn-primary' : 'btn-outline-primary'}`}
+                                                                onClick={() => goToPage(num + 1)}
+                                                            >
+                                                                {num + 1}
+                                                            </button>
+                                                        ))}
+                                                        <button
+                                                            className="btn btn-outline-secondary btn-sm mx-1"
+                                                            onClick={() => goToPage(currentPage + 1)}
+                                                            disabled={currentPage === totalPages}
+                                                        >
+                                                            Next
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    )
+                                    }
+                                </>
                             )}
+                            {/* EPID preview block */}
+                            {(selectedLandType === "khata") && (
+                                <>
+                                    {epidshowTable && epid_fetchedData && (
+                                        <div>
+                                            <h5>Property Owner details as per BBMP eKhata</h5>
+                                            <h6>Note: Plot-wise New Khata will be issued in owner's name. Hence, if owner has changed then first get Mutation done in eKhata.</h6>
+                                            {/* <h6>If there has been a change in ownership, the Mutation process in eKhata must be completed first, as the New Khata will be issued in the owner's name.</h6> */}
+                                            <DataTable
+                                                columns={columns}
+                                                data={epid_fetchedData?.OwnerDetails || []}
+                                                pagination
+                                                noHeader
+                                                dense={false}
+                                                customStyles={customStyles}
+                                            />
 
-                            {(selectedLandType === "bbmpKhata") && (
-                                <div style={{ overflowX: "auto" }}>
-
-                                    <table
-                                        className="min-w-[600px] w-full border border-gray-300 table-fixed"
-                                        style={{
-                                            borderCollapse: "collapse",
-                                            width: "100%",
-                                            border: "1px solid #ccc",
-                                            fontFamily: "Georgia, serif",
-                                            tableLayout: "fixed",
-                                            minWidth: "600px",
-                                        }}
-                                    >
-                                        <thead>
-                                            <tr style={{ backgroundColor: "#f5f5f5" }}>
-                                                <th colSpan={2} style={{
-                                                    padding: "10px",
-                                                    textAlign: "center",
-                                                    fontSize: "16px",
-                                                    fontWeight: "bold",
-                                                    fontFamily: "Georgia, serif",
-                                                    color: "#000",
-                                                    border: "1px solid #ccc"
-                                                }}>
-                                                    Property Owner details as per BBMP eKhata
-                                                </th>
-                                            </tr>
-                                            <tr style={{ backgroundColor: "#f2f2f2" }}>
-                                                <th style={thStyle}>EPID Number</th>
-                                                <th style={thStyle}>EPID</th>
-
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-
-                                        </tbody>
-                                    </table><br />
-                                    <table
-                                        className="min-w-[600px] w-full border border-gray-300 table-fixed"
-                                        style={{
-                                            borderCollapse: "collapse",
-                                            width: "100%",
-                                            border: "1px solid #ccc",
-                                            fontFamily: "Georgia, serif",
-                                            tableLayout: "fixed",
-                                            minWidth: "600px",
-                                        }}
-                                    >
-                                        <thead>
-
-                                            <tr style={{ backgroundColor: "#f2f2f2" }}>
-                                                <th style={thStyle}>S.No</th>
-                                                <th style={thStyle}>Owner Name</th>
-                                                <th style={thStyle}>Relationship Type</th>
-                                                <th style={thStyle}>Relation Name</th>
-                                                <th style={thStyle}>ID Type</th>
-                                                <th style={thStyle}>ID Number</th>
-                                                <th style={thStyle}>Phone Number</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-
-                                        </tbody>
-                                    </table>
-                                </div>
+                                        </div>
+                                    )}
+                                </>
                             )}
-                            {/* Approval order table details */}
-                            <br />
-                            <div style={{ overflowX: "auto" }}>
-                                <table
-                                    className="min-w-[600px] w-full border border-gray-300 table-fixed"
-                                    style={{
-                                        borderCollapse: "collapse",
-                                        width: "100%",
-                                        border: "1px solid #ccc",
-                                        fontFamily: "Georgia, serif",
-                                        tableLayout: "fixed",
-                                        minWidth: "600px",
-                                    }}
-                                >
-                                    <thead>
-                                        <tr style={{ backgroundColor: "#f5f5f5" }}>
-                                            <th
-                                                colSpan={5}
-                                                style={{
-                                                    padding: "10px",
-                                                    textAlign: "center",
-                                                    fontSize: "16px",
-                                                    fontWeight: "bold",
-                                                    fontFamily: "Georgia, serif",
-                                                    color: "#000",
-                                                    border: "1px solid #ccc",
-                                                }}
-                                            >
-                                                Approval Order Details
-                                            </th>
-                                        </tr>
-                                        <tr style={{ backgroundColor: "#f2f2f2" }}>
-                                            <th style={thStyle}>Layout Approval Number</th>
-                                            <th style={thStyle}>Date of Approval</th>
-                                            <th style={thStyle}>Uploaded Layout Approval order</th>
-                                            <th style={thStyle}>Uploaded Layout Approved Map</th>
-                                            <th style={thStyle}>Designation of Approval Authority</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {approvalData.length > 0 ? (
-                                            approvalData.map((item, index) => (
-                                                <tr key={index}>
-                                                    <td style={tdStyle}>{item.layoutApprovalNumber}</td>
-                                                    <td style={tdStyle}>{item.dateOfApproval}</td>
-
-                                                    <td style={tdStyle}>
-                                                        {item.approvalOrder?.name ? (
-                                                            <a
-                                                                href={URL.createObjectURL(item.approvalOrder)}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                style={{ color: 'blue', textDecoration: 'underline' }}
-                                                            >
-                                                                {item.approvalOrder.name}
-                                                            </a>
-                                                        ) : (
-                                                            "No file uploaded"
-                                                        )}
-                                                    </td>
-                                                    <td style={tdStyle}>
-                                                        {item.approvalMap?.name ? (
-                                                            <a
-                                                                href={URL.createObjectURL(item.approvalMap)}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                style={{ color: 'blue', textDecoration: 'underline' }}
-                                                            >
-                                                                {item.approvalMap.name}
-                                                            </a>
-                                                        ) : (
-                                                            "No file uploaded"
-                                                        )}
-                                                    </td>
-                                                    <td style={tdStyle}>{item.approvalAuthority}</td>
-                                                </tr>
-                                            ))
-                                        ) : (
-                                            <tr>
-                                                <td colSpan={5} style={tdStyle}>
-                                                    No data available
-                                                </td>
-                                            </tr>
-                                        )}
-
-                                    </tbody>
-                                </table>
-                            </div>
-                            {/* released order table details */}
-                            <br />
-                            <div style={{ overflowX: "auto" }}>
-                                <table
-                                    className="min-w-[600px] w-full border border-gray-300 table-fixed"
-                                    style={{
-                                        borderCollapse: "collapse",
-                                        width: "100%",
-                                        border: "1px solid #ccc",
-                                        fontFamily: "Georgia, serif",
-                                        tableLayout: "fixed",
-                                        minWidth: "600px",
-                                    }}
-                                >
-                                    <thead>
-                                        <tr style={{ backgroundColor: "#f5f5f5" }}>
-                                            <th
-                                                colSpan={4}
-                                                style={{
-                                                    padding: "10px",
-                                                    textAlign: "center",
-                                                    fontSize: "16px",
-                                                    fontWeight: "bold",
-                                                    fontFamily: "Georgia, serif",
-                                                    color: "#000",
-                                                    border: "1px solid #ccc",
-                                                }}
-                                            >
-                                                Released Order Details
-                                            </th>
-                                        </tr>
-                                        <tr style={{ backgroundColor: "#f2f2f2" }}>
-                                            <th style={thStyle}>Release Order Number</th>
-                                            <th style={thStyle}>Date of Order</th>
-                                            <th style={thStyle}>Uploaded Order of site release</th>
-                                            <th style={thStyle}>Designation of Authority issued site Release Order</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {orderData.length > 0 ? (
-                                            orderData.map((item, index) => (
-                                                <tr key={index}>
-                                                    <td style={tdStyle}>{item.layoutOrderNumber}</td>
-                                                    <td style={tdStyle}>{item.dateOfOrder}</td>
-                                                    <td style={tdStyle}>
-                                                        {item.release_Order?.name ? (
-                                                            <a
-                                                                href={URL.createObjectURL(item.release_Order)}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                style={{ color: 'blue', textDecoration: 'underline' }}
-                                                            >
-                                                                {item.release_Order.name}
-                                                            </a>
-                                                        ) : (
-                                                            "No file uploaded"
-                                                        )}
-                                                    </td>
-
-
-                                                    <td style={tdStyle}>{item.orderAuthority}</td>
-                                                </tr>
-                                            ))
-                                        ) : (
-                                            <tr>
-                                                <td colSpan={4} style={tdStyle}>
-                                                    No data available
-                                                </td>
-                                            </tr>
-                                        )}
-
-
-
-
-                                    </tbody>
-                                </table>
-                            </div>
                             <hr />
-                            <h4>Individual sites Details</h4>
-                            {individualShape === "Regular" && (
-                                <div style={{ overflowX: "auto" }}>
-                                    <table
-                                        className="min-w-[600px] w-full border border-gray-300 table-fixed"
-                                        style={{
-                                            borderCollapse: "collapse",
-                                            width: "100%",
-                                            border: "1px solid #ccc",
-                                            fontFamily: "Georgia, serif",
-                                            tableLayout: "fixed",
-                                            minWidth: "600px",
-                                        }}
-                                    >
-                                        <thead>
-                                            <tr style={{ backgroundColor: "#f5f5f5" }}>
-                                                <th
-                                                    colSpan={10}
-                                                    style={{
-                                                        padding: "10px",
-                                                        textAlign: "center",
-                                                        fontSize: "16px",
-                                                        fontWeight: "bold",
-                                                        fontFamily: "Georgia, serif",
-                                                        color: "#000",
-                                                        border: "1px solid #ccc",
-                                                    }}
-                                                >
-                                                    Individual sites - Regular Shape Details
-                                                </th>
-                                            </tr>
-                                            <tr style={{ backgroundColor: "#f2f2f2" }}>
-                                                <th style={thStyle}>Site Number</th>
-                                                <th style={thStyle}>Block/Area</th>
-                                                <th style={thStyle}>Dimension</th>
-                                                <th style={thStyle}>Total Area</th>
-                                                <th style={thStyle}>Corner Site</th>
-                                                <th style={thStyle}>Type of Site</th>
-                                                <th style={thStyle}>Chakbandi[East | West | South | North]</th>
-                                                <th style={thStyle}>Latitude</th>
-                                                <th style={thStyle}>Longitude</th>
-                                                <th style={thStyle}>Address</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td style={tdStyle}></td>
-                                                <td style={tdStyle}></td>
-                                                <td style={tdStyle}></td>
-                                                <td style={tdStyle}></td>
-                                                <td style={tdStyle}></td>
-                                                <td style={tdStyle}></td>
-                                                <td style={tdStyle}></td>
-                                                <td style={tdStyle}></td>
-                                                <td style={tdStyle}></td>
-                                                <td style={tdStyle}></td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+                            {records.length > 0 && (
+                                <div className="mt-4">
+                                    <h4>Layout Approval order</h4>
+                                    <DataTable
+                                        columns={approval_columns}
+                                        data={records}
+                                        customStyles={customStyles}
+                                        pagination
+                                        highlightOnHover
+                                        striped
+                                    />
                                 </div>
-
                             )}
-
-                            <div className='row mt-4 no-print'>
-                                <div className='col-md-6'></div>
-                                <div className='col-md-2'>
-                                    <button className='btn btn-block btn-success' onClick={handleDownloadPDF}>Download PDF</button>
+                            <hr />
+                            {order_records.length > 0 && (
+                                <div className="mt-4">
+                                    <h4>{t('translation.BDA.table1.heading')}</h4>
+                                    <DataTable
+                                        columns={order_columns}
+                                        data={order_records}
+                                        customStyles={customStyles}
+                                        pagination
+                                        highlightOnHover
+                                        striped
+                                    />
                                 </div>
-                                <div className='col-md-2'>
-                                    <button className='btn btn-block btn-info' onClick={() => window.print()}>Print</button>
-                                </div>
-                                <div className='col-md-2'>
-                                    <button className='btn btn-block btn-danger' onClick={() => setIsModalOpen(false)}>Close</button>
-                                </div>
+                            )}
+                            <hr />
+                            {allSites.length > 0 && (
+                                <Preview_siteDetailsTable
+                                    data={allSites}
+                                    setData={setAllSites}
+                                    totalSitesCount={totalSitesCount}
+                                    LKRS_ID={localLKRSID}
+                                    createdBy={createdBy}
+                                    createdName={createdName}
+                                    roleID={roleID}
+                                />
+                            )}
+                            <hr />
 
-
-
-                            </div>
+                            {setOwnerList.length > 0 && (
+                                <>
+                                    <h4>EKYC Owner Details</h4>
+                                    <DataTable
+                                        columns={owner_columns}
+                                        data={ownerList}
+                                        progressPending={loading}
+                                        pagination
+                                        highlightOnHovers
+                                        customStyles={customStyles}
+                                    />
+                                </>
+                            )}
                         </div>
                     </Modal>
-
                 </div>
-
-
             </div>
-
         </div>
     );
 };
+
+
 const styles = {
     modal: {
         position: 'fixed',
@@ -8603,6 +9498,8 @@ const Modal = ({ isOpen, onClose, children }) => {
         modalRoot
     );
 };
+
+
 export default BBMP_LayoutForm;
 
 
