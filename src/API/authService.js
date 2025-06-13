@@ -362,9 +362,11 @@ export const insertJDA_details = async (payload) => {
   }
 };
 //JDA details fetch API
-export const fetchJDA_details = async (payload) => {
+export const fetchJDA_details = async (level, lkrsId, jdaId) => {
   try {
-    const response = await apiService.postRequest(config.endpoints.fetchJDAInfo, payload);
+    
+    const url = `${config.endpoints.fetchJDAInfo}?level=${level}&lkrsId=${lkrsId}&jdaId=${jdaId}`;
+    const response = await apiService.getRequest(url);
     return response;
   } catch (error) {
     console.error("fetch details Error:", error);

@@ -59,7 +59,8 @@ const BBMP_LayoutForm = () => {
 
     const [areaSqft, setAreaSqft] = useState("0");
     const [LKRS_ID, setLKRS_ID] = useState(() => localStorage.getItem("LKRSID") || "");
-    const [display_LKRSID, setDisplay_LKRSID] = useState("");
+    const [display_LKRS_ID, setDisplay_LKRS_ID] = useState(() => localStorage.getItem("display_LKRSID") || "");
+
 
     //save button varaiables
     const [isRTCSectionSaved, setIsRTCSectionSaved] = useState(false);
@@ -91,8 +92,8 @@ const BBMP_LayoutForm = () => {
         localStorage.setItem('createdName', CreatedName);
         localStorage.setItem('RoleID', RoleID);
 
-        if (display_LKRSID) {
-            toast.success(`Application Number: ${display_LKRSID}`, {
+        if (display_LKRS_ID) {
+            toast.success(`Application Number: ${display_LKRS_ID}`, {
                 autoClose: false,         // Stays open until manually closed
                 closeOnClick: false,      // Prevents closing on click
                 draggable: false,         // Prevents dragging
@@ -103,7 +104,7 @@ const BBMP_LayoutForm = () => {
             handleGetLKRSID(LKRS_ID);
         }
 
-    }, [display_LKRSID]);
+    }, [display_LKRS_ID]);
 
     const generate_Token = async () => {
         try {
@@ -126,7 +127,7 @@ const BBMP_LayoutForm = () => {
             start_loader();
             const response = await fetch_LKRSID(payload);
 
-            if (response) {
+            if (response && response.length > 0) {
                 console.log("firstblock", response);
 
                 // Check the value and update selectedLandType
@@ -139,11 +140,7 @@ const BBMP_LayoutForm = () => {
                 stop_loader();
             } else {
                 stop_loader();
-                Swal.fire({
-                    text: "No survey details found12",
-                    icon: "warning",
-                    confirmButtonText: "OK",
-                });
+               
             }
         } catch (error) {
             stop_loader();
@@ -168,7 +165,7 @@ const BBMP_LayoutForm = () => {
                             <div className="card">
                                 <div className="card-header layout_btn_color" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <h5 className="card-title" style={{ margin: 0 }}>Bulk eKhata for layout to owner / developer</h5>
-                                    <h5 style={{ color: '#fff' }}>Application Number: {display_LKRSID}</h5>
+                                    <h5 style={{ color: '#fff' }}>Application Number: {display_LKRS_ID}</h5>
                                 </div>
 
                                 <div className="card-body">
@@ -216,7 +213,7 @@ const BBMP_LayoutForm = () => {
                                         {/* Section for BBMP A-Khata Selection */}
                                         {selectedLandType === "bbmpKhata" && (
                                             <BBMPKhata onDisableEPIDSection={() => { setIsEPIDSectionDisabled(true); setIsSurveyNoSectionDisabled(true) }} setAreaSqft={setAreaSqft} setLKRS_ID={setLKRS_ID}
-                                                LKRS_ID={LKRS_ID} setDisplay_LKRSID={setDisplay_LKRSID} setIsEPIDSectionSaved={setIsEPIDSectionSaved} />
+                                                LKRS_ID={LKRS_ID} setDisplay_LKRS_ID={setDisplay_LKRS_ID} setIsEPIDSectionSaved={setIsEPIDSectionSaved} />
                                         )}
 
                                         {/* Section for Second Radio Button */}
@@ -224,7 +221,7 @@ const BBMP_LayoutForm = () => {
                                             <NoBBMPKhata setAreaSqft={setAreaSqft} Language={newLanguage} rtc_AddedData={rtc_AddedData}
                                                 setRtc_AddedData={setRtc_AddedData} setOrderDetails={setOrderDetails}
                                                 onDisableEPIDSection={() => { setIsEPIDSectionDisabled(true); setIsSurveyNoSectionDisabled(true) }} LKRS_ID={LKRS_ID}
-                                                setDisplay_LKRSID={setDisplay_LKRSID} setLKRS_ID={setLKRS_ID} setIsRTCSectionSaved={setIsRTCSectionSaved} />
+                                                setDisplay_LKRS_ID={setDisplay_LKRS_ID} setLKRS_ID={setLKRS_ID} setIsRTCSectionSaved={setIsRTCSectionSaved} />
                                         )}
 
                                     </div>
@@ -249,7 +246,7 @@ const BBMP_LayoutForm = () => {
     );
 }
 //No BBMP Khata section
-const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, setDisplay_LKRSID, setIsRTCSectionSaved }) => {
+const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, setDisplay_LKRS_ID, setIsRTCSectionSaved }) => {
 
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
     const [language, setLanguage] = useState(localStorage.getItem("selectedLanguage"));
@@ -648,8 +645,10 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
             if (response.responseStatus === true) {
                 stop_loader();
                 localStorage.removeItem('LKRSID');
+                localStorage.removeItem('display_LKRSID');
                 localStorage.setItem('LKRSID', response.lkrsid);
-                setDisplay_LKRSID(response.display_LKRSID);
+                localStorage.setItem('display_LKRSID', response.display_LKRSID);
+                setDisplay_LKRS_ID(response.display_LKRSID);
                 setLKRS_ID(response.lkrsid);
                 setIsSurveyNoSectionDisabled(true);
                 onDisableEPIDSection();
@@ -1159,7 +1158,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
     );
 };
 //BBMP khata section
-const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, setDisplay_LKRSID, setIsEPIDSectionSaved }) => {
+const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, setDisplay_LKRS_ID, setIsEPIDSectionSaved }) => {
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
     const [epidNumber, setEpidNumber] = useState("");
 
@@ -1802,7 +1801,9 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                 stop_loader();
                 localStorage.removeItem('LKRSID');
                 localStorage.setItem('LKRSID', response.lkrsid);
-                setDisplay_LKRSID(response.display_LKRSID);
+                localStorage.removeItem('display_LKRSID');
+                localStorage.setItem('display_LKRSID', response.display_LKRSID);
+                setDisplay_LKRS_ID(response.display_LKRSID);
                 setLKRS_ID(response.lkrsid);
                 Swal.fire({
                     title: response.responseMessage,
@@ -1874,6 +1875,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
             </div>
 
 
+
             {/* Table Section */}
             {epidshowTable && epid_fetchedData && (
                 <div>
@@ -1889,15 +1891,13 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                             dense={false}
                             customStyles={customStyles}
                         />
-
                     </div>
-
                     <div className='row'>
                         <div className="col-0 col-sm-0 col-md-8 col-lg-8 col-xl-8 "></div>
                         <div className="col-6 col-sm-6 col-md-2 col-lg-2 col-xl-2 ">
                             <div className="form-group">
                                 <label></label>
-                                <button className='btn btn-warning btn-block' onClick={showImplementationAlert}>View eKhata</button>
+
                             </div>
                         </div>
                         <div className="col-6 col-sm-6 col-md-2 col-lg-2 col-xl-2">
@@ -1907,10 +1907,171 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                             </div>
                         </div>
                     </div>
-
                 </div>
-
             )}
+            {epid_fetchedData && (
+                <>
+                    <style>{`
+      /* Wrapper for horizontal scroll on small screens */
+      .table-responsive-wrapper { /* Renamed to avoid conflict if parent also uses table-responsive */
+      width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 20px;
+        border: 2px solid lightgray; /* stronger outer border */
+        padding: 20px;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-family: Arial, sans-serif;
+        min-width: 600px; /* ensures horizontal scroll on small screens */
+      }
+      th, td {
+        border: 1.5px solid #666; /* distinct cell borders */
+        padding: 8px;
+        text-align: left;
+      }
+      th {
+        font-weight: bold;
+        color: #000;
+        background-color: #e2e2e2;
+      }
+      tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+      tr:hover {
+        background-color: #f1f1f1;
+      }
+      h3, h4 {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #333;
+        margin-top: 1.5em;
+        margin-bottom: 0.5em;
+      }
+      .header-with-button {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px; /* Space between heading/button and table */
+      }
+    `}</style>
+                    <div className="table-responsive-wrapper">
+                        <div className="header-with-button">
+                            <h4>Property Details</h4>
+                            <button className='btn btn-warning' onClick={showImplementationAlert} style={{ flexShrink: 0 }}>View eKhata</button>
+                        </div>
+
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Property ID</th>
+                                    <th>Property Category</th>
+                                    <th>Property Classification</th>
+                                    <th>Ward Number</th>
+                                    <th>Ward Name</th>
+                                    <th>Street Name</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{epid_fetchedData.PropertyID}</td>
+                                    <td>{epid_fetchedData.PropertyCategory}</td>
+                                    <td>{epid_fetchedData.PropertyClassification}</td>
+                                    <td>{epid_fetchedData.WardNumber}</td>
+                                    <td>{epid_fetchedData.WardName.trim()}</td>
+                                    <td>{epid_fetchedData.StreetName}</td>
+                                </tr>
+                                <tr>
+                                    <th>Street Code</th>
+                                    <th>SAS Application Number</th>
+                                    <th>Is Mutation</th>
+                                    <th>Assessment Number</th>
+                                    <th>Court Stay</th>
+                                    <th>Enquiry Dispute</th>
+                                </tr>
+                                <tr>
+                                    <td>{epid_fetchedData.Streetcode}</td>
+                                    <td>{epid_fetchedData.SASApplicationNumber}</td>
+                                    <td>{epid_fetchedData.IsMuation}</td>
+                                    <td>{epid_fetchedData.AssessmentNumber}</td>
+                                    <td>{epid_fetchedData.courtStay}</td>
+                                    <td>{epid_fetchedData.enquiryDispute}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h4>Check Bandi</h4>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>North</th>
+                                    <th>South</th>
+                                    <th>East</th>
+                                    <th>West</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{epid_fetchedData.CheckBandi.north}</td>
+                                    <td>{epid_fetchedData.CheckBandi.south}</td>
+                                    <td>{epid_fetchedData.CheckBandi.east}</td>
+                                    <td>{epid_fetchedData.CheckBandi.west}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h4>Site Details</h4>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Site Area (sq ft)</th>
+                                    <th>East-West Dimension</th>
+                                    <th>North-South Dimension</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{epid_fetchedData.SiteDetails.siteArea}</td>
+                                    <td>{epid_fetchedData.SiteDetails.dimensions.eastWest}</td>
+                                    <td>{epid_fetchedData.SiteDetails.dimensions.northSouth}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h4>Owner Details</h4>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Owner Name</th>
+                                    <th>ID Type</th>
+                                    <th>ID Number</th>
+                                    <th>Address</th>
+                                    <th>Identifier Name</th>
+                                    <th>Gender</th>
+                                    <th>Mobile Number</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {epid_fetchedData.OwnerDetails.map((owner, index) => (
+                                    <tr key={index}>
+                                        <td>{owner.ownerName}</td>
+                                        <td>{owner.idType}</td>
+                                        <td>{owner.idNumber}</td>
+                                        <td>{owner.ownerAddress}</td>
+                                        <td>{owner.identifierName}</td>
+                                        <td>{owner.gender}</td>
+                                        <td>{owner.mobileNumber}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </>
+            )}
+
+
+
 
         </div>
     );
@@ -2040,7 +2201,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                     dateOfOrder: item.sitE_RELS_DATE,
                     orderReleaseFile: listFileResponse[index]?.doctrN_DOCBASE64 || null,
                     releaseAuthority: item.sitE_RELS_APPROVALDESIGNATION,
-                    releaseType: item.sitE_RELS_SITE_RELSTYPE_ID,
+                    releaseType: item.sitE_RELS_SITE_RELSTYPE,
                 }));
                 setOrder_Records(formattedList);
                 setIsOrderEditing(true); // Disable edit button
@@ -2643,12 +2804,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
         },
         {
             name: "Release Type",
-            selector: row => {
-                if (row.releaseType === "1") return "100%";
-                else if (row.releaseType === "2") return "60*40";
-                else if (row.releaseType === "3") return "40*30*30";
-                else return "-";
-            }, center: true,
+            selector: row => row.releaseType, center: true,
             sortable: true,
         },
         {
@@ -2820,7 +2976,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                                 dateOfOrder: item.sitE_RELS_DATE,
                                 orderReleaseFile: listFileResponse[index]?.doctrN_DOCBASE64 || null,
                                 releaseAuthority: item.sitE_RELS_APPROVALDESIGNATION,
-                                releaseType: item.sitE_RELS_SITE_RELSTYPE_ID,
+                                releaseType: item.sitE_RELS_SITE_RELSTYPE,
                             }));
                             setOrder_Records(formattedList);
                             setIsOrderEditing(true); // Disable edit button
@@ -4608,10 +4764,10 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
     //save and next proceed btn API
     const handle_Save = () => {
-        const totalSitesCount = parseInt(layoutSiteCount, 10);
+        const textboxSitesCount = parseInt(layoutSiteCount, 10);
 
         // Validate layoutSiteCount
-        if (!layoutSiteCount || isNaN(totalSitesCount) || totalSitesCount <= 0) {
+        if (!layoutSiteCount || isNaN(textboxSitesCount) || textboxSitesCount <= 0) {
             setLayoutSiteCountError("Please enter a valid number of total sites");
             layoutSiteCountRef.current?.focus();
             return;
@@ -4621,20 +4777,19 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         const totalAddedSites = allSites.length;
 
         // Check if trying to reduce below original count
-        if (totalSitesCount < storedSiteCount || totalAddedSites > totalSitesCount) {
+        if (textboxSitesCount >= totalAddedSites) {
+            // ✅ If all validations passed
+            setIsReadOnly(true);
+            setShowEditBtn(true);
+        } else {
             Swal.fire({
                 icon: "warning",
                 title: "Invalid Site Count",
-                text: `You cannot reduce the number of sites below the original count: ${storedSiteCount}`,
+                text: `No of sites should be more than ${totalAddedSites}, since ${totalAddedSites} sites are already inserted`,
             });
-            return; // ❗ Stop execution if invalid
+            return;
         }
-
-        // ✅ If all validations passed
-        setIsReadOnly(true);
-        setShowEditBtn(true);
     };
-
 
     //Add site button click API
     const addSites = async (shape) => {
@@ -4650,6 +4805,22 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         }
 
         const totalAddedSites = allSites.length;
+        const textboxSitesCount = parseInt(layoutSiteCount, 10);
+        const storedSiteCount = parseInt(localStorage.getItem("NUMBEROFSITES"), 10);
+
+        // Check if trying to reduce below original count
+        if (textboxSitesCount >= totalAddedSites) {
+            // ✅ If all validations passed
+            setIsReadOnly(true);
+            setShowEditBtn(true);
+        } else {
+            Swal.fire({
+                icon: "warning",
+                title: "Invalid Site Count",
+                text: `No of sites should be more than ${totalAddedSites}, since ${totalAddedSites} sites are already inserted`,
+            });
+            return;
+        }
 
         if (totalAddedSites >= totalSitesCount) {
             setIsAddDisabled(true);
@@ -4861,17 +5032,6 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                     const totalSitesFromAPI = response[0]?.lkrS_NUMBEROFSITES;
                     console.log("Total sites (lkrS_NUMBEROFSITES):", totalSitesFromAPI);
                     localStorage.setItem("NUMBEROFSITES", totalSitesFromAPI);
-                    // You can also handle this value further
-                    if (typeof totalSitesFromAPI === 'number' && totalSitesFromAPI > 0) {
-                        // Do something if needed
-                    }
-
-                    // Show Swal only if you intend to show an error
-                    Swal.fire({
-                        text: response.responseMessage || "No data found.",
-                        icon: "error",
-                        confirmButtonText: "OK",
-                    });
                 }
             }
 
@@ -6658,8 +6818,8 @@ const Preview_siteDetailsTable = ({ data, setData, totalSitesCount, onSave, onEd
 const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
     const [ecNumber, setECNumber] = useState("");
     const [ecNumberError, setEcNumberError] = useState('');
-    const [hasJDA, setHasJDA] = useState("");
-    const [isRegistered, setIsRegistered] = useState('');
+    const [hasJDA, setHasJDA] = useState(null);
+    const [isRegistered, setIsRegistered] = useState(null);
     const [deedNumber, setDeedNumber] = useState("");
     const [deedError, setDeedError] = useState('');
 
@@ -6669,11 +6829,16 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
 
     const [jdaFile, setJdaFile] = useState(null);
     const [error, setError] = useState('');
-
+    const [deedNoURL, setDeedNoURL] = useState(null);
+    const deedNoURLRef = useRef(null);
     const [createdBy, setCreatedBy] = useState(null);
     const [createdName, setCreatedName] = useState('');
     const [roleID, setRoleID] = useState('');
-
+    useEffect(() => {
+        return () => {
+            if (deedNoURL) URL.revokeObjectURL(deedNoURL);
+        };
+    }, [deedNoURL]);
     useEffect(() => {
         const storedCreatedBy = localStorage.getItem('createdBy');
         const storedCreatedName = localStorage.getItem('createdName');
@@ -6697,9 +6862,16 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
     }, [LKRS_ID]);
 
     useEffect(() => {
-        if (localLKRSID) {
-            handleGetLKRSID(localLKRSID);
-        }
+        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        const loadData = async () => {
+            if (localLKRSID) {
+                await handleGetLKRSID(localLKRSID);
+
+                await fetchJDAInfo(localLKRSID);
+            }
+        };
+        loadData();
     }, [localLKRSID]);
 
     const handleGetLKRSID = async (localLKRSID) => {
@@ -6714,7 +6886,7 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
             if (response && response.lkrS_ECNUMBER) {
                 console.log("lkrS_ECNUMBER", response.lkrS_ECNUMBER);
                 setECNumber(response.lkrS_ECNUMBER); // ✅ set ecNumber from response
-                setIsJDASectionDisabled(true);
+                 setIsJDASectionDisabled(true);
                 setShowViewECButton(true);
                 stop_loader();
             } else {
@@ -6725,10 +6897,71 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
             stop_loader();
             console.error("Failed to fetch LKRSID data:", error);
             Swal.fire({
-                text: "Something went wrong. Please try again later.Lkrsid",
+                text: "Something went wrong. Please try again later. ec",
                 icon: "error",
                 confirmButtonText: "OK",
             });
+        }
+    };
+
+    const fetchJDAInfo = async (localLKRSID) => {
+        try {
+            start_loader();
+            const response = await fetchJDA_details(1, parseInt(localLKRSID, 10), 0);
+
+            if (response && response.length > 0) {
+                
+                setHasJDA(response[0].lkrS_IsJDAEXITS);
+                setIsRegistered(response[0].jdA_ISREGISTERED);
+                setShowViewDeedButton(true);
+
+                if (response[0].jdA_ISREGISTERED === true) {
+                    setDeedNumber(response[0].jdA_DEED_NO);
+                } else if (response[0].jdA_ISREGISTERED === false) {
+                    const deedFileResponse = await fileListAPI(3, localLKRSID, 4, 0);
+                    const base64String = deedFileResponse[0]?.doctrN_DOCBASE64;
+
+                    if (base64String) {
+                        const blob = base64ToBlob(base64String, 'application/pdf');
+                        if (blob) {
+                            console.log("Blob:", blob);
+                            const url = URL.createObjectURL(blob);
+                            console.log("Blob URL:", url);
+                            setDeedNoURL(url);
+                        }
+                    }
+                }
+            }
+            stop_loader();
+        } catch (error) {
+            stop_loader();
+            console.error("Failed to fetch LKRSID data:", error);
+            Swal.fire({
+                text: "Something went wrong. Please try again later. ec2",
+                icon: "error",
+                confirmButtonText: "OK",
+            });
+        }
+    };
+    const base64ToBlob = (dataUrl, mimeType = 'application/pdf') => {
+        try {
+            // If it's a full Data URL, split it
+            const base64 = dataUrl.includes('base64,') ? dataUrl.split('base64,')[1] : dataUrl;
+
+            const byteCharacters = atob(base64);
+            const byteArrays = [];
+
+            for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+                const slice = byteCharacters.slice(offset, offset + 512);
+                const byteNumbers = Array.from(slice).map(char => char.charCodeAt(0));
+                const byteArray = new Uint8Array(byteNumbers);
+                byteArrays.push(byteArray);
+            }
+
+            return new Blob(byteArrays, { type: mimeType });
+        } catch (error) {
+            console.error("Invalid base64 input:", dataUrl);
+            return null; // return null if decoding fails
         }
     };
 
@@ -6748,26 +6981,16 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
     const [checkECStatus, setCheckECStatus] = useState(false);
     const [checkDeedStatus, setCheckDeedStatus] = useState(false);
 
-    const handleFileChange = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        // Validate file type
-        if (file.type !== 'application/pdf') {
-            setError('Only PDF files are allowed.');
+    const handleJDAFileChange = (event) => {
+        const file = event.target.files[0];
+        if (file && file.type === "application/pdf") {
+            setJdaFile(file);
+            const url = URL.createObjectURL(file);
+            setDeedNoURL(url);
+        } else {
             setJdaFile(null);
-            return;
+            setDeedNoURL(null);
         }
-
-        // Validate file size (5MB = 5 * 1024 * 1024 bytes)
-        if (file.size > 5 * 1024 * 1024) {
-            setError('File size must be less than 5MB.');
-            setJdaFile(null);
-            return;
-        }
-
-        setError('');
-        setJdaFile(file);
     };
 
     const handleEC_FetchDetails = async () => {
@@ -6828,7 +7051,7 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
         } catch (error) {
             console.error("Failed to insert data:", error);
             Swal.fire({
-                text: "Something went wrong. Please try again later.",
+                text: "Something went wrong. Please try again later. ec3",
                 icon: "error",
                 confirmButtonText: "OK",
             });
@@ -6951,6 +7174,7 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
         const deedRegex = /^[A-Z]+-([1-9][0-9]*)-\d+-\d{4}-\d{2}$/;
 
         // Validate deed number if registered
+        if(hasJDA === true){
         if (isRegistered === true) {
             if (!deedNumber || !deedRegex.test(deedNumber)) {
                 Swal.fire({
@@ -6974,6 +7198,7 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
                 return;
             }
         }
+    }
 
         start_loader();
 
@@ -7165,7 +7390,7 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
             newTab.close(); // Close tab on error
             console.error("Failed to fetch deed data:", error);
             Swal.fire({
-                text: "Something went wrong. Please try again later.",
+                text: "Something went wrong. Please try again later.deed",
                 icon: "error",
                 confirmButtonText: "OK",
             });
@@ -7237,7 +7462,7 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
         } catch (error) {
             console.error("Failed to insert data:", error);
             Swal.fire({
-                text: "Something went wrong. Please try again later.",
+                text: "Something went wrong. Please try again later.deed1",
                 icon: "error",
                 confirmButtonText: "OK",
             });
@@ -7439,19 +7664,79 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
 
                             </>
                         )}
-                        {isRegistered === false && (
+                        {hasJDA === true && isRegistered === false && (
                             <>
                                 <div className='row'>
                                     <hr />
-                                    <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4" >
+                                    <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
                                         <label className='form-label'>Scan & upload the JDA</label>
                                         <input
                                             type="file"
                                             className="form-control"
-                                            onChange={handleFileChange} accept="application/pdf"
+                                            onChange={handleJDAFileChange}
+                                            accept="application/pdf"
                                             disabled={isJDASectionDisabled}
                                         />
                                         <label className="note_color">[ Only PDF files are allowed, file size must be less than 5MB ]</label>
+                                        {deedNoURL && (
+                                            <div style={{ marginTop: '10px' }}>
+                                                <span
+                                                    onClick={() => window.open(deedNoURL, '_blank')}
+                                                    style={{
+                                                        cursor: 'pointer',
+                                                        color: '#007bff',
+                                                        textDecoration: 'none',
+                                                        fontSize: '0.875rem',
+                                                        userSelect: 'none',
+                                                    }}
+                                                    role="button"
+                                                    tabIndex={0}
+                                                    onKeyPress={(e) => { if (e.key === 'Enter') window.open(deedNoURL, '_blank'); }}
+                                                >
+                                                    View file
+                                                </span>
+                                            </div>
+                                        )}
+
+                                        {jdaFile && deedNoURL && (
+                                            <div className="mt-2">
+                                                <div
+                                                    className="iframe-container"
+                                                    style={{
+                                                        border: "1px solid #ddd",
+                                                        borderRadius: "5px",
+                                                        overflow: "hidden",
+                                                        padding: "0",
+                                                        width: "120px",
+                                                        height: "120px",
+                                                    }}
+                                                >
+                                                    <iframe
+                                                        src={deedNoURL}
+                                                        width="100%"
+                                                        height="100%"
+                                                        title="JDA Document"
+                                                        onClick={() => window.open(deedNoURL, "_blank")}
+                                                        style={{ cursor: "pointer", border: "none" }}
+                                                    />
+                                                </div>
+                                                <p className="mt-1" style={{ fontSize: "0.875rem" }}>
+                                                    Current File:{" "}
+                                                    <a
+                                                        href={deedNoURL}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        style={{
+                                                            textDecoration: "underline",
+                                                            color: "#007bff",
+                                                            fontSize: "0.875rem",
+                                                        }}
+                                                    >
+                                                        {jdaFile.name}
+                                                    </a>
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 ">
@@ -7460,7 +7745,6 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
                                         </div>
                                     </div>
                                 </div>
-
                             </>
                         )}
                     </div>
@@ -7718,7 +8002,7 @@ const Owner_EKYCBlock = ({ LKRS_ID }) => {
         } catch (error) {
             console.error("Failed to insert data:", error);
             Swal.fire({
-                text: "Something went wrong. Please try again later.",
+                text: "Something went wrong. Please try again later. inseert EKYC",
                 icon: "error",
                 confirmButtonText: "OK",
             });
@@ -8206,10 +8490,10 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
     //do EKYC API
     const handleDoEKYC = async () => {
         if (!jdaRepName.trim()) {
-        Swal.fire('Validation Error', 'Please enter the JDA Representative Name.', 'warning');
-        return;
-    }
-    
+            Swal.fire('Validation Error', 'Please enter the JDA Representative Name.', 'warning');
+            return;
+        }
+
         const swalResult = await Swal.fire({
             title: 'Redirecting for e-KYC Verification',
             text: 'You are being redirected to another tab for e-KYC verification. Once the e-KYC verification is complete, please return to this tab and click the verify e-KYC button.',
@@ -8309,7 +8593,7 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
         } catch (error) {
             console.error("Failed to insert data:", error);
             Swal.fire({
-                text: "Something went wrong. Please try again later.",
+                text: "Something went wrong. Please try again later. JDA EKYC",
                 icon: "error",
                 confirmButtonText: "OK",
             });
@@ -8951,12 +9235,8 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID }) => {
         },
         {
             name: "Release Type",
-            selector: row => {
-                if (row.releaseType === "1") return "100%";
-                else if (row.releaseType === "2") return "60*40";
-                else if (row.releaseType === "3") return "40*30*30";
-                else return "-";
-            }, center: true,
+            selector: row => row.releaseType,
+            center: true,
             sortable: true,
         },
         // {
