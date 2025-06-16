@@ -20,7 +20,7 @@ import {
     handleFetchDistricts, handleFetchTalukOptions, handleFetchHobliOptions, handleFetchVillageOptions,
     handleFetchHissaOptions, fetchRTCDetailsAPI, handleFetchEPIDDetails, getAccessToken, sendOtpAPI, verifyOtpAPI, submitEPIDDetails, submitsurveyNoDetails,
     insertApprovalInfo, listApprovalInfo, deleteApprovalInfo, insertReleaseInfo, listReleaseInfo, fileUploadAPI, fileListAPI, insertJDA_details, ownerEKYC_Details, ekyc_Details, ekyc_Response, ekyc_insertOwnerDetails,
-    individualSiteAPI, individualSiteListAPI, fetchECDetails, fetchDeedDocDetails, fetchDeedDetails, fetchJDA_details, deleteSiteInfo, fetch_LKRSID
+    individualSiteAPI, individualSiteListAPI, fetchECDetails, fetchDeedDocDetails, fetchDeedDetails, fetchJDA_details, deleteSiteInfo, fetch_LKRSID, update_Final_SaveAPI
 } from '../../API/authService';
 
 import usericon from '../../assets/usericon.png';
@@ -65,7 +65,12 @@ const BBMP_LayoutForm = () => {
     //save button varaiables
     const [isRTCSectionSaved, setIsRTCSectionSaved] = useState(false);
     const [isEPIDSectionSaved, setIsEPIDSectionSaved] = useState(false);
-
+    const [isApprovalSectionSaved, setIsApprovalSectionSaved] = useState(false);
+    const [isReleaseSectionSaved, setIsReleaseSectionSaved] = useState(false);
+    const [isSitesSectionSaved, setIsSitesSectionSaved] = useState(false);
+    const [isECSectionSaved, setIsECSectionSaved] = useState(false);
+    const [isOwnerEKYCSectionSaved, setIsOwnerEKYCSectionSaved] = useState(false);
+    const [isJDAEKYCSectionSaved, setIsJDAEKYCSectionSaved] = useState(false);
 
 
     useEffect(() => {
@@ -127,8 +132,7 @@ const BBMP_LayoutForm = () => {
             start_loader();
             const response = await fetch_LKRSID(payload);
 
-            if (response && response.length > 0) {
-                console.log("firstblock", response);
+            if (response && Object.keys(response).length > 0) {
 
                 // Check the value and update selectedLandType
                 if (response.lkrS_LANDTYPE === "surveyNo") {
@@ -140,7 +144,7 @@ const BBMP_LayoutForm = () => {
                 stop_loader();
             } else {
                 stop_loader();
-               
+
             }
         } catch (error) {
             stop_loader();
@@ -230,13 +234,16 @@ const BBMP_LayoutForm = () => {
 
                             <BDA approval_details={approval_details} setApprovalDetails={setApprovalDetails}
                                 order_details={order_details} setOrderDetails={setOrderDetails} LKRS_ID={LKRS_ID}
-                                isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} />
+                                isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsApprovalSectionSaved={setIsApprovalSectionSaved} setIsReleaseSectionSaved={setIsReleaseSectionSaved} />
 
-                            <IndividualGPSBlock areaSqft={areaSqft} LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID} isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} />
+                            <IndividualGPSBlock areaSqft={areaSqft} LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID} 
+                            isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsSitesSectionSaved={setIsSitesSectionSaved}/>
 
                             <ECDetailsBlock LKRS_ID={LKRS_ID} isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} />
 
-                            <DeclarationBlock LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID} />
+                            <DeclarationBlock LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID} isRTCSectionSaved={isRTCSectionSaved} 
+                            isEPIDSectionSaved={isEPIDSectionSaved} isApprovalSectionSaved={isApprovalSectionSaved} isReleaseSectionSaved={isReleaseSectionSaved} 
+                            isSitesSectionSaved={isSitesSectionSaved} />
                         </div>
 
                     </div>
@@ -572,11 +579,11 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
 
             setRtcAddedData((prev) => [...prev, itemWithLocation]);
 
-            // ✅ Show success toast
+            // Show success toast
             toast.success("Record Added!");
 
 
-            // ✅ Scroll to the added table
+            // Scroll to the added table
             setTimeout(() => {
                 tableRTCRef.current?.scrollIntoView({
                     behavior: 'smooth',
@@ -816,7 +823,6 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
 
         setAreaSqft(totalSqFt);
         localStorage.setItem('areaSqft', totalSqFt);
-        console.log("sqftRounded", totalSqFt);
     });
     // Normalize fgunta -> gunta and acre
     totalGunta += Math.floor(totalFGunta / 16);
@@ -856,14 +862,14 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                     <label className="form-label">District</label>
                     <select
                         value={selectedDistrict}
-                        onChange={(e) => setSelectedDistrict(e.target.value)} // ✅ Add this
+                        onChange={(e) => setSelectedDistrict(e.target.value)} // Add this
 
                         className="form-select"
-                        disabled={isDistrictReadonly || isSurveyNoSectionDisabled} // ✅ Freeze the dropdown
+                        disabled={isDistrictReadonly || isSurveyNoSectionDisabled} //  Freeze the dropdown
                     >
                         <option value="" disabled>{t('translation.dropdownValues.district')}</option>
                         {districts
-                            .filter(item => item.districT_CODE === 20) // ✅ Only show Bengaluru
+                            .filter(item => item.districT_CODE === 20) //  Only show Bengaluru
                             .map(item => (
                                 <option key={item.districT_CODE} value={item.districT_CODE}>
                                     {item.displayName}
@@ -1446,7 +1452,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                     ownerDetails,
                 } = fetchedData;
 
-                // ✅ Safely access and log the first owner's name
+                //  Safely access and log the first owner's name
                 if (Array.isArray(ownerDetails) && ownerDetails.length > 0) {
 
                 } else {
@@ -1475,7 +1481,6 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                 localStorage.removeItem('areaSqft');
                 setAreaSqft(siteDetails.siteArea);
                 localStorage.setItem('areaSqft', siteDetails.siteArea);
-                console.log("siteDetails.siteArea", siteDetails.siteArea);
                 setOwnerTableData(ownerDetails);
                 Swal.fire({
                     title: "Success",
@@ -1499,6 +1504,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                         // User clicked OK
                         setEpidNumber("");
                         setEPIDShowTable(false);
+                        setEPID_FetchedData(false);
                     }
                 });
             }
@@ -1699,7 +1705,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
 
                 setOwnerTableData(khataDetailsJson.ownerDetails || []);
 
-                // ✅ Mark all owners as OTP verified if OwnerDetails is present
+                //  Mark all owners as OTP verified if OwnerDetails is present
                 if (Array.isArray(khataDetailsJson.ownerDetails)) {
                     const verified = {};
                     khataDetailsJson.ownerDetails.forEach((_, idx) => {
@@ -1707,14 +1713,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                     });
                     setVerifiedNumbers(verified);
                 }
-
-                console.log("verifiedNumbers", verifiedNumbers);
             } else {
-                Swal.fire({
-                    text: "No survey details found.",
-                    icon: "warning",
-                    confirmButtonText: "OK",
-                });
                 setEPIDShowTable(false);
                 setEPID_FetchedData({});
                 setOwnerTableData([]);
@@ -1777,18 +1776,24 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
             khatA_OWNER_DETAILS: fetchedEPIDData?.[0]?.OwnerDetails.map(owner => ({
                 owN_ID: 0,
                 owN_LKRS_ID: 0,
-                owN_NAME_KN: owner.owN_NAME_KN || "string",
-                owN_NAME_EN: epid_fetchedData?.OwnerDetails?.[0].ownerName || "string",
-                owN_IDTYPE: epid_fetchedData?.OwnerDetails?.[0].idType || "string",
-                owN_IDNUMBER: epid_fetchedData?.OwnerDetails?.[0].idNumber || "string",
-                owN_RELATIONTYPE: owner.owN_RELATIONTYPE || "string",
-                owN_RELATIONNAME: owner.owN_RELATIONNAME || "string",
-                owN_MOBILENUMBER: epid_fetchedData?.OwnerDetails?.[0]?.mobileNumber || "string",
+                owN_NAME_KN: owner.owN_NAME_KN || "",
+                owN_NAME_EN: epid_fetchedData?.OwnerDetails?.[0].ownerName || "",
+                owN_IDTYPE: epid_fetchedData?.OwnerDetails?.[0].idType || "",
+                owN_IDNUMBER: epid_fetchedData?.OwnerDetails?.[0].idNumber || "",
+                owN_RELATIONTYPE: owner.owN_RELATIONTYPE || "",
+                owN_RELATIONNAME: owner.owN_RELATIONNAME || "",
+                owN_MOBILENUMBER: epid_fetchedData?.OwnerDetails?.[0]?.mobileNumber || "",
                 owN_REMARKS: "",
                 owN_ADDITIONALINFO: "",
                 owN_CREATEDBY: createdBy,
                 owN_CREATEDNAME: createdName,
-                owN_CREATEDROLE: roleID
+                owN_CREATEDROLE: roleID,
+                owN_VAULTREFID: "",
+                owN_VAULT_REMARKS: "",
+                owN_ALREADYEXIST_INEAASTHI: "",
+                owN_AADHAAR_RESPONSE: "",
+                own_OwnOrRep: "",
+                own_IsNewlyAddedOwner: false,
             })),
             surveY_NUMBER_DETAILS: null
         };
@@ -2077,7 +2082,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
     );
 };
 //BDA secction
-const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDetails, LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
+const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDetails, LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsApprovalSectionSaved, setIsReleaseSectionSaved }) => {
     const { t, i18n } = useTranslation();
     const [formData, setFormData] = useState({
         layoutApprovalNumber: "",
@@ -2146,12 +2151,9 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             };
 
             const listResponse = await listApprovalInfo(listPayload);
-            console.log("listResponse", listResponse);
 
             const approvalFileResponse = await fileListAPI(3, localLKRSID, 1, 0);
             const approvalMapFileResponse = await fileListAPI(3, localLKRSID, 2, 0);
-            console.log("approvalFileResponse", approvalFileResponse);
-            console.log("approvalMapFileResponse", approvalMapFileResponse);
 
             if (Array.isArray(listResponse) && listResponse.length > 0) {
                 const formattedList = listResponse.map((item, index) => ({
@@ -2167,10 +2169,9 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                     approvalMapMdocID: approvalMapFileResponse[index]?.doctrN_MDOC_ID || null,
                 }));
 
-                console.log("Formatted Approval List", formattedList);
                 setIsEditing(false);
                 setisApprovalEditing(true); // Disable edit button
-                setRecords(formattedList); // ✅ important
+                setRecords(formattedList); //  important
             } else {
                 console.warn("Empty or invalid approval list");
                 setRecords([]); // clear any stale data
@@ -2359,6 +2360,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                         setisApprovalEditing(false);
                         setIsEditing(true);
                         fetchApprovalList(localLKRSID);
+                        setIsApprovalSectionSaved(false);
                     } else {
                         Swal.fire("Error!", "Failed to delete. Please try again.", "error");
                     }
@@ -2383,7 +2385,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             return;
         }
 
-        // ✅ Proceed to next step here if any one is true
+        //  Proceed to next step here if any one is true
         const payload = {
             apR_ID: 0,
             apR_LKRS_ID: localLKRSID,
@@ -2410,7 +2412,6 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                     response.apR_ID,
                     "Approval Order"
                 );
-                console.log("approval_uploadSuccess", approval_uploadSuccess);
                 const approvalMap_uploadSuccess1 = await file_UploadAPI(
                     2, // master document ID 
                     formData.layoutApprovalNumber,
@@ -2419,7 +2420,6 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                     response.apR_ID,
                     "Approval Map"
                 );
-                console.log("approvalMap_uploadSuccess1", approvalMap_uploadSuccess1);
 
                 if (approval_uploadSuccess === true && approvalMap_uploadSuccess1 === true) {
                     start_loader();
@@ -2452,9 +2452,9 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                                 approvalMapMdocID: approvalMapFileResponse[index]?.doctrN_MDOC_ID || null,
                             }));
 
-
+                            setIsApprovalSectionSaved(true);
                             setIsEditing(false);
-                            setisApprovalEditing(true); // Disable edit button
+                            // setisApprovalEditing(true); // Disable edit button
                             setRecords(formattedList);
                         }
                         stop_loader();
@@ -2618,7 +2618,6 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                 }
             },
         },
-
         {
             name: t('translation.BDA.table.approvalAuthority'),
             selector: row => row.approvalAuthority,
@@ -2965,10 +2964,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                         console.table(listResponse);
                         const listFileResponse = await fileListAPI(3, localLKRSID, 3, 0); //level, LKRSID, MdocID, docID
 
-                        // Optional: log base64
-                        // listFileResponse.forEach((item, index) => {
-                        //     console.log(`File ${index + 1} Base64:`, item.doctrN_DOCBASE64);
-                        // });
+
 
                         if (Array.isArray(listResponse)) {
                             const formattedList = listResponse.map((item, index) => ({
@@ -2981,7 +2977,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                             setOrder_Records(formattedList);
                             setIsOrderEditing(true); // Disable edit button
                             setIsOrder_EditingArea(false); // Disable editing mode
-
+                            setIsReleaseSectionSaved(true);
                         }
                         stop_loader();
                     } catch (error) {
@@ -3284,15 +3280,15 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                                     )}
                                 </div>
                             </div>
-                            <div className="col-0 col-sm-0 col-md-2 col-lg-2 col-xl-2 mt-5"></div>
+                            <div className="col-0 col-sm-0 col-md-4 col-lg-4 col-xl-4 mt-5"></div>
                             {/* Edit button */}
-                            <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-5">
+                            {/* <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-5">
                                 <div className="form-group">
                                     <button className="btn btn-info btn-block" disabled={!isApprovalEditing} onClick={handleEditApproval}>
                                         Edit
                                     </button>
                                 </div>
-                            </div>
+                            </div> */}
                             {/* Add More or Update Button */}
                             <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-5">
                                 <div className="form-group">
@@ -3519,15 +3515,15 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                                 </div>
                             </div>
 
-                            <div className='col-0 col-sm-0 col-md-8 col-lg-8 col-xl-8'></div>
+                            <div className='col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10'></div>
                             {/* edit button */}
-                            <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 ">
+                            {/* <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 ">
                                 <div className="form-group">
                                     <button className="btn btn-info btn-block" disabled={!isOrderEditing} onClick={handleEditRelease}>
                                         Edit
                                     </button>
                                 </div>
-                            </div>
+                            </div> */}
                             {/* Save Button */}
                             <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 ">
                                 <div className="form-group">
@@ -3539,8 +3535,6 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                             {/* Save Button */}
                             <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
                                 <div className="form-group">
-
-
                                     {order_records.length > 0 && (
                                         <div className="mt-4">
                                             <h4>{t('translation.BDA.table1.heading')}</h4>
@@ -3552,13 +3546,6 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                                                 highlightOnHover
                                                 striped
                                             />
-
-                                            {/* Save Approval order Button */}
-                                            <div className='row'>
-                                                <div className='col-md-8'></div>
-
-
-                                            </div>
                                         </div>
                                     )}
                                 </div>
@@ -3573,7 +3560,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
     );
 };
 //GPS and Individual Sites Components
-const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID, isRTCSectionSaved, isEPIDSectionSaved }) => {
+const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID, isRTCSectionSaved, isEPIDSectionSaved, setIsSitesSectionSaved }) => {
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
     const [shape, setShape] = useState("regular"); // Track selected shape
 
@@ -3707,7 +3694,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             delay(15000); // 1 second delay
             fetchOwners(localLKRSID);
         } else {
-            console.log("🔄 Waiting in GPS block");
+
         }
     }, [localLKRSID, isRTCSectionSaved, isEPIDSectionSaved]);
 
@@ -3908,14 +3895,14 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         setLatitudeError('');
         setLongitudeError('');
 
-        // ✅ New: Validate Site Number
+        //  New: Validate Site Number
         if (!regular_siteNumber || regular_siteNumber.trim() === '') {
             setRegular_SiteNumberError('Site number is required');
             if (!firstErrorField) firstErrorField = siteNumberRef;
             isValid = false;
         }
 
-        // ✅ New: Validate Block/Area
+        //  New: Validate Block/Area
         if (!String(blockArea).trim()) {
             setBlockAreaError('Block/Area is required');
             if (!firstErrorField) firstErrorField = blockAreaRef;
@@ -3953,7 +3940,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             if (!firstErrorField) firstErrorField = cornerSiteRef;
             isValid = false;
         }
-        // ✅ Site Type Dropdown validation
+        //  Site Type Dropdown validation
         if (siteType === '') {
             setSiteTypeError('Please select a type of site');
             if (!firstErrorField) firstErrorField = siteTypeRef;
@@ -4148,21 +4135,21 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         setLongitudeError('');
         setSideErrors([]);  // Add this line to reset side errors
 
-        // ✅ New: Validate Site Number
+        //  New: Validate Site Number
         if (!irregular_siteNumber || irregular_siteNumber.trim() === '') {
             setirregular_siteNumberError('Site number is required');
             if (!firstErrorField) firstErrorField = irregular_siteNoref;
             isValid = false;
         }
 
-        // ✅ New: Validate Block/Area
+        //  New: Validate Block/Area
         if (!irregular_blockArea || irregular_blockArea.trim() === '') {
             setirregular_blockAreaError('Block/Area is required');
             if (!firstErrorField) firstErrorField = irregular_blockArearef;
             isValid = false;
         }
 
-        // ✅ Validate Number of Sides
+        //  Validate Number of Sides
         if (!numSides || isNaN(numSides) || Number(numSides) < 3 || Number(numSides) > 9) {
             setNumSidesError('Please enter a valid number of sides (between 3 and 9)');
             if (!firstErrorField) firstErrorField = irregularnumsidesref;
@@ -4215,7 +4202,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             newSideErrors.push(sideError);
         });
 
-        setSideErrors(newSideErrors); // ✅ Update state
+        setSideErrors(newSideErrors); //  Update state
 
 
         //area calculation
@@ -4232,7 +4219,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             isValid = false;
         }
 
-        // ✅ Site Type Dropdown validation
+        //  Site Type Dropdown validation
         if (irregularsiteType === '') {
             setIrregularsiteTypeError('Please select a type of site');
             if (!firstErrorField) firstErrorField = irregular_siteTyperef;
@@ -4241,7 +4228,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
         const chakbandiRegex = /^[a-zA-Z0-9.,\/\\#\s]*$/;
 
-        // ✅ Validate Chakbandi Directions
+        //  Validate Chakbandi Directions
         if (!irregularchakbandiEast || irregularchakbandiEast.trim() === '') {
             setIrregularChakbandiEastError("East side is required");
             if (!firstErrorField) firstErrorField = irregular_chakbandiEastref;
@@ -4430,7 +4417,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         }
 
         if (totalAddedSites >= totalSitesCount) {
-            setIsAddDisabled(true); // ✅ Disable further addition
+            setIsAddDisabled(true); //  Disable further addition
             Swal.fire({
                 title: "Limit Reached",
                 text: `Only ${totalSitesCount} sites allowed. Please update the total number of sites if needed.`,
@@ -4445,7 +4432,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             return;
         }
 
-        // ✅ Move ID generation *inside* the shape-specific validation block
+        //  Move ID generation *inside* the shape-specific validation block
         if (shape === "regular" && finalValidation()) {
             const uniqueId = `REG-${String(siteIdCounter).padStart(3, '0')}`;
             setSiteIdCounter(prev => prev + 1);
@@ -4533,7 +4520,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
         if (shape === "irregular" && irregularFinalValidation()) {
             const uniqueId = `REG-${String(siteIdCounter).padStart(3, '0')}`;
-            setSiteIdCounter(prev => prev + 1); // ✅ only increment when validation passes
+            setSiteIdCounter(prev => prev + 1); //  only increment when validation passes
 
             const newRow = {
                 id: uniqueId,
@@ -4622,18 +4609,25 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             setLayoutSiteCountError("Total number of sites is required");
             return;
         }
-
+        const totalAddedSites = allSites.length;
         if (totalSitesCount !== totalAddedSites) return;
-
-        console.log("Saving data...");
-        setIsAddDisabled(true);
-
+        
+         if(totalSitesCount === totalAddedSites){
+            setIsAddDisabled(true);
+            setIsSitesSectionSaved(true);
+               Swal.fire({
+                title: "Success!",
+                text: "All Site record saved successfully.",
+                icon: "success",
+                confirmButtonText: "OK",
+                allowOutsideClick: false,
+                allowEscapeKey: true
+            });
+         }
     };
 
     const Edit_Handler = () => {
         setIsAddDisabled(false);
-        console.log("Saving data...");
-
     };
     //map block
     const mapRef = useRef(null);
@@ -4778,7 +4772,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
         // Check if trying to reduce below original count
         if (textboxSitesCount >= totalAddedSites) {
-            // ✅ If all validations passed
+            //  If all validations passed
             setIsReadOnly(true);
             setShowEditBtn(true);
         } else {
@@ -4810,7 +4804,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
         // Check if trying to reduce below original count
         if (textboxSitesCount >= totalAddedSites) {
-            // ✅ If all validations passed
+            //  If all validations passed
             setIsReadOnly(true);
             setShowEditBtn(true);
         } else {
@@ -4821,6 +4815,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             });
             return;
         }
+        
 
         if (totalAddedSites >= totalSitesCount) {
             setIsAddDisabled(true);
@@ -4892,7 +4887,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         let status_site = true;
         const NoofSites = parseInt(layoutSiteCount, 10);
 
-        // ✅ Validate: layoutSiteCount should not be less than no_of_sites
+        //  Validate: layoutSiteCount should not be less than no_of_sites
         if (layoutSiteCount < no_of_sites) {
             Swal.fire({
                 icon: "warning",
@@ -4902,7 +4897,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             return; // Stop execution if validation fails
         }
 
-        // ✅ Update logic
+        //  Update logic
         if (NoofSites === no_of_sites) {
             updated_sites = NoofSites;
             status_site = false;
@@ -4987,7 +4982,6 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
     const fetchOwners = async (LKRSID) => {
         try {
             const apiResponse = await ownerEKYC_Details("1", LKRSID);
-            console.log("multiple Owner", apiResponse);
 
             const owners = (apiResponse || []).map(owner => ({
                 name: owner.owN_NAME_EN,
@@ -4997,7 +4991,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             setOwnerList(owners);
 
             const ownerNameList = owners.map(o => o.name).join(', ');
-            setOwnerNames(ownerNameList); // 🟢 Set comma-separated owner names
+            setOwnerNames(ownerNameList); //  Set comma-separated owner names
 
         } catch (error) {
             setOwnerList([]);
@@ -5023,14 +5017,12 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
             if (Array.isArray(response)) {
                 setAllSites(response);
-                console.log("sitedetails", response);
 
                 if (response.length === 0) {
-                    console.log("No site data found.");
+
                 } else {
-                    // ✅ Log lkrS_NUMBEROFSITES from the first item (or loop if needed)
+                    //  Log lkrS_NUMBEROFSITES from the first item (or loop if needed)
                     const totalSitesFromAPI = response[0]?.lkrS_NUMBEROFSITES;
-                    console.log("Total sites (lkrS_NUMBEROFSITES):", totalSitesFromAPI);
                     localStorage.setItem("NUMBEROFSITES", totalSitesFromAPI);
                 }
             }
@@ -5108,12 +5100,12 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
     return (
         <div> {loading && <Loader />}
-            <div className="card">
+            <div className="card" disabled={isAddDisabled}>
                 <div className="card-header layout_btn_color" >
                     <h5 className="card-title" style={{ textAlign: 'center' }}>Layout & Individual sites Details</h5>
                 </div>
                 <div className="card-body">
-                    <fieldset disabled={isAddDisabled}>
+                    <fieldset >
                         <div className="row align-items-center mb-3">
                             <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4 mb-3">
                                 <div className="form-group">
@@ -5284,7 +5276,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                                             )}
                                         </div>
                                     </div>
-                                    <hr />
+
                                     <div className="container ">
                                         <h4 className="mb-4">Enter Side Details</h4>
                                         {/* East-west side length */}
@@ -6021,7 +6013,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                     </fieldset>
                 </div>
             </div>
-            <div className="card">
+            <div className="card" disabled={isAddDisabled}>
                 <div className="card-header layout_btn_color" >
                     <h5 className="card-title" style={{ textAlign: 'center' }}>Find Layout on Google Map & tap in middle of site to capture sites GPS</h5>
                 </div>
@@ -6133,7 +6125,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit, LKRS_ID, createdBy, createdName, roleID }) => {
 
     useEffect(() => {
-        console.log("🔍 Data received in IndividualRegularTable:", data);
+
     }, [data]);
 
     const [localLKRSID, setLocalLKRSID] = useState("");
@@ -6182,7 +6174,7 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
                 const fetchResponse = await individualSiteListAPI(listPayloadFetch);
 
                 if (Array.isArray(fetchResponse)) {
-                    // ✅ Set updated data into state
+                    //  Set updated data into state
                     setData(fetchResponse);
 
                     Swal.fire({
@@ -6536,7 +6528,6 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
 const Preview_siteDetailsTable = ({ data, setData, totalSitesCount, onSave, onEdit, LKRS_ID, createdBy, createdName, roleID }) => {
 
     useEffect(() => {
-        console.log("🔍 Data received in IndividualRegularTable:", data);
     }, [data]);
 
     const [localLKRSID, setLocalLKRSID] = useState("");
@@ -6884,9 +6875,8 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
             const response = await fetch_LKRSID(payload);
 
             if (response && response.lkrS_ECNUMBER) {
-                console.log("lkrS_ECNUMBER", response.lkrS_ECNUMBER);
-                setECNumber(response.lkrS_ECNUMBER); // ✅ set ecNumber from response
-                 setIsJDASectionDisabled(true);
+                setECNumber(response.lkrS_ECNUMBER); //  set ecNumber from response
+                setIsJDASectionDisabled(true);
                 setShowViewECButton(true);
                 stop_loader();
             } else {
@@ -6909,8 +6899,8 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
             start_loader();
             const response = await fetchJDA_details(1, parseInt(localLKRSID, 10), 0);
 
-            if (response && response.length > 0) {
-                
+            if (response && Object.keys(response).length > 0) {
+
                 setHasJDA(response[0].lkrS_IsJDAEXITS);
                 setIsRegistered(response[0].jdA_ISREGISTERED);
                 setShowViewDeedButton(true);
@@ -6924,9 +6914,7 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
                     if (base64String) {
                         const blob = base64ToBlob(base64String, 'application/pdf');
                         if (blob) {
-                            console.log("Blob:", blob);
                             const url = URL.createObjectURL(blob);
-                            console.log("Blob URL:", url);
                             setDeedNoURL(url);
                         }
                     }
@@ -7012,7 +7000,7 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
             return;
         }
         setEcNumberError('');
-        console.log("Fetching details for EC Number:", ecNumber);
+
 
 
         try {
@@ -7174,31 +7162,31 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
         const deedRegex = /^[A-Z]+-([1-9][0-9]*)-\d+-\d{4}-\d{2}$/;
 
         // Validate deed number if registered
-        if(hasJDA === true){
-        if (isRegistered === true) {
-            if (!deedNumber || !deedRegex.test(deedNumber)) {
-                Swal.fire({
-                    text: "Invalid Deed Number format. Example: XXX-1-0000-YYYY-YY. The number after the first hyphen cannot start with 0.",
-                    icon: "error",
-                    confirmButtonText: "OK",
-                });
-                return;
-            }
-            JDAReg = true;
-        } else if (isRegistered === false) {
-            JDAReg = false;
+        if (hasJDA === true) {
+            if (isRegistered === true) {
+                if (!deedNumber || !deedRegex.test(deedNumber)) {
+                    Swal.fire({
+                        text: "Invalid Deed Number format. Example: XXX-1-0000-YYYY-YY. The number after the first hyphen cannot start with 0.",
+                        icon: "error",
+                        confirmButtonText: "OK",
+                    });
+                    return;
+                }
+                JDAReg = true;
+            } else if (isRegistered === false) {
+                JDAReg = false;
 
-            // ✅ Check if file is uploaded
-            if (!file) {
-                Swal.fire({
-                    text: "File is required. Please upload the JDA document.",
-                    icon: "error",
-                    confirmButtonText: "OK",
-                });
-                return;
+                //  Check if file is uploaded
+                if (!file) {
+                    Swal.fire({
+                        text: "File is required. Please upload the JDA document.",
+                        icon: "error",
+                        confirmButtonText: "OK",
+                    });
+                    return;
+                }
             }
         }
-    }
 
         start_loader();
 
@@ -7245,7 +7233,7 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
                     const response = await insertJDA_details(payload);
 
                     if (response.responseStatus === true) {
-                        console.log("Inserted JDA ID:", response.jdA_ID);
+
 
                         if (isRegistered === false) {
                             const JDA_uploadSuccess = await file_UploadAPI(
@@ -7275,7 +7263,7 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
                             confirmButtonText: "OK",
                         });
 
-                        // ✅ Optional: Reset form fields only on success
+                        //  Optional: Reset form fields only on success
                         // setDeedNumber("");
                         // setFile(null);
 
@@ -7426,8 +7414,6 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
             return;
         }
         setDeedError('');
-        console.log("Fetching details for Deed Number:", deedNumber);
-
 
         try {
             start_loader();
@@ -7838,7 +7824,6 @@ const Owner_EKYCBlock = ({ LKRS_ID }) => {
     const fetchOwners = async (LKRSID) => {
         try {
             const apiResponse = await ownerEKYC_Details("1", LKRSID);
-            console.log("multiple Owner", apiResponse);
 
             const owners = (apiResponse || []).map(owner => ({
                 name: owner.owN_NAME_EN,
@@ -7848,7 +7833,7 @@ const Owner_EKYCBlock = ({ LKRS_ID }) => {
             setOwnerList(owners);
 
             const ownerNameList = owners.map(o => o.name).join(', ');
-            setOwnerNames(ownerNameList); // 🟢 Set comma-separated owner names
+            setOwnerNames(ownerNameList); //  Set comma-separated owner names
 
         } catch (error) {
             setOwnerList([]);
@@ -7858,7 +7843,6 @@ const Owner_EKYCBlock = ({ LKRS_ID }) => {
 
 
     const handleRadioChange = (e) => {
-        console.log("Selected:", e.target.value);
         setSelectedOption(e.target.value);
     };
 
@@ -7894,17 +7878,19 @@ const Owner_EKYCBlock = ({ LKRS_ID }) => {
 
         if (swalResult.isConfirmed) {
             try {
-                start_loader();
+                // Use selectedOwner.id and selectedOwner.name
+                const OwnerNumber = selectedOwner.id;
+                const BOOK_APP_NO = 2;
+                const PROPERTY_CODE = 1;
 
-                let OwnerNumber = 1;
-                let BOOK_APP_NO = 2;
-                let PROPERTY_CODE = 1;
+                // Pass them to your API
+                const response = await ekyc_Details({
+                    OwnerNumber,
+                    BOOK_APP_NO,
+                    PROPERTY_CODE
+                });
 
-                const response = await ekyc_Details({ OwnerNumber, BOOK_APP_NO, PROPERTY_CODE });
-
-                const resultUrl = await response;
-
-                stop_loader();
+                const resultUrl = response?.ekycRequestUrl;
 
                 if (resultUrl) {
                     window.open(
@@ -7916,7 +7902,6 @@ const Owner_EKYCBlock = ({ LKRS_ID }) => {
                     Swal.fire('Error', 'No redirect URL returned', 'error');
                 }
             } catch (error) {
-                stop_loader();
                 Swal.fire('Error', 'eKYC API call failed', 'error');
                 console.error('eKYC API call failed:', error);
             }
@@ -7926,7 +7911,7 @@ const Owner_EKYCBlock = ({ LKRS_ID }) => {
     const fetchEKYC_ResponseDetails = async () => {
         try {
             const payload = {
-                transactionNumber: 83,
+                transactionNumber: 84,
                 OwnerType: 'NEWOWNER',
             }
 
@@ -7934,53 +7919,57 @@ const Owner_EKYCBlock = ({ LKRS_ID }) => {
 
             setOwnerData(response);
 
-            const ekycresponse = await insertEKYCDetails(response);
+
 
         } catch (error) {
             console.error('Error fetching data:', error);
         }
     };
-    const handleAddOwner = (e) => {
-        if (e.key === 'Enter' && newOwnerName.trim()) {
-            const newOwner = { name: newOwnerName.trim(), phone: '' };
-            const updatedList = [...ownerList, newOwner];
-            setOwnerList(updatedList);
-            setSelectedOwner(newOwner);
-            setOwnerNameInput(newOwner.name);
-            setNewOwnerName('');
-            setShowInput(false);
-            setIsDropdownOpen(false);
+
+    const insertEKYCDetails = async () => {
+
+        let ownerID = 0;
+        let ownerName = "";
+        let newOwner;
+
+        if (selectedOwner.name && selectedOwner.id) {
+            ownerID = selectedOwner.id;
+            ownerName = selectedOwner.name;
+            newOwner = false;
+        } else { //newly owner sending parameter
+            ownerID = 0;
+            ownerName = selectedOwner.name;
+            newOwner = true;
         }
-    };
-    const insertEKYCDetails = async (response) => {
-        console.log(response);
+        console.log("ownerData", ownerData);
         const payloadOwner = {
-            owN_ID: 0,
+            owN_ID: ownerID,
             owN_LKRS_ID: LKRS_ID,
-            owN_NAME_KN: "string",
-            owN_NAME_EN: "String",
-            owN_IDTYPE: "String",
-            owN_IDNUMBER: "String",
-            owN_RELATIONTYPE: "String",
-            owN_RELATIONNAME: "String",
-            owN_MOBILENUMBER: "9999999999",
-            owN_AADHAARNUMBER: response.maskedAadhaar,
-            owN_NAMEASINAADHAAR: response.ownerNameEng,
-            owN_AADHAARVERISTATUS: "Success",
+            owN_NAME_KN: "",
+            owN_NAME_EN: ownerName,
+            owN_IDTYPE: "",
+            owN_IDNUMBER: "",
+            owN_RELATIONTYPE: "",
+            owN_RELATIONNAME: "",
+            owN_MOBILENUMBER: "",
+            owN_AADHAARNUMBER: ownerData?.maskedAadhaar ?? null,
+            owN_NAMEASINAADHAAR: ownerData?.ownerNameEng ?? null,
+            owN_AADHAARVERISTATUS: "",
             owN_NAMEMATCHSCORE: 0,
-            owN_COMPANYOWNPROPERTY: true,
-            owN_COMPANYNAME: "String",
-            owN_REPRESENTATIVENAME: "String",
+            owN_COMPANYOWNPROPERTY: false,
+            owN_COMPANYNAME: "",
+            owN_REPRESENTATIVENAME: "",
             owN_REMARKS: "",
             owN_ADDITIONALINFO: "",
             owN_CREATEDBY: createdBy,
             owN_CREATEDNAME: createdName,
             owN_CREATEDROLE: roleID,
-            owN_VAULTREFID: response.vaultRefNumber,
-            owN_VAULT_REMARKS: "string",
-            owN_ALREADYEXIST_INEAASTHI: true,
-            owN_AADHAAR_RESPONSE: JSON.stringify(response),
-            own_OwnOrRep: selectedOption
+            owN_VAULTREFID: ownerData?.vaultRefNumber ?? null,
+            owN_VAULT_REMARKS: "",
+            owN_ALREADYEXIST_INEAASTHI: false,
+            owN_AADHAAR_RESPONSE: JSON.stringify(ownerData) ?? null,
+            own_OwnOrRep: selectedOption,
+            own_IsNewlyAddedOwner: newOwner,
         }
         try {
             start_loader();
@@ -8018,6 +8007,94 @@ const Owner_EKYCBlock = ({ LKRS_ID }) => {
             setDropdownWidth(buttonRef.current.offsetWidth + "px");
         }
     }, [isDropdownOpen]); // update width when dropdown opens
+
+
+    //Adding new owner name
+    const handleAddMoreOwner = () => {
+        setShowInput(true);
+    };
+    const handleAddOwner = async (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+
+            const trimmedName = newOwnerName.trim();
+            if (!trimmedName) {
+                Swal.fire({
+                    text: "Please enter a valid owner name.",
+                    icon: "warning",
+                    confirmButtonText: "OK",
+                });
+                return;
+            }
+
+            const payloadOwner = {
+                owN_ID: 0,
+                owN_LKRS_ID: LKRS_ID,
+                owN_NAME_KN: "",
+                owN_NAME_EN: trimmedName,
+                owN_IDTYPE: "",
+                owN_IDNUMBER: "",
+                owN_RELATIONTYPE: "",
+                owN_RELATIONNAME: "",
+                owN_MOBILENUMBER: "",
+                owN_AADHAARNUMBER: ownerData?.maskedAadhaar ?? null,
+                owN_NAMEASINAADHAAR: ownerData?.ownerNameEng ?? null,
+                owN_AADHAARVERISTATUS: "",
+                owN_NAMEMATCHSCORE: 0,
+                owN_COMPANYOWNPROPERTY: false,
+                owN_COMPANYNAME: "",
+                owN_REPRESENTATIVENAME: "",
+                owN_REMARKS: "",
+                owN_ADDITIONALINFO: "",
+                owN_CREATEDBY: createdBy,
+                owN_CREATEDNAME: createdName,
+                owN_CREATEDROLE: roleID,
+                owN_VAULTREFID: ownerData?.vaultRefNumber ?? null,
+                owN_VAULT_REMARKS: "",
+                owN_ALREADYEXIST_INEAASTHI: false,
+                owN_AADHAAR_RESPONSE: JSON.stringify(ownerData) ?? null,
+                own_OwnOrRep: selectedOption,
+                own_IsNewlyAddedOwner: true,
+            };
+
+            try {
+                start_loader();
+                const response = await ekyc_insertOwnerDetails(payloadOwner);
+
+                if (response.responseStatus === true) {
+                    Swal.fire({
+                        title: response.responseMessage,
+                        text: `Owner ID: ${response.own_id}`,
+                        icon: "success",
+                        confirmButtonText: "OK",
+                    });
+
+                    // update owner list with new owner (optional)
+                    const newEntry = { id: response.own_id, name: trimmedName };
+                    setOwnerList([...ownerList, newEntry]);
+                    setSelectedOwner(newEntry);
+                    setNewOwnerName("");
+                    setShowInput(false);
+                    setIsDropdownOpen(false);
+                } else {
+                    Swal.fire({
+                        text: response.responseMessage,
+                        icon: "error",
+                        confirmButtonText: "OK",
+                    });
+                }
+            } catch (error) {
+                console.error("API Error:", error);
+                Swal.fire({
+                    text: "Something went wrong while saving the owner.",
+                    icon: "error",
+                    confirmButtonText: "OK",
+                });
+            } finally {
+                stop_loader();
+            }
+        }
+    };
 
 
 
@@ -8123,7 +8200,7 @@ const Owner_EKYCBlock = ({ LKRS_ID }) => {
                                             <li>
                                                 <button
                                                     className="dropdown-item text-primary"
-                                                    onClick={() => setShowInput(true)}
+                                                    onClick={handleAddMoreOwner}
                                                 >
                                                     ➕ Add More
                                                 </button>
@@ -8153,18 +8230,24 @@ const Owner_EKYCBlock = ({ LKRS_ID }) => {
                                 <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-4" >
                                     <button className='btn btn-info btn-block' onClick={fetchEKYC_ResponseDetails}>eKYC Status</button>
                                 </div>
-                                {ekycUrl && (
-                                    <iframe
-                                        src={ekycUrl}
-                                        title="eKYC Verification"
-                                        width="100%"
-                                        height="600"
-                                        style={{ border: '1px solid #ccc', marginTop: '20px' }}
-                                    />
-                                )}
-                                <div className="col-0 col-sm-0 col-md-3 col-lg-3 col-xl-2" ></div>
-
                             </div>
+                            <div className='row'>
+                                <div className="col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10 mt-4" ></div>
+                                <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-4" >
+                                    <button className='btn btn-info btn-block' onClick={insertEKYCDetails}>Save</button>
+                                </div>
+                            </div>
+                            {ekycUrl && (
+                                <iframe
+                                    src={ekycUrl}
+                                    title="eKYC Verification"
+                                    width="100%"
+                                    height="600"
+                                    style={{ border: '1px solid #ccc', marginTop: '20px' }}
+                                />
+                            )}
+                            <div className="col-0 col-sm-0 col-md-3 col-lg-3 col-xl-2" ></div>
+
                             <hr />
                             <div className='row'>
                                 {ownerData && (
@@ -8452,7 +8535,6 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
     const fetchOwners = async (LKRSID) => {
         try {
             const apiResponse = await ownerEKYC_Details("1", LKRSID);
-            console.log("multiple Owner", apiResponse);
 
             const owners = (apiResponse || []).map(owner => ({
                 name: owner.owN_NAME_EN,
@@ -8462,7 +8544,7 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
             setOwnerList(owners);
 
             const ownerNameList = owners.map(o => o.name).join(', ');
-            setOwnerNames(ownerNameList); // 🟢 Set comma-separated owner names
+            setOwnerNames(ownerNameList); //  Set comma-separated owner names
 
         } catch (error) {
             setOwnerList([]);
@@ -8494,37 +8576,43 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
             return;
         }
 
-        const swalResult = await Swal.fire({
-            title: 'Redirecting for e-KYC Verification',
-            text: 'You are being redirected to another tab for e-KYC verification. Once the e-KYC verification is complete, please return to this tab and click the verify e-KYC button.',
-            icon: 'info',
-            confirmButtonText: 'OK',
-            allowOutsideClick: false
-        });
+        try {
+            let OwnerNumber = 1;
+            let BOOK_APP_NO = 2;
+            let PROPERTY_CODE = 1;
 
-        if (swalResult.isConfirmed) {
-            try {
-                let OwnerNumber = 1;
-                let BOOK_APP_NO = 2;
-                let PROPERTY_CODE = 1;
-                const response = await ekyc_Details({ OwnerNumber, BOOK_APP_NO, PROPERTY_CODE });
+            const response = await ekyc_Details({ OwnerNumber, BOOK_APP_NO, PROPERTY_CODE });
 
-                const resultUrl = await response;
+            // Extract `ekycRequestUrl` from the API response
+            const resultUrl = response?.ekycRequestUrl;
+            console.log("resultUrl:", resultUrl);
 
-                if (resultUrl) {
-                    window.open(
-                        resultUrl,
-                        '_blank',
-                        `toolbar=0,location=0,menubar=0,width=${window.screen.width},height=${window.screen.height},top=0,left=0`
-                    );
-                } else {
-                    Swal.fire('Error', 'No redirect URL returned', 'error');
-                }
-            } catch (error) {
-                Swal.fire('Error', 'eKYC API call failed', 'error');
-                console.error('eKYC API call failed:', error);
+            if (resultUrl) {
+                window.open(
+                    resultUrl,
+                    '_blank',
+                    `toolbar=0,location=0,menubar=0,width=${window.screen.width},height=${window.screen.height},top=0,left=0`
+                );
+            } else {
+                Swal.fire('Error', 'No redirect URL returned', 'error');
             }
+        } catch (error) {
+            Swal.fire('Error', 'eKYC API call failed', 'error');
+            console.error('eKYC API call failed:', error);
         }
+
+        // const swalResult = await Swal.fire({
+        //     title: 'Redirecting for e-KYC Verification',
+        //     text: 'You are being redirected to another tab for e-KYC verification. Once the e-KYC verification is complete, please return to this tab and click the verify e-KYC button.',
+        //     icon: 'info',
+        //     confirmButtonText: 'OK',
+        //     allowOutsideClick: false
+        // });
+
+        // if (swalResult.isConfirmed) {
+
+
+        // }
     };
 
     const fetchEKYC_ResponseDetails = async () => {
@@ -8545,7 +8633,6 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
         }
     };
     const insertEKYCDetails = async (response) => {
-        console.log(response);
         const payloadOwner = {
             owN_ID: 0,
             owN_LKRS_ID: LKRSID,
@@ -8813,7 +8900,7 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
     );
 };
 //Declaration Block
-const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID }) => {
+const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectionSaved, isEPIDSectionSaved, isApprovalSectionSaved, isReleaseSectionSaved, isSitesSectionSaved }) => {
     const { t, i18n } = useTranslation();
 
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
@@ -8906,7 +8993,6 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID }) => {
     };
 
     const handleFileClick = (file) => {
-        console.log(file);  // Check what the file contains
         if (file) {
             window.open(file, '_blank');
         } else {
@@ -8921,6 +9007,60 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID }) => {
             icon: 'info',
             confirmButtonText: 'OK'
         });
+    };
+
+
+
+    //final Save API integration
+    const final_Save = async () => {
+        if (isRTCSectionSaved === false || isEPIDSectionSaved === false) {
+            Swal.fire({
+                icon: 'warning', // You can use 'error', 'info', 'success', or 'question' as well
+                title: 'Important!',
+                text: 'Please save the land details before proceeding with layout approval.',
+                confirmButtonText: 'Ok'
+            });
+        }
+        if (isApprovalSectionSaved === false) {
+            if (isReleaseSectionSaved === false) {
+                Swal.fire({
+                    icon: 'warning', // You can use 'error', 'info', 'success', or 'question' as well
+                    title: 'Important!',
+                    text: 'Please save the release order details before proceeding.',
+                    confirmButtonText: 'Ok'
+                });
+            }
+        }
+        if(isSitesSectionSaved === false){
+
+
+        }
+        start_loader();
+        try {
+            const payload = {
+                level: 0,
+                lkrS_ID: LKRS_ID,
+                lkrS_REMARKS: "",
+                lkrS_ADDITIONALINFO: "",
+                lkrS_UPDATEDBY: createdBy,
+                lkrS_UPDATEDNAME: createdName,
+                lkrS_UPDATEDROLE: roleID,
+            }
+
+            const response = await update_Final_SaveAPI(payload);
+            if (response.responseStatus === true) {
+                Swal.fire({
+                    text: response.responseMessage,
+                    icon: "success",
+                    confirmButtonText: "OK",
+                });
+            } else {
+
+            }
+
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
     };
 
     // =======================================================survey no details starts=========================================
@@ -8960,7 +9100,6 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID }) => {
         const totalSqFtRounded = totalSqFt.toFixed(2);
         setAreaSqft(totalSqFtRounded);
         localStorage.setItem('areaSqft', totalSqFtRounded);
-        console.log("sqftRounded", totalSqFtRounded);
     }, [combinedData]);
 
     const totalPages = Math.ceil(combinedData.length / rowsPerPage);
@@ -9083,7 +9222,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID }) => {
 
             if (response && response.surveyNumberDetails && response.surveyNumberDetails.length > 0) {
 
-                setSelectedLandType(response.lkrS_LANDTYPE); // ✅ Store the land type
+                setSelectedLandType(response.lkrS_LANDTYPE); //  Store the land type
 
 
                 const parsedSurveyDetails = mapSurveyDetails(response.surveyNumberDetails);
@@ -9102,7 +9241,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID }) => {
                 });
                 stop_loader();
             } else if (response && response.khataDetails && response.khataOwnerDetails && response.khataOwnerDetails.length > 0) {
-                setSelectedLandType(response.lkrS_LANDTYPE); // ✅ Store the land type
+                setSelectedLandType(response.lkrS_LANDTYPE); //  Store the land type
                 setEPIDShowTable(true);
                 let khataDetailsJson = {};
                 if (response.khataDetails?.khatA_JSON) {
@@ -9358,29 +9497,6 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID }) => {
             selector: row => row.approvalAuthority,
             sortable: true,
         },
-        // {
-        //     name: t('translation.BDA.table.action'),
-        //     cell: (row, index) => (
-        //         <div>
-        //             {/* <button
-        //                 className="btn btn-warning btn-sm me-2"
-        //                 onClick={() => handleEdit(index)} disabled={!isEditing}
-        //             >
-        //                 <i className="fa fa-pencil"></i>
-        //             </button> */}
-        //             <button
-        //                 className="btn btn-danger btn-sm"
-        //                 // onClick={() => handleDelete(index)} 
-        //                 onClick={showImplementationAlert}
-        //             >
-        //                 <i className="fa fa-trash"></i>
-        //             </button>
-        //         </div>
-        //     ),
-        //     ignoreRowClick: true,
-        //     allowOverflow: true,
-        //     button: true,
-        // },
     ];
     const base64ToBlob = (dataUrl, mimeType = 'application/pdf') => {
         try {
@@ -9495,7 +9611,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID }) => {
             const response = await individualSiteListAPI(listPayload);
 
             if (response.length >= 0) {
-                setAllSites(response); // ✅ Update state with API data
+                setAllSites(response); //  Update state with API data
 
 
             } else {
@@ -9526,7 +9642,6 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID }) => {
         try {
             start_loader(); // Start loader
             const apiResponse = await ownerEKYC_Details("1", localLKRSID);
-            console.log("multiple Owner", apiResponse);
 
             // Set full owner list
             setOwnerList(apiResponse || []);

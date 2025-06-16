@@ -496,3 +496,13 @@ export const fetch_LKRSID = async (payload) => {
     throw error;
   }
 };
+//final Save button API
+export const update_Final_SaveAPI = async (payload) => {
+  try {
+    const response = await apiService.postRequest(`${config.endpoints.layoutKhata_Save}`,  payload);
+     return response;
+  } catch (error) {
+    console.error("EC Fetching Details Error:", error);
+    throw error;
+  }
+};

@@ -44,6 +44,7 @@ const config = {
         ekyc_ownerInsert: '/api/Owner/fnInsertOwnerinfo',
         delete_siteInfo: '/api/Site/fnDeleteSiteinfo',
         fetchLKRSID: '/api/LKRS/fnGetLKRSInfo',
+        layoutKhata_Save: '/api/LKRS/fnSaveLKRSinfo',
 
     }
 };
