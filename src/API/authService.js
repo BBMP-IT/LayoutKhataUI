@@ -403,6 +403,7 @@ export const ekyc_Response = async (payload) => {
     const queryParams = new URLSearchParams({
       transactionNumber: payload.transactionNumber,
       OwnerType: payload.OwnerType,
+      ownName: payload.ownName,
     }).toString();
 
     const url = `${config.endpoints.ekyc_response}?${queryParams}`;

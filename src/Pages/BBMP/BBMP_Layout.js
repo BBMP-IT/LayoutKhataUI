@@ -24,7 +24,7 @@ import {
 } from '../../API/authService';
 
 import usericon from '../../assets/usericon.png';
-import { Cookie } from '@mui/icons-material';
+import { Cookie, Stop } from '@mui/icons-material';
 import { responsiveProperty } from '@mui/material/styles/cssUtils';
 
 export const useLoader = () => {
@@ -149,11 +149,6 @@ const BBMP_LayoutForm = () => {
         } catch (error) {
             stop_loader();
             console.error("Failed to fetch LKRSID data:", error);
-            Swal.fire({
-                text: "Something went wrong. Please try again later.Lkrsid",
-                icon: "error",
-                confirmButtonText: "OK",
-            });
         }
     };
 
@@ -236,14 +231,14 @@ const BBMP_LayoutForm = () => {
                                 order_details={order_details} setOrderDetails={setOrderDetails} LKRS_ID={LKRS_ID}
                                 isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsApprovalSectionSaved={setIsApprovalSectionSaved} setIsReleaseSectionSaved={setIsReleaseSectionSaved} />
 
-                            <IndividualGPSBlock areaSqft={areaSqft} LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID} 
-                            isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsSitesSectionSaved={setIsSitesSectionSaved}/>
+                            <IndividualGPSBlock areaSqft={areaSqft} LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID}
+                                isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsSitesSectionSaved={setIsSitesSectionSaved} />
 
-                            <ECDetailsBlock LKRS_ID={LKRS_ID} isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} />
+                            <ECDetailsBlock LKRS_ID={LKRS_ID} isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsECSectionSaved={setIsECSectionSaved} />
 
-                            <DeclarationBlock LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID} isRTCSectionSaved={isRTCSectionSaved} 
-                            isEPIDSectionSaved={isEPIDSectionSaved} isApprovalSectionSaved={isApprovalSectionSaved} isReleaseSectionSaved={isReleaseSectionSaved} 
-                            isSitesSectionSaved={isSitesSectionSaved} />
+                            <DeclarationBlock LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID} isRTCSectionSaved={isRTCSectionSaved}
+                                isEPIDSectionSaved={isEPIDSectionSaved} isApprovalSectionSaved={isApprovalSectionSaved} isReleaseSectionSaved={isReleaseSectionSaved}
+                                isSitesSectionSaved={isSitesSectionSaved} isECSectionSaved={isECSectionSaved} />
                         </div>
 
                     </div>
@@ -604,8 +599,6 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
             Swal.fire("Area Required", "The area cannot be zero. Please provide a valid area.", "warning");
             return;
         }
-        // Correct state update to flatten array items
-        setRtc_AddedData([...rtc_AddedData, ...rtcAddedData]);
         const payload = {
             lkrS_ID: 0,
             lkrS_LANDTYPE: "surveyNo",
@@ -657,9 +650,42 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                 localStorage.setItem('display_LKRSID', response.display_LKRSID);
                 setDisplay_LKRS_ID(response.display_LKRSID);
                 setLKRS_ID(response.lkrsid);
-                setIsSurveyNoSectionDisabled(true);
-                onDisableEPIDSection();
-                setIsRTCSectionSaved(true);
+
+                const fetch_payload = {
+                    level: 1,
+                    LkrsId: response.lkrsid,
+                };
+                try {
+                    start_loader();
+                    const response = await fetch_LKRSID(fetch_payload);
+
+                    if (response && response.surveyNumberDetails && response.surveyNumberDetails.length > 0) {
+                        const parsedSurveyDetails = mapSurveyDetails(response.surveyNumberDetails);
+
+                        setRtcAddedData(prev => {
+                            const existingKeys = new Set(
+                                prev.map(item => `${item.surveyNumber}_${item.ownerName}`)
+                            );
+
+                            const filteredNewData = parsedSurveyDetails.filter(item => {
+                                const key = `${item.surveyNumber}_${item.ownerName}`;
+                                return !existingKeys.has(key);
+                            });
+
+                            return [...prev, ...filteredNewData];
+                        });
+                        setIsSurveyNoSectionDisabled(true);
+                        onDisableEPIDSection();
+                        setIsRTCSectionSaved(true);
+                        stop_loader();
+                    } else {
+                        stop_loader();
+
+                    }
+                } catch (error) {
+                    stop_loader();
+                    console.error("Failed to fetch LKRSID data:", error);
+                }
                 Swal.fire({
                     title: response.responseMessage,
                     text: response.display_LKRSID,
@@ -677,11 +703,6 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
         } catch (error) {
             stop_loader();
             console.error("Failed to insert data:", error);
-            Swal.fire({
-                text: "Something went wrong. Please try again later.1",
-                icon: "error",
-                confirmButtonText: "OK",
-            });
         } finally {
             stop_loader();
         }
@@ -786,11 +807,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
         } catch (error) {
             stop_loader();
             console.error("Failed to fetch LKRSID data:", error);
-            Swal.fire({
-                text: "Something went wrong. Please try again later.Lkrsid",
-                icon: "error",
-                confirmButtonText: "OK",
-            });
+
         }
     };
     //Remove RTC details
@@ -1790,7 +1807,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                 owN_CREATEDROLE: roleID,
                 owN_VAULTREFID: "",
                 owN_VAULT_REMARKS: "",
-                owN_ALREADYEXIST_INEAASTHI: "",
+                owN_ALREADYEXIST_INEAASTHI: false,
                 owN_AADHAAR_RESPONSE: "",
                 own_OwnOrRep: "",
                 own_IsNewlyAddedOwner: false,
@@ -2131,9 +2148,9 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
 
         const loadData = async () => {
             if (localLKRSID && (isRTCSectionSaved || isEPIDSectionSaved)) {
-                await fetchApprovalList(localLKRSID);
-                await delay(5000); // 1 second delay
-                await fetchReleaseList(localLKRSID);
+                fetchApprovalList(localLKRSID);
+                delay(5000); // 1 second delay
+                fetchReleaseList(localLKRSID);
             }
         };
 
@@ -2172,6 +2189,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                 setIsEditing(false);
                 setisApprovalEditing(true); // Disable edit button
                 setRecords(formattedList); //  important
+                setIsApprovalSectionSaved(true);
             } else {
                 console.warn("Empty or invalid approval list");
                 setRecords([]); // clear any stale data
@@ -2207,7 +2225,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                 setOrder_Records(formattedList);
                 setIsOrderEditing(true); // Disable edit button
                 setIsOrder_EditingArea(false); // Disable editing mode
-
+                setIsReleaseSectionSaved(true);
             }
             stop_loader();
         } catch (error) {
@@ -3650,20 +3668,10 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
     const resultTypeRef = useRef(null);
     const layoutSiteCountRef = useRef(null);
 
-    // const [createdBy, setCreatedBy] = useState(null);
-    // const [createdName, setCreatedName] = useState('');
-    // const [roleID, setRoleID] = useState('');
     const [totalSQFT, setTotalSQFT] = useState('');
     const [totalSQM, setTotalSQM] = useState('');
 
     useEffect(() => {
-        // const storedCreatedBy = localStorage.getItem('createdBy');
-        // const storedCreatedName = localStorage.getItem('createdName');
-        // const storedRoleID = localStorage.getItem('RoleID');
-
-        // setCreatedBy(storedCreatedBy);
-        // setCreatedName(storedCreatedName);
-        // setRoleID(storedRoleID);
 
         const areaSQFT = localStorage.getItem('areaSqft');
         if (areaSQFT) {
@@ -3691,8 +3699,10 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
         if (localLKRSID && (isRTCSectionSaved || isEPIDSectionSaved)) {
             fetchSiteDetails(localLKRSID);
-            delay(15000); // 1 second delay
+            delay(2000); // 1 second delay
             fetchOwners(localLKRSID);
+            delay(2000);
+            Save_Handler();
         } else {
 
         }
@@ -4390,6 +4400,12 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
     const handleLayoutSiteCountChange = (e) => {
         const value = e.target.value;
+        if (isReadOnly) {
+            setLayoutSiteCount(value);
+            setLayoutSiteCountError("");
+            return;
+        }
+
         if (/^[0-9]*$/.test(value)) {
             setLayoutSiteCount(value);
             setLayoutSiteCountError(!value ? "Total number of sites is required" : "");
@@ -4417,7 +4433,6 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         }
 
         if (totalAddedSites >= totalSitesCount) {
-            setIsAddDisabled(true); //  Disable further addition
             Swal.fire({
                 title: "Limit Reached",
                 text: `Only ${totalSitesCount} sites allowed. Please update the total number of sites if needed.`,
@@ -4611,11 +4626,11 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         }
         const totalAddedSites = allSites.length;
         if (totalSitesCount !== totalAddedSites) return;
-        
-         if(totalSitesCount === totalAddedSites){
+
+        if (totalSitesCount === totalAddedSites) {
             setIsAddDisabled(true);
             setIsSitesSectionSaved(true);
-               Swal.fire({
+            Swal.fire({
                 title: "Success!",
                 text: "All Site record saved successfully.",
                 icon: "success",
@@ -4623,7 +4638,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                 allowOutsideClick: false,
                 allowEscapeKey: true
             });
-         }
+        }
     };
 
     const Edit_Handler = () => {
@@ -4815,10 +4830,10 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             });
             return;
         }
-        
+
 
         if (totalAddedSites >= totalSitesCount) {
-            setIsAddDisabled(true);
+
             Swal.fire({
                 title: "Limit Reached",
                 text: `Only ${totalSitesCount} sites allowed. Please update the total number of sites if needed.`,
@@ -4888,14 +4903,14 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         const NoofSites = parseInt(layoutSiteCount, 10);
 
         //  Validate: layoutSiteCount should not be less than no_of_sites
-        if (layoutSiteCount < no_of_sites) {
-            Swal.fire({
-                icon: "warning",
-                title: "Invalid Site Count",
-                text: "You cannot reduce the number of sites below the original count.",
-            });
-            return; // Stop execution if validation fails
-        }
+        // if (layoutSiteCount < no_of_sites) {
+        //     Swal.fire({
+        //         icon: "warning",
+        //         title: "Invalid Site Count",
+        //         text: "You cannot reduce the number of sites below the original count.",
+        //     });
+        //     return; // Stop execution if validation fails
+        // }
 
         //  Update logic
         if (NoofSites === no_of_sites) {
@@ -4942,7 +4957,35 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             const response = await individualSiteAPI(payload);
 
             if (response.responseStatus === true) {
-                await fetchSiteDetails(localLKRSID);
+                try {
+                    const listPayload = {
+                        level: 1,
+                        LkrsId: LKRS_ID,
+                        SiteID: 0,
+                    };
+                    start_loader();
+                    const response = await individualSiteListAPI(listPayload);
+
+                    if (Array.isArray(response)) {
+                        setAllSites(response);
+                        setIsSitesSectionSaved(true);
+
+                        const totalSitesFromAPI = response[0]?.lkrS_NUMBEROFSITES;
+                        localStorage.setItem("NUMBEROFSITES", totalSitesFromAPI);
+                    }
+
+                } catch (error) {
+                    console.error("Fetch Site Details Error:", error);
+
+                    if (error.response) {
+                        console.error("API responded with error data:", error.response.data);
+                    } else if (error.request) {
+                        console.error("No response received from API. Request was:", error.request);
+                    }
+                }
+                finally {
+                    stop_loader();
+                }
 
                 Swal.fire({
                     title: response.responseMessage,
@@ -5003,7 +5046,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         const storedSiteCount = localStorage.getItem("NUMBEROFSITES");
         if (storedSiteCount) {
             setLayoutSiteCount(storedSiteCount);
-            setIsReadOnly(true);          // Make input and Save button readonly/disabled
+            setIsReadOnly(true);     // Make input and Save button readonly/disabled
             setShowEditBtn(true);
         }
         try {
@@ -5015,18 +5058,25 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             start_loader();
             const response = await individualSiteListAPI(listPayload);
 
-            if (Array.isArray(response)) {
-                setAllSites(response);
-
-                if (response.length === 0) {
-
-                } else {
-                    //  Log lkrS_NUMBEROFSITES from the first item (or loop if needed)
-                    const totalSitesFromAPI = response[0]?.lkrS_NUMBEROFSITES;
-                    localStorage.setItem("NUMBEROFSITES", totalSitesFromAPI);
-                }
+            // --- MODIFICATION STARTS HERE ---
+            if (Array.isArray(response) && response.length === 0) {
+                // If the response is an empty array, stop here.
+                console.log("API returned an empty array for site details.");
+                return; // Exit the function
             }
 
+            if (Array.isArray(response)) {
+                setAllSites(response);
+                setIsSitesSectionSaved(true);
+
+                const totalSitesFromAPI = response[0]?.lkrS_NUMBEROFSITES;
+                localStorage.setItem("NUMBEROFSITES", totalSitesFromAPI);
+
+                // Check if the response length matches the totalSitesFromAPI
+                if (response.length === Number(totalSitesFromAPI)) {
+                    setIsAddDisabled(true);
+                }
+            }
         } catch (error) {
             console.error("Fetch Site Details Error:", error);
 
@@ -5036,11 +5086,6 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                 console.error("No response received from API. Request was:", error.request);
             }
 
-            Swal.fire({
-                text: "Something went wrong. Please try again later (site).",
-                icon: "error",
-                confirmButtonText: "OK",
-            });
         }
         finally {
             stop_loader();
@@ -5100,12 +5145,12 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
     return (
         <div> {loading && <Loader />}
-            <div className="card" disabled={isAddDisabled}>
+            <div className="card" >
                 <div className="card-header layout_btn_color" >
                     <h5 className="card-title" style={{ textAlign: 'center' }}>Layout & Individual sites Details</h5>
                 </div>
                 <div className="card-body">
-                    <fieldset >
+                    <fieldset disabled={isAddDisabled}>
                         <div className="row align-items-center mb-3">
                             <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4 mb-3">
                                 <div className="form-group">
@@ -6013,12 +6058,12 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                     </fieldset>
                 </div>
             </div>
-            <div className="card" disabled={isAddDisabled}>
+            <div className="card" >
                 <div className="card-header layout_btn_color" >
                     <h5 className="card-title" style={{ textAlign: 'center' }}>Find Layout on Google Map & tap in middle of site to capture sites GPS</h5>
                 </div>
                 <div className="card-body">
-                    <div className="row">
+                    <div className="row" >
                         <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
                             <b>Search using nearest landmark near your layout - once you zoom there then locate your individual layout & tap on top middle of your layout</b>
                             <br /><span>Note : Search nearest landmark & then find layout & site near the landmark</span>
@@ -6027,23 +6072,23 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                         <div className="col-md-12 col-lg-12 col-sm-12 mb-4 position-relative mt-2">
                             <div className='row'>
                                 <div className="col-md-10 col-lg-10 col-sm-12 col-xl-10 col-12">
-                                    <input ref={searchInputRef} className="form-control autocomplete-container" type="text" placeholder="Search nearest landmark near your layout" />
+                                    <input ref={searchInputRef} className="form-control autocomplete-container" disabled={isAddDisabled} type="text" placeholder="Search nearest landmark near your layout" />
                                 </div>
                                 <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 ">
-                                    <button onClick={handleSmartSearch} className="btn btn-primary">Search</button>
+                                    <button onClick={handleSmartSearch} disabled={isAddDisabled} className="btn btn-primary">Search</button>
                                 </div>
                             </div>
 
 
                         </div>
                         <div className="col-md-12 col-lg-12 col-sm-12 mb-3">
-                            <div id="map" ref={mapRef} style={{ height: "500px" }}></div>
+                            <div id="map" ref={mapRef} style={{ height: "500px" }} disabled={isAddDisabled}></div>
                         </div>
                         <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
                             <div className="row p-3  rounded shadow-sm">
                                 {/* Result Type */}
                                 <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 mb-2 text-center">
-                                    <span id="resultType" className="fw-bold text-primary fs-5">{resultType}</span>
+                                    <span id="resultType" className="fw-bold text-primary fs-5" disabled={isAddDisabled}>{resultType}</span>
                                 </div>
                                 {resultTypeError && (
                                     <div className="text-danger text-center mt-1">{resultTypeError}</div>
@@ -6056,7 +6101,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                                         className="form-control text-center text-success"
                                         value={latitude}
                                         ref={latitudeRef}
-                                        onChange={(e) => setLatitude(e.target.value)}
+                                        onChange={(e) => setLatitude(e.target.value)} disabled={isAddDisabled}
                                     />
                                     {latitudeerror && <div className="text-danger">{latitudeerror}</div>}
 
@@ -6068,7 +6113,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                                         className="form-control text-center text-success"
                                         value={longitude}
                                         ref={longitudeRef}
-                                        onChange={(e) => setLongitude(e.target.value)}
+                                        onChange={(e) => setLongitude(e.target.value)} disabled={isAddDisabled}
                                     />
                                     {longitudeerror && <div className="text-danger">{longitudeerror}</div>}
 
@@ -6091,7 +6136,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                         <div className="col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10 mt-3"></div>
 
                         <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-3">
-                            <button className="btn btn-primary btn-block mt-3"
+                            <button className="btn btn-primary btn-block mt-3" disabled={isAddDisabled}
                                 //  onClick={() => handle_AddRow(shape)}
                                 onClick={() => addSites(shape)}
                             >
@@ -6110,7 +6155,9 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                             createdBy={createdBy}
                             createdName={createdName}
                             roleID={roleID}
-
+                            setIsSitesSectionSaved={setIsSitesSectionSaved}
+                            isSaveDisabled={isAddDisabled}
+                            setIsAddDisabled={setIsAddDisabled}
                         />
                     )}
 
@@ -6122,7 +6169,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         </div>
     );
 };
-const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit, LKRS_ID, createdBy, createdName, roleID }) => {
+const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit, LKRS_ID, createdBy, createdName, roleID, setIsSitesSectionSaved, isSaveDisabled, setIsAddDisabled }) => {
 
     useEffect(() => {
 
@@ -6176,7 +6223,8 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
                 if (Array.isArray(fetchResponse)) {
                     //  Set updated data into state
                     setData(fetchResponse);
-
+                    setIsSitesSectionSaved(false);
+                    setIsAddDisabled(false); // <--- Set isAddDisabled to false here
                     Swal.fire({
                         text: deleteResponse.responseMessage || "Site deleted successfully.",
                         icon: "success",
@@ -6380,143 +6428,141 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
     };
 
     return (
-        <div className="card">
+        <div >
             {loading && <Loader />}
             <h4>Layout & Individual sites Details</h4>
-            <div className="card-body">
-                <div style={{ overflowX: "auto", padding: "1rem" }}>
-                    <table
-                        {...getTableProps()}
-                        style={{
-                            borderCollapse: "collapse",
-                            width: "100%",
-                            minWidth: "1500px",
-                            border: "1px solid #e5e7eb",
-                            borderRadius: "8px",
-                            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.05)",
-                        }}
-                    >
-                        <thead>
-                            {headerGroups.map((headerGroup, idx) => (
-                                <tr {...headerGroup.getHeaderGroupProps()} key={idx} style={{ backgroundColor: "#f9fafb" }}>
-                                    {headerGroup.headers.map((column, i) => (
-                                        <th
-                                            {...column.getHeaderProps()}
-                                            key={i}
-                                            colSpan={column.columns ? column.columns.length : 1}
+            <div style={{ overflowX: "auto", padding: "1rem" }}>
+                <table
+                    {...getTableProps()}
+                    style={{
+                        borderCollapse: "collapse",
+                        width: "100%",
+                        minWidth: "1500px",
+                        border: "1px solid #e5e7eb",
+                        borderRadius: "8px",
+                        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.05)",
+                    }}
+                >
+                    <thead>
+                        {headerGroups.map((headerGroup, idx) => (
+                            <tr {...headerGroup.getHeaderGroupProps()} key={idx} style={{ backgroundColor: "#f9fafb" }}>
+                                {headerGroup.headers.map((column, i) => (
+                                    <th
+                                        {...column.getHeaderProps()}
+                                        key={i}
+                                        colSpan={column.columns ? column.columns.length : 1}
+                                        style={{
+                                            border: "1px solid #e5e7eb",
+                                            padding: "12px 16px",
+                                            fontWeight: "600",
+                                            textAlign: "center",
+                                            backgroundColor: "#f3f4f6",
+                                            color: "#374151",
+                                        }}
+                                    >
+                                        {column.render("Header")}
+                                    </th>
+                                ))}
+                            </tr>
+                        ))}
+                    </thead>
+                    <tbody {...getTableBodyProps()}>
+                        {page.map((row, rowIndex) => {
+                            prepareRow(row);
+                            return (
+                                <tr
+                                    {...row.getRowProps()}
+                                    key={rowIndex}
+                                    style={{
+                                        backgroundColor: rowIndex % 2 === 0 ? "#ffffff" : "#f9fafb",
+                                        transition: "background 0.3s",
+                                    }}
+                                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e5e7eb")}
+                                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = rowIndex % 2 === 0 ? "#ffffff" : "#f9fafb")}
+                                >
+                                    {row.cells.map((cell, cellIndex) => (
+                                        <td
+                                            {...cell.getCellProps()}
+                                            key={cellIndex}
                                             style={{
                                                 border: "1px solid #e5e7eb",
-                                                padding: "12px 16px",
-                                                fontWeight: "600",
+                                                padding: "10px",
                                                 textAlign: "center",
-                                                backgroundColor: "#f3f4f6",
                                                 color: "#374151",
                                             }}
                                         >
-                                            {column.render("Header")}
-                                        </th>
+                                            {cell.render("Cell")}
+                                        </td>
                                     ))}
                                 </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+
+                {/* Pagination Controls */}
+                <div
+                    style={{
+                        marginTop: "1rem",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        flexWrap: "wrap",
+                        gap: "10px",
+                    }}
+                >
+                    <div>
+                        Page <strong>{pageIndex + 1} of {pageOptions.length}</strong>{" "}&nbsp;
+                        (<strong>Total: {totalAddedSites} records</strong>)
+                    </div>
+
+                    <div style={{ display: "flex", gap: "5px" }}>
+                        <button disabled={!canPreviousPage} onClick={() => gotoPage(0)} style={paginationBtnStyle}>{`<<`}</button>
+                        <button disabled={!canPreviousPage} onClick={() => previousPage()} style={paginationBtnStyle}>{`<`}</button>
+                        <button disabled={!canNextPage} onClick={() => nextPage()} style={paginationBtnStyle}>{`>`}</button>
+                        <button disabled={!canNextPage} onClick={() => gotoPage(pageCount - 1)} style={paginationBtnStyle}>{`>>`}</button>
+                    </div>
+
+                    <div>
+                        <select value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))} style={{ padding: "6px 10px", borderRadius: "6px", border: "1px solid #ccc" }}>
+                            {[5, 10, 20, 50].map(size => (
+                                <option key={size} value={size}>
+                                    Show {size}
+                                </option>
                             ))}
-                        </thead>
-                        <tbody {...getTableBodyProps()}>
-                            {page.map((row, rowIndex) => {
-                                prepareRow(row);
-                                return (
-                                    <tr
-                                        {...row.getRowProps()}
-                                        key={rowIndex}
-                                        style={{
-                                            backgroundColor: rowIndex % 2 === 0 ? "#ffffff" : "#f9fafb",
-                                            transition: "background 0.3s",
-                                        }}
-                                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e5e7eb")}
-                                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = rowIndex % 2 === 0 ? "#ffffff" : "#f9fafb")}
-                                    >
-                                        {row.cells.map((cell, cellIndex) => (
-                                            <td
-                                                {...cell.getCellProps()}
-                                                key={cellIndex}
-                                                style={{
-                                                    border: "1px solid #e5e7eb",
-                                                    padding: "10px",
-                                                    textAlign: "center",
-                                                    color: "#374151",
-                                                }}
-                                            >
-                                                {cell.render("Cell")}
-                                            </td>
-                                        ))}
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-
-                    {/* Pagination Controls */}
-                    <div
-                        style={{
-                            marginTop: "1rem",
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            flexWrap: "wrap",
-                            gap: "10px",
-                        }}
-                    >
-                        <div>
-                            Page <strong>{pageIndex + 1} of {pageOptions.length}</strong>{" "}&nbsp;
-                            (<strong>Total: {totalAddedSites} records</strong>)
-                        </div>
-
-                        <div style={{ display: "flex", gap: "5px" }}>
-                            <button disabled={!canPreviousPage} onClick={() => gotoPage(0)} style={paginationBtnStyle}>{`<<`}</button>
-                            <button disabled={!canPreviousPage} onClick={() => previousPage()} style={paginationBtnStyle}>{`<`}</button>
-                            <button disabled={!canNextPage} onClick={() => nextPage()} style={paginationBtnStyle}>{`>`}</button>
-                            <button disabled={!canNextPage} onClick={() => gotoPage(pageCount - 1)} style={paginationBtnStyle}>{`>>`}</button>
-                        </div>
-
-                        <div>
-                            <select value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))} style={{ padding: "6px 10px", borderRadius: "6px", border: "1px solid #ccc" }}>
-                                {[5, 10, 20, 50].map(size => (
-                                    <option key={size} value={size}>
-                                        Show {size}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                        </select>
                     </div>
                 </div>
-                <br />
-                <div className='row'>
-                    <div className="col-0 col-sm-0 col-md-8 col-lg-8 col-xl-8"></div>
-                    <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2">
-                        <div className="form-check">
-                            <button
-                                className='btn btn-info btn-block'
-                                disabled={totalSitesCount !== totalAddedSites}
-                                onClick={onEdit}
-                            >
-                                Add More
-                            </button>
+            </div>
+            <br />
+            <div className='row'>
+                <div className="col-0 col-sm-0 col-md-8 col-lg-8 col-xl-8"></div>
+                <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2">
+                    <div className="form-check">
+                        <button
+                            className='btn btn-info btn-block'
+                            disabled={totalSitesCount !== totalAddedSites || isSaveDisabled}
+                            onClick={onEdit}
+                        >
+                            Add More
+                        </button>
 
-                        </div>
                     </div>
-                    <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2">
-                        <div className="form-check">
-                            <button
-                                className='btn btn-success btn-block'
-                                disabled={totalSitesCount !== totalAddedSites}
-                                onClick={onSave}
-                            >
-                                Save and continue
-                            </button>
-                            {totalSitesCount !== totalAddedSites && (
-                                <small className="text-danger">
-                                    Please add all {totalSitesCount} sites before proceeding.
-                                </small>
-                            )}
-                        </div>
+                </div>
+                <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2">
+                    <div className="form-check">
+                        <button
+                            className='btn btn-success btn-block'
+                            disabled={totalSitesCount !== totalAddedSites || isSaveDisabled}
+                            onClick={onSave}
+                        >
+                            Save and continue
+                        </button>
+                        {totalSitesCount !== totalAddedSites && (
+                            <small className="text-danger">
+                                Please add all {totalSitesCount} sites before proceeding.
+                            </small>
+                        )}
                     </div>
                 </div>
             </div>
@@ -6806,7 +6852,7 @@ const Preview_siteDetailsTable = ({ data, setData, totalSitesCount, onSave, onEd
 
 };
 
-const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
+const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsECSectionSaved }) => {
     const [ecNumber, setECNumber] = useState("");
     const [ecNumberError, setEcNumberError] = useState('');
     const [hasJDA, setHasJDA] = useState(null);
@@ -6857,9 +6903,9 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
 
         const loadData = async () => {
             if (localLKRSID) {
-                await handleGetLKRSID(localLKRSID);
-
-                await fetchJDAInfo(localLKRSID);
+                handleGetLKRSID(localLKRSID);
+                delay(5000);
+                fetchJDAInfo(localLKRSID);
             }
         };
         loadData();
@@ -6886,11 +6932,7 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
         } catch (error) {
             stop_loader();
             console.error("Failed to fetch LKRSID data:", error);
-            Swal.fire({
-                text: "Something went wrong. Please try again later. ec",
-                icon: "error",
-                confirmButtonText: "OK",
-            });
+
         }
     };
 
@@ -6924,11 +6966,6 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
         } catch (error) {
             stop_loader();
             console.error("Failed to fetch LKRSID data:", error);
-            Swal.fire({
-                text: "Something went wrong. Please try again later. ec2",
-                icon: "error",
-                confirmButtonText: "OK",
-            });
         }
     };
     const base64ToBlob = (dataUrl, mimeType = 'application/pdf') => {
@@ -7218,7 +7255,7 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
                         });
 
                         setIsJDASectionDisabled(true);
-
+                        setIsECSectionSaved(true);
                     } else {
                         stop_loader();
                         Swal.fire({
@@ -7256,6 +7293,7 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
                             }
                         }
                         setIsJDASectionDisabled(true);
+                        setIsECSectionSaved(true);
                         stop_loader();
                         Swal.fire({
                             text: response.responseMessage || "JDA details saved successfully.",
@@ -7749,20 +7787,14 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved }) => {
 
                 </div>
             </div>
-            {(hasJDA === false || isRegistered) && <Owner_EKYCBlock LKRS_ID={LKRS_ID} />}
-
-            {isRegistered && (
-                <>
-                    <JDA_EKYCBlock LKRS_ID={LKRS_ID} />
-
-                </>
-            )}
-            {isRegistered === false && (
-                <>
-                    <Owner_EKYCBlock LKRS_ID={LKRS_ID} />
-                    <JDA_EKYCBlock LKRS_ID={LKRS_ID} />
-                </>
-            )}
+            <>
+                {(hasJDA === false || isRegistered === true || isRegistered === false) && <Owner_EKYCBlock LKRS_ID={LKRS_ID} />}
+                {(isRegistered === true || isRegistered === false) && (
+                    <>
+                        <JDA_EKYCBlock LKRS_ID={LKRS_ID} />
+                    </>
+                )}
+            </>
         </div>
     );
 };
@@ -7908,18 +7940,18 @@ const Owner_EKYCBlock = ({ LKRS_ID }) => {
         }
     };
 
-    const fetchEKYC_ResponseDetails = async () => {
+    const fetchEKYC_ResponseDetails = async (ownerName) => {
         try {
             const payload = {
-                transactionNumber: 84,
+                transactionNumber: 83,
                 OwnerType: 'NEWOWNER',
-            }
+                ownName: ownerName,
+            };
 
             const response = await ekyc_Response(payload);
 
-            setOwnerData(response);
-
-
+            console.log("EKYC", response);
+            setOwnerData(response?.ekycResponse);
 
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -8228,7 +8260,7 @@ const Owner_EKYCBlock = ({ LKRS_ID }) => {
                                     <button className='btn btn-info btn-block' onClick={handleDoEKYC}>Do eKYC</button>
                                 </div>
                                 <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-4" >
-                                    <button className='btn btn-info btn-block' onClick={fetchEKYC_ResponseDetails}>eKYC Status</button>
+                                    <button className='btn btn-info btn-block' onClick={() => fetchEKYC_ResponseDetails(ownerNameInput)}>eKYC Status</button>
                                 </div>
                             </div>
                             <div className='row'>
@@ -8267,6 +8299,7 @@ const Owner_EKYCBlock = ({ LKRS_ID }) => {
                                                     <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th>
                                                     <th>ವಿಳಾಸ / Address</th>
                                                     <th>ಇಕೆವೈಸಿ ಸ್ಥಿತಿ / EKYC Status</th>
+                                                    <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -8900,7 +8933,7 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
     );
 };
 //Declaration Block
-const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectionSaved, isEPIDSectionSaved, isApprovalSectionSaved, isReleaseSectionSaved, isSitesSectionSaved }) => {
+const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectionSaved, isEPIDSectionSaved, isApprovalSectionSaved, isReleaseSectionSaved, isSitesSectionSaved, isECSectionSaved }) => {
     const { t, i18n } = useTranslation();
 
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
@@ -8909,6 +8942,10 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
 
     const openModal = () => setIsModalOpen(true);
     const closeModal = () => setIsModalOpen(false);
+
+    const [declaration1Checked, setDeclaration1Checked] = useState(false);
+    const [declaration2Checked, setDeclaration2Checked] = useState(false);
+    const [declaration3Checked, setDeclaration3Checked] = useState(false);
 
 
     const [selectedLandType, setSelectedLandType] = useState("");
@@ -9013,28 +9050,65 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
 
     //final Save API integration
     const final_Save = async () => {
-        if (isRTCSectionSaved === false || isEPIDSectionSaved === false) {
+        if (isRTCSectionSaved === false && isEPIDSectionSaved === false) {
             Swal.fire({
-                icon: 'warning', // You can use 'error', 'info', 'success', or 'question' as well
+                icon: 'warning',
                 title: 'Important!',
                 text: 'Please save the land details before proceeding with layout approval.',
                 confirmButtonText: 'Ok'
             });
+            return;
         }
+
         if (isApprovalSectionSaved === false) {
-            if (isReleaseSectionSaved === false) {
-                Swal.fire({
-                    icon: 'warning', // You can use 'error', 'info', 'success', or 'question' as well
-                    title: 'Important!',
-                    text: 'Please save the release order details before proceeding.',
-                    confirmButtonText: 'Ok'
-                });
-            }
+            Swal.fire({
+                icon: 'warning',
+                title: 'Important!',
+                text: 'Please save the Approval order details before proceeding.',
+                confirmButtonText: 'Ok'
+            });
+            return;
         }
-        if(isSitesSectionSaved === false){
 
-
+        if (isReleaseSectionSaved === false) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Important!',
+                text: 'Please save the release order details before proceeding.',
+                confirmButtonText: 'Ok'
+            });
+            return;
         }
+
+        if (isSitesSectionSaved === false) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Important!',
+                text: 'Please save the sites details before proceeding.',
+                confirmButtonText: 'Ok'
+            });
+            return;
+        }
+
+        if (isECSectionSaved === false) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Important!',
+                text: 'Please save the EC details before proceeding.',
+                confirmButtonText: 'Ok'
+            });
+            return;
+        }
+        if (!declaration1Checked || !declaration2Checked || !declaration3Checked) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Important!',
+                text: 'Please agree to all declarations before proceeding.',
+                confirmButtonText: 'Ok'
+            });
+            return;
+        }
+
         start_loader();
         try {
             const payload = {
@@ -9054,11 +9128,13 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
                     icon: "success",
                     confirmButtonText: "OK",
                 });
+                stop_loader();
             } else {
-
+                stop_loader();
             }
 
         } catch (error) {
+            stop_loader();
             console.error('Error fetching data:', error);
         }
     };
@@ -9294,11 +9370,6 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
         } catch (error) {
             stop_loader();
             console.error("Failed to fetch LKRSID data:", error);
-            Swal.fire({
-                text: "Something went wrong. Please try again later.Lkrsid",
-                icon: "error",
-                confirmButtonText: "OK",
-            });
         }
     };
 
@@ -9686,6 +9757,16 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
             name: 'ID Number',
             selector: row => row.owN_IDNUMBER || 'N/A',
         },
+
+        {
+            name: 'Name match Status',
+            selector: row => row.owN_IDNUMBER || 'N/A',
+        },
+
+        {
+            name: 'EKYC status',
+            selector: row => row.owN_IDNUMBER || 'N/A',
+        },
     ];
 
 
@@ -9712,9 +9793,11 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
                     <input
                         className="form-check-input"
                         type="checkbox"
-                        id="declarationCheckbox"
+                        id="declarationCheckbox1"
+                        checked={declaration1Checked}
+                        onChange={(e) => setDeclaration1Checked(e.target.checked)}
                     />
-                    <label className="form-check-label" >
+                    <label className="form-check-label" htmlFor="declarationCheckbox1">
                         {t('translation.LayoutDeclartion.title1')}
                     </label>
                 </div>
@@ -9722,9 +9805,11 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
                     <input
                         className="form-check-input"
                         type="checkbox"
-                        id="declarationCheckbox"
+                        id="declarationCheckbox2"
+                        checked={declaration2Checked}
+                        onChange={(e) => setDeclaration2Checked(e.target.checked)}
                     />
-                    <label className="form-check-label" >
+                    <label className="form-check-label" htmlFor="declarationCheckbox2">
                         {t('translation.LayoutDeclartion.title2')}
                     </label>
                 </div>
@@ -9732,9 +9817,11 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
                     <input
                         className="form-check-input"
                         type="checkbox"
-                        id="declarationCheckbox"
+                        id="declarationCheckbox3"
+                        checked={declaration3Checked}
+                        onChange={(e) => setDeclaration3Checked(e.target.checked)}
                     />
-                    <label className="form-check-label" >
+                    <label className="form-check-label" htmlFor="declarationCheckbox3">
                         {t('translation.LayoutDeclartion.title3')}
                     </label>
                 </div>
@@ -9743,7 +9830,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
                         <button onClick={handlePreviewClick} className='btn btn-warning btn-block'>Preview</button>
                     </div>
                     <div className='col-md-3 mt-2'>
-                        <button className='btn btn-primary btn-block'>{t('translation.buttons.save&submit')}</button>
+                        <button className='btn btn-primary btn-block' onClick={final_Save}>{t('translation.buttons.save&submit')}</button>
                     </div>
                 </div>
 

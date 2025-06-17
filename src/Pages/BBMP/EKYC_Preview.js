@@ -14,7 +14,7 @@ const EKYCResultHandler = () => {
 
     // Communicate result to opener tab (main app)
     if (window.opener) {
-      window.opener.postMessage({ ekycStatus: status, ekycToken: token }, "http://localhost:3001");
+      window.opener.postMessage({ ekycStatus: status, ekycToken: token }, "http://localhost:3001/LayoutForm");
     }
 
     // Optionally, close this tab after a short delay
