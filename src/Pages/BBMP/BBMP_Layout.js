@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import ReactDOM from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../Layout/DashboardLayout';
 import { useTranslation } from "react-i18next";
 import i18n from "../../localization/i18n";
@@ -58,6 +59,7 @@ const BBMP_LayoutForm = () => {
     const [order_details, setOrderDetails] = useState([]);
 
     const [areaSqft, setAreaSqft] = useState("0");
+    // const [LKRS_ID, setLKRS_ID] = useState(() => localStorage.getItem("LKRSID") || "");
     const [LKRS_ID, setLKRS_ID] = useState(() => localStorage.getItem("LKRSID") || "");
     const [display_LKRS_ID, setDisplay_LKRS_ID] = useState(() => localStorage.getItem("display_LKRSID") || "");
 
@@ -281,18 +283,23 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
 
     useEffect(() => {
         fetchDistricts(Language);
-    }, [Language]);
-
-    useEffect(() => {
         if (selectedDistrict) {
             fetchTaluks(selectedDistrict, Language);
         }
     }, [selectedDistrict, Language]);
 
+    // useEffect(() => {
+    //     if (selectedDistrict) {
+    //         fetchTaluks(selectedDistrict, Language);
+    //     }
+    // }, [selectedDistrict, Language]);
+
     const [createdBy, setCreatedBy] = useState(null);
     const [createdName, setCreatedName] = useState('');
     const [roleID, setRoleID] = useState('');
     const [totalSQFT, setTotalSQFT] = useState('');
+    const [localLKRSID, setLocalLKRSID] = useState(LKRS_ID || "");
+
     useEffect(() => {
         const storedCreatedBy = localStorage.getItem('createdBy');
         const storedCreatedName = localStorage.getItem('createdName');
@@ -301,7 +308,36 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
         setCreatedBy(storedCreatedBy);
         setCreatedName(storedCreatedName);
         setRoleID(storedRoleID);
-    }, []);
+
+        // Wrap LKRS_ID logic in a Promise
+        const handleLKRSWithPromise = () => {
+            return new Promise((resolve, reject) => {
+                if (LKRS_ID) {
+                    setLocalLKRSID(LKRS_ID);
+                    try {
+                        const result = handleGetLKRSID(LKRS_ID); // assume this may return something
+                        resolve(result);
+                    } catch (error) {
+                        reject(error);
+                    }
+                } else {
+                    resolve(); // or reject("No LKRS_ID") if needed
+                }
+            });
+        };
+
+        handleLKRSWithPromise()
+            .then((res) => {
+                console.log("LKRS_ID handled with Promise", res);
+            })
+            .catch((err) => {
+                console.error("Error handling LKRS_ID:", err);
+            });
+
+    }, [LKRS_ID]);
+
+
+
 
     const [isDistrictReadonly, setIsDistrictReadonly] = useState(false);
 
@@ -743,17 +779,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
     let totalFGunta = 0;
     let totalSqFt = 0;
     let totalSqM = 0;
-    const [localLKRSID, setLocalLKRSID] = useState(LKRS_ID || "");
-    useEffect(() => {
-        if (LKRS_ID) {
-            setLocalLKRSID(LKRS_ID);
-        }
-    }, [LKRS_ID]);
-    useEffect(() => {
-        if (localLKRSID) {
-            handleGetLKRSID(localLKRSID);
-        }
-    }, [localLKRSID]);
+
     const mapSurveyDetails = (surveyDetails) => {
         return surveyDetails.map((item) => ({
             district: item.suR_DISTRICT_Name || "—",
@@ -1653,13 +1679,14 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
     useEffect(() => {
         if (LKRS_ID) {
             setLocalLKRSID(LKRS_ID);
+            handleGetLKRSID(LKRS_ID);
         }
     }, [LKRS_ID]);
-    useEffect(() => {
-        if (localLKRSID) {
-            handleGetLKRSID(localLKRSID);
-        }
-    }, [localLKRSID]);
+    // useEffect(() => {
+    //     if (localLKRSID) {
+    //         handleGetLKRSID(localLKRSID);
+    //     }
+    // }, [localLKRSID]);
     //fetching Details from LKRSID
     const handleGetLKRSID = async (localLKRSID, index = null) => {
         const payload = {
@@ -1739,11 +1766,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
             }
         } catch (error) {
             console.error("Failed to fetch LKRSID data:", error);
-            Swal.fire({
-                text: "Something went wrong. Please try again later.",
-                icon: "error",
-                confirmButtonText: "OK",
-            });
+
         } finally {
             stop_loader();
         }
@@ -1848,11 +1871,6 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
         } catch (error) {
             stop_loader();
             console.error("Failed to insert a data:", error);
-            Swal.fire({
-                text: "Something went wrong. Please try again later.",
-                icon: "error",
-                confirmButtonText: "OK",
-            });
         } finally { stop_loader(); }
     };
     const showImplementationAlert = () => {
@@ -2121,7 +2139,10 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
     const [createdName, setCreatedName] = useState('');
     const [roleID, setRoleID] = useState('');
     const [LKRSID, setLKRSID] = useState('');
-
+    const buttonRef = useRef(null);
+    const [localLKRSID, setLocalLKRSID] = useState(() => {
+        return localStorage.getItem("LKRSID") || "";
+    });
     useEffect(() => {
         const storedCreatedBy = localStorage.getItem('createdBy');
         const storedCreatedName = localStorage.getItem('createdName');
@@ -2130,32 +2151,35 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
         setCreatedBy(storedCreatedBy);
         setCreatedName(storedCreatedName);
         setRoleID(storedRoleID);
-
-
-    }, []);
-    const [localLKRSID, setLocalLKRSID] = useState(() => {
-        return localStorage.getItem("LKRSID") || "";
-    });
-
-    useEffect(() => {
         if (LKRS_ID) {
             setLocalLKRSID(LKRS_ID);
+            if (buttonRef.current) {
+                buttonRef.current.click();
+            }
         }
-    }, [LKRS_ID]);
 
-    useEffect(() => {
+    }, [LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved]);
+
+
+    // useEffect(() => {
+    //     if (LKRS_ID) {
+    //         setLocalLKRSID(LKRS_ID);
+    //         if (buttonRef.current) {
+    //             buttonRef.current.click();
+    //         }
+    //     }
+    // }, [LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved]);
+
+    const loadData = async () => {
         const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-        const loadData = async () => {
-            if (localLKRSID && (isRTCSectionSaved || isEPIDSectionSaved)) {
-                fetchApprovalList(localLKRSID);
-                delay(5000); // 1 second delay
-                fetchReleaseList(localLKRSID);
-            }
-        };
+        if (localLKRSID && (isRTCSectionSaved || isEPIDSectionSaved)) {
+            await fetchApprovalList(localLKRSID);
+            await delay(5000); // 1 second delay
+            await fetchReleaseList(localLKRSID);
+        }
+    };
 
-        loadData();
-    }, [localLKRSID, isRTCSectionSaved, isEPIDSectionSaved]);
 
 
     const fetchApprovalList = async (localLKRSID) => {
@@ -3100,6 +3124,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
         <div className={`layout-form-container ${loading ? 'no-interaction' : ''}`}>
             {loading && <Loader />}
             <div className="card">
+                <button className='btn btn-block' onClick={loadData} ref={buttonRef} hidden></button>
                 <div className="card-header layout_btn_color" >
                     <h5 className="card-title" style={{ textAlign: 'center' }}>{t('translation.BDA.heading')}</h5>
                 </div>
@@ -3696,19 +3721,19 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
     useEffect(() => {
 
+        loadData();
+    }, [localLKRSID, isRTCSectionSaved, isEPIDSectionSaved]);
+
+    const loadData = () => {
         const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
         if (localLKRSID && (isRTCSectionSaved || isEPIDSectionSaved)) {
             fetchSiteDetails(localLKRSID);
             delay(2000); // 1 second delay
             fetchOwners(localLKRSID);
-            delay(2000);
-            Save_Handler();
-        } else {
-
+            // delay(2000);
+            // Save_Handler();
         }
-    }, [localLKRSID, isRTCSectionSaved, isEPIDSectionSaved]);
-
-
+    }
     const sqftToSqm = (sqft) => (sqft ? (parseFloat(sqft) * 0.092903).toFixed(2) : '');
 
 
@@ -5009,11 +5034,6 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
         } catch (error) {
             console.error("Failed to insert data:", error);
-            Swal.fire({
-                text: "Something went wrong. Please try again later.",
-                icon: "error",
-                confirmButtonText: "OK",
-            });
         } finally {
             stop_loader();
         }
@@ -6246,11 +6266,6 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
             }
         } catch (error) {
             console.error("Failed to delete or fetch site data:", error);
-            Swal.fire({
-                text: "Something went wrong. Please try again later.",
-                icon: "error",
-                confirmButtonText: "OK",
-            });
         } finally {
             stop_loader();
         }
@@ -6536,8 +6551,8 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
             </div>
             <br />
             <div className='row'>
-                <div className="col-0 col-sm-0 col-md-8 col-lg-8 col-xl-8"></div>
-                <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2">
+                <div className="col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10"></div>
+                <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2" hidden>
                     <div className="form-check">
                         <button
                             className='btn btn-info btn-block'
@@ -6855,8 +6870,8 @@ const Preview_siteDetailsTable = ({ data, setData, totalSitesCount, onSave, onEd
 const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsECSectionSaved }) => {
     const [ecNumber, setECNumber] = useState("");
     const [ecNumberError, setEcNumberError] = useState('');
-    const [hasJDA, setHasJDA] = useState(null);
-    const [isRegistered, setIsRegistered] = useState(null);
+    const [hasJDA, setHasJDA] = useState(false);
+    const [isRegistered, setIsRegistered] = useState(false);
     const [deedNumber, setDeedNumber] = useState("");
     const [deedError, setDeedError] = useState('');
 
@@ -6899,18 +6914,18 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsE
     }, [LKRS_ID]);
 
     useEffect(() => {
-        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-        const loadData = async () => {
-            if (localLKRSID) {
-                handleGetLKRSID(localLKRSID);
-                delay(5000);
-                fetchJDAInfo(localLKRSID);
-            }
-        };
         loadData();
     }, [localLKRSID]);
 
+
+    const loadData = async () => {
+        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        if (localLKRSID) {
+            handleGetLKRSID(localLKRSID);
+            delay(5000);
+            fetchJDAInfo(localLKRSID);
+        }
+    };
     const handleGetLKRSID = async (localLKRSID) => {
         const payload = {
             level: 1,
@@ -6924,6 +6939,7 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsE
                 setECNumber(response.lkrS_ECNUMBER); //  set ecNumber from response
                 setIsJDASectionDisabled(true);
                 setShowViewECButton(true);
+                setIsECSectionSaved(true);
                 stop_loader();
             } else {
                 stop_loader();
@@ -6949,10 +6965,11 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsE
 
                 if (response[0].jdA_ISREGISTERED === true) {
                     setDeedNumber(response[0].jdA_DEED_NO);
+                    setIsECSectionSaved(true);
                 } else if (response[0].jdA_ISREGISTERED === false) {
                     const deedFileResponse = await fileListAPI(3, localLKRSID, 4, 0);
                     const base64String = deedFileResponse[0]?.doctrN_DOCBASE64;
-
+                    setIsECSectionSaved(true);
                     if (base64String) {
                         const blob = base64ToBlob(base64String, 'application/pdf');
                         if (blob) {
@@ -7075,11 +7092,7 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsE
             }
         } catch (error) {
             console.error("Failed to insert data:", error);
-            Swal.fire({
-                text: "Something went wrong. Please try again later. ec3",
-                icon: "error",
-                confirmButtonText: "OK",
-            });
+
         } finally {
             stop_loader();
         }
@@ -7415,11 +7428,7 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsE
             stop_loader();
             newTab.close(); // Close tab on error
             console.error("Failed to fetch deed data:", error);
-            Swal.fire({
-                text: "Something went wrong. Please try again later.deed",
-                icon: "error",
-                confirmButtonText: "OK",
-            });
+
         } finally {
             stop_loader();
         }
@@ -7485,11 +7494,7 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsE
             }
         } catch (error) {
             console.error("Failed to insert data:", error);
-            Swal.fire({
-                text: "Something went wrong. Please try again later.deed1",
-                icon: "error",
-                confirmButtonText: "OK",
-            });
+
         } finally {
             stop_loader();
         }
@@ -7625,6 +7630,9 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsE
                                             No</label>
                                     </div>
                                 </div>
+                            )}
+                            {hasJDA === false && (
+                                <></>
                             )}
 
                         </div>
@@ -7788,12 +7796,9 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsE
                 </div>
             </div>
             <>
-                {(hasJDA === false || isRegistered === true || isRegistered === false) && <Owner_EKYCBlock LKRS_ID={LKRS_ID} />}
-                {(isRegistered === true || isRegistered === false) && (
-                    <>
-                        <JDA_EKYCBlock LKRS_ID={LKRS_ID} />
-                    </>
-                )}
+                <Owner_EKYCBlock LKRS_ID={LKRS_ID} />
+
+                {hasJDA && <JDA_EKYCBlock LKRS_ID={LKRS_ID} />}
             </>
         </div>
     );
@@ -7832,7 +7837,7 @@ const Owner_EKYCBlock = ({ LKRS_ID }) => {
     useEffect(() => {
         if (LKRS_ID) {
             setLocalLKRSID(LKRS_ID);
-            fetchOwners(LKRS_ID);
+            fetchOwners();
         }
     }, [LKRS_ID]);
 
@@ -7849,24 +7854,48 @@ const Owner_EKYCBlock = ({ LKRS_ID }) => {
     const [errorMessage, setErrorMessage] = useState('');
     const [ownerData, setOwnerData] = useState(null);
 
+    const [ekyc_Data, setEkyc_Data] = useState(null);
 
     const [ownerNames, setOwnerNames] = useState('');
+    const [transactionNo, setTransactionNo] = useState('');
+
+    const [ownerDataList, setOwnerDataList] = useState([]);
+
+    const EKYC_Save = useRef(null);
+    useEffect(() => {
+        const handleMessage = (event) => {
+            // Ensure the message is coming from your domain
+            if (event.origin !== "http://localhost:3001") return;
+
+            const data = event.data;
+
+            // You can store this in state or use it directly
+            console.log("eKYC Data received:", data);
+            setEkyc_Data(data);
+        };
+
+        window.addEventListener("message", handleMessage);
+
+        return () => window.removeEventListener("message", handleMessage);
+    }, []);
+
 
     //multiple owner list fetch
-    const fetchOwners = async (LKRSID) => {
+    const fetchOwners = async () => {
         try {
-            const apiResponse = await ownerEKYC_Details("1", LKRSID);
+            const apiResponse = await ownerEKYC_Details("1", LKRS_ID);
 
             const owners = (apiResponse || []).map(owner => ({
                 name: owner.owN_NAME_EN,
                 id: owner.owN_ID,
+                phoneNo: owner.owN_MOBILENUMBER,
             }));
 
             setOwnerList(owners);
 
             const ownerNameList = owners.map(o => o.name).join(', ');
             setOwnerNames(ownerNameList); //  Set comma-separated owner names
-
+            setOwnerDataList(apiResponse);
         } catch (error) {
             setOwnerList([]);
             setOwnerNames(''); // fallback if API fails
@@ -7879,19 +7908,41 @@ const Owner_EKYCBlock = ({ LKRS_ID }) => {
     };
 
     const [ekycUrl, setEkycUrl] = useState('');
-    useEffect(() => {
-        const handleMessage = (event) => {
-            // Check origin
-            if (event.origin !== "http://localhost:3001") return;
-            // Check path
-            if (window.location.pathname !== "/LayoutForm") return;
-            if (event.data.ekycStatus) {
-                Swal.fire('eKYC Result', `Status: ${event.data.ekycStatus}`, 'info');
-            }
-        };
-        window.addEventListener("message", handleMessage);
-        return () => window.removeEventListener("message", handleMessage);
-    }, []);
+    const ownerNameInputRef = useRef('');
+
+   useEffect(() => {
+  const handleMessage = (event) => {
+    if (event.origin !== "http://localhost:3001") return;
+    if (window.location.pathname !== "/LayoutForm") return;
+
+    if (event.data.ekycStatus === "Success") {
+      if (selectedOwner?.name) {
+        const encodedName = encodeURIComponent(selectedOwner.name);
+        fetchEKYC_ResponseDetails(encodedName, event.data.ekycTxnNo);
+      } else {
+        console.error("No selected owner found.");
+        Swal.fire('Missing Data', 'Please select an owner before starting eKYC.', 'warning');
+        return;
+      }
+
+      Swal.fire({
+        title: 'eKYC Result',
+        text: `Status: ${event.data.ekycStatus}\nName: ${selectedOwner?.name || 'N/A'}`,
+        icon: 'success',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        confirmButtonText: 'OK'
+      });
+    } else if (event.data.ekycStatus === "Failure") {
+      Swal.fire('eKYC Result', `Status: ${event.data.ekycStatus}`, 'error');
+    }
+  };
+
+  window.addEventListener("message", handleMessage);
+  return () => window.removeEventListener("message", handleMessage);
+}, [selectedOwner]);
+
+
 
     //do EKYC API
     const handleDoEKYC = async () => {
@@ -7909,6 +7960,7 @@ const Owner_EKYCBlock = ({ LKRS_ID }) => {
         });
 
         if (swalResult.isConfirmed) {
+            start_loader();
             try {
                 // Use selectedOwner.id and selectedOwner.name
                 const OwnerNumber = selectedOwner.id;
@@ -7923,57 +7975,73 @@ const Owner_EKYCBlock = ({ LKRS_ID }) => {
                 });
 
                 const resultUrl = response?.ekycRequestUrl;
-
+                localStorage.setItem("tranNo", response?.tranNo);
                 if (resultUrl) {
                     window.open(
                         resultUrl,
                         '_blank',
                         `toolbar=0,location=0,menubar=0,width=${window.screen.width},height=${window.screen.height},top=0,left=0`
                     );
+                    stop_loader();
                 } else {
+                    stop_loader();
                     Swal.fire('Error', 'No redirect URL returned', 'error');
                 }
             } catch (error) {
                 Swal.fire('Error', 'eKYC API call failed', 'error');
                 console.error('eKYC API call failed:', error);
+                stop_loader();
             }
         }
     };
 
-    const fetchEKYC_ResponseDetails = async (ownerName) => {
-        try {
-            const payload = {
-                transactionNumber: 83,
-                OwnerType: 'NEWOWNER',
-                ownName: ownerName,
-            };
+    const fetchEKYC_ResponseDetails = async (ownerName, txnno) => {
+        const transaction_No = localStorage.getItem("tranNo");
+        if (transaction_No === txnno) {
+            try {
+                const payload = {
+                    transactionNumber: 83,
+                    OwnerType: 'NEWOWNER',
+                    ownName: ownerName,
+                };
+                const transactionNumber = 83;
+                const OwnerType = "NEWOWNER";
 
-            const response = await ekyc_Response(payload);
 
-            console.log("EKYC", response);
-            setOwnerData(response?.ekycResponse);
 
-        } catch (error) {
-            console.error('Error fetching data:', error);
+                const response = await ekyc_Response(transactionNumber, OwnerType, ownerName);
+                setOwnerData(response);
+
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            } finally {
+
+            }
+        } else {
+
         }
+
     };
 
     const insertEKYCDetails = async () => {
-
         let ownerID = 0;
         let ownerName = "";
         let newOwner;
+        let ownerPhoneNo;
 
         if (selectedOwner.name && selectedOwner.id) {
             ownerID = selectedOwner.id;
             ownerName = selectedOwner.name;
+            ownerPhoneNo = selectedOwner.phoneNo || "";
             newOwner = false;
         } else { //newly owner sending parameter
             ownerID = 0;
             ownerName = selectedOwner.name;
             newOwner = true;
+            ownerPhoneNo = selectedOwner.phoneNo || "";
         }
-        console.log("ownerData", ownerData);
+
         const payloadOwner = {
             owN_ID: ownerID,
             owN_LKRS_ID: LKRS_ID,
@@ -7983,11 +8051,11 @@ const Owner_EKYCBlock = ({ LKRS_ID }) => {
             owN_IDNUMBER: "",
             owN_RELATIONTYPE: "",
             owN_RELATIONNAME: "",
-            owN_MOBILENUMBER: "",
-            owN_AADHAARNUMBER: ownerData?.maskedAadhaar ?? null,
-            owN_NAMEASINAADHAAR: ownerData?.ownerNameEng ?? null,
-            owN_AADHAARVERISTATUS: "",
-            owN_NAMEMATCHSCORE: 0,
+            owN_MOBILENUMBER: ownerPhoneNo,
+            owN_AADHAARNUMBER: ownerData?.ekycResponse?.maskedAadhaar ?? null,
+            owN_NAMEASINAADHAAR: ownerData?.ekycResponse?.ownerNameEng ?? null,
+            owN_AADHAARVERISTATUS: ekyc_Data.ekycStatus,
+            owN_NAMEMATCHSCORE: ownerData?.nameMatchScore,
             owN_COMPANYOWNPROPERTY: false,
             owN_COMPANYNAME: "",
             owN_REPRESENTATIVENAME: "",
@@ -7996,23 +8064,37 @@ const Owner_EKYCBlock = ({ LKRS_ID }) => {
             owN_CREATEDBY: createdBy,
             owN_CREATEDNAME: createdName,
             owN_CREATEDROLE: roleID,
-            owN_VAULTREFID: ownerData?.vaultRefNumber ?? null,
+            owN_VAULTREFID: ownerData?.ekycResponse?.vaultRefNumber ?? null,
             owN_VAULT_REMARKS: "",
             owN_ALREADYEXIST_INEAASTHI: false,
             owN_AADHAAR_RESPONSE: JSON.stringify(ownerData) ?? null,
             own_OwnOrRep: selectedOption,
             own_IsNewlyAddedOwner: newOwner,
+            own_TransactionNo: ekyc_Data.ekycTxnNo,
         }
         try {
             start_loader();
             const response = await ekyc_insertOwnerDetails(payloadOwner);
 
             if (response.responseStatus === true) {
+                const apiResponse = await ownerEKYC_Details("1", LKRS_ID);
+                setOwnerData(apiResponse);
                 Swal.fire({
-                    title: response.responseMessage,
+                    text: response.responseMessage,
                     icon: "success",
                     confirmButtonText: "OK",
+                    allowOutsideClick: false, // prevents closing on outside click
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        try {
+                            const response = await ownerEKYC_Details("1", LKRS_ID);
+                            setOwnerDataList(response); // assuming response is the array you shared
+                        } catch (error) {
+                            console.error("Failed to fetch EKYC owner details:", error);
+                        }
+                    }
                 });
+
             } else {
                 Swal.fire({
                     text: response.responseMessage,
@@ -8022,11 +8104,7 @@ const Owner_EKYCBlock = ({ LKRS_ID }) => {
             }
         } catch (error) {
             console.error("Failed to insert data:", error);
-            Swal.fire({
-                text: "Something went wrong. Please try again later. inseert EKYC",
-                icon: "error",
-                confirmButtonText: "OK",
-            });
+
         } finally {
             stop_loader();
         }
@@ -8259,14 +8337,14 @@ const Owner_EKYCBlock = ({ LKRS_ID }) => {
                                 <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-4" >
                                     <button className='btn btn-info btn-block' onClick={handleDoEKYC}>Do eKYC</button>
                                 </div>
-                                <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-4" >
-                                    <button className='btn btn-info btn-block' onClick={() => fetchEKYC_ResponseDetails(ownerNameInput)}>eKYC Status</button>
-                                </div>
+                                {/* <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-4" >
+                                    <button className='btn btn-info btn-block' onClick={() => fetchEKYC_ResponseDetails()}>eKYC Status</button>
+                                </div> */}
                             </div>
                             <div className='row'>
                                 <div className="col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10 mt-4" ></div>
                                 <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-4" >
-                                    <button className='btn btn-info btn-block' onClick={insertEKYCDetails}>Save</button>
+                                    <button className='btn btn-info btn-block' ref={EKYC_Save} onClick={insertEKYCDetails} >Save</button>
                                 </div>
                             </div>
                             {ekycUrl && (
@@ -8282,13 +8360,11 @@ const Owner_EKYCBlock = ({ LKRS_ID }) => {
 
                             <hr />
                             <div className='row'>
-                                {ownerData && (
+
+                                {ownerDataList.length > 0 && (
+
                                     <div className='col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12'>
                                         <h5>Owner / Owner Representative EKYC Details</h5>
-                                        {/* Error Message */}
-                                        {errorMessage && <p className="text-danger text-center">{errorMessage}</p>}
-
-                                        {/* Table */}
                                         <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
                                             <thead className="table-light">
                                                 <tr>
@@ -8303,18 +8379,35 @@ const Owner_EKYCBlock = ({ LKRS_ID }) => {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <tr>
-                                                    <td style={{ textAlign: 'center' }}>
-                                                        <img src={usericon} alt="Owner" width="50" height="50" />
-                                                    </td>
-                                                    <td style={{ textAlign: 'center' }}>{ownerData.ownerNameEng || 'N/A'}</td>
-                                                    <td style={{ textAlign: 'center' }}>{ownerData.maskedAadhaar || 'N/A'}</td>
-                                                    <td style={{ textAlign: 'center' }}>{ownerData.gender || 'N/A'}</td>
-                                                    <td style={{ textAlign: 'center' }}>{ownerData.dateOfBirth || 'N/A'}</td>
-                                                    <td style={{ textAlign: 'center' }}>{ownerData.addressEng || 'N/A'}</td>
-                                                    <td style={{ textAlign: 'center' }}>{ownerData.aadhaarHash ? 'Verified' : 'Not Verified'}</td>
-                                                </tr>
+                                                {ownerDataList
+                                                    .filter(owner => owner.owN_AADHAARVERISTATUS === "Success")
+                                                    .map((owner, index) => {
+                                                        let parsedAadhaar = {};
+                                                        try {
+                                                            parsedAadhaar = JSON.parse(owner.owN_AADHAAR_RESPONSE).ekycResponse || {};
+                                                        } catch (err) {
+                                                            console.warn("Invalid Aadhaar JSON for owner:", owner.owN_NAME_EN);
+                                                        }
+
+                                                        return (
+                                                            <tr key={index}>
+                                                                <td style={{ textAlign: 'center' }}>
+                                                                    <img src={usericon} alt="Owner" width="50" height="50" />
+                                                                </td>
+                                                                <td style={{ textAlign: 'center' }}>{parsedAadhaar.ownerNameEng || 'N/A'}</td>
+                                                                <td style={{ textAlign: 'center' }}>{parsedAadhaar.maskedAadhaar || 'N/A'}</td>
+                                                                <td style={{ textAlign: 'center' }}>{parsedAadhaar.gender || 'N/A'}</td>
+                                                                <td style={{ textAlign: 'center' }}>{parsedAadhaar.dateOfBirth || 'N/A'}</td>
+                                                                <td style={{ textAlign: 'center' }}>{parsedAadhaar.addressEng || 'N/A'}</td>
+                                                                <td style={{ textAlign: 'center' }}>Verified</td>
+                                                                <td style={{ textAlign: 'center' }}>
+                                                                    {owner.owN_NAMEMATCHSCORE > 80 ? 'Matched' : 'Not Matched'}
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
                                             </tbody>
+
                                         </table>
                                     </div>
                                 )}
@@ -8322,11 +8415,8 @@ const Owner_EKYCBlock = ({ LKRS_ID }) => {
                             </div>
                         </div>
                     </div>
-
                 </div>
-
             </div>
-
         </div>
     );
 };
@@ -8357,6 +8447,10 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
     const [LKRSID, setLKRSID] = useState('');
     const [jdaRepName, setJdaRepName] = useState('');
 
+    const [ekyc_Status, setEKYC_Status] = useState(false);
+    const [phone_Status, setPhone_Status] = useState(false);
+    const [ownerDataList, setOwnerDataList] = useState([]);
+    const [ekyc_Data, setEkyc_Data] = useState(null);
     useEffect(() => {
         const storedCreatedBy = localStorage.getItem('createdBy');
         const storedCreatedName = localStorage.getItem('createdName');
@@ -8467,7 +8561,7 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
                     confirmButtonText: "OK",
                 });
                 toast.success(response.responseMessage);
-
+                setPhone_Status(true);
                 setIsVerified(true);
 
             } else {
@@ -8563,7 +8657,6 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
     const [ekycUrl, setEkycUrl] = useState('');
     const [ownerList, setOwnerList] = useState([]);
     const [ownerNames, setOwnerNames] = useState('');
-
     //multiple owner list fetch
     const fetchOwners = async (LKRSID) => {
         try {
@@ -8583,9 +8676,23 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
             setOwnerList([]);
             setOwnerNames(''); // fallback if API fails
         }
-    };
+    };    
+    useEffect(() => {
+        const handleMessage = (event) => {
+            // Ensure the message is coming from your domain
+            if (event.origin !== "http://localhost:3001") return;
 
+            const data = event.data;
 
+            // You can store this in state or use it directly
+            console.log("eKYC Data received:", data);
+            setEkyc_Data(data);
+        };
+
+        window.addEventListener("message", handleMessage);
+
+        return () => window.removeEventListener("message", handleMessage);
+    }, []);
 
 
     useEffect(() => {
@@ -8594,8 +8701,22 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
             if (event.origin !== "http://localhost:3001") return;
             // Check path
             if (window.location.pathname !== "/LayoutForm") return;
-            if (event.data.ekycStatus) {
-                Swal.fire('eKYC Result', `Status: ${event.data.ekycStatus}`, 'info');
+            if (event.data.ekycStatus === "Success") {
+                Swal.fire({
+                    title: 'eKYC Result',
+                    text: `Status: ${event.data.ekycStatus}`,
+                    icon: 'success',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Use the latest value from the ref
+                        fetchEKYC_ResponseDetails(jdaRepName, event.data.ekycTxnNo);
+                    }
+                });
+            } else if (event.data.ekycStatus === "Failure") {
+                Swal.fire('eKYC Result', `Status: ${event.data.ekycStatus}`, 'error');
             }
         };
         window.addEventListener("message", handleMessage);
@@ -8608,101 +8729,134 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
             Swal.fire('Validation Error', 'Please enter the JDA Representative Name.', 'warning');
             return;
         }
+        const swalResult = await Swal.fire({
+            title: 'Redirecting for e-KYC Verification',
+            text: 'You are being redirected to another tab for e-KYC verification. Once the e-KYC verification is complete, please return to this tab and click the verify e-KYC button.',
+            icon: 'info',
+            confirmButtonText: 'OK',
+            allowOutsideClick: false
+        });
 
-        try {
-            let OwnerNumber = 1;
-            let BOOK_APP_NO = 2;
-            let PROPERTY_CODE = 1;
+        if (swalResult.isConfirmed) {
+            start_loader();
+            try {
+                // Use selectedOwner.id and selectedOwner.name
+                const OwnerNumber = 1;
+                const BOOK_APP_NO = 2;
+                const PROPERTY_CODE = 1;
 
-            const response = await ekyc_Details({ OwnerNumber, BOOK_APP_NO, PROPERTY_CODE });
+                // Pass them to your API
+                const response = await ekyc_Details({
+                    OwnerNumber,
+                    BOOK_APP_NO,
+                    PROPERTY_CODE
+                });
 
-            // Extract `ekycRequestUrl` from the API response
-            const resultUrl = response?.ekycRequestUrl;
-            console.log("resultUrl:", resultUrl);
-
-            if (resultUrl) {
-                window.open(
-                    resultUrl,
-                    '_blank',
-                    `toolbar=0,location=0,menubar=0,width=${window.screen.width},height=${window.screen.height},top=0,left=0`
-                );
-            } else {
-                Swal.fire('Error', 'No redirect URL returned', 'error');
+                const resultUrl = response?.ekycRequestUrl;
+                localStorage.setItem("tranNo", response?.tranNo);
+                if (resultUrl) {
+                    window.open(
+                        resultUrl,
+                        '_blank',
+                        `toolbar=0,location=0,menubar=0,width=${window.screen.width},height=${window.screen.height},top=0,left=0`
+                    );
+                    stop_loader();
+                } else {
+                    stop_loader();
+                    Swal.fire('Error', 'No redirect URL returned', 'error');
+                }
+            } catch (error) {
+                Swal.fire('Error', 'eKYC API call failed', 'error');
+                console.error('eKYC API call failed:', error);
+                stop_loader();
             }
-        } catch (error) {
-            Swal.fire('Error', 'eKYC API call failed', 'error');
-            console.error('eKYC API call failed:', error);
-        }
-
-        // const swalResult = await Swal.fire({
-        //     title: 'Redirecting for e-KYC Verification',
-        //     text: 'You are being redirected to another tab for e-KYC verification. Once the e-KYC verification is complete, please return to this tab and click the verify e-KYC button.',
-        //     icon: 'info',
-        //     confirmButtonText: 'OK',
-        //     allowOutsideClick: false
-        // });
-
-        // if (swalResult.isConfirmed) {
-
-
-        // }
-    };
-
-    const fetchEKYC_ResponseDetails = async () => {
-        try {
-            const payload = {
-                transactionNumber: 83,
-                OwnerType: 'NEWOWNER',
-            }
-
-            const response = await ekyc_Response(payload);
-
-            setOwnerData(response);
-
-            const ekycresponse = await insertEKYCDetails(response);
-
-        } catch (error) {
-            console.error('Error fetching data:', error);
         }
     };
-    const insertEKYCDetails = async (response) => {
+
+    const fetchEKYC_ResponseDetails = async (jdaRepName, txnno) => {
+        const transaction_No = localStorage.getItem("tranNo");
+        if (transaction_No === txnno) {
+            try {
+                const payload = {
+                    transactionNumber: 83,
+                    OwnerType: 'NEWOWNER',
+                    ownName: jdaRepName,
+                };
+
+                const response = await ekyc_Response(payload);
+                setOwnerData(response);
+                setEKYC_Status(true);
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            } finally {
+
+            }
+        } else {
+
+        }
+    };
+    const insertEKYCDetails = async () => {
+        if (ekyc_Status === false && phone_Status === false) {
+            Swal.fire({
+                text: "Please do a JDA / JDA Representative EKYC",
+                icon: "error",
+                confirmButtonText: "OK",
+            });
+            return
+        }
         const payloadOwner = {
-            owN_ID: 0,
-            owN_LKRS_ID: LKRSID,
-            owN_NAME_KN: "string",
-            owN_NAME_EN: "String",
-            owN_IDTYPE: "String",
-            owN_IDNUMBER: "String",
-            owN_RELATIONTYPE: "String",
-            owN_RELATIONNAME: "String",
-            owN_MOBILENUMBER: "9999999999",
-            owN_AADHAARNUMBER: response.maskedAadhaar,
-            owN_NAMEASINAADHAAR: response.ownerNameEng,
-            owN_AADHAARVERISTATUS: "Success",
-            owN_NAMEMATCHSCORE: 0,
-            owN_COMPANYOWNPROPERTY: true,
-            owN_COMPANYNAME: "String",
-            owN_REPRESENTATIVENAME: "String",
+            owN_ID: 1,
+            owN_LKRS_ID: LKRS_ID,
+            owN_NAME_KN: "",
+            owN_NAME_EN: jdaRepName,
+            owN_IDTYPE: "",
+            owN_IDNUMBER: "",
+            owN_RELATIONTYPE: "",
+            owN_RELATIONNAME: "",
+            owN_MOBILENUMBER: phone,
+            owN_AADHAARNUMBER: ownerData?.ekycResponse?.maskedAadhaar ?? null,
+            owN_NAMEASINAADHAAR: ownerData?.ekycResponse?.ownerNameEng ?? null,
+            owN_AADHAARVERISTATUS: ekyc_Data.ekycStatus,
+            owN_NAMEMATCHSCORE: ownerData?.nameMatchScore,
+            owN_COMPANYOWNPROPERTY: false,
+            owN_COMPANYNAME: "",
+            owN_REPRESENTATIVENAME: "",
             owN_REMARKS: "",
             owN_ADDITIONALINFO: "",
             owN_CREATEDBY: createdBy,
             owN_CREATEDNAME: createdName,
             owN_CREATEDROLE: roleID,
-            owN_VAULTREFID: response.vaultRefNumber,
-            owN_VAULT_REMARKS: "string",
-            owN_ALREADYEXIST_INEAASTHI: true,
-            owN_AADHAAR_RESPONSE: JSON.stringify(response),
+            owN_VAULTREFID: ownerData?.ekycResponse?.vaultRefNumber ?? null,
+            owN_VAULT_REMARKS: "",
+            owN_ALREADYEXIST_INEAASTHI: false,
+            owN_AADHAAR_RESPONSE: JSON.stringify(ownerData) ?? null,
+            own_OwnOrRep: selectedOption,
+            own_IsNewlyAddedOwner: true,
+            own_TransactionNo: ekyc_Data.ekycTxnNo,
         }
         try {
             start_loader();
             const response = await ekyc_insertOwnerDetails(payloadOwner);
 
             if (response.responseStatus === true) {
+
                 Swal.fire({
-                    title: response.responseMessage,
+                    text: response.responseMessage,
                     icon: "success",
                     confirmButtonText: "OK",
+                    allowOutsideClick: false, // prevents closing on outside click
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        try {
+                            const response = await ownerEKYC_Details("1", LKRS_ID);
+                            setOwnerDataList(response); // assuming response is the array you shared
+                        } catch (error) {
+                            console.error("Failed to fetch EKYC owner details:", error);
+                        }
+                    }
                 });
+
             } else {
                 Swal.fire({
                     text: response.responseMessage,
@@ -8712,11 +8866,6 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
             }
         } catch (error) {
             console.error("Failed to insert data:", error);
-            Swal.fire({
-                text: "Something went wrong. Please try again later. JDA EKYC",
-                icon: "error",
-                confirmButtonText: "OK",
-            });
         } finally {
             stop_loader();
         }
@@ -8764,7 +8913,7 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
                             <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2" >
                                 <button className='btn btn-info btn-block' onClick={handleDoEKYC}>Do eKYC</button>
                             </div>
-                            <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2" >
+                            <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2" hidden>
                                 <button className='btn btn-info btn-block' onClick={fetchEKYC_ResponseDetails}>eKYC Status</button>
                             </div>
                             {ekycUrl && (
@@ -8875,20 +9024,19 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
 
                         </div>
                     </div>
+                    <div className="col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10 mt-3"></div>
+                    <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-3">
+                        <button className='btn btn-success btn-block' onClick={insertEKYCDetails}>Save and continue</button>
+                    </div>
                 </div>
 
                 <div className='row'>
 
-                    {ownerData && (
+
+                    {ownerDataList.length > 0 && (
 
                         <div className='col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12'>
-                            <hr />
                             <h5>JDA / JDA Representative EKYC Details</h5>
-                            {/* Error Message */}
-                            {errorMessage && <p className="text-danger text-center">{errorMessage}</p>}
-
-                            {/* Table */}
-
                             <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
                                 <thead className="table-light">
                                     <tr>
@@ -8899,32 +9047,40 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
                                         <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th>
                                         <th>ವಿಳಾಸ / Address</th>
                                         <th>ಇಕೆವೈಸಿ ಸ್ಥಿತಿ / EKYC Status</th>
+                                        <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td style={{ textAlign: 'center' }}> <img
-                                            src={usericon}
-                                            alt="Owner"
-                                            width="50"
-                                            height="50"
-                                        />
-                                        </td>
-                                        <td style={{ textAlign: 'center' }}>{ownerData.ownerNameEng || 'N/A'}</td>
-                                        <td style={{ textAlign: 'center' }}>{ownerData.maskedAadhaar || 'N/A'}</td>
-                                        <td style={{ textAlign: 'center' }}>{ownerData.gender || 'N/A'}</td>
-                                        <td style={{ textAlign: 'center' }}>{ownerData.dateOfBirth || 'N/A'}</td>
-                                        <td style={{ textAlign: 'center' }}>{ownerData.addressEng || 'N/A'}</td>
-                                        <td style={{ textAlign: 'center' }}>{ownerData.aadhaarHash ? 'Verified' : 'Not Verified'}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <div className='col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mt-3'>
-                                <button className="btn btn-info" >
-                                    Save
-                                </button>
-                            </div>
+                                    {ownerDataList
+                                        .filter(owner => owner.owN_AADHAARVERISTATUS === "Success")
+                                        .map((owner, index) => {
+                                            let parsedAadhaar = {};
+                                            try {
+                                                parsedAadhaar = JSON.parse(owner.owN_AADHAAR_RESPONSE).ekycResponse || {};
+                                            } catch (err) {
+                                                console.warn("Invalid Aadhaar JSON for owner:", owner.owN_NAME_EN);
+                                            }
 
+                                            return (
+                                                <tr key={index}>
+                                                    <td style={{ textAlign: 'center' }}>
+                                                        <img src={usericon} alt="Owner" width="50" height="50" />
+                                                    </td>
+                                                    <td style={{ textAlign: 'center' }}>{parsedAadhaar.ownerNameEng || 'N/A'}</td>
+                                                    <td style={{ textAlign: 'center' }}>{parsedAadhaar.maskedAadhaar || 'N/A'}</td>
+                                                    <td style={{ textAlign: 'center' }}>{parsedAadhaar.gender || 'N/A'}</td>
+                                                    <td style={{ textAlign: 'center' }}>{parsedAadhaar.dateOfBirth || 'N/A'}</td>
+                                                    <td style={{ textAlign: 'center' }}>{parsedAadhaar.addressEng || 'N/A'}</td>
+                                                    <td style={{ textAlign: 'center' }}>Verified</td>
+                                                    <td style={{ textAlign: 'center' }}>
+                                                        {owner.owN_NAMEMATCHSCORE > 80 ? 'Matched' : 'Not Matched'}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                </tbody>
+
+                            </table>
                         </div>
                     )}
                 </div>
@@ -8935,7 +9091,7 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
 //Declaration Block
 const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectionSaved, isEPIDSectionSaved, isApprovalSectionSaved, isReleaseSectionSaved, isSitesSectionSaved, isECSectionSaved }) => {
     const { t, i18n } = useTranslation();
-
+    const navigate = useNavigate();
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
 
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -8946,6 +9102,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
     const [declaration1Checked, setDeclaration1Checked] = useState(false);
     const [declaration2Checked, setDeclaration2Checked] = useState(false);
     const [declaration3Checked, setDeclaration3Checked] = useState(false);
+    const [ownerDataList, setOwnerDataList] = useState([]);
 
 
     const [selectedLandType, setSelectedLandType] = useState("");
@@ -9046,7 +9203,38 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
         });
     };
 
+    useEffect(() => {
+        if (LKRS_ID) {
+            fetch_ownerDetails(LKRS_ID);
+        }
+    }, [LKRS_ID]);
+    // =============================================OwnerEKYC details starts=====================================
 
+    const [ownerList, setOwnerList] = React.useState([]);
+    const [ownerNames, setOwnerNames] = React.useState('');
+
+    const fetch_ownerDetails = async (localLKRSID) => {
+        try {
+            start_loader(); // Start loader
+            const apiResponse = await ownerEKYC_Details("1", localLKRSID);
+
+            // Set full owner list
+            setOwnerList(apiResponse || []);
+
+            // Create comma-separated owner names
+            const ownerNameList = (apiResponse || [])
+                .map(owner => owner.owN_NAME_EN)
+                .filter(name => !!name)  // Filter out null/undefined names
+                .join(', ');
+            setOwnerNames(ownerNameList);
+            setOwnerDataList(apiResponse);
+        } catch (error) {
+            console.error("Failed to fetch owner details:", error);
+
+        } finally {
+            stop_loader(); // Stop loader
+        }
+    };
 
     //final Save API integration
     const final_Save = async () => {
@@ -9090,11 +9278,21 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
             return;
         }
 
+
         if (isECSectionSaved === false) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Important!',
                 text: 'Please save the EC details before proceeding.',
+                confirmButtonText: 'Ok'
+            });
+            return;
+        }
+        if (ownerList.some(owner => owner.owN_AADHAARVERISTATUS !== "Success")) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Aadhaar Verification Failed',
+                text: 'One or more owners have not completed Aadhaar eKYC successfully.',
                 confirmButtonText: 'Ok'
             });
             return;
@@ -9109,10 +9307,13 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
             return;
         }
 
+
+
+
         start_loader();
         try {
             const payload = {
-                level: 0,
+                level: 1,
                 lkrS_ID: LKRS_ID,
                 lkrS_REMARKS: "",
                 lkrS_ADDITIONALINFO: "",
@@ -9127,7 +9328,19 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
                     text: response.responseMessage,
                     icon: "success",
                     confirmButtonText: "OK",
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        navigate('/Info', {
+                            state: {
+                                LKRS_ID,
+                                createdBy,
+                                createdName,
+                                roleID
+                            }
+                        });
+                    }
                 });
+
                 stop_loader();
             } else {
                 stop_loader();
@@ -9227,6 +9440,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
     const [epid_fetchedData, setEPID_FetchedData] = useState(null);
     const [phoneNumbers, setPhoneNumbers] = useState({});
     const [ownerTableData, setOwnerTableData] = useState([]);
+    const [ecNumber, setECNumber] = useState("")
 
     const customStyles = {
         headCells: {
@@ -9299,6 +9513,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
             if (response && response.surveyNumberDetails && response.surveyNumberDetails.length > 0) {
 
                 setSelectedLandType(response.lkrS_LANDTYPE); //  Store the land type
+                setECNumber(response.lkrS_ECNUMBER);
 
 
                 const parsedSurveyDetails = mapSurveyDetails(response.surveyNumberDetails);
@@ -9318,6 +9533,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
                 stop_loader();
             } else if (response && response.khataDetails && response.khataOwnerDetails && response.khataOwnerDetails.length > 0) {
                 setSelectedLandType(response.lkrS_LANDTYPE); //  Store the land type
+                setECNumber(response.lkrS_ECNUMBER);
                 setEPIDShowTable(true);
                 let khataDetailsJson = {};
                 if (response.khataDetails?.khatA_JSON) {
@@ -9449,30 +9665,6 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
             center: true,
             sortable: true,
         },
-        // {
-        //     name: t('translation.BDA.table1.action'),
-        //     center: true,
-        //     cell: (row, index) => (
-        //         <div>
-        //             {/* <button
-        //                 className="btn btn-warning btn-sm me-2"
-        //                 onClick={() => handleOrderEdit(index)} disabled={!isOrder_Editing}
-        //             >
-        //                 <i className="fa fa-pencil"></i>
-        //             </button> */}
-        //             <button
-        //                 className="btn btn-danger btn-sm"
-
-        //             >
-        //                 <i className="fa fa-trash"></i>
-        //             </button>
-        //         </div>
-        //     ),
-        //     ignoreRowClick: true,
-        //     allowOverflow: true,
-        //     button: true,
-        // },
-
     ];
 
     const approval_columns = [
@@ -9694,11 +9886,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
             }
         } catch (error) {
             console.error("Failed to insert data:", error);
-            Swal.fire({
-                text: "Something went wrong. Please try again later.site",
-                icon: "error",
-                confirmButtonText: "OK",
-            });
+
         } finally {
             stop_loader();
         }
@@ -9706,35 +9894,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
 
     // =============================================OwnerEKYC details starts=====================================
 
-    const [ownerList, setOwnerList] = React.useState([]);
-    const [ownerNames, setOwnerNames] = React.useState('');
 
-    const fetch_ownerDetails = async (localLKRSID) => {
-        try {
-            start_loader(); // Start loader
-            const apiResponse = await ownerEKYC_Details("1", localLKRSID);
-
-            // Set full owner list
-            setOwnerList(apiResponse || []);
-
-            // Create comma-separated owner names
-            const ownerNameList = (apiResponse || [])
-                .map(owner => owner.owN_NAME_EN)
-                .filter(name => !!name)  // Filter out null/undefined names
-                .join(', ');
-            setOwnerNames(ownerNameList);
-
-        } catch (error) {
-            console.error("Failed to fetch owner details:", error);
-            Swal.fire({
-                text: "Something went wrong. Please try again later.",
-                icon: "error",
-                confirmButtonText: "OK",
-            });
-        } finally {
-            stop_loader(); // Stop loader
-        }
-    };
     const owner_columns = [
         {
             name: 'Name',
@@ -9749,15 +9909,6 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
             name: 'Aadhaar Verification Status',
             selector: row => row.owN_AADHAARVERISTATUS || 'N/A',
         },
-        {
-            name: 'ID Type',
-            selector: row => row.owN_IDTYPE || 'N/A',
-        },
-        {
-            name: 'ID Number',
-            selector: row => row.owN_IDNUMBER || 'N/A',
-        },
-
         {
             name: 'Name match Status',
             selector: row => row.owN_IDNUMBER || 'N/A',
@@ -10025,18 +10176,55 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
                             )}
                             <hr />
 
-                            {setOwnerList.length > 0 && (
-                                <>
-                                    <h4>EKYC Owner Details</h4>
-                                    <DataTable
-                                        columns={owner_columns}
-                                        data={ownerList}
-                                        progressPending={loading}
-                                        pagination
-                                        highlightOnHovers
-                                        customStyles={customStyles}
-                                    />
-                                </>
+
+                            {ownerDataList.length > 0 && (
+                                <div className='col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12'>
+                                    <h5>Owner / Owner Representative EKYC Details</h5>
+                                    <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
+                                        <thead className="table-light">
+                                            <tr>
+                                                <th>ಫೋಟೋ / Photo</th>
+                                                <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>
+                                                <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhar Number</th>
+                                                <th>ಲಿಂಗ / Gender</th>
+                                                <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th>
+                                                <th>ವಿಳಾಸ / Address</th>
+                                                <th>ಇಕೆವೈಸಿ ಸ್ಥಿತಿ / EKYC Status</th>
+                                                <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {ownerDataList
+                                                .filter(owner => owner.owN_AADHAARVERISTATUS === "Success")
+                                                .map((owner, index) => {
+                                                    let parsedAadhaar = {};
+                                                    try {
+                                                        parsedAadhaar = JSON.parse(owner.owN_AADHAAR_RESPONSE).ekycResponse || {};
+                                                    } catch (err) {
+                                                        console.warn("Invalid Aadhaar JSON for owner:", owner.owN_NAME_EN);
+                                                    }
+
+                                                    return (
+                                                        <tr key={index}>
+                                                            <td style={{ textAlign: 'center' }}>
+                                                                <img src={usericon} alt="Owner" width="50" height="50" />
+                                                            </td>
+                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.ownerNameEng || 'N/A'}</td>
+                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.maskedAadhaar || 'N/A'}</td>
+                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.gender || 'N/A'}</td>
+                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.dateOfBirth || 'N/A'}</td>
+                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.addressEng || 'N/A'}</td>
+                                                            <td style={{ textAlign: 'center' }}>Verified</td>
+                                                            <td style={{ textAlign: 'center' }}>
+                                                                {owner.owN_NAMEMATCHSCORE > 80 ? 'Matched' : 'Not Matched'}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                        </tbody>
+
+                                    </table>
+                                </div>
                             )}
                         </div>
                     </Modal>

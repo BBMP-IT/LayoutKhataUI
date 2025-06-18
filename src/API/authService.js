@@ -398,15 +398,19 @@ export const ekyc_Details = async ({ OwnerNumber, BOOK_APP_NO, PROPERTY_CODE }) 
   }
 };
 //EKYC Resposne API
-export const ekyc_Response = async (payload) => {
+export const ekyc_Response = async (transactionNumber, OwnerType, ownName) => {
   try {
-    const queryParams = new URLSearchParams({
-      transactionNumber: payload.transactionNumber,
-      OwnerType: payload.OwnerType,
-      ownName: payload.ownName,
-    }).toString();
+    // const queryParams = new URLSearchParams({
+    //   transactionNumber: payload.transactionNumber,
+    //   OwnerType: payload.OwnerType,
+    //   ownName: payload.ownName,
+    // }).toString();
 
-    const url = `${config.endpoints.ekyc_response}?${queryParams}`;
+    // const url = `${config.endpoints.ekyc_response}?${queryParams}`;
+
+    const query = `?transactionNumber=${transactionNumber}&OwnerType=${OwnerType}&ownName=${ownName}`;
+    const url = config.endpoints.ekyc_response + query;
+
 
     const response = await apiService.getRequest(url);
     return response;

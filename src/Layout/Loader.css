@@ -26,15 +26,15 @@
   100% { transform: rotate(360deg); }
 }
 
- */
+
 
 
 .layout-form-container.no-interaction {
-  pointer-events: none; /* Disable interactions with the form when loading */
+  pointer-events: none; 
   
-}
+} */
 
-/* .loader-container {
+.loader-container {
   position: fixed;
   top: 0;
   left: 0;
@@ -59,7 +59,20 @@
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
-} */
+}
+
+
+ */
+
+
+
+
+
+
+
+
+
+
 
 .loader-container {
   position: fixed;
@@ -76,7 +89,7 @@
 
 .loader-wrapper {
   position: relative;
-  width: 120px; /* Increase the loader size */
+  width: 120px; 
   height: 120px;
 }
 

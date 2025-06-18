@@ -8,20 +8,29 @@ const EKYCResultHandler = () => {
 
   useEffect(() => {
     // Extract query params (e.g., ?status=success&token=xyz)
-    const params = new URLSearchParams(location.search);
-    const status = params.get('status');
-    const token = params.get('token');
-
+   const params = new URLSearchParams(location.search);
+  const txnno = params.get('txnno');
+  const txndatetime = params.get('txndatetime');
+  const status = params.get('status');
+  const vaultrefno = params.get('vaultrefno');
+console.log({ txnno, txndatetime, status, vaultrefno });
     // Communicate result to opener tab (main app)
     if (window.opener) {
-      window.opener.postMessage({ ekycStatus: status, ekycToken: token }, "http://localhost:3001/LayoutForm");
+      // window.opener.postMessage({ ekycStatus: status, ekycToken: token }, "http://localhost:3001/LayoutForm");
+      window.opener.postMessage(
+        {
+          ekycTxnNo: txnno,
+          ekycTxnDateTime: txndatetime,
+          ekycStatus: status,
+          ekycVaultRefNo: vaultrefno
+        },
+        "http://localhost:3001/LayoutForm"
+      );
     }
 
-    // Optionally, close this tab after a short delay
-    // Comment out the next 3 lines if you want to allow manual navigation
     setTimeout(() => {
       window.close();
-    }, 3000);
+    }, 5000);
   }, [location]);
 
   // Handler for the "Go Back" button
