@@ -22,13 +22,6 @@ const ReleaseSelection = () => {
   const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
   const [selectedValue, setSelectedValue] = useState('');
 
-  // Sample data for the DataTable
-  const sampleData = Array.from({ length: 100 }, (_, index) => ({
-    id: index + 1,
-    dimension: `Dimension ${index + 1}`,
-    status: index % 2 === 0 ? 'Released' : 'Pending',
-    date: new Date().toLocaleDateString(),
-  }));
 
   const [releaseData, setReleaseData] = useState([]); // Data for the "Release Table"
   const [releasedData, setReleasedData] = useState([]); // Data for the "Already Released Table"
@@ -66,6 +59,7 @@ const ReleaseSelection = () => {
   const handleRowSelect = (row) => {
 
     const isSelected = selectedRows.includes(row.id);
+
     if (isSelected) {
       setSelectedRows((prev) => prev.filter((id) => id !== row.id));
     } else if (selectedValue !== '2' || selectedRows.length < selectionLimit) {
@@ -96,7 +90,11 @@ const ReleaseSelection = () => {
         if (alreadyReleased < sixtyPercentCount) {
           // Still in 60% phase – limit selection to remaining slots
           const remainingSlots = sixtyPercentCount - alreadyReleased;
-          rowsToSelect = releaseData.slice(0, remainingSlots).map(row => row.id);
+          // rowsToSelect = releaseData.slice(0, remainingSlots).map(row => row.id);
+          rowsToSelect = releaseData
+            .slice(0, remainingSlots)
+            .filter(row => row && row.id !== undefined && row.id !== null)
+            .map(row => row.id);
         } else {
           // In 40% phase – limit selection to remaining slots
           const remainingSlots = totalCount - alreadyReleased;
@@ -431,8 +429,8 @@ const ReleaseSelection = () => {
   };
 
   // Columns for the DataTable
- const releaseTableColumns = [
- {
+  const releaseTableColumns = [
+    {
       name: ['1', '2', '3'].includes(selectedValue) ? (
         <div>
           <input
@@ -506,79 +504,79 @@ const ReleaseSelection = () => {
       allowOverflow: true,
       button: true,
     },
-  {
-    name: 'Sl. No.',
-    selector: (row, index) => index + 1,
-    sortable: true,
-  },
-  {
-    name: "Shape",
-    selector: row => row.sitE_SHAPETYPE || '',
-  },
-  {
-    name: "Site Number",
-    selector: row => row.sitE_NO || '',
-  },
-  {
-    name: "Block/Area",
-    selector: row => row.sitE_AREA || '',
-  },
-  {
-    name: "Number of sides",
-    selector: row => row.sitE_NO_OF_SIDES || '',
-  },
-  {
-    name: "Dimension",
-    cell: (row) => {
-      if (row.sitE_SHAPETYPE === "Regular") {
-        const feetSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINFT) || [];
-        const meterSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINMT) || [];
-        const roadFacingStatuses = row.siteDimensions?.map(dim => dim.sitediM_ROADFACING ? "yes" : "no") || [];
+    {
+      name: 'Sl. No.',
+      selector: (row, index) => index + 1,
+      sortable: true,
+    },
+    {
+      name: "Shape",
+      selector: row => row.sitE_SHAPETYPE || '',
+    },
+    {
+      name: "Site Number",
+      selector: row => row.sitE_NO || '',
+    },
+    {
+      name: "Block/Area",
+      selector: row => row.sitE_AREA || '',
+    },
+    {
+      name: "Number of sides",
+      selector: row => row.sitE_NO_OF_SIDES || '',
+    },
+    {
+      name: "Dimension",
+      cell: (row) => {
+        if (row.sitE_SHAPETYPE === "Regular") {
+          const feetSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINFT) || [];
+          const meterSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINMT) || [];
+          const roadFacingStatuses = row.siteDimensions?.map(dim => dim.sitediM_ROADFACING ? "yes" : "no") || [];
 
-        return (
-          <>
-            {feetSides.join(" x ")} (ft)<br />
-            {meterSides.join(" x ")} (mtr)<br />
-            <b>Road Facing:</b> {roadFacingStatuses.join(", ")}
-          </>
-        );
-      } else if (row.sitE_SHAPETYPE === "Irregular" && Array.isArray(row.siteDimensions)) {
-        const feetString = row.siteDimensions.map(side => side.sitediM_SIDEINFT).join(' x ');
-        const meterString = row.siteDimensions.map(side => side.sitediM_SIDEINMT).join(' x ');
-        const roadFacingString = row.siteDimensions.map(side => side.sitediM_ROADFACING ? "Yes" : "No").join(', ');
+          return (
+            <>
+              {feetSides.join(" x ")} (ft)<br />
+              {meterSides.join(" x ")} (mtr)<br />
+              <b>Road Facing:</b> {roadFacingStatuses.join(", ")}
+            </>
+          );
+        } else if (row.sitE_SHAPETYPE === "Irregular" && Array.isArray(row.siteDimensions)) {
+          const feetString = row.siteDimensions.map(side => side.sitediM_SIDEINFT).join(' x ');
+          const meterString = row.siteDimensions.map(side => side.sitediM_SIDEINMT).join(' x ');
+          const roadFacingString = row.siteDimensions.map(side => side.sitediM_ROADFACING ? "Yes" : "No").join(', ');
 
-        return (
-          <div>
-            <div>{feetString} (ft)</div>
-            <div>{meterString} (m)</div>
-            <div><b>Road Facing:</b> {roadFacingString}</div>
-          </div>
-        );
+          return (
+            <div>
+              <div>{feetString} (ft)</div>
+              <div>{meterString} (m)</div>
+              <div><b>Road Facing:</b> {roadFacingString}</div>
+            </div>
+          );
+        }
+        return '';
       }
-      return '';
-    }
-  },
-  {
-    name: "Total Area",
-    selector: row => `${row.sitE_AREAINSQFT} [Sq.ft], ${row.sitE_AREAINSQMT} [Sq.mtr]`,
-  },
-  {
-    name: "Corner Site",
-    selector: row => row.sitE_CORNERPLOT ? "YES" : "NO",
-  },
-  {
-    name: "Type of Site",
-    selector: row => row.sitE_TYPE || '',
-  },
-  {
-    name: "Chakbandi [East | West | North | South]",
-    selector: row => `${row.sitE_EAST} | ${row.sitE_WEST} | ${row.sitE_NORTH} | ${row.sitE_SOUTH}`,
-  },
-  {
-    name: "Latitude, Longitude",
-    selector: row => `${row.sitE_LATITUDE}, ${row.sitE_LONGITUDE}`,
-  },
-];
+    },
+    {
+      name: "Total Area",
+      selector: row => `${row.sitE_AREAINSQFT} [Sq.ft], ${row.sitE_AREAINSQMT} [Sq.mtr]`,
+    },
+    {
+      name: "Corner Site",
+      selector: row => row.sitE_CORNERPLOT ? "YES" : "NO",
+    },
+    {
+      name: "Type of Site",
+      selector: row => row.sitE_TYPE || '',
+    },
+    {
+      name: "Chakbandi [East | West | North | South]",
+      selector: row => `${row.sitE_EAST} | ${row.sitE_WEST} | ${row.sitE_NORTH} | ${row.sitE_SOUTH}`,
+    },
+    {
+      name: "Latitude, Longitude",
+      selector: row => `${row.sitE_LATITUDE}, ${row.sitE_LONGITUDE}`,
+    },
+  ];
 
   const releasedTableColumns = [
     // Conditionally add the "Actions" column only if selectedValue !== '100%'
@@ -1131,42 +1129,42 @@ const ReleaseSelection = () => {
   const [ownerTableData, setOwnerTableData] = useState([]);
 
 
-const customStyles = {
-  headCells: {
-    style: {
-      fontWeight: 'bold',
-      fontSize: '14px',
-      backgroundColor: '#f1f5f9',
-      color: '#1e293b',
-      padding: '12px',
-      borderBottom: '1px solid #e2e8f0',
+  const customStyles = {
+    headCells: {
+      style: {
+        fontWeight: 'bold',
+        fontSize: '14px',
+        backgroundColor: '#f1f5f9',
+        color: '#1e293b',
+        padding: '12px',
+        borderBottom: '1px solid #e2e8f0',
+      },
     },
-  },
-  cells: {
-    style: {
-      padding: '10px 12px',
-      fontSize: '13px',
-      color: '#374151',
+    cells: {
+      style: {
+        padding: '10px 12px',
+        fontSize: '13px',
+        color: '#374151',
+      },
     },
-  },
-  rows: {
-    style: {
-      minHeight: '48px',
-      borderBottom: '1px solid #f3f4f6',
+    rows: {
+      style: {
+        minHeight: '48px',
+        borderBottom: '1px solid #f3f4f6',
+      },
     },
-  },
-  pagination: {
-    style: {
-      borderTop: '1px solid #e5e7eb',
-      padding: '10px',
+    pagination: {
+      style: {
+        borderTop: '1px solid #e5e7eb',
+        padding: '10px',
+      },
     },
-  },
-  stripedStyle: {
-    default: {
-      backgroundColor: '#f9fafb',
+    stripedStyle: {
+      default: {
+        backgroundColor: '#f9fafb',
+      },
     },
-  },
-};
+  };
 
   const columns = [
     { name: 'S.No', selector: (row, index) => index + 1, width: '70px', center: true },
@@ -1248,7 +1246,7 @@ const customStyles = {
       const response = await individualSiteListAPI(listPayload);
 
       if (Array.isArray(response)) {
-        
+
         setReleaseData(response); // ⬅️ Add this line
       }
     } catch (error) {
@@ -1614,7 +1612,7 @@ const customStyles = {
                       <DataTable
                         columns={releaseTableColumns}
                         data={releaseData}
-                         customStyles={customStyles}
+                        customStyles={customStyles}
                         pagination
                         highlightOnHover
                         striped
