@@ -6,7 +6,7 @@ import '../../Styles/CSS/ReleaseSiteSelection.css';
 import Swal from "sweetalert2";
 
 import {
-  fetch_LKRSID, fetch_releasePercentageDetails, individualSiteListAPI
+  fetch_LKRSID, fetch_releasePercentageDetails, individualSiteListAPI, final_Release_Sites
 } from '../../API/authService';
 
 export const useLoader = () => {
@@ -56,78 +56,104 @@ const ReleaseSelection = () => {
   const sixtyPercentCount = Math.round(0.6 * originalTotalRecords);
   const fortyPercentCount = originalTotalRecords - sixtyPercentCount;
 
-  const handleRowSelect = (row) => {
+  const getMaxLimitForPhase3 = () => {
+  const fortyPercent = Math.round(0.4 * originalTotalRecords);
+  const thirtyPercent = Math.round(0.3 * originalTotalRecords);
+  const alreadyReleased = finalApiList.length;
 
-    const isSelected = selectedRows.includes(row.id);
+  if (alreadyReleased < fortyPercent) return fortyPercent - alreadyReleased;
+  if (alreadyReleased === fortyPercent) return thirtyPercent;
+  if (alreadyReleased === (fortyPercent + thirtyPercent)) return originalTotalRecords - alreadyReleased;
 
-    if (isSelected) {
-      setSelectedRows((prev) => prev.filter((id) => id !== row.id));
-    } else if (selectedValue !== '2' || selectedRows.length < selectionLimit) {
-      setSelectedRows((prev) => [...prev, row.id]);
-    } else if (selectedValue !== '2' && selectedValue !== '3' || selectedRows.length < selectionLimit) {
-      setSelectedRows((prev) => [...prev, row.id]);
+  return 0; // invalid state
+};
+
+const handleRowSelect = (index) => {
+  const isSelected = selectedRows.includes(index);
+
+  if (isSelected) {
+    setSelectedRows(prev => prev.filter(i => i !== index));
+  } else {
+    const maxLimit = selectedValue === '2'
+      ? Math.round(0.6 * originalTotalRecords) - releasedData.length
+      : selectedValue === '3'
+      ? getMaxLimitForPhase3()
+      : undefined;
+
+    if (maxLimit === undefined || selectedRows.length < maxLimit) {
+      setSelectedRows(prev => [...prev, index]);
+    } else {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Selection Limit Reached',
+        text: `You can only select up to ${maxLimit} site(s).`,
+        confirmButtonColor: '#3085d6',
+      });
     }
-  };
+  }
+};
+
   const handleSelectAll = (e) => {
     const checked = e.target.checked;
 
     if (selectedValue === '1') {
       if (checked) {
-        const allIds = releaseData.map(row => row.id);
-        setSelectedRows(allIds);
+        const allIndexes = releaseData.map((_, index) => index);
+        setSelectedRows(allIndexes);
       } else {
         setSelectedRows([]);
       }
     }
+
     if (selectedValue === '2') {
       const totalCount = releaseData.length + releasedData.length;
       const sixtyPercentCount = Math.round(0.6 * originalTotalRecords);
       const alreadyReleased = releasedData.length;
 
       if (checked) {
-        let rowsToSelect;
+        let rowsToSelect = [];
 
         if (alreadyReleased < sixtyPercentCount) {
-          // Still in 60% phase – limit selection to remaining slots
           const remainingSlots = sixtyPercentCount - alreadyReleased;
-          // rowsToSelect = releaseData.slice(0, remainingSlots).map(row => row.id);
           rowsToSelect = releaseData
-            .slice(0, remainingSlots)
-            .filter(row => row && row.id !== undefined && row.id !== null)
-            .map(row => row.id);
+            .map((_, index) => index)
+            .slice(0, remainingSlots);
         } else {
-          // In 40% phase – limit selection to remaining slots
           const remainingSlots = totalCount - alreadyReleased;
-          rowsToSelect = releaseData.slice(0, remainingSlots).map(row => row.id);
+          rowsToSelect = releaseData
+            .map((_, index) => index)
+            .slice(0, remainingSlots);
         }
 
         setSelectedRows(rowsToSelect);
       } else {
-        // Deselect only those in current releaseData
-        const updatedSelection = selectedRows.filter(
-          id => !releaseData.map(row => row.id).includes(id)
-        );
-        setSelectedRows(updatedSelection);
+        setSelectedRows([]);
       }
     }
+
     if (selectedValue === '3') {
       const fortyPercent = Math.round(0.4 * originalTotalRecords);
       const thirtyPercent = Math.round(0.3 * originalTotalRecords);
       const alreadyReleased = finalApiList.length;
-      const totalCount = releaseData.length + finalApiList.length;
 
       if (checked) {
         let rowsToSelect = [];
 
         if (alreadyReleased < fortyPercent) {
           const remaining = fortyPercent - alreadyReleased;
-          rowsToSelect = releaseData.slice(0, remaining).map(row => row.id);
+          rowsToSelect = releaseData
+            .map((_, index) => index)
+            .slice(0, remaining);
         } else if (alreadyReleased === fortyPercent) {
           const remaining = thirtyPercent;
-          rowsToSelect = releaseData.slice(0, remaining).map(row => row.id);
+          rowsToSelect = releaseData
+            .map((_, index) => index)
+            .slice(0, remaining);
         } else if (alreadyReleased === (fortyPercent + thirtyPercent)) {
           const remaining = originalTotalRecords - alreadyReleased;
-          rowsToSelect = releaseData.slice(0, remaining).map(row => row.id);
+          rowsToSelect = releaseData
+            .map((_, index) => index)
+            .slice(0, remaining);
         } else {
           Swal.fire({
             icon: 'warning',
@@ -142,18 +168,12 @@ const ReleaseSelection = () => {
           setSelectedRows(rowsToSelect);
         }
       } else {
-        const updatedSelection = selectedRows.filter(
-          id => !releaseData.map(row => row.id).includes(id)
-        );
-        setSelectedRows(updatedSelection);
+        setSelectedRows([]);
       }
     }
 
-
     setSelectAllChecked(checked);
   };
-
-
   const handleDimensionChange = (value) => {
     setSelectedValue(value);
     setSelectAllChecked(false);
@@ -229,7 +249,6 @@ const ReleaseSelection = () => {
       prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
     );
   };
-
   const moveToReleasedTable = () => {
     const sixtyPercentCount = Math.round(0.6 * originalTotalRecords);
     const fortyPercentCount = Math.round(0.4 * originalTotalRecords);
@@ -358,14 +377,14 @@ const ReleaseSelection = () => {
     }
 
     // Move selected records to releasedData
-    const selectedRowsData = releaseData.filter(row => selectedRows.includes(row.id));
-    const remainingData = releaseData.filter(row => !selectedRows.includes(row.id));
+    const selectedRowsData = releaseData.filter((_, index) => selectedRows.includes(index));
+    const remainingData = releaseData.filter((_, index) => !selectedRows.includes(index));
+
     setReleasedData(prev => [...prev, ...selectedRowsData]);
     setReleaseData(remainingData);
     setSelectedRows([]);
     setSelectAllChecked(false);
   };
-
   const performRelease = (sixtyPercentCount, fortyPercentCount) => {
     const movingData = releaseData.filter(item => selectedRows.includes(item.id));
 
@@ -382,27 +401,30 @@ const ReleaseSelection = () => {
       setIs60PercentDone(true); // or any full-release flag
     }
   };
-  const handleRemoveFromReleasedTable = (rowId) => {
+  const handleRemoveFromReleasedTable = (indexToRemove) => {
     setReleasedData((prevReleased) => {
-      const rowToMoveBack = prevReleased.find((row) => row.id === rowId);
+      const rowToMoveBack = prevReleased[indexToRemove];
       if (!rowToMoveBack) return prevReleased;
 
-      // Keep releasePhase, do NOT delete it
       const rowToMoveBackCopy = { ...rowToMoveBack };
 
       setReleaseData((prevRelease) => {
         const updated = [...prevRelease, rowToMoveBackCopy];
-        // Sort by id in ascending order (change 'id' to your preferred key if needed)
-        return updated.sort((a, b) => a.id - b.id);
+        return updated.sort((a, b) => a.id - b.id); // keep sort if necessary
       });
 
       if (selectedValue === '2') {
         setSelectionLimit((prevLimit) => prevLimit + 1);
       }
 
-      setSelectedRows((prevSelected) => prevSelected.filter((id) => id !== rowId));
+      setSelectedRows((prevSelected) =>
+        prevSelected.filter((id) => id !== rowToMoveBackCopy.id)
+      );
 
-      return prevReleased.filter((row) => row.id !== rowId);
+      // Remove by index
+      const updatedReleased = [...prevReleased];
+      updatedReleased.splice(indexToRemove, 1);
+      return updatedReleased;
     });
   };
   const isSelectAllDisabled = () => {
@@ -427,9 +449,82 @@ const ReleaseSelection = () => {
 
     return false;
   };
-
   // Columns for the DataTable
   const releaseTableColumns = [
+    // {
+    //   name: ['1', '2', '3'].includes(selectedValue) ? (
+    //     <div>
+    //       <input
+    //         type="checkbox"
+    //         checked={selectAllChecked}
+    //         onChange={handleSelectAll}
+    //         disabled={isSelectAllDisabled()}
+    //       />
+    //     </div>
+    //   ) : '',
+
+    //   selector: row => row.id,
+    //   width: '50px',
+    //   sortable: false,
+    //   cell: row => {
+    //     const isSelected = selectedRows.includes(row.id);
+
+    //     const totalCount = releaseData.length + releasedData.length;
+    //     const maxSelectable = Math.round(0.6 * originalTotalRecords); // 60%
+    //     const alreadyReleased = releasedData.length;
+    //     const remainingSlots = maxSelectable - alreadyReleased;
+
+    //     // In first phase (before reaching 60%)
+    //     const isInFirstPhase = alreadyReleased < maxSelectable;
+
+    //     // Whether selecting more is blocked (limit reached)
+    //     const limitReached = selectedValue === '2' &&
+    //       isInFirstPhase &&
+    //       !isSelected &&
+    //       selectedRows.length >= remainingSlots;
+
+    //     const checkboxId = `checkbox-${row.id}`;
+
+    //     const handleCheckboxClick = (e) => {
+    //       if (limitReached && !isSelected) {  // block only new checks when limit reached
+    //         e.preventDefault();
+    //         Swal.fire({
+    //           icon: 'warning',
+    //           title: 'Selection Limit Reached',
+    //           text: `Only ${remainingSlots} more site(s) can be selected for 60% release.`,
+    //           confirmButtonColor: '#3085d6',
+    //         });
+    //       }
+    //     };
+    //     return (
+    //       <div>
+    //         <input
+    //           id={checkboxId}
+    //           type="checkbox"
+    //           checked={isSelected}
+    //           // **Always enabled**
+    //           disabled={false}
+    //           onClick={handleCheckboxClick}
+    //           onChange={() => {
+    //             if (isSelected) {
+    //               // Always allow unchecking
+    //               handleRowSelect(row);
+    //             } else {
+    //               // Allow checking only if limit not reached or not in first phase
+    //               if (!limitReached || !isInFirstPhase) {
+    //                 handleRowSelect(row);
+    //               }
+    //             }
+    //           }}
+    //           style={{ cursor: limitReached && !isSelected ? 'not-allowed' : 'pointer' }}
+    //         />
+    //       </div>
+    //     );
+    //   },
+    //   ignoreRowClick: true,
+    //   allowOverflow: true,
+    //   button: true,
+    // },
     {
       name: ['1', '2', '3'].includes(selectedValue) ? (
         <div>
@@ -442,30 +537,24 @@ const ReleaseSelection = () => {
         </div>
       ) : '',
 
-      selector: row => row.id,
+      selector: row => row.id, // keep as is; used only by DataTable internally
       width: '50px',
       sortable: false,
-      cell: row => {
-        const isSelected = selectedRows.includes(row.id);
+      cell: (row, index) => {
+        const isSelected = selectedRows.includes(index);
 
         const totalCount = releaseData.length + releasedData.length;
         const maxSelectable = Math.round(0.6 * originalTotalRecords); // 60%
         const alreadyReleased = releasedData.length;
         const remainingSlots = maxSelectable - alreadyReleased;
-
-        // In first phase (before reaching 60%)
         const isInFirstPhase = alreadyReleased < maxSelectable;
-
-        // Whether selecting more is blocked (limit reached)
         const limitReached = selectedValue === '2' &&
           isInFirstPhase &&
           !isSelected &&
           selectedRows.length >= remainingSlots;
 
-        const checkboxId = `checkbox-${row.id}`;
-
         const handleCheckboxClick = (e) => {
-          if (limitReached && !isSelected) {  // block only new checks when limit reached
+          if (limitReached && !isSelected) {
             e.preventDefault();
             Swal.fire({
               icon: 'warning',
@@ -475,24 +564,18 @@ const ReleaseSelection = () => {
             });
           }
         };
+
         return (
           <div>
             <input
-              id={checkboxId}
               type="checkbox"
               checked={isSelected}
-              // **Always enabled**
-              disabled={false}
               onClick={handleCheckboxClick}
               onChange={() => {
                 if (isSelected) {
-                  // Always allow unchecking
-                  handleRowSelect(row);
-                } else {
-                  // Allow checking only if limit not reached or not in first phase
-                  if (!limitReached || !isInFirstPhase) {
-                    handleRowSelect(row);
-                  }
+                  handleRowSelect(index);
+                } else if (!limitReached || !isInFirstPhase) {
+                  handleRowSelect(index);
                 }
               }}
               style={{ cursor: limitReached && !isSelected ? 'not-allowed' : 'pointer' }}
@@ -503,6 +586,11 @@ const ReleaseSelection = () => {
       ignoreRowClick: true,
       allowOverflow: true,
       button: true,
+    },
+
+    {
+      name: "Site ID",
+      selector: row => row.sitE_ID || '',
     },
     {
       name: 'Sl. No.',
@@ -577,47 +665,100 @@ const ReleaseSelection = () => {
       selector: row => `${row.sitE_LATITUDE}, ${row.sitE_LONGITUDE}`,
     },
   ];
-
   const releasedTableColumns = [
     // Conditionally add the "Actions" column only if selectedValue !== '100%'
     ...(String(selectedValue).trim() !== '1' ? [
       {
         name: 'Actions',
         selector: row => row.id,
-        cell: row => (
+        cell: (row, index) => (
           <button
             className="btn btn-danger"
             disabled={is60PercentDone && String(row.releasePhase).trim() === '60'}
-            onClick={() => handleRemoveFromReleasedTable(row.id)}
+            onClick={() => handleRemoveFromReleasedTable(index)}
           >
             <i className='fa fa-trash'></i>
           </button>
         ),
       }
     ] : []),
-
     {
       name: 'Sl. No.',
-      selector: row => row.id,
+      selector: (row, index) => index + 1,
       sortable: true,
     },
-    {
-      name: 'Dimension',
-      selector: row => row.dimension,
-      sortable: true,
+        {
+      name: "Site ID",
+      selector: row => row.sitE_ID || '',
     },
     {
-      name: 'Status',
-      selector: row => row.status,
-      sortable: true,
+      name: "Shape",
+      selector: row => row.sitE_SHAPETYPE || '',
     },
     {
-      name: 'Date',
-      selector: row => row.date,
-      sortable: true,
+      name: "Site Number",
+      selector: row => row.sitE_NO || '',
+    },
+    {
+      name: "Block/Area",
+      selector: row => row.sitE_AREA || '',
+    },
+    {
+      name: "Number of sides",
+      selector: row => row.sitE_NO_OF_SIDES || '',
+    },
+    {
+      name: "Dimension",
+      cell: (row) => {
+        if (row.sitE_SHAPETYPE === "Regular") {
+          const feetSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINFT) || [];
+          const meterSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINMT) || [];
+          const roadFacingStatuses = row.siteDimensions?.map(dim => dim.sitediM_ROADFACING ? "yes" : "no") || [];
+
+          return (
+            <>
+              {feetSides.join(" x ")} (ft)<br />
+              {meterSides.join(" x ")} (mtr)<br />
+              <b>Road Facing:</b> {roadFacingStatuses.join(", ")}
+            </>
+          );
+        } else if (row.sitE_SHAPETYPE === "Irregular" && Array.isArray(row.siteDimensions)) {
+          const feetString = row.siteDimensions.map(side => side.sitediM_SIDEINFT).join(' x ');
+          const meterString = row.siteDimensions.map(side => side.sitediM_SIDEINMT).join(' x ');
+          const roadFacingString = row.siteDimensions.map(side => side.sitediM_ROADFACING ? "Yes" : "No").join(', ');
+
+          return (
+            <div>
+              <div>{feetString} (ft)</div>
+              <div>{meterString} (m)</div>
+              <div><b>Road Facing:</b> {roadFacingString}</div>
+            </div>
+          );
+        }
+        return '';
+      }
+    },
+    {
+      name: "Total Area",
+      selector: row => `${row.sitE_AREAINSQFT} [Sq.ft], ${row.sitE_AREAINSQMT} [Sq.mtr]`,
+    },
+    {
+      name: "Corner Site",
+      selector: row => row.sitE_CORNERPLOT ? "YES" : "NO",
+    },
+    {
+      name: "Type of Site",
+      selector: row => row.sitE_TYPE || '',
+    },
+    {
+      name: "Chakbandi [East | West | North | South]",
+      selector: row => `${row.sitE_EAST} | ${row.sitE_WEST} | ${row.sitE_NORTH} | ${row.sitE_SOUTH}`,
+    },
+    {
+      name: "Latitude, Longitude",
+      selector: row => `${row.sitE_LATITUDE}, ${row.sitE_LONGITUDE}`,
     },
   ];
-
   const [is40PercentDone, setIs40PercentDone] = useState(false);
   const handleInitial60PercentSave = () => {
     const totalRecords = releaseData.length + releasedData.length;
@@ -733,11 +874,7 @@ const ReleaseSelection = () => {
       });
     }
   };
-
-
-
   const [current30Step, setCurrent30Step] = useState(1);
-
   const handleFinal40PercentSave = () => {
     const expectedCount40 = Math.round(0.4 * originalTotalRecords);
     const expectedCount30 = Math.round(0.3 * originalTotalRecords);
@@ -830,8 +967,6 @@ const ReleaseSelection = () => {
       }
     }
   };
-
-
   const handleSiteReleaseOrderNumberChange = (e) => {
     const value = e.target.value;
 
@@ -849,7 +984,6 @@ const ReleaseSelection = () => {
 
     setSiteReleaseOrderNumber(value);
   };
-
   // OnChange + validation for dateOfOrder
   const handleDateOfOrderChange = (e) => {
     const value = e.target.value;
@@ -862,7 +996,6 @@ const ReleaseSelection = () => {
     }
     setDateOfOrder(value);
   };
-
   // OnChange + validation for orderFile
   const handleOrderFileChange = (e) => {
     const file = e.target.files[0];
@@ -888,7 +1021,6 @@ const ReleaseSelection = () => {
     setErrors(prev => ({ ...prev, orderFile: '' }));
     setOrderFile(file);
   };
-
   const validateForm = () => {
     const newErrors = {};
 
@@ -919,7 +1051,6 @@ const ReleaseSelection = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
   const handleSave = () => {
     if (!validateForm()) return;
 
@@ -945,10 +1076,8 @@ const ReleaseSelection = () => {
     }
     setErrors({});
   };
-
   //fetch EPID OR LKRSID 
   const [localLKRSID, setLocalLKRSID] = useState('');
-
   const handleInputChange = (e) => {
     const value = e.target.value;
     // Allow only digits up to 10 characters
@@ -956,7 +1085,6 @@ const ReleaseSelection = () => {
       setLocalLKRSID(value);
     }
   };
-
   const handleSearchClick = () => {
     // Call API even if it's less than 10 digits
     if (!localLKRSID) {
@@ -1221,6 +1349,7 @@ const ReleaseSelection = () => {
 
         // Extract and use `sitE_RELS_SITE_RELSTYPE_ID`
         const releaseTypeId = response.sitE_RELS_SITE_RELSTYPE_ID?.toString();
+    
         if (releaseTypeId) {
           handleDimensionChange(releaseTypeId);
         }
@@ -1234,34 +1363,74 @@ const ReleaseSelection = () => {
       console.error("Failed to fetch LKRSID data:", error);
     }
   };
+const fetchReleaseOrder = async (localLKRSID) => {
+  try {
+    const listPayload = {
+      level: 1,
+      LkrsId: localLKRSID,
+      SiteID: 0,
+    };
+    start_loader();
+    const response = await individualSiteListAPI(listPayload);
 
-  const fetchReleaseOrder = async (localLKRSID) => {
-    try {
-      const listPayload = {
-        level: 1,
-        LkrsId: localLKRSID,
-        SiteID: 0,
-      };
-      start_loader();
-      const response = await individualSiteListAPI(listPayload);
-
-      if (Array.isArray(response)) {
-
-        setReleaseData(response); // ⬅️ Add this line
-      }
-    } catch (error) {
-      console.error("Fetch Site Details Error:", error);
-
-      if (error.response) {
-        console.error("API responded with error data:", error.response.data);
-      } else if (error.request) {
-        console.error("No response received from API. Request was:", error.request);
-      }
+    if (Array.isArray(response)) {
+      // Filter only unreleased sites
+      const unreleasedSites = response.filter(site => site.sitE_IS_SITE_RELEASED === false);
+      setReleaseData(unreleasedSites); // Only set unreleased records
     }
-    finally {
-      stop_loader();
+  } catch (error) {
+    console.error("Fetch Site Details Error:", error);
+    if (error.response) {
+      console.error("API responded with error data:", error.response.data);
+    } else if (error.request) {
+      console.error("No response received from API. Request was:", error.request);
     }
+  } finally {
+    stop_loader();
   }
+};
+
+const releaseSites = async () => {
+  try {
+    const payload = {
+      sitE_LKRS_ID: localLKRSID,
+      sitE_SITE_RELS_ID: 0,
+      site_Remarks: "",
+      site_AdditionalInfo: "",
+      site_UpdatedBy: 0,
+      site_UpdatedName: "user",
+      site_UpdatedRole: "user",
+      releaseSiteList: releasedData.map(site => ({
+        sitE_ID: site.sitE_ID
+      }))
+    };
+
+    start_loader();
+    const response = await final_Release_Sites(payload);
+    console.log("Release response:", response);
+
+    Swal.fire({
+      title: "Site released successfully!",
+      icon: 'success',
+      confirmButtonText: 'OK'
+    });
+
+    // ✅ Fetch updated list and move released sites to finalApiList
+    fetchReleaseOrder(localLKRSID);  // To refresh `releaseData`
+    fetchFinalReleasedSites(localLKRSID);  // Separate function for `sitE_IS_SITE_RELEASED === true`
+
+  } catch (error) {
+    console.error("Release API Error:", error);
+    if (error.response) {
+      console.error("API responded with error data:", error.response.data);
+    } else if (error.request) {
+      console.error("No response received from API. Request was:", error.request);
+    }
+  } finally {
+    stop_loader();
+  }
+};
+
 
 
 
@@ -1621,7 +1790,7 @@ const ReleaseSelection = () => {
                         <div className='col-md-9'></div>
                         <div className='col-md-3'>
                           <button className="btn btn-primary btn-block mt-3" onClick={moveToReleasedTable}>
-                            Move to Already Released Table
+                            Save & next
                           </button>
                         </div>
 
@@ -1656,7 +1825,8 @@ const ReleaseSelection = () => {
                       <div className='col-md-3'>
                         <button
                           className="btn btn-primary btn-block mt-3"
-                          onClick={handleInitial60PercentSave}
+                          // onClick={handleInitial60PercentSave}
+                          onClick={releaseSites}
                         >
                           Save & proceed
                         </button>

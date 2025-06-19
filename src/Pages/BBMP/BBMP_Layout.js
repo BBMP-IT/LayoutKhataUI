@@ -6747,7 +6747,7 @@ const Preview_siteDetailsTable = ({ data, setData, totalSitesCount, onSave, onEd
                     return row.sitE_CORNERPLOT ? "YES" : "NO";
                 },
             },
-             {
+            {
                 Header: "Type of Site",
                 accessor: (row) => {
                     return `${row.sitE_TYPE}`;
@@ -9348,15 +9348,15 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
             });
             return;
         }
-        if (ownerList.some(owner => owner.owN_AADHAARVERISTATUS !== "Success")) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Aadhaar Verification Failed',
-                text: 'One or more owners have not completed Aadhaar eKYC successfully.',
-                confirmButtonText: 'Ok'
-            });
-            return;
-        }
+        // if (ownerList.some(owner => owner.owN_AADHAARVERISTATUS !== "Success")) {
+        //     Swal.fire({
+        //         icon: 'error',
+        //         title: 'Aadhaar Verification Failed',
+        //         text: 'One or more owners have not completed Aadhaar eKYC successfully.',
+        //         confirmButtonText: 'Ok'
+        //     });
+        //     return;
+        // }
         if (!declaration1Checked || !declaration2Checked || !declaration3Checked) {
             Swal.fire({
                 icon: 'warning',
@@ -9501,7 +9501,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
     const [phoneNumbers, setPhoneNumbers] = useState({});
     const [ownerTableData, setOwnerTableData] = useState([]);
     const [ecNumber, setECNumber] = useState("")
-
+    const [isJDA, setIsJDA] = useState(null);
     const customStyles = {
         headCells: {
             style: {
@@ -9573,7 +9573,8 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
             if (response && response.surveyNumberDetails && response.surveyNumberDetails.length > 0) {
 
                 setSelectedLandType(response.lkrS_LANDTYPE); //  Store the land type
-                setECNumber(response.lkrS_ECNUMBER);
+                setECNumber(response.lkrS_ECNUMBER);         // Set EC Number
+                setIsJDA(response.lkrS_ISJDA);
 
 
                 const parsedSurveyDetails = mapSurveyDetails(response.surveyNumberDetails);
@@ -9593,7 +9594,8 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
                 stop_loader();
             } else if (response && response.khataDetails && response.khataOwnerDetails && response.khataOwnerDetails.length > 0) {
                 setSelectedLandType(response.lkrS_LANDTYPE); //  Store the land type
-                setECNumber(response.lkrS_ECNUMBER);
+                setECNumber(response.lkrS_ECNUMBER);         // Set EC Number
+                setIsJDA(response.lkrS_ISJDA);
                 setEPIDShowTable(true);
                 let khataDetailsJson = {};
                 if (response.khataDetails?.khatA_JSON) {
@@ -9979,24 +9981,24 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
             selector: row => row.owN_IDNUMBER || 'N/A',
         },
     ];
-  
-        const [ownerEKYCDataList, setownerEKYCDataList] = useState([]);
-        const owner_EKYCDetails = async (localLKRSID) => {
-            try {
-                const response = await ownerEKYC_Details("1", localLKRSID);
-                setownerEKYCDataList(response); // assuming response is the array you shared
-            } catch (error) {
-                console.error("Failed to fetch EKYC owner details:", error);
-            }
+
+    const [ownerEKYCDataList, setownerEKYCDataList] = useState([]);
+    const owner_EKYCDetails = async (localLKRSID) => {
+        try {
+            const response = await ownerEKYC_Details("1", localLKRSID);
+            setownerEKYCDataList(response); // assuming response is the array you shared
+        } catch (error) {
+            console.error("Failed to fetch EKYC owner details:", error);
         }
-        const JDA_EKYCDetails = async (localLKRSID) => {
-            try {
-                const response = await ownerEKYC_Details("1", localLKRSID);
-                setOwnerDataList(response); // assuming response is the array you shared
-            } catch (error) {
-                console.error("Failed to fetch EKYC owner details:", error);
-            }
+    }
+    const JDA_EKYCDetails = async (localLKRSID) => {
+        try {
+            const response = await ownerEKYC_Details("1", localLKRSID);
+            setOwnerDataList(response); // assuming response is the array you shared
+        } catch (error) {
+            console.error("Failed to fetch EKYC owner details:", error);
         }
+    }
 
     const handlePreviewClick = async () => {
         if (!localLKRSID) return;
@@ -10251,8 +10253,37 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
                                     roleID={roleID}
                                 />
                             )}
-                            <hr/>
+                            <hr />
                             {/* EC Details */}
+                            {(ecNumber || typeof isJDA === 'boolean') && (
+                                <div style={{ marginTop: '20px' }}>
+                                    <table
+                                        style={{
+                                            borderCollapse: 'collapse',
+                                            width: '100%',
+                                            fontFamily: 'Arial, sans-serif',
+                                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                                        }}
+                                    >
+                                        <thead>
+                                            <tr style={{ backgroundColor: '#fff', color: '#000', textAlign: 'left' }}>
+                                                <th style={thStyle}>EC Number</th>
+                                                <th style={thStyle}>Is there a Joint Development Agreement?</th>
+                                                <th style={thStyle}>Deed Number</th>
+                                             
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td style={tdStyle}>{ecNumber || '-'}</td>
+                                                <td style={tdStyle}><span style={{ color: isJDA ? 'green' : 'red' }}>{isJDA ? 'YES' : 'NO'}</span></td>
+                                                <td style={tdStyle}>RRN-1-12780-2023-24</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+
                             <hr />
                             {/* Owner EKYC */}
                             {ownerEKYCDataList.length > 0 && (

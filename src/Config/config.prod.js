@@ -2,7 +2,7 @@
 
 const ApiCredentials = {
     credentials: {
-        apiUrl: "https://testapps.bbmpgov.in/ekhata/api/values",
+        apiUrl: "https://testapps.bbmpgov.in/LayoutKhataAPI",
         username: "BBMPOTP",
         password: "10750b6bdc29495297efd2fb29047a94"
     }
@@ -46,6 +46,7 @@ const config = {
         fetchLKRSID: '/api/LKRS/fnGetLKRSInfo',
         layoutKhata_Save: '/api/LKRS/fnSaveLKRSinfo',
         releasePercentage:'/api/Release/fnGetReleasePercentage',
+        releaseSites: '/api/Site/fnReleaseSites',
 
     }
 };

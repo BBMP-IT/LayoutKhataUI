@@ -151,7 +151,6 @@ const BBMPLogin = () => {
             }
         } catch (error) {
             console.log("Error sending OTP:", error);
-            setPhoneError("An error occurred while sending OTP. Please try again.");
         } finally {
             stop_loader();
         }

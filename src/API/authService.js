@@ -533,3 +533,13 @@ export const fetch_releasePercentageDetails = async (lkrsId) => {
     throw error;
   }
 };
+//final Save button API
+export const final_Release_Sites = async (payload) => {
+  try {
+    const response = await apiService.postRequest(`${config.endpoints.releaseSites}`,  payload);
+     return response;
+  } catch (error) {
+    console.error("Sites release Details Error:", error);
+    throw error;
+  }
+};

@@ -616,6 +616,13 @@ const BBMP_SubmittedInfo = () => {
             console.error("Failed to fetch EKYC owner details:", error);
         }
     }
+const thStyle = {
+        padding: "10px",
+        textAlign: "center",
+        fontWeight: "bold",
+        border: "1px solid #ccc",
+        fontFamily: "Georgia, serif",
+    };
 
     return (
         <>
@@ -818,6 +825,33 @@ const BBMP_SubmittedInfo = () => {
                                             />
                                         )}
                                         <hr />
+                                           <div style={{ marginTop: '20px' }}>
+                                    <table
+                                        style={{
+                                            borderCollapse: 'collapse',
+                                            width: '100%',
+                                            fontFamily: 'Arial, sans-serif',
+                                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                                        }}
+                                    >
+                                        <thead>
+                                            <tr style={{ backgroundColor: '#fff', color: '#000', textAlign: 'left' }}>
+                                                <th>EC Number</th>
+                                                <th>Is there a Joint Development Agreement?</th>
+                                                <th >Deed Number</th>
+                                             
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>JPN-EC-A-152407-2024-25</td>
+                                                <td >yes</td>
+                                                <td >RRN-1-12780-2023-24</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <hr/>
                                         {ownerEKYCDataList.length > 0 && (
 
                                             <div className='col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12'>
