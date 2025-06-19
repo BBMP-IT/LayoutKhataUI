@@ -166,18 +166,12 @@ const BBMP_SubmittedInfo = () => {
     const columns = [
         { name: 'S.No', selector: (row, index) => index + 1, width: '70px', center: true },
         { name: 'Property ID', width: '140px', selector: () => epid_fetchedData?.PropertyID, center: true },
-        {
-            name: 'Owner Name', center: true,
-
-            cell: () => (
-                <div style={{
-
-                }}>
-                    {epid_fetchedData?.OwnerDetails?.[0].ownerName || 'N/A'}
-                </div>
-            )
+   {
+            name: 'Owner Name',
+            center: true,
+            // Access ownerName directly from the 'row' object
+            selector: (row) => row.ownerName || 'N/A'
         },
-
         { name: 'ID Type', width: '120px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idType || 'N/A', center: true },
         { name: 'ID Number', width: '220px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idNumber || 'N/A', center: true },
         {
@@ -1027,7 +1021,7 @@ const Preview_siteDetailsTable = ({ data, setData, totalSitesCount, }) => {
             {
                 Header: "Type of Site",
                 accessor: (row) => {
-                    return `${row.sitE_TYPEID}`;
+                    return `${row.sitE_TYPE}`;
                 },
             },
             {

@@ -20,7 +20,7 @@ import apiService from '../../API/apiService';
 import {
     handleFetchDistricts, handleFetchTalukOptions, handleFetchHobliOptions, handleFetchVillageOptions,
     handleFetchHissaOptions, fetchRTCDetailsAPI, handleFetchEPIDDetails, getAccessToken, sendOtpAPI, verifyOtpAPI, submitEPIDDetails, submitsurveyNoDetails,
-    insertApprovalInfo, listApprovalInfo, deleteApprovalInfo, insertReleaseInfo, listReleaseInfo, fileUploadAPI, fileListAPI, insertJDA_details, ownerEKYC_Details, ekyc_Details, ekyc_Response, ekyc_insertOwnerDetails,
+    insertApprovalInfo, listApprovalInfo, deleteApprovalInfo, insertReleaseInfo, deleteReleaseInfo, listReleaseInfo, fileUploadAPI, fileListAPI, insertJDA_details, ownerEKYC_Details, ekyc_Details, ekyc_Response, ekyc_insertOwnerDetails,
     individualSiteAPI, individualSiteListAPI, fetchECDetails, fetchDeedDocDetails, fetchDeedDetails, fetchJDA_details, deleteSiteInfo, fetch_LKRSID, update_Final_SaveAPI
 } from '../../API/authService';
 
@@ -74,6 +74,8 @@ const BBMP_LayoutForm = () => {
     const [isOwnerEKYCSectionSaved, setIsOwnerEKYCSectionSaved] = useState(false);
     const [isJDAEKYCSectionSaved, setIsJDAEKYCSectionSaved] = useState(false);
 
+    //OwnerName 
+    const [ownerName, setOwnerName] = useState("");
 
     useEffect(() => {
         document.body.style.zoom = zoomLevel;
@@ -100,7 +102,7 @@ const BBMP_LayoutForm = () => {
         localStorage.setItem('RoleID', RoleID);
 
         if (display_LKRS_ID) {
-            toast.success(`Application Number: ${display_LKRS_ID}`, {
+            toast.success(`KRSID: ${display_LKRS_ID}`, {
                 autoClose: false,         // Stays open until manually closed
                 closeOnClick: false,      // Prevents closing on click
                 draggable: false,         // Prevents dragging
@@ -166,7 +168,7 @@ const BBMP_LayoutForm = () => {
                             <div className="card">
                                 <div className="card-header layout_btn_color" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <h5 className="card-title" style={{ margin: 0 }}>Bulk eKhata for layout to owner / developer</h5>
-                                    <h5 style={{ color: '#fff' }}>Application Number: {display_LKRS_ID}</h5>
+                                    <h5 style={{ color: '#fff' }}>KRSID : {display_LKRS_ID}</h5>
                                 </div>
 
                                 <div className="card-body">
@@ -214,7 +216,7 @@ const BBMP_LayoutForm = () => {
                                         {/* Section for BBMP A-Khata Selection */}
                                         {selectedLandType === "bbmpKhata" && (
                                             <BBMPKhata onDisableEPIDSection={() => { setIsEPIDSectionDisabled(true); setIsSurveyNoSectionDisabled(true) }} setAreaSqft={setAreaSqft} setLKRS_ID={setLKRS_ID}
-                                                LKRS_ID={LKRS_ID} setDisplay_LKRS_ID={setDisplay_LKRS_ID} setIsEPIDSectionSaved={setIsEPIDSectionSaved} />
+                                                LKRS_ID={LKRS_ID} setDisplay_LKRS_ID={setDisplay_LKRS_ID} setIsEPIDSectionSaved={setIsEPIDSectionSaved} setOwnerName={setOwnerName} />
                                         )}
 
                                         {/* Section for Second Radio Button */}
@@ -222,7 +224,7 @@ const BBMP_LayoutForm = () => {
                                             <NoBBMPKhata setAreaSqft={setAreaSqft} Language={newLanguage} rtc_AddedData={rtc_AddedData}
                                                 setRtc_AddedData={setRtc_AddedData} setOrderDetails={setOrderDetails}
                                                 onDisableEPIDSection={() => { setIsEPIDSectionDisabled(true); setIsSurveyNoSectionDisabled(true) }} LKRS_ID={LKRS_ID}
-                                                setDisplay_LKRS_ID={setDisplay_LKRS_ID} setLKRS_ID={setLKRS_ID} setIsRTCSectionSaved={setIsRTCSectionSaved} />
+                                                setDisplay_LKRS_ID={setDisplay_LKRS_ID} setLKRS_ID={setLKRS_ID} setIsRTCSectionSaved={setIsRTCSectionSaved} setOwnerName={setOwnerName} />
                                         )}
 
                                     </div>
@@ -234,7 +236,7 @@ const BBMP_LayoutForm = () => {
                                 isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsApprovalSectionSaved={setIsApprovalSectionSaved} setIsReleaseSectionSaved={setIsReleaseSectionSaved} />
 
                             <IndividualGPSBlock areaSqft={areaSqft} LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID}
-                                isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsSitesSectionSaved={setIsSitesSectionSaved} />
+                                isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsSitesSectionSaved={setIsSitesSectionSaved} ownerName={ownerName} />
 
                             <ECDetailsBlock LKRS_ID={LKRS_ID} isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsECSectionSaved={setIsECSectionSaved} />
 
@@ -250,7 +252,7 @@ const BBMP_LayoutForm = () => {
     );
 }
 //No BBMP Khata section
-const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, setDisplay_LKRS_ID, setIsRTCSectionSaved }) => {
+const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, setDisplay_LKRS_ID, setIsRTCSectionSaved, setOwnerName }) => {
 
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
     const [language, setLanguage] = useState(localStorage.getItem("selectedLanguage"));
@@ -686,7 +688,13 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                 localStorage.setItem('display_LKRSID', response.display_LKRSID);
                 setDisplay_LKRS_ID(response.display_LKRSID);
                 setLKRS_ID(response.lkrsid);
+                const ownerNames = rtcAddedData
+                    .map(item => item.owner?.trim())  // Trim each name
+                    .filter(Boolean)                  // Remove empty/null values
+                    .join(', ');                      // Join with comma and space
 
+                localStorage.setItem("ownerName", ownerNames);
+                setOwnerName(ownerNames);
                 const fetch_payload = {
                     level: 1,
                     LkrsId: response.lkrsid,
@@ -724,7 +732,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                 }
                 Swal.fire({
                     title: response.responseMessage,
-                    text: response.display_LKRSID,
+                    // text: response.display_LKRSID,
                     icon: "success",
                     confirmButtonText: "OK",
                 });
@@ -1207,7 +1215,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
     );
 };
 //BBMP khata section
-const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, setDisplay_LKRS_ID, setIsEPIDSectionSaved }) => {
+const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, setDisplay_LKRS_ID, setIsEPIDSectionSaved, setOwnerName }) => {
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
     const [epidNumber, setEpidNumber] = useState("");
 
@@ -1501,7 +1509,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                 } else {
                     console.warn("Owner details array is empty or invalid");
                 }
-                setOwnerTableData([]); // clear table data first
+                setOwnerTableData(ownerDetails); // clear table data first
                 setEPID_FetchedData({
                     PropertyID: propertyID,
                     PropertyCategory: propertyCategory,
@@ -1525,6 +1533,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                 setAreaSqft(siteDetails.siteArea);
                 localStorage.setItem('areaSqft', siteDetails.siteArea);
                 setOwnerTableData(ownerDetails);
+
                 Swal.fire({
                     title: "Success",
                     text: "EPID Details fetched successfully!",
@@ -1582,15 +1591,10 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
         { name: 'S.No', selector: (row, index) => index + 1, width: '70px', center: true },
         { name: 'Property ID', width: '140px', selector: () => epid_fetchedData?.PropertyID, center: true },
         {
-            name: 'Owner Name', center: true,
-
-            cell: () => (
-                <div style={{
-
-                }}>
-                    {epid_fetchedData?.OwnerDetails?.[0].ownerName || 'N/A'}
-                </div>
-            )
+            name: 'Owner Name',
+            center: true,
+            // Access ownerName directly from the 'row' object
+            selector: (row) => row.ownerName || 'N/A'
         },
 
         { name: 'ID Type', width: '120px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idType || 'N/A', center: true },
@@ -1670,10 +1674,6 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                 </div>
             ), center: true
         }
-
-
-
-
     ];
     const [localLKRSID, setLocalLKRSID] = useState(LKRS_ID || "");
     useEffect(() => {
@@ -1850,15 +1850,29 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                 localStorage.setItem('display_LKRSID', response.display_LKRSID);
                 setDisplay_LKRS_ID(response.display_LKRSID);
                 setLKRS_ID(response.lkrsid);
+                const ownerDetails = fetchedEPIDData?.[0]?.OwnerDetails;
+
+                if (Array.isArray(ownerDetails) && ownerDetails.length > 0) {
+                    const ownerNames = ownerDetails
+                        .map(owner => owner.ownerName?.trim())
+                        .filter(Boolean)
+                        .join(', ');
+                    localStorage.setItem("ownerName", ownerNames);
+                    setOwnerName(ownerNames);
+                } else {
+                    console.warn("Owner details array is empty or invalid");
+                    setOwnerName("");
+                }
                 Swal.fire({
                     title: response.responseMessage,
-                    text: response.display_LKRSID,
+                    // text: response.display_LKRSID,
                     icon: "success",
                     confirmButtonText: "OK",
                 });
                 setIsEPIDSectionDisabled(true);
                 onDisableEPIDSection();
                 setIsEPIDSectionSaved(true);
+
 
             } else {
                 stop_loader();
@@ -2160,16 +2174,6 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
 
     }, [LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved]);
 
-
-    // useEffect(() => {
-    //     if (LKRS_ID) {
-    //         setLocalLKRSID(LKRS_ID);
-    //         if (buttonRef.current) {
-    //             buttonRef.current.click();
-    //         }
-    //     }
-    // }, [LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved]);
-
     const loadData = async () => {
         const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -2235,7 +2239,6 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             };
 
             const listResponse = await listReleaseInfo(listPayload);
-            console.table(listResponse);
             const listFileResponse = await fileListAPI(3, localLKRSID, 3, 0); //level, LKRSID, MdocID, docID
 
             if (Array.isArray(listResponse) && listResponse.length > 0) {
@@ -2245,11 +2248,17 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                     orderReleaseFile: listFileResponse[index]?.doctrN_DOCBASE64 || null,
                     releaseAuthority: item.sitE_RELS_APPROVALDESIGNATION,
                     releaseType: item.sitE_RELS_SITE_RELSTYPE,
+                    releaseOrderDocID: listFileResponse[index]?.doctrN_ID || null,
+                    releaseID: item.sitE_RELS_ID || null,
                 }));
-                setOrder_Records(formattedList);
+
                 setIsOrderEditing(true); // Disable edit button
                 setIsOrder_EditingArea(false); // Disable editing mode
+                setOrder_Records(formattedList);
                 setIsReleaseSectionSaved(true);
+            } else {
+                console.warn("Empty or invalid approval list");
+                setOrder_Records([]); // clear any stale data
             }
             stop_loader();
         } catch (error) {
@@ -2707,32 +2716,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
     const [isEditing, setIsEditing] = useState(true); // Controls edit mode
     const [savedRecords, setSavedRecords] = useState([]); // Stores saved records
 
-    const handleSaveAndProceed = () => {
-        if (records.length === 0) {
-            Swal.fire("Error", "No records available to save!", "error");
-            return;
-        }
 
-        // Update the selected record in the list
-        const updatedRecords = records.map((record, index) => {
-            if (index === editIndex) {
-                return {
-                    ...record,
-                    layoutApprovalNumber: formData.layoutApprovalNumber,
-                    approvalOrder: formData.approvalOrder,  // Updated file
-                    approvalMap: formData.approvalMap,      // Updated file
-                    dateOfApproval: formData.dateOfApproval,
-                    approvalAuthority: formData.approvalAuthority,
-                };
-            }
-            return record;
-        });
-
-        setRecords(updatedRecords); // Save the updated records
-        setIsEditing(false); // Disable editing mode
-        setApprovalDetails([...approval_details, records]);
-        Swal.fire("Success!", "Data saved successfully!", "success");
-    };
     const handleAddMore_again = () => {
         setIsEditing(true); // Enable editing mode
     };
@@ -2861,8 +2845,12 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                     </button> */}
                     <button
                         className="btn btn-danger btn-sm"
-                        disabled={!isOrder_EditingArea}
-                        onClick={() => handleOrderDelete(index)}
+                        onClick={() =>
+                            handleDeleteRelease(
+                                row.releaseID,
+                                row.releaseOrderDocID
+                            )
+                        }
                     >
                         <i className="fa fa-trash"></i>
                     </button>
@@ -3015,6 +3003,8 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                                 orderReleaseFile: listFileResponse[index]?.doctrN_DOCBASE64 || null,
                                 releaseAuthority: item.sitE_RELS_APPROVALDESIGNATION,
                                 releaseType: item.sitE_RELS_SITE_RELSTYPE,
+                                releaseOrderDocID: listFileResponse[index]?.doctrN_ID || null,
+                                releaseID: item.sitE_RELS_ID || null,
                             }));
                             setOrder_Records(formattedList);
                             setIsOrderEditing(true); // Disable edit button
@@ -3117,6 +3107,54 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             text: 'Implementation is in progress.',
             icon: 'info',
             confirmButtonText: 'OK'
+        });
+    };
+    //Release order delete info button
+    const handleDeleteRelease = async (releaseID, releaseOrderDocID) => {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Yes, delete it!"
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    start_loader();
+
+                    const deletePayload = {
+                        level: 1,
+                        lkrS_ID: localLKRSID,
+                        sitE_RELS_ID: releaseID,
+                        sitE_RELS_REMARKS: "",
+                        sitE_RELS_ADDITIONALINFO: "",
+                        site_Rels_UpdatedBy: createdBy,
+                        site_Rels_UpdatedName: createdName,
+                        site_Rels_UpdatedRole: roleID,
+                        sitE_RELS_DOCUMENT_ID: releaseOrderDocID
+                    };
+
+                    const response = await deleteReleaseInfo(deletePayload);
+
+                    if (response.responseStatus === true) {
+                        Swal.fire("Deleted!", response.responseMessage, "success");
+                        setIsOrderEditing(false);
+                        setIsOrder_EditingArea(true);
+                        setIsReleaseSectionSaved(false);
+                        fetchReleaseList(localLKRSID);
+                    }
+                    else {
+                        Swal.fire("Error!", "Failed to delete. Please try again.", "error");
+                    }
+                } catch (error) {
+                    console.error("Delete Error:", error);
+                    Swal.fire("Error!", "Something went wrong.", "error");
+                } finally {
+                    stop_loader();
+                }
+            }
         });
     };
 
@@ -3603,7 +3641,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
     );
 };
 //GPS and Individual Sites Components
-const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID, isRTCSectionSaved, isEPIDSectionSaved, setIsSitesSectionSaved }) => {
+const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID, ownerName, isRTCSectionSaved, isEPIDSectionSaved, setIsSitesSectionSaved, }) => {
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
     const [shape, setShape] = useState("regular"); // Track selected shape
 
@@ -3708,7 +3746,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
     }, [areaSqft]);
 
     const [localLKRSID, setLocalLKRSID] = useState("");
-
+    const [localOwnername, setLocalOwnerName] = useState("");
     useEffect(() => {
         if (LKRS_ID) {
             setLocalLKRSID(LKRS_ID);
@@ -3716,7 +3754,14 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             const id = localStorage.getItem("LKRSID");
             if (id) setLocalLKRSID(id);
         }
-    }, [LKRS_ID]);
+        if (ownerName) {
+            setLocalOwnerName(ownerName)
+        } else {
+            const name = localStorage.getItem("ownerName");
+            if (name) setLocalOwnerName(name);
+        }
+        console.log("ownername", ownerName);
+    }, [LKRS_ID, ownerName]);
 
 
     useEffect(() => {
@@ -4871,6 +4916,21 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             });
             return;
         }
+
+        if (isChecked) {
+            const existingSiteNumbers = allSites.map(site => site.sitE_NO);
+            const siteNumberToCheck = shape === "regular" ? regular_siteNumber : irregular_siteNumber;
+
+            if (existingSiteNumbers.includes(siteNumberToCheck)) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Duplicate Site Number",
+                    text: `Site number "${siteNumberToCheck}" already exists. Please enter a new site number.`,
+                });
+                return; // Stop further execution
+            }
+        }
+
 
         const isRegular = shape === "regular";
         const isIrregular = shape === "irregular";
@@ -6143,11 +6203,12 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                                     <span className="fw-semibold text-dark">
                                         Owner Name :
                                         <label className="text-success">
-                                            {
+                                            {/* {
                                                 ownerList.length > 0
                                                     ? ownerList.map(owner => owner.name).join(", ")
                                                     : "N/A"
-                                            }
+                                            } */}
+                                            {localOwnername || "N/A"}
                                         </label>
                                     </span>
                                 </div>
@@ -6157,7 +6218,6 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
                         <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-3">
                             <button className="btn btn-primary btn-block mt-3" disabled={isAddDisabled}
-                                //  onClick={() => handle_AddRow(shape)}
                                 onClick={() => addSites(shape)}
                             >
                                 Add Site
@@ -6377,7 +6437,7 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
             {
                 Header: "Type of Site",
                 accessor: (row) => {
-                    return `${row.sitE_TYPEID}`;
+                    return `${row.sitE_TYPE}`;
                 },
             },
             {
@@ -6687,10 +6747,10 @@ const Preview_siteDetailsTable = ({ data, setData, totalSitesCount, onSave, onEd
                     return row.sitE_CORNERPLOT ? "YES" : "NO";
                 },
             },
-            {
+             {
                 Header: "Type of Site",
                 accessor: (row) => {
-                    return `${row.sitE_TYPEID}`;
+                    return `${row.sitE_TYPE}`;
                 },
             },
             {
@@ -7910,37 +7970,37 @@ const Owner_EKYCBlock = ({ LKRS_ID }) => {
     const [ekycUrl, setEkycUrl] = useState('');
     const ownerNameInputRef = useRef('');
 
-   useEffect(() => {
-  const handleMessage = (event) => {
-    if (event.origin !== "http://localhost:3001") return;
-    if (window.location.pathname !== "/LayoutForm") return;
+    useEffect(() => {
+        const handleMessage = (event) => {
+            if (event.origin !== "http://localhost:3001") return;
+            if (window.location.pathname !== "/LayoutForm") return;
 
-    if (event.data.ekycStatus === "Success") {
-      if (selectedOwner?.name) {
-        const encodedName = encodeURIComponent(selectedOwner.name);
-        fetchEKYC_ResponseDetails(encodedName, event.data.ekycTxnNo);
-      } else {
-        console.error("No selected owner found.");
-        Swal.fire('Missing Data', 'Please select an owner before starting eKYC.', 'warning');
-        return;
-      }
+            if (event.data.ekycStatus === "Success") {
+                if (selectedOwner?.name) {
+                    const encodedName = encodeURIComponent(selectedOwner.name);
+                    fetchEKYC_ResponseDetails(encodedName, event.data.ekycTxnNo);
+                } else {
+                    console.error("No selected owner found.");
+                    Swal.fire('Missing Data', 'Please select an owner before starting eKYC.', 'warning');
+                    return;
+                }
 
-      Swal.fire({
-        title: 'eKYC Result',
-        text: `Status: ${event.data.ekycStatus}\nName: ${selectedOwner?.name || 'N/A'}`,
-        icon: 'success',
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-        confirmButtonText: 'OK'
-      });
-    } else if (event.data.ekycStatus === "Failure") {
-      Swal.fire('eKYC Result', `Status: ${event.data.ekycStatus}`, 'error');
-    }
-  };
+                Swal.fire({
+                    title: 'eKYC Result',
+                    text: `Status: ${event.data.ekycStatus}\nName: ${selectedOwner?.name || 'N/A'}`,
+                    icon: 'success',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    confirmButtonText: 'OK'
+                });
+            } else if (event.data.ekycStatus === "Failure") {
+                Swal.fire('eKYC Result', `Status: ${event.data.ekycStatus}`, 'error');
+            }
+        };
 
-  window.addEventListener("message", handleMessage);
-  return () => window.removeEventListener("message", handleMessage);
-}, [selectedOwner]);
+        window.addEventListener("message", handleMessage);
+        return () => window.removeEventListener("message", handleMessage);
+    }, [selectedOwner]);
 
 
 
@@ -8676,7 +8736,7 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
             setOwnerList([]);
             setOwnerNames(''); // fallback if API fails
         }
-    };    
+    };
     useEffect(() => {
         const handleMessage = (event) => {
             // Ensure the message is coming from your domain
@@ -9919,8 +9979,24 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
             selector: row => row.owN_IDNUMBER || 'N/A',
         },
     ];
-
-
+  
+        const [ownerEKYCDataList, setownerEKYCDataList] = useState([]);
+        const owner_EKYCDetails = async (localLKRSID) => {
+            try {
+                const response = await ownerEKYC_Details("1", localLKRSID);
+                setownerEKYCDataList(response); // assuming response is the array you shared
+            } catch (error) {
+                console.error("Failed to fetch EKYC owner details:", error);
+            }
+        }
+        const JDA_EKYCDetails = async (localLKRSID) => {
+            try {
+                const response = await ownerEKYC_Details("1", localLKRSID);
+                setOwnerDataList(response); // assuming response is the array you shared
+            } catch (error) {
+                console.error("Failed to fetch EKYC owner details:", error);
+            }
+        }
 
     const handlePreviewClick = async () => {
         if (!localLKRSID) return;
@@ -9928,7 +10004,8 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
         await fetchApprovalList(localLKRSID);
         await fetchReleaseList(localLKRSID);
         await fetchSiteDetails(localLKRSID);
-        await fetch_ownerDetails(localLKRSID);
+        await owner_EKYCDetails(localLKRSID);
+        await JDA_EKYCDetails(localLKRSID);
         setIsModalOpen(true); // Show modal after fetching
     };
 
@@ -9988,7 +10065,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
 
 
                 <div id="modal-content">
-                    <Modal isOpen={isModalOpen} onClose={closeModal}>
+                    <Modal isOpen={isModalOpen} onClose={closeModal} lkrSid={LKRS_ID}>
                         <div style={{ padding: '20px' }}>
                             {/* survey number preview block */}
                             {selectedLandType === "surveyNo" && (
@@ -10174,12 +10251,66 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
                                     roleID={roleID}
                                 />
                             )}
+                            <hr/>
+                            {/* EC Details */}
                             <hr />
+                            {/* Owner EKYC */}
+                            {ownerEKYCDataList.length > 0 && (
 
-
-                            {ownerDataList.length > 0 && (
                                 <div className='col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12'>
                                     <h5>Owner / Owner Representative EKYC Details</h5>
+                                    <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
+                                        <thead className="table-light">
+                                            <tr>
+                                                <th>ಫೋಟೋ / Photo</th>
+                                                <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>
+                                                <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhar Number</th>
+                                                <th>ಲಿಂಗ / Gender</th>
+                                                <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th>
+                                                <th>ವಿಳಾಸ / Address</th>
+                                                <th>ಇಕೆವೈಸಿ ಸ್ಥಿತಿ / EKYC Status</th>
+                                                <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {ownerEKYCDataList
+                                                .filter(owner => owner.owN_AADHAARVERISTATUS === "Success")
+                                                .map((owner, index) => {
+                                                    let parsedAadhaar = {};
+                                                    try {
+                                                        parsedAadhaar = JSON.parse(owner.owN_AADHAAR_RESPONSE).ekycResponse || {};
+                                                    } catch (err) {
+                                                        console.warn("Invalid Aadhaar JSON for owner:", owner.owN_NAME_EN);
+                                                    }
+
+                                                    return (
+                                                        <tr key={index}>
+                                                            <td style={{ textAlign: 'center' }}>
+                                                                <img src={usericon} alt="Owner" width="50" height="50" />
+                                                            </td>
+                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.ownerNameEng || 'N/A'}</td>
+                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.maskedAadhaar || 'N/A'}</td>
+                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.gender || 'N/A'}</td>
+                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.dateOfBirth || 'N/A'}</td>
+                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.addressEng || 'N/A'}</td>
+                                                            <td style={{ textAlign: 'center' }}>Verified</td>
+                                                            <td style={{ textAlign: 'center' }}>
+                                                                {owner.owN_NAMEMATCHSCORE > 80 ? 'Matched' : 'Not Matched'}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                        </tbody>
+
+                                    </table>
+                                </div>
+                            )}
+                            <hr />
+                            {/* JDA EKYC */}
+                            {ownerDataList.length > 0 && (
+
+                                <div className='col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12'>
+                                    <h5>JDA / JDA Representative EKYC Details</h5>
                                     <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
                                         <thead className="table-light">
                                             <tr>
@@ -10300,7 +10431,7 @@ const styles = {
         },
     },
 };
-const Modal = ({ isOpen, onClose, children }) => {
+const Modal = ({ isOpen, onClose, children, lkrSid }) => {
     if (!isOpen) return null;
 
     const modalRoot = document.getElementById('modal-root');
@@ -10319,6 +10450,14 @@ const Modal = ({ isOpen, onClose, children }) => {
                     </button>
                 </div>
                 <div style={styles.modalBody}>
+                    <p style={{
+                        textAlign: 'right',
+                        fontSize: '18px',
+                        fontWeight: 'bold',
+                        margin: '0 0 10px 0'
+                    }}>
+                        <strong>LKRSID:</strong> {lkrSid}
+                    </p>
                     {children}
                 </div>
             </div>

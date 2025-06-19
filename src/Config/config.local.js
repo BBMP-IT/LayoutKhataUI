@@ -28,6 +28,7 @@ const config = {
         listApprovalInfo: '/api/Approval/fnGetApprovalList',
         deleteApprovalInfo: '/api/Approval/fnDeleteApprovalinfo',
         insertReleaseInfo: '/api/Release/fnInsertReleaseinfo',
+        deleteReleaseInfo: '/api/Release/fnDeleteReleaseOrderinfo',
         listReleaseInfo: '/api/Release/fnGetReleaseList',
         fileUpload: '/api/Document/fnUploadDocuments',
         fileUploadList: '/api/Document/fnGetDocumentList',
@@ -45,6 +46,7 @@ const config = {
         delete_siteInfo: '/api/Site/fnDeleteSiteinfo',
         fetchLKRSID: '/api/LKRS/fnGetLKRSInfo',
         layoutKhata_Save: '/api/LKRS/fnSaveLKRSinfo',
+        releasePercentage:'/api/Release/fnGetReleasePercentage',
 
     }
 };

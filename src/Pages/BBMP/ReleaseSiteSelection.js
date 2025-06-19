@@ -5,8 +5,21 @@ import DataTable from 'react-data-table-component';
 import '../../Styles/CSS/ReleaseSiteSelection.css';
 import Swal from "sweetalert2";
 
-const ReleaseSelection = () => {
+import {
+  fetch_LKRSID, fetch_releasePercentageDetails, individualSiteListAPI
+} from '../../API/authService';
+
+export const useLoader = () => {
   const [loading, setLoading] = useState(false);
+
+  const start_loader = () => setLoading(true);
+  const stop_loader = () => setLoading(false);
+
+  return { loading, start_loader, stop_loader };
+};
+
+const ReleaseSelection = () => {
+  const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
   const [selectedValue, setSelectedValue] = useState('');
 
   // Sample data for the DataTable
@@ -17,7 +30,7 @@ const ReleaseSelection = () => {
     date: new Date().toLocaleDateString(),
   }));
 
-  const [releaseData, setReleaseData] = useState(sampleData); // Data for the "Release Table"
+  const [releaseData, setReleaseData] = useState([]); // Data for the "Release Table"
   const [releasedData, setReleasedData] = useState([]); // Data for the "Already Released Table"
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectAllChecked, setSelectAllChecked] = useState(false);
@@ -55,16 +68,16 @@ const ReleaseSelection = () => {
     const isSelected = selectedRows.includes(row.id);
     if (isSelected) {
       setSelectedRows((prev) => prev.filter((id) => id !== row.id));
-    } else if (selectedValue !== '60*40' || selectedRows.length < selectionLimit) {
+    } else if (selectedValue !== '2' || selectedRows.length < selectionLimit) {
       setSelectedRows((prev) => [...prev, row.id]);
-    } else if (selectedValue !== '60*40' && selectedValue !== '40*30*30' || selectedRows.length < selectionLimit) {
+    } else if (selectedValue !== '2' && selectedValue !== '3' || selectedRows.length < selectionLimit) {
       setSelectedRows((prev) => [...prev, row.id]);
     }
   };
   const handleSelectAll = (e) => {
     const checked = e.target.checked;
 
-    if (selectedValue === '100') {
+    if (selectedValue === '1') {
       if (checked) {
         const allIds = releaseData.map(row => row.id);
         setSelectedRows(allIds);
@@ -72,7 +85,7 @@ const ReleaseSelection = () => {
         setSelectedRows([]);
       }
     }
-    if (selectedValue === '60*40') {
+    if (selectedValue === '2') {
       const totalCount = releaseData.length + releasedData.length;
       const sixtyPercentCount = Math.round(0.6 * originalTotalRecords);
       const alreadyReleased = releasedData.length;
@@ -99,7 +112,7 @@ const ReleaseSelection = () => {
         setSelectedRows(updatedSelection);
       }
     }
-    if (selectedValue === '40*30*30') {
+    if (selectedValue === '3') {
       const fortyPercent = Math.round(0.4 * originalTotalRecords);
       const thirtyPercent = Math.round(0.3 * originalTotalRecords);
       const alreadyReleased = finalApiList.length;
@@ -143,8 +156,7 @@ const ReleaseSelection = () => {
   };
 
 
-  const handleDimensionChange = (e) => {
-    const value = e.target.value;
+  const handleDimensionChange = (value) => {
     setSelectedValue(value);
     setSelectAllChecked(false);
     setSelectedRows([]);
@@ -153,7 +165,7 @@ const ReleaseSelection = () => {
     const sixtyPercentCount = Math.round(0.6 * originalTotalRecords);
     const fortyPercentCount = originalTotalRecords - sixtyPercentCount;
 
-    if (value === '60*40') {
+    if (value === '2') {
       if (releasedData.length === 0) {
         // First phase - allow 60% selection
         setSelectionLimit(sixtyPercentCount);
@@ -179,7 +191,7 @@ const ReleaseSelection = () => {
         });
         setSelectionLimit(0);
       }
-    } else if (value === '40*30*30') {
+    } else if (value === '3') {
       const fortyPercent = Math.round(0.4 * originalTotalRecords);
       const thirtyPercent = Math.round(0.3 * originalTotalRecords);
       const total = releaseData.length + releasedData.length;
@@ -220,297 +232,141 @@ const ReleaseSelection = () => {
     );
   };
 
-  // const moveToReleasedTable = () => {
-  //   const sixtyPercentCount = Math.round(0.6 * originalTotalRecords);
-  //   const fortyPercentCount = originalTotalRecords - sixtyPercentCount;
-  //   const releasedCount = releasedData.length; // how many already released
-  //   const allowedCount = sixtyPercentCount - releasedCount;
-  //   let shouldProceed = true;
-  //   const totalReleased = releasedData.length;
-  //   const selectedCount = selectedRows.length;
+  const moveToReleasedTable = () => {
+    const sixtyPercentCount = Math.round(0.6 * originalTotalRecords);
+    const fortyPercentCount = Math.round(0.4 * originalTotalRecords);
+    const thirtyPercentCount = Math.round(0.3 * originalTotalRecords);
+    const releasedCount = releasedData.length;
+    const selectedCount = selectedRows.length;
 
-
-  //   if (selectedValue === '100') {
-  //     if (releasedData.length > 0) {
-  //       Swal.fire({
-  //         icon: 'info',
-  //         title: 'Cannot perform 100% release',
-  //         text: 'Some records have already been released. 100% release must be done in one go.',
-  //         confirmButtonColor: '#3085d6',
-  //       });
-  //       shouldProceed = false;
-  //     } else if (selectedRows.length !== originalTotalRecords) {
-  //       Swal.fire({
-  //         icon: 'warning',
-  //         title: 'Invalid Selection',
-  //         text: `You must select all ${originalTotalRecords} records to complete 100% release.`,
-  //         confirmButtonColor: '#3085d6',
-  //       });
-  //       shouldProceed = false;
-  //     }
-  //   }
-
-  //   if (selectedValue === '60*40') {
-  //     if (finalApiList.length === 0) {
-  //       // First phase - 60%
-  //       if (releasedCount === sixtyPercentCount) {
-  //         Swal.fire({
-  //           icon: 'info',
-  //           html: `
-  //     <p><strong>60% of records have already been successfully released.</strong></p>
-  //     <p>No additional records can be added for this release phase.</p>
-  //   `,
-  //           confirmButtonColor: '#3085d6',
-  //         });
-  //         shouldProceed = false;
-  //       } else if (selectedRows.length !== allowedCount) {
-  //         Swal.fire({
-  //           icon: 'warning',
-  //           title: 'Invalid Selection',
-  //           text: `You must select exactly ${allowedCount} record(s) to complete the 60% release.`,
-  //           confirmButtonColor: '#3085d6',
-  //         });
-  //         shouldProceed = false;
-  //       } else {
-  //         shouldProceed = true;
-  //       }
-  //     } else if (totalReleased >= sixtyPercentCount && totalReleased < originalTotalRecords) {
-  //       // PHASE 2: 40%
-  //       const remainingToRelease = originalTotalRecords - totalReleased;
-
-  //       if (selectedCount !== remainingToRelease) {
-  //         Swal.fire({
-  //           icon: 'warning',
-  //           title: 'Invalid Selection',
-  //           text: `You must select exactly ${remainingToRelease} record(s) to complete the 40% release.`,
-  //           confirmButtonColor: '#3085d6',
-  //         });
-  //         shouldProceed = false;
-  //       }
-
-  //     } else if (totalReleased === originalTotalRecords) {
-  //       // 100% DONE
-  //       Swal.fire({
-  //         icon: 'success',
-  //         title: 'All Records Released',
-  //         text: '100% of records have been released. Moving to final submission.',
-  //         confirmButtonColor: '#3085d6',
-  //       });
-  //       shouldProceed = true;
-  //     } else if (finalApiList.length === originalTotalRecords) {
-  //       // After 100% (60 + 40)
-  //       Swal.fire({
-  //         icon: 'info',
-  //         title: 'Release Complete',
-  //         text: 'All records are already released.',
-  //         confirmButtonColor: '#3085d6',
-  //       });
-  //       shouldProceed = false;
-  //     }
-  //   }
-  //   else if (selectedValue === '40*30*30') {
-  //     const fortyPercent = Math.round(0.4 * originalTotalRecords);
-  //     const thirtyPercent = Math.round(0.3 * originalTotalRecords);
-  //     const totalReleased = releasedData.length;
-
-  //     if (finalApiList.length === 0) {
-  //       // Phase 1: 40%
-  //       if (totalReleased === fortyPercent) {
-  //         Swal.fire({
-  //           icon: 'info',
-  //           title: 'First phase completed',
-  //           text: '40% of records already released. Proceed with next phase.',
-  //           confirmButtonColor: '#3085d6',
-  //         });
-  //         shouldProceed = false;
-  //       } else if (selectedRows.length !== fortyPercent - totalReleased) {
-  //         Swal.fire({
-  //           icon: 'warning',
-  //           title: 'Invalid Selection',
-  //           text: `You must select exactly ${fortyPercent - totalReleased} record(s) for the first phase.`,
-  //           confirmButtonColor: '#3085d6',
-  //         });
-  //         shouldProceed = false;
-  //       }
-  //     } else if (totalReleased >= fortyPercent && totalReleased < fortyPercent + thirtyPercent) {
-  //       // Phase 2: 30%
-  //       const required = (fortyPercent + thirtyPercent) - totalReleased;
-
-  //       if (selectedRows.length !== required) {
-  //         Swal.fire({
-  //           icon: 'warning',
-  //           title: 'Invalid Selection',
-  //           text: `You must select exactly ${required} record(s) for the second phase.`,
-  //           confirmButtonColor: '#3085d6',
-  //         });
-  //         shouldProceed = false;
-  //       }
-  //     } else if (totalReleased >= fortyPercent + thirtyPercent && totalReleased < originalTotalRecords) {
-  //       // Phase 3: Final 30%
-  //       const remaining = originalTotalRecords - totalReleased;
-
-  //       if (selectedRows.length !== remaining) {
-  //         Swal.fire({
-  //           icon: 'warning',
-  //           title: 'Invalid Selection',
-  //           text: `You must select exactly ${remaining} record(s) for the final phase.`,
-  //           confirmButtonColor: '#3085d6',
-  //         });
-  //         shouldProceed = false;
-  //       }
-  //     } else if (totalReleased === originalTotalRecords) {
-  //       Swal.fire({
-  //         icon: 'success',
-  //         title: 'All Records Released',
-  //         text: '100% of records have been released under 40*30*30 mode.',
-  //         confirmButtonColor: '#3085d6',
-  //       });
-  //       shouldProceed = false;
-  //     }
-  //   }
-
-
-
-  //   // Only proceed to move data if all conditions pass
-  //   if (shouldProceed) {
-  //     performRelease(sixtyPercentCount, fortyPercentCount);
-  //   }
-  // };
-const moveToReleasedTable = () => {
-  const sixtyPercentCount = Math.round(0.6 * originalTotalRecords);
-  const fortyPercentCount = Math.round(0.4 * originalTotalRecords);
-  const thirtyPercentCount = Math.round(0.3 * originalTotalRecords);
-  const releasedCount = releasedData.length;
-  const selectedCount = selectedRows.length;
-
-  if (selectedValue === '100') {
-    if (releasedCount > 0) {
-      Swal.fire({
-        icon: 'info',
-        title: 'Cannot perform 100% release',
-        text: 'Some records have already been released. 100% release must be done in one go.',
-        confirmButtonColor: '#3085d6',
-      });
-      return;
-    } else if (selectedCount !== originalTotalRecords) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Invalid Selection',
-        text: `You must select all ${originalTotalRecords} records to complete 100% release.`,
-        confirmButtonColor: '#3085d6',
-      });
-      return;
+    if (selectedValue === '1') {
+      if (releasedCount > 0) {
+        Swal.fire({
+          icon: 'info',
+          title: 'Cannot perform 100% release',
+          text: 'Some records have already been released. 100% release must be done in one go.',
+          confirmButtonColor: '#3085d6',
+        });
+        return;
+      } else if (selectedCount !== originalTotalRecords) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Invalid Selection',
+          text: `You must select all ${originalTotalRecords} records to complete 100% release.`,
+          confirmButtonColor: '#3085d6',
+        });
+        return;
+      }
     }
-  }
 
-  if (selectedValue === '60*40') {
+    if (selectedValue === '2') {
       if (selectedCount === 0) {
-    Swal.fire({
-      icon: 'error',
-      title: 'No Records Selected',
-      text: 'Please select a record to release.',
-      confirmButtonColor: '#3085d6',
-    });
-    return;
-  }
+        Swal.fire({
+          icon: 'error',
+          title: 'No Records Selected',
+          text: 'Please select a record to release.',
+          confirmButtonColor: '#3085d6',
+        });
+        return;
+      }
 
-    if (releasedCount < sixtyPercentCount) {
-      // Phase 1: Must select up to 60%
-      if (selectedCount > (sixtyPercentCount - releasedCount)) {
+      if (releasedCount < sixtyPercentCount) {
+        // Phase 1: Must select up to 60%
+        if (selectedCount > (sixtyPercentCount - releasedCount)) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Limit Exceeded',
+            text: `You can only select up to ${sixtyPercentCount - releasedCount} items in this phase.`,
+            confirmButtonColor: '#3085d6',
+          });
+          return;
+        }
+      } else if (releasedCount >= sixtyPercentCount && releasedCount < originalTotalRecords) {
+        // Phase 2: Remaining 40%
+        const allowed = originalTotalRecords - releasedCount;
+        if (selectedCount > allowed) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Limit Exceeded',
+            text: `You can only release ${allowed} more items.`,
+            confirmButtonColor: '#3085d6',
+          });
+          return;
+        }
+      } else {
         Swal.fire({
-          icon: 'warning',
-          title: 'Limit Exceeded',
-          text: `You can only select up to ${sixtyPercentCount - releasedCount} items in this phase.`,
+          icon: 'info',
+          title: 'All Released',
+          text: '100% records already released.',
           confirmButtonColor: '#3085d6',
         });
         return;
       }
-    } else if (releasedCount >= sixtyPercentCount && releasedCount < originalTotalRecords) {
-      // Phase 2: Remaining 40%
-      const allowed = originalTotalRecords - releasedCount;
-      if (selectedCount > allowed) {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Limit Exceeded',
-          text: `You can only release ${allowed} more items.`,
-          confirmButtonColor: '#3085d6',
-        });
-        return;
-      }
-    } else {
-      Swal.fire({
-        icon: 'info',
-        title: 'All Released',
-        text: '100% records already released.',
-        confirmButtonColor: '#3085d6',
-      });
-      return;
     }
-  }
 
-  if (selectedValue === '40*30*30') {
-         if (selectedCount === 0) {
-    Swal.fire({
-      icon: 'error',
-      title: 'No Records Selected',
-      text: 'Please select a record to release.',
-      confirmButtonColor: '#3085d6',
-    });
-    return;
-  }
-    if (releasedCount < fortyPercentCount) {
-      // Phase 1: 40%
-      if (selectedCount > (fortyPercentCount - releasedCount)) {
+    if (selectedValue === '3') {
+      if (selectedCount === 0) {
         Swal.fire({
-          icon: 'warning',
-          title: 'Limit Exceeded',
-          text: `Only ${fortyPercentCount - releasedCount} records can be released in this phase.`,
+          icon: 'error',
+          title: 'No Records Selected',
+          text: 'Please select a record to release.',
           confirmButtonColor: '#3085d6',
         });
         return;
       }
-    } else if (releasedCount === fortyPercentCount) {
-      // Phase 2: 30%
-      if (selectedCount > thirtyPercentCount) {
+      if (releasedCount < fortyPercentCount) {
+        // Phase 1: 40%
+        if (selectedCount > (fortyPercentCount - releasedCount)) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Limit Exceeded',
+            text: `Only ${fortyPercentCount - releasedCount} records can be released in this phase.`,
+            confirmButtonColor: '#3085d6',
+          });
+          return;
+        }
+      } else if (releasedCount === fortyPercentCount) {
+        // Phase 2: 30%
+        if (selectedCount > thirtyPercentCount) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Limit Exceeded',
+            text: `Only ${thirtyPercentCount} records can be released in this phase.`,
+            confirmButtonColor: '#3085d6',
+          });
+          return;
+        }
+      } else if (releasedCount === (fortyPercentCount + thirtyPercentCount)) {
+        // Phase 3: Final 30%
+        const remaining = originalTotalRecords - releasedCount;
+        if (selectedCount > remaining) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Limit Exceeded',
+            text: `Only ${remaining} records can be released in this final phase.`,
+            confirmButtonColor: '#3085d6',
+          });
+          return;
+        }
+      } else {
         Swal.fire({
           icon: 'warning',
-          title: 'Limit Exceeded',
-          text: `Only ${thirtyPercentCount} records can be released in this phase.`,
+          title: 'Invalid Phase',
+          text: 'You can only proceed to the next 30% phase after completing the previous one.',
           confirmButtonColor: '#3085d6',
         });
         return;
       }
-    } else if (releasedCount === (fortyPercentCount + thirtyPercentCount)) {
-      // Phase 3: Final 30%
-      const remaining = originalTotalRecords - releasedCount;
-      if (selectedCount > remaining) {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Limit Exceeded',
-          text: `Only ${remaining} records can be released in this final phase.`,
-          confirmButtonColor: '#3085d6',
-        });
-        return;
-      }
-    } else {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Invalid Phase',
-        text: 'You can only proceed to the next 30% phase after completing the previous one.',
-        confirmButtonColor: '#3085d6',
-      });
-      return;
     }
-  }
 
-  // Move selected records to releasedData
-  const selectedRowsData = releaseData.filter(row => selectedRows.includes(row.id));
-  const remainingData = releaseData.filter(row => !selectedRows.includes(row.id));
-  setReleasedData(prev => [...prev, ...selectedRowsData]);
-  setReleaseData(remainingData);
-  setSelectedRows([]);
-  setSelectAllChecked(false);
-};
+    // Move selected records to releasedData
+    const selectedRowsData = releaseData.filter(row => selectedRows.includes(row.id));
+    const remainingData = releaseData.filter(row => !selectedRows.includes(row.id));
+    setReleasedData(prev => [...prev, ...selectedRowsData]);
+    setReleaseData(remainingData);
+    setSelectedRows([]);
+    setSelectAllChecked(false);
+  };
 
   const performRelease = (sixtyPercentCount, fortyPercentCount) => {
     const movingData = releaseData.filter(item => selectedRows.includes(item.id));
@@ -520,11 +376,11 @@ const moveToReleasedTable = () => {
     setSelectedRows([]);
 
     // Prepare for second phase if it's first time in 60*40
-    if (selectedValue === '60*40' && releasedData.length === 0) {
+    if (selectedValue === '2' && releasedData.length === 0) {
       setSelectionLimit(fortyPercentCount);
     }
 
-    if (selectedValue === '100') {
+    if (selectedValue === '1') {
       setIs60PercentDone(true); // or any full-release flag
     }
   };
@@ -542,7 +398,7 @@ const moveToReleasedTable = () => {
         return updated.sort((a, b) => a.id - b.id);
       });
 
-      if (selectedValue === '60*40') {
+      if (selectedValue === '2') {
         setSelectionLimit((prevLimit) => prevLimit + 1);
       }
 
@@ -552,11 +408,11 @@ const moveToReleasedTable = () => {
     });
   };
   const isSelectAllDisabled = () => {
-    if (selectedValue === '100') {
+    if (selectedValue === '1') {
       return releaseData.length === 0;
     }
 
-    if (selectedValue === '60*40') {
+    if (selectedValue === '2') {
       const totalCount = releaseData.length + releasedData.length;
       const sixtyPercentCount = Math.round(0.6 * totalCount);
 
@@ -575,9 +431,9 @@ const moveToReleasedTable = () => {
   };
 
   // Columns for the DataTable
-  const releaseTableColumns = [
-    {
-      name: ['100', '60*40', '40*30*30'].includes(selectedValue) ? (
+ const releaseTableColumns = [
+ {
+      name: ['1', '2', '3'].includes(selectedValue) ? (
         <div>
           <input
             type="checkbox"
@@ -603,7 +459,7 @@ const moveToReleasedTable = () => {
         const isInFirstPhase = alreadyReleased < maxSelectable;
 
         // Whether selecting more is blocked (limit reached)
-        const limitReached = selectedValue === '60*40' &&
+        const limitReached = selectedValue === '2' &&
           isInFirstPhase &&
           !isSelected &&
           selectedRows.length >= remainingSlots;
@@ -650,6 +506,98 @@ const moveToReleasedTable = () => {
       allowOverflow: true,
       button: true,
     },
+  {
+    name: 'Sl. No.',
+    selector: (row, index) => index + 1,
+    sortable: true,
+  },
+  {
+    name: "Shape",
+    selector: row => row.sitE_SHAPETYPE || '',
+  },
+  {
+    name: "Site Number",
+    selector: row => row.sitE_NO || '',
+  },
+  {
+    name: "Block/Area",
+    selector: row => row.sitE_AREA || '',
+  },
+  {
+    name: "Number of sides",
+    selector: row => row.sitE_NO_OF_SIDES || '',
+  },
+  {
+    name: "Dimension",
+    cell: (row) => {
+      if (row.sitE_SHAPETYPE === "Regular") {
+        const feetSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINFT) || [];
+        const meterSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINMT) || [];
+        const roadFacingStatuses = row.siteDimensions?.map(dim => dim.sitediM_ROADFACING ? "yes" : "no") || [];
+
+        return (
+          <>
+            {feetSides.join(" x ")} (ft)<br />
+            {meterSides.join(" x ")} (mtr)<br />
+            <b>Road Facing:</b> {roadFacingStatuses.join(", ")}
+          </>
+        );
+      } else if (row.sitE_SHAPETYPE === "Irregular" && Array.isArray(row.siteDimensions)) {
+        const feetString = row.siteDimensions.map(side => side.sitediM_SIDEINFT).join(' x ');
+        const meterString = row.siteDimensions.map(side => side.sitediM_SIDEINMT).join(' x ');
+        const roadFacingString = row.siteDimensions.map(side => side.sitediM_ROADFACING ? "Yes" : "No").join(', ');
+
+        return (
+          <div>
+            <div>{feetString} (ft)</div>
+            <div>{meterString} (m)</div>
+            <div><b>Road Facing:</b> {roadFacingString}</div>
+          </div>
+        );
+      }
+      return '';
+    }
+  },
+  {
+    name: "Total Area",
+    selector: row => `${row.sitE_AREAINSQFT} [Sq.ft], ${row.sitE_AREAINSQMT} [Sq.mtr]`,
+  },
+  {
+    name: "Corner Site",
+    selector: row => row.sitE_CORNERPLOT ? "YES" : "NO",
+  },
+  {
+    name: "Type of Site",
+    selector: row => row.sitE_TYPE || '',
+  },
+  {
+    name: "Chakbandi [East | West | North | South]",
+    selector: row => `${row.sitE_EAST} | ${row.sitE_WEST} | ${row.sitE_NORTH} | ${row.sitE_SOUTH}`,
+  },
+  {
+    name: "Latitude, Longitude",
+    selector: row => `${row.sitE_LATITUDE}, ${row.sitE_LONGITUDE}`,
+  },
+];
+
+  const releasedTableColumns = [
+    // Conditionally add the "Actions" column only if selectedValue !== '100%'
+    ...(String(selectedValue).trim() !== '1' ? [
+      {
+        name: 'Actions',
+        selector: row => row.id,
+        cell: row => (
+          <button
+            className="btn btn-danger"
+            disabled={is60PercentDone && String(row.releasePhase).trim() === '60'}
+            onClick={() => handleRemoveFromReleasedTable(row.id)}
+          >
+            <i className='fa fa-trash'></i>
+          </button>
+        ),
+      }
+    ] : []),
+
     {
       name: 'Sl. No.',
       selector: row => row.id,
@@ -669,384 +617,221 @@ const moveToReleasedTable = () => {
       name: 'Date',
       selector: row => row.date,
       sortable: true,
-    }
+    },
   ];
-const releasedTableColumns = [
-  // Conditionally add the "Actions" column only if selectedValue !== '100%'
-  ...(String(selectedValue).trim() !== '100' ? [
-    {
-      name: 'Actions',
-      selector: row => row.id,
-      cell: row => (
-        <button
-          className="btn btn-danger"
-          disabled={is60PercentDone && String(row.releasePhase).trim() === '60'}
-          onClick={() => handleRemoveFromReleasedTable(row.id)}
-        >
-          <i className='fa fa-trash'></i>
-        </button>
-      ),
-    }
-  ] : []),
 
-  {
-    name: 'Sl. No.',
-    selector: row => row.id,
-    sortable: true,
-  },
-  {
-    name: 'Dimension',
-    selector: row => row.dimension,
-    sortable: true,
-  },
-  {
-    name: 'Status',
-    selector: row => row.status,
-    sortable: true,
-  },
-  {
-    name: 'Date',
-    selector: row => row.date,
-    sortable: true,
-  },
-];
-
-  //final save method
-  // const handleInitial60PercentSave = () => {
-  //   const totalRecords = releaseData.length + releasedData.length;
-
-  //   const expectedCount = Math.round(0.6 * totalRecords);
-  //   if (releasedData.length < expectedCount) {
-  //     Swal.fire({
-  //       icon: 'warning',
-  //       title: 'Minimum Selection Required',
-  //       text: `You must move at least ${expectedCount} sites to the Already Released Table for 60 * 40.`,
-  //       confirmButtonColor: '#3085d6',
-  //     });
-  //     return;
-  //   }
-
-  //   setFinalApiList(prev => {
-  //     const updated = [...prev, ...releasedData];
-  //     console.log("finalApiList after update:", updated);
-  //     return updated;
-  //   });
-
-  //   setReleasedData([]);
-
-  //   Swal.fire({
-  //     icon: 'success',
-  //     title: '60% Sites Released Successfully',
-  //     text: 'You have successfully released 60% of the sites.',
-  //     showCancelButton: true,
-  //     confirmButtonText: 'Continue with Next Release',
-  //     cancelButtonText: 'Back to Dashboard',
-  //     confirmButtonColor: '#3085d6',
-  //     cancelButtonColor: '#d33',
-  //   }).then((result) => {
-  //     if (result.isConfirmed) {
-  //       setIs60PercentDone(true);
-  //       setShowNextReleaseForm(true);
-
-  //       const total = totalRecords;
-  //       const sixtyPercentCount = Math.round(0.6 * total);
-  //       const remainingToSelect = total - sixtyPercentCount;
-
-  //       setSelectedRows([]);
-
-  //       const remainingRows = releaseData.slice(0, remainingToSelect).map(row => row.id);
-  //       setSelectedRows(remainingRows);
-  //     } else if (result.dismiss === Swal.DismissReason.cancel) {
-  //       window.location.href = '/dashboard';
-  //     }
-  //   });
-  // };
-  // const handleFinal40PercentSave = () => {
-  //   const expectedCount = Math.round(0.4 * originalTotalRecords);
-  //   if (releasedData.length !== expectedCount) {
-  //     Swal.fire({
-  //       icon: 'error',
-  //       title: 'Invalid Selection',
-  //       text: `You must move exactly ${expectedCount} sites to the Already Released Table for the remaining 40%. You selected ${releasedData.length}.`,
-  //       confirmButtonColor: '#d33',
-  //     });
-  //     return;
-  //   }
-
-  //   setFinalApiList(prev => {
-  //     const updated = [...prev, ...releasedData];
-  //     console.log("finalApiList after update (40%):", updated);
-  //     return updated;
-  //   });
-
-  //   setReleasedData([]);
-
-  //   Swal.fire({
-  //     icon: 'success',
-  //     title: '40% Sites Released Successfully',
-  //     text: 'You have successfully released the remaining 40% of the sites.',
-  //     confirmButtonColor: '#3085d6',
-  //   });
-  // };
-const [is40PercentDone, setIs40PercentDone] = useState(false);
+  const [is40PercentDone, setIs40PercentDone] = useState(false);
   const handleInitial60PercentSave = () => {
-  const totalRecords = releaseData.length + releasedData.length;
-  const expectedCount60 = Math.round(0.6 * totalRecords);
-  const expectedCount40 = Math.round(0.4 * originalTotalRecords);
-  const expectedCount30 = Math.round(0.3 * originalTotalRecords);
+    const totalRecords = releaseData.length + releasedData.length;
+    const expectedCount60 = Math.round(0.6 * totalRecords);
+    const expectedCount40 = Math.round(0.4 * originalTotalRecords);
+    const expectedCount30 = Math.round(0.3 * originalTotalRecords);
 
-  if (selectedValue === '60*40') {
-    if (releasedData.length < expectedCount60) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Minimum Selection Required',
-        text: `You must move at least ${expectedCount60} sites to the Already Released Table for 60 * 40.`,
-        confirmButtonColor: '#3085d6',
-      });
-      return;
-    }
-
-    setFinalApiList(prev => {
-      const updated = [...prev, ...releasedData];
-      console.log("finalApiList after update:", updated);
-      return updated;
-    });
-
-    setReleasedData([]);
-
-    Swal.fire({
-      icon: 'success',
-      title: '60% Sites Released Successfully',
-      text: 'You have successfully released 60% of the sites.',
-      showCancelButton: true,
-      confirmButtonText: 'Continue with Next Release',
-      cancelButtonText: 'Back to Dashboard',
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-    }).then((result) => {
-      if (result.isConfirmed) {
-        setIs60PercentDone(true);
-        setShowNextReleaseForm(true);
-
-        const remainingToSelect = totalRecords - expectedCount60;
-        const remainingRows = releaseData.slice(0, remainingToSelect).map(row => row.id);
-
-        setSelectedRows([]);
-        setSelectedRows(remainingRows);
-      } else if (result.dismiss === Swal.DismissReason.cancel) {
-        window.location.href = '/dashboard';
+    if (selectedValue === '2') {
+      if (releasedData.length < expectedCount60) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Minimum Selection Required',
+          text: `You must move at least ${expectedCount60} sites to the Already Released Table for 60 * 40.`,
+          confirmButtonColor: '#3085d6',
+        });
+        return;
       }
-    });
-  }
 
-  else  if (selectedValue === '40*30*30') {
-  if (releasedData.length < expectedCount40) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Minimum 40% Required',
-      text: `You must release at least ${expectedCount40} sites for the 40% phase.`,
-      confirmButtonColor: '#3085d6',
-    });
-    return;
-  }
-
-  setFinalApiList(prev => [...prev, ...releasedData]);
-  setReleasedData([]);
-
-  Swal.fire({
-    icon: 'success',
-    title: '40% Sites Released Successfully',
-    text: 'You have successfully released 40% of the sites.',
-    showCancelButton: true,
-    confirmButtonText: 'Continue with Next 30% Release',
-    cancelButtonText: 'Back to Dashboard',
-    confirmButtonColor: '#3085d6',
-    cancelButtonColor: '#d33',
-  }).then((result) => {
-    if (result.isConfirmed) {
-  setIs40PercentDone(true); // ✅ This is the correct flag
-  setShowNextReleaseForm(true); // Continue to 30% release
-
-  const next30Count = Math.floor(originalTotalRecords * 0.3);
-  const next30Rows = releaseData
-    .filter(row => !finalApiList.some(finalRow => finalRow.id === row.id)) // exclude already released
-    .slice(0, next30Count)
-    .map(row => row.id);
-
-  setSelectedRows([]);
-  setSelectedRows(next30Rows);
-} else if (result.dismiss === Swal.DismissReason.cancel) {
-      window.location.href = '/dashboard';
-    }
-  });
-}
-
-  else if (selectedValue === '100') {
-    if (releasedData.length < originalTotalRecords) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Incomplete Selection',
-        text: `You must release all ${originalTotalRecords} sites.`,
-        confirmButtonColor: '#3085d6',
+      setFinalApiList(prev => {
+        const updated = [...prev, ...releasedData];
+        console.log("finalApiList after update:", updated);
+        return updated;
       });
-      return;
-    }
 
-    setFinalApiList(prev => [...prev, ...releasedData]);
-    setReleasedData([]);
+      setReleasedData([]);
 
-    Swal.fire({
-       icon: 'success',
-      title: 'All Sites Released Successfully',
-      text: 'You have completed all release phases successfully.',
-      confirmButtonColor: '#3085d6',
-    });
-  }
-};
-// const handleFinal40PercentSave = () => {
-//   const expectedCount60_40 = Math.round(0.4 * originalTotalRecords);
-//   const expectedCount30 = Math.round(0.3 * originalTotalRecords);
-
-//   if (selectedValue === '60*40') {
-//     if (releasedData.length !== expectedCount60_40) {
-//       Swal.fire({
-//         icon: 'error',
-//         title: 'Invalid Selection',
-//         text: `You must move exactly ${expectedCount60_40} sites for the remaining 40%. You selected ${releasedData.length}.`,
-//         confirmButtonColor: '#d33',
-//       });
-//       return;
-//     }
-//   }
-
-//   if (selectedValue === '40*30*30') {
-//     const releasedSoFar = finalApiList.length;
-//     const nextExpected = releasedSoFar === expectedCount30 + expectedCount30
-//       ? originalTotalRecords - releasedSoFar
-//       : expectedCount30;
-
-//     if (releasedData.length !== nextExpected) {
-//       Swal.fire({
-//         icon: 'error',
-//         title: 'Invalid Selection',
-//         text: `You must select exactly ${nextExpected} sites for this phase.`,
-//         confirmButtonColor: '#d33',
-//       });
-//       return;
-//     }
-//   }
-
-//   setFinalApiList(prev => {
-//     const updated = [...prev, ...releasedData];
-//     console.log("finalApiList after update (Final Save):", updated);
-//     return updated;
-//   });
-
-//   setReleasedData([]);
-
-//   Swal.fire({
-//     icon: 'success',
-//     title: 'Sites Released Successfully',
-//     text: 'You have successfully completed the release for this phase.',
-//     confirmButtonColor: '#3085d6',
-//   });
-// };
-
-
-const [current30Step, setCurrent30Step] = useState(1);
-
-const handleFinal40PercentSave = () => {
-  const expectedCount40 = Math.round(0.4 * originalTotalRecords);
-  const expectedCount30 = Math.round(0.3 * originalTotalRecords);
-
-  if (selectedValue === '60*40') {
-    if (releasedData.length !== expectedCount40) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Invalid Selection',
-        text: `You must move exactly ${expectedCount40} sites for the remaining 40%. You selected ${releasedData.length}.`,
-        confirmButtonColor: '#d33',
-      });
-      return;
-    }
-
-    setFinalApiList(prev => {
-      const updated = [...prev, ...releasedData];
-      console.log("finalApiList after update (Final Save - 60*40):", updated);
-      return updated;
-    });
-
-    setReleasedData([]);
-setShowNextReleaseForm(false);
-    Swal.fire({
-      icon: 'success',
-      title: 'All Sites Released Successfully',
-      text: 'You have completed all release phases successfully.',
-      confirmButtonColor: '#3085d6',
-    });
-
-    return; // Exit early
-  }
-
-  if (selectedValue === '40*30*30') {
-    const releasedSoFar = finalApiList.length;
-    const nextExpected = expectedCount30;
-
-    if (releasedData.length !== nextExpected) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Invalid Selection',
-        text: `You must select exactly ${nextExpected} sites for this phase.`,
-        confirmButtonColor: '#d33',
-      });
-      return;
-    }
-
-    setFinalApiList(prev => {
-      const updated = [...prev, ...releasedData];
-      console.log("finalApiList after update (Final Save - 40*30*30):", updated);
-      return updated;
-    });
-
-    setReleasedData([]);
-
-    if (current30Step === 1) {
       Swal.fire({
         icon: 'success',
-        title: 'First 30% Released',
-        text: 'You have successfully released the first 30% of the sites.',
+        title: '60% Sites Released Successfully',
+        text: 'You have successfully released 60% of the sites.',
         showCancelButton: true,
-        confirmButtonText: 'Continue with Final 30%',
+        confirmButtonText: 'Continue with Next Release',
         cancelButtonText: 'Back to Dashboard',
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
       }).then((result) => {
         if (result.isConfirmed) {
-          setCurrent30Step(2); // Move to second 30%
-setShowNextReleaseForm(true);
-          const alreadyReleasedIds = finalApiList.map(item => item.id);
+          setIs60PercentDone(true);
+          setShowNextReleaseForm(true);
+
+          const remainingToSelect = totalRecords - expectedCount60;
+          const remainingRows = releaseData.slice(0, remainingToSelect).map(row => row.id);
+
+          setSelectedRows([]);
+          setSelectedRows(remainingRows);
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+          window.location.href = '/dashboard';
+        }
+      });
+    }
+
+    else if (selectedValue === '3') {
+      if (releasedData.length < expectedCount40) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Minimum 40% Required',
+          text: `You must release at least ${expectedCount40} sites for the 40% phase.`,
+          confirmButtonColor: '#3085d6',
+        });
+        return;
+      }
+
+      setFinalApiList(prev => [...prev, ...releasedData]);
+      setReleasedData([]);
+
+      Swal.fire({
+        icon: 'success',
+        title: '40% Sites Released Successfully',
+        text: 'You have successfully released 40% of the sites.',
+        showCancelButton: true,
+        confirmButtonText: 'Continue with Next 30% Release',
+        cancelButtonText: 'Back to Dashboard',
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          setIs40PercentDone(true); // ✅ This is the correct flag
+          setShowNextReleaseForm(true); // Continue to 30% release
+
+          const next30Count = Math.floor(originalTotalRecords * 0.3);
           const next30Rows = releaseData
-            .filter(row => !alreadyReleasedIds.includes(row.id))
-            .slice(0, expectedCount30)
+            .filter(row => !finalApiList.some(finalRow => finalRow.id === row.id)) // exclude already released
+            .slice(0, next30Count)
             .map(row => row.id);
 
           setSelectedRows([]);
           setSelectedRows(next30Rows);
-        } else {
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
           window.location.href = '/dashboard';
         }
       });
-    } else {
-      setShowNextReleaseForm(false);
+    }
+
+    else if (selectedValue === '1') {
+      if (releasedData.length < originalTotalRecords) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Incomplete Selection',
+          text: `You must release all ${originalTotalRecords} sites.`,
+          confirmButtonColor: '#3085d6',
+        });
+        return;
+      }
+
+      setFinalApiList(prev => [...prev, ...releasedData]);
+      setReleasedData([]);
+
       Swal.fire({
         icon: 'success',
-        title: 'All Sites Released',
+        title: 'All Sites Released Successfully',
         text: 'You have completed all release phases successfully.',
         confirmButtonColor: '#3085d6',
       });
     }
-  }
-};
+  };
+
+
+
+  const [current30Step, setCurrent30Step] = useState(1);
+
+  const handleFinal40PercentSave = () => {
+    const expectedCount40 = Math.round(0.4 * originalTotalRecords);
+    const expectedCount30 = Math.round(0.3 * originalTotalRecords);
+
+    if (selectedValue === '2') {
+      if (releasedData.length !== expectedCount40) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Invalid Selection',
+          text: `You must move exactly ${expectedCount40} sites for the remaining 40%. You selected ${releasedData.length}.`,
+          confirmButtonColor: '#d33',
+        });
+        return;
+      }
+
+      setFinalApiList(prev => {
+        const updated = [...prev, ...releasedData];
+        console.log("finalApiList after update (Final Save - 60*40):", updated);
+        return updated;
+      });
+
+      setReleasedData([]);
+      setShowNextReleaseForm(false);
+      Swal.fire({
+        icon: 'success',
+        title: 'All Sites Released Successfully',
+        text: 'You have completed all release phases successfully.',
+        confirmButtonColor: '#3085d6',
+      });
+
+      return; // Exit early
+    }
+
+    if (selectedValue === '3') {
+      const releasedSoFar = finalApiList.length;
+      const nextExpected = expectedCount30;
+
+      if (releasedData.length !== nextExpected) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Invalid Selection',
+          text: `You must select exactly ${nextExpected} sites for this phase.`,
+          confirmButtonColor: '#d33',
+        });
+        return;
+      }
+
+      setFinalApiList(prev => {
+        const updated = [...prev, ...releasedData];
+        console.log("finalApiList after update (Final Save - 40*30*30):", updated);
+        return updated;
+      });
+
+      setReleasedData([]);
+
+      if (current30Step === 1) {
+        Swal.fire({
+          icon: 'success',
+          title: 'First 30% Released',
+          text: 'You have successfully released the first 30% of the sites.',
+          showCancelButton: true,
+          confirmButtonText: 'Continue with Final 30%',
+          cancelButtonText: 'Back to Dashboard',
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+        }).then((result) => {
+          if (result.isConfirmed) {
+            setCurrent30Step(2); // Move to second 30%
+            setShowNextReleaseForm(true);
+            const alreadyReleasedIds = finalApiList.map(item => item.id);
+            const next30Rows = releaseData
+              .filter(row => !alreadyReleasedIds.includes(row.id))
+              .slice(0, expectedCount30)
+              .map(row => row.id);
+
+            setSelectedRows([]);
+            setSelectedRows(next30Rows);
+          } else {
+            window.location.href = '/dashboard';
+          }
+        });
+      } else {
+        setShowNextReleaseForm(false);
+        Swal.fire({
+          icon: 'success',
+          title: 'All Sites Released',
+          text: 'You have completed all release phases successfully.',
+          confirmButtonColor: '#3085d6',
+        });
+      }
+    }
+  };
 
 
   const handleSiteReleaseOrderNumberChange = (e) => {
@@ -1163,6 +948,325 @@ setShowNextReleaseForm(true);
     setErrors({});
   };
 
+  //fetch EPID OR LKRSID 
+  const [localLKRSID, setLocalLKRSID] = useState('');
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    // Allow only digits up to 10 characters
+    if (/^\d{0,10}$/.test(value)) {
+      setLocalLKRSID(value);
+    }
+  };
+
+  const handleSearchClick = () => {
+    // Call API even if it's less than 10 digits
+    if (!localLKRSID) {
+      alert('Please enter EPID or KRSID');
+      return;
+    }
+    handleGetLKRSID(localLKRSID);
+  };
+  const [selectedLandType, setSelectedLandType] = useState("");
+  const handleGetLKRSID = async (localLKRSID) => {
+    const payload = {
+      level: 1,
+      LkrsId: localLKRSID,
+    };
+    try {
+      start_loader();
+      const response = await fetch_LKRSID(payload);
+
+      if (response && response.surveyNumberDetails && response.surveyNumberDetails.length > 0) {
+
+        setSelectedLandType(response.lkrS_LANDTYPE); //  Store the land type
+
+
+        const parsedSurveyDetails = mapSurveyDetails(response.surveyNumberDetails);
+
+        setRtcAddedData(prev => {
+          const existingKeys = new Set(
+            prev.map(item => `${item.surveyNumber}_${item.ownerName}`)
+          );
+
+          const filteredNewData = parsedSurveyDetails.filter(item => {
+            const key = `${item.surveyNumber}_${item.ownerName}`;
+            return !existingKeys.has(key);
+          });
+
+          return [...prev, ...filteredNewData];
+        });
+        Fetch_release_percentage(response.lkrS_ID);
+        stop_loader();
+      } else if (response && response.khataDetails && response.khataOwnerDetails && response.khataOwnerDetails.length > 0) {
+        setSelectedLandType(response.lkrS_LANDTYPE); //  Store the land type
+        setEPIDShowTable(true);
+        let khataDetailsJson = {};
+        if (response.khataDetails?.khatA_JSON) {
+          try {
+            khataDetailsJson = JSON.parse(response.khataDetails.khatA_JSON);
+          } catch (err) {
+            console.warn("Failed to parse khatA_JSON", err);
+          }
+        }
+
+        setEPID_FetchedData({
+          PropertyID: response.lkrS_EPID || '',
+          PropertyCategory: khataDetailsJson.propertyCategory || '',
+          PropertyClassification: khataDetailsJson.propertyClassification || '',
+          WardNumber: khataDetailsJson.wardNumber || '',
+          WardName: khataDetailsJson.wardName || '',
+          StreetName: khataDetailsJson.streetName || '',
+          Streetcode: khataDetailsJson.streetcode || '',
+          SASApplicationNumber: khataDetailsJson.sasApplicationNumber || '',
+          IsMuation: khataDetailsJson.isMuation || '',
+          KaveriRegistrationNumber: khataDetailsJson.kaveriRegistrationNumber || [],
+          AssessmentNumber: khataDetailsJson.assessmentNumber || '',
+          courtStay: khataDetailsJson.courtStay || '',
+          enquiryDispute: khataDetailsJson.enquiryDispute || '',
+          CheckBandi: khataDetailsJson.checkBandi || {},
+          SiteDetails: khataDetailsJson.siteDetails || {},
+          OwnerDetails: khataDetailsJson.ownerDetails || [],
+          // Optionally add raw API response too if needed
+          rawResponse: response,
+        });
+
+        // Optionally update area sqft if siteDetails present
+        if (khataDetailsJson.siteDetails?.siteArea) {
+          setAreaSqft(khataDetailsJson.siteDetails.siteArea);
+          localStorage.setItem('areaSqft', khataDetailsJson.siteDetails.siteArea);
+        } else {
+          setAreaSqft(0);
+          localStorage.removeItem('areaSqft');
+        }
+
+        setOwnerTableData(khataDetailsJson.ownerDetails || []);
+        Fetch_release_percentage(response.lkrS_ID);
+        stop_loader();
+      } else {
+        stop_loader();
+        Swal.fire({
+          text: "No survey details found.",
+          icon: "warning",
+          confirmButtonText: "OK",
+        });
+      }
+    } catch (error) {
+      stop_loader();
+      console.error("Failed to fetch LKRSID data:", error);
+    }
+  };
+  // =======================================================survey no details starts=========================================
+  const [rtcAddedData, setRtcAddedData] = useState([]);
+  const [areaSqft, setAreaSqft] = useState("0");
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rtcData, setRtcData] = useState([]);
+  const combinedData = [...rtcAddedData, ...rtcData];
+
+  let totalAcre = 0;
+  let totalGunta = 0;
+  let totalFGunta = 0;
+  let totalSqFt = 0;
+
+  useEffect(() => {
+    combinedData.forEach(row => {
+      const acre = parseFloat(row.ext_acre || 0);
+      const gunta = parseFloat(row.ext_gunta || 0);
+      const fgunta = parseFloat(row.ext_fgunta || 0);
+
+      totalAcre += acre;
+      totalGunta += gunta;
+      totalFGunta += fgunta;
+
+      const sqft = (acre * 43560) + (gunta * 1089) + (fgunta * 68.0625);
+      totalSqFt += sqft;
+    });
+
+    // Normalize fgunta -> gunta and acre
+    totalGunta += Math.floor(totalFGunta / 16);
+    totalFGunta = totalFGunta % 16;
+    totalAcre += Math.floor(totalGunta / 40);
+    totalGunta = totalGunta % 40;
+
+    const totalSqFtRounded = totalSqFt.toFixed(2);
+    setAreaSqft(totalSqFtRounded);
+    localStorage.setItem('areaSqft', totalSqFtRounded);
+  }, [combinedData]);
+
+  const totalPages = Math.ceil(combinedData.length / rowsPerPage);
+  const paginatedData = combinedData.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
+  );
+  const goToPage = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+  const handlePageSizeChange = (e) => {
+    setRowsPerPage(Number(e.target.value));
+    setCurrentPage(1); // Reset to first page when page size changes
+  };
+  const mapSurveyDetails = (surveyDetails) => {
+    return surveyDetails.map((item) => ({
+      district: item.suR_DISTRICT_Name || "—",
+      taluk: item.suR_TALUK_Name || "—",
+      hobli: item.suR_HOBLI_Name || "—",
+      village: item.suR_VILLAGE_Name || "—",
+      owner: item.suR_OWNERNAME || "—",
+      survey_no: item.suR_SURVEYNO,
+      surnoc: item.suR_SURNOC,
+      hissa_no: item.suR_HISSA,
+      ext_acre: item.suR_EXTACRE || 0,
+      ext_gunta: item.suR_EXTGUNTA || 0,
+      ext_fgunta: item.suR_EXTFgunta || 0, // Make sure to handle this if needed
+    }));
+  };
+  // =======================================================Khata details starts=========================================
+  const [epidshowTable, setEPIDShowTable] = useState(false);
+  const [epid_fetchedData, setEPID_FetchedData] = useState(null);
+  const [phoneNumbers, setPhoneNumbers] = useState({});
+  const [ownerTableData, setOwnerTableData] = useState([]);
+
+
+const customStyles = {
+  headCells: {
+    style: {
+      fontWeight: 'bold',
+      fontSize: '14px',
+      backgroundColor: '#f1f5f9',
+      color: '#1e293b',
+      padding: '12px',
+      borderBottom: '1px solid #e2e8f0',
+    },
+  },
+  cells: {
+    style: {
+      padding: '10px 12px',
+      fontSize: '13px',
+      color: '#374151',
+    },
+  },
+  rows: {
+    style: {
+      minHeight: '48px',
+      borderBottom: '1px solid #f3f4f6',
+    },
+  },
+  pagination: {
+    style: {
+      borderTop: '1px solid #e5e7eb',
+      padding: '10px',
+    },
+  },
+  stripedStyle: {
+    default: {
+      backgroundColor: '#f9fafb',
+    },
+  },
+};
+
+  const columns = [
+    { name: 'S.No', selector: (row, index) => index + 1, width: '70px', center: true },
+    { name: 'Property ID', width: '140px', selector: () => epid_fetchedData?.PropertyID, center: true },
+    {
+      name: 'Owner Name',
+      center: true,
+      // Access ownerName directly from the 'row' object
+      selector: (row) => row.ownerName || 'N/A'
+    },
+
+    { name: 'ID Type', width: '120px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idType || 'N/A', center: true },
+    { name: 'ID Number', width: '220px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idNumber || 'N/A', center: true },
+    {
+      name: 'Validate OTP',
+      width: '250px',
+      cell: (row, index) => (
+        <div className='mb-3'><br />
+          <input
+            type="tel"
+            className="form-control mb-1"
+            placeholder="Mobile Number"
+            readOnly
+            value={
+              phoneNumbers[index] ??
+              row.MobileNumber ??
+              epid_fetchedData?.OwnerDetails?.[0]?.mobileNumber ??
+              ""
+            }
+            maxLength={10}
+          />
+
+          <div className="text-success font-weight-bold mt-2">
+            OTP Verified <i className="fa fa-check-circle"></i>
+          </div>
+
+        </div>
+      ), center: true
+    }
+  ];
+  const [release_Data, setRelease_Data] = useState(null); // Entire response
+  const [releaseDetails, setReleaseDetails] = useState([]);
+  //Fetch release Details
+  const Fetch_release_percentage = async (localLKRSID) => {
+    try {
+      start_loader();
+      const response = await fetch_releasePercentageDetails(localLKRSID);
+
+      if (response) {
+        console.log(response);
+
+        setRelease_Data(response); // store full response if needed
+        setReleaseDetails(response.siteReleaseDetailList || []); // set only list
+
+        // Extract and use `sitE_RELS_SITE_RELSTYPE_ID`
+        const releaseTypeId = response.sitE_RELS_SITE_RELSTYPE_ID?.toString();
+        if (releaseTypeId) {
+          handleDimensionChange(releaseTypeId);
+        }
+        fetchReleaseOrder(localLKRSID);
+        stop_loader();
+      } else {
+        stop_loader();
+      }
+    } catch (error) {
+      stop_loader();
+      console.error("Failed to fetch LKRSID data:", error);
+    }
+  };
+
+  const fetchReleaseOrder = async (localLKRSID) => {
+    try {
+      const listPayload = {
+        level: 1,
+        LkrsId: localLKRSID,
+        SiteID: 0,
+      };
+      start_loader();
+      const response = await individualSiteListAPI(listPayload);
+
+      if (Array.isArray(response)) {
+        
+        setReleaseData(response); // ⬅️ Add this line
+      }
+    } catch (error) {
+      console.error("Fetch Site Details Error:", error);
+
+      if (error.response) {
+        console.error("API responded with error data:", error.response.data);
+      } else if (error.request) {
+        console.error("No response received from API. Request was:", error.request);
+      }
+    }
+    finally {
+      stop_loader();
+    }
+  }
+
+
+
   return (
     <DashboardLayout>
       <div className={`layout-form-container ${loading ? 'no-interaction' : ''}`}>
@@ -1177,18 +1281,28 @@ setShowNextReleaseForm(true);
               </div>
               <div className="card-body">
                 <div className="row">
-                  <div className='col-12 col-md-6'>
-                    <div className="form-group mt-2">
+                  <div className='col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mt-2'>
+                    <div className="form-group">
                       <label className='form-label'>Enter the EPID or KRSID</label>
-                      <input type="text" className="form-control" placeholder="Enter the EPID or KRSID" maxLength={15} />
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Enter the EPID or KRSID"
+                        maxLength={10}
+                        value={localLKRSID}
+                        onChange={handleInputChange}
+                      />
                     </div>
                   </div>
-                  <div className='col-12 col-md-2'>
-                    <div className="form-group mt-6">
-                      <button className='btn btn-primary btn-block'>Search</button>
+                  <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2  mt-2'>
+                    <div className="form-group">
+                      <label className='form-label'>&nbsp;</label>
+                      <button className='btn btn-primary btn-block' onClick={handleSearchClick}>
+                        Search
+                      </button>
                     </div>
                   </div>
-                  <div className="form-group mt-2">
+                  <div className="form-group mt-2" hidden>
                     <label className="form-label">Select Dimension</label>
                     <select className="form-control" value={selectedValue} onChange={handleDimensionChange}>
                       <option value="">-- Select Dimension --</option>
@@ -1197,7 +1311,188 @@ setShowNextReleaseForm(true);
                       <option value="40*30*30">40 * 30 * 30</option>
                     </select>
                   </div>
+
                 </div>
+                {selectedLandType === "surveyNo" && (
+                  <>
+                    {combinedData.length > 0 && (
+                      <div className="col-12">
+                        <div className="">
+                          <div className="d-flex justify-content-between align-items-center mb-3">
+                            <h4 className=" m-0">Added Survey No Details</h4>
+                            <div className="d-flex align-items-center">
+                              <label className="me-2 mb-0">Rows per page:</label>
+                              <select
+                                className="form-select form-select-sm w-auto"
+                                value={rowsPerPage}
+                                onChange={handlePageSizeChange}
+                              >
+                                {[5, 10, 15, 20, 25, 30].map((size) => (
+                                  <option key={size} value={size}>{size}</option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+
+                          <div className="table-responsive custom-scroll-table">
+                            <table className="table table-striped table-hover table-bordered rounded-table">
+                              <thead className="table-primary sticky-header">
+                                <tr>
+                                  <th hidden>Action</th>
+                                  <th>S.No</th>
+                                  <th>District</th>
+                                  <th>Taluk</th>
+                                  <th>Hobli</th>
+                                  <th>Village</th>
+                                  <th>Owner Name</th>
+                                  <th>Survey No / Surnoc / Hissa No</th>
+                                  <th>Extent (Acre.Gunta.Fgunta)</th>
+                                  <th>SqFt</th>
+                                  <th>SqM</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {paginatedData.map((row, index) => (
+                                  <tr key={index}>
+                                    <td hidden>
+                                    </td>
+                                    <td>{index + 1 + (currentPage - 1) * rowsPerPage}</td>
+                                    <td>{row.district}</td>
+                                    <td>{row.taluk}</td>
+                                    <td>{row.hobli}</td>
+                                    <td>{row.village}</td>
+                                    <td>{row.owner}</td>
+                                    <td>{`${row.survey_no}/${row.surnoc}/${row.hissa_no}`}</td>
+                                    <td>{`${row.ext_acre}.${row.ext_gunta}.${row.ext_fgunta}`}</td>
+                                    <td>
+                                      {(
+                                        (parseFloat(row.ext_acre) * 43560) +
+                                        (parseFloat(row.ext_gunta) * 1089) +
+                                        (parseFloat(row.ext_fgunta) * 68.0625)
+                                      ).toFixed(2)}
+                                    </td>
+                                    <td>
+                                      {(
+                                        (
+                                          (parseFloat(row.ext_acre) * 43560) +
+                                          (parseFloat(row.ext_gunta) * 1089) +
+                                          (parseFloat(row.ext_fgunta) * 68.0625)
+                                        ) * 0.092903
+                                      ).toFixed(2)}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                              <tfoot >
+                                <tr>
+                                  <th colSpan={5}></th>
+                                  <th colSpan={2} className="text-end fw-bold">Total Area:</th>
+                                  <th className="text-left fw-bold" >{`${totalAcre}.${totalGunta}.${totalFGunta}`}</th>
+                                  <th className='fw-bold'>{totalSqFt.toFixed(2)}</th>
+                                  <th className='fw-bold'>{totalSqFt.toFixed(2)}</th>
+                                </tr>
+                              </tfoot>
+                            </table>
+                          </div>
+
+                          {/* Pagination Summary and Controls */}
+                          <div className="d-flex justify-content-between align-items-center mt-3 flex-wrap">
+                            <div>
+                              Showing {Math.min((currentPage - 1) * rowsPerPage + 1, combinedData.length)}–{Math.min(currentPage * rowsPerPage, combinedData.length)} of {combinedData.length} records
+                            </div>
+
+                            <div>
+                              <button
+                                className="btn btn-outline-secondary btn-sm mx-1"
+                                onClick={() => goToPage(currentPage - 1)}
+                                disabled={currentPage === 1}
+                              >
+                                Previous
+                              </button>
+                              {[...Array(totalPages).keys()].map((num) => (
+                                <button
+                                  key={num}
+                                  className={`btn btn-sm mx-1 ${currentPage === num + 1 ? 'btn-primary' : 'btn-outline-primary'}`}
+                                  onClick={() => goToPage(num + 1)}
+                                >
+                                  {num + 1}
+                                </button>
+                              ))}
+                              <button
+                                className="btn btn-outline-secondary btn-sm mx-1"
+                                onClick={() => goToPage(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                              >
+                                Next
+                              </button>
+                            </div>
+                          </div>
+
+                        </div>
+                      </div>
+                    )
+                    }
+                  </>
+                )}
+                {/* EPID preview block */}
+                {(selectedLandType === "khata") && (
+                  <>
+                    {epidshowTable && epid_fetchedData && (
+                      <div>
+                        <h5>Property Owner details as per BBMP eKhata</h5>
+                        <h6>Note: Plot-wise New Khata will be issued in owner's name. Hence, if owner has changed then first get Mutation done in eKhata.</h6>
+                        {/* <h6>If there has been a change in ownership, the Mutation process in eKhata must be completed first, as the New Khata will be issued in the owner's name.</h6> */}
+                        <DataTable
+                          columns={columns}
+                          data={epid_fetchedData?.OwnerDetails || []}
+                          pagination
+                          noHeader
+                          dense={false}
+                          customStyles={customStyles}
+                        />
+
+                      </div>
+                    )}
+                  </>
+                )}
+                <hr />
+                {releaseDetails.length > 0 && (
+                  <div style={{ marginTop: '20px' }}>
+                    <h2 style={{ marginBottom: '15px', fontSize: '24px', fontWeight: 'bold', color: '#333' }}>
+                      Layout Release Order
+                    </h2>
+                    <table style={{
+                      borderCollapse: "collapse",
+                      width: "100%",
+                      fontFamily: "Arial, sans-serif",
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
+                    }}>
+                      <thead>
+                        <tr style={{ backgroundColor: "#fff", color: "#000", textAlign: "left" }}>
+                          {/* <th style={thStyle}>ID</th> */}
+                          <th style={thStyle}>LKRS ID</th>
+                          <th style={thStyle}>Order No</th>
+                          <th style={thStyle}>Date</th>
+                          <th style={thStyle}>Designation</th>
+                          <th style={thStyle}>Type</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {releaseDetails.map((item, index) => (
+                          <tr key={index} style={{ backgroundColor: index % 2 === 0 ? "#f9f9f9" : "#fff" }}>
+                            {/* <td style={tdStyle}>{item.sitE_RELS_ID}</td> */}
+                            <td style={tdStyle}>{item.sitE_RELS_LKRS_ID}</td>
+                            <td style={tdStyle}>{item.sitE_RELS_ORDER_NO}</td>
+                            <td style={tdStyle}>{new Date(item.sitE_RELS_DATE).toLocaleDateString()}</td>
+                            <td style={tdStyle}>{item.sitE_RELS_APPROVALDESIGNATION}</td>
+                            <td style={tdStyle}>{item.sitE_RELS_SITE_RELSTYPE}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
                 {showNextReleaseForm && (
                   <div className="card mt-4">
                     <div className="card-header layout_btn_color">
@@ -1302,7 +1597,7 @@ setShowNextReleaseForm(true);
                 <div className="card-body">
                   <div className='row'>
                     <div className='col-md-12 my-3'>
-                      {((selectedValue === '60*40' && releasedData.length === 0) || selectedValue === '40*30*30' || selectedValue === '100') &&(
+                      {((selectedValue === '2' && releasedData.length === 0) || selectedValue === '3' || selectedValue === '1') && (
                         <p style={{
                           backgroundColor: '#e8f4ff',
                           border: '1px solid #b3d8ff',
@@ -1319,6 +1614,7 @@ setShowNextReleaseForm(true);
                       <DataTable
                         columns={releaseTableColumns}
                         data={releaseData}
+                         customStyles={customStyles}
                         pagination
                         highlightOnHover
                         striped
@@ -1415,6 +1711,20 @@ setShowNextReleaseForm(true);
       </div>
     </DashboardLayout>
   );
+};
+
+const thStyle = {
+  padding: "10px",
+  border: "1px solid #ccc",
+  fontWeight: "600",
+  fontSize: "14px"
+};
+
+const tdStyle = {
+  padding: "10px",
+  border: "1px solid #ccc",
+  fontSize: "14px",
+  color: "#333"
 };
 
 export default ReleaseSelection;

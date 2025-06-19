@@ -319,6 +319,16 @@ export const insertReleaseInfo = async (payload) => {
     throw error;
   }
 };
+//Delete Release Order information
+export const deleteReleaseInfo = async (payload) => {
+  try {
+    const response = await apiService.deleteRequest(`${config.endpoints.deleteReleaseInfo}`,  payload);
+     return response;
+  } catch (error) {
+    console.error("Deleting approval info Details Error:", error);
+    throw error;
+  }
+};
 //release Order List API
 export const listReleaseInfo = async ({ level, lkrsId, siteRelsId }) => {
   try {
@@ -508,6 +518,18 @@ export const update_Final_SaveAPI = async (payload) => {
      return response;
   } catch (error) {
     console.error("EC Fetching Details Error:", error);
+    throw error;
+  }
+};
+
+//release dashoard Percentage
+export const fetch_releasePercentageDetails = async (lkrsId) => {
+  try {
+    const url = `${config.endpoints.releasePercentage}?lkrsId=${lkrsId}`;
+    const response = await apiService.getRequest(url);
+    return response;
+  } catch (error) {
+    console.error("Fetch LKRSID Info Error:", error);
     throw error;
   }
 };
