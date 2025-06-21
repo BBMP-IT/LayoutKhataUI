@@ -59,7 +59,7 @@ const BBMP_SubmittedInfo = () => {
         }
     }, [LKRS_ID]);
     const fetch_details = async () => {
-       if (!localLKRSID) return;
+        if (!localLKRSID) return;
         await handleGetLKRSID(localLKRSID);
         await fetchApprovalList(localLKRSID);
         await fetchReleaseList(localLKRSID);
@@ -681,6 +681,9 @@ const BBMP_SubmittedInfo = () => {
 
 
     //========================================EC Details Start======================
+    
+        const [jdaDocumentId, setJdaDocumentId] = useState('');
+        const [jdaDocumentDate, setJdaDocumentDate] = useState('');
     const viewEC = async (ecNumber) => {
         try {
             start_loader();
@@ -737,6 +740,9 @@ const BBMP_SubmittedInfo = () => {
                 if (response[0].jdA_ISREGISTERED === true) {
                     setDeedNumber(response[0].jdA_DEED_NO);
                 } else if (response[0].jdA_ISREGISTERED === false) {
+                    
+                    setJdaDocumentId(response[0].jdA_REGISTEREDDATE);
+                    setJdaDocumentDate(response[0].jdA_DEED_NO);
                     const deedFileResponse = await fileListAPI(3, localLKRSID, 4, 0);
                     const base64String = deedFileResponse[0]?.doctrN_DOCBASE64;
                     if (base64String) {
@@ -1151,25 +1157,48 @@ const BBMP_SubmittedInfo = () => {
                                                         {isRegistered === false && (
                                                             <>
                                                                 {deedNoURL && (
-                                                                    <div style={{ marginTop: '10px' }}>
-                                                                        <label className='form-check-label fw-bold'>Uploaded the JDA Document</label> &nbsp;
-                                                                        <span
-                                                                            onClick={() => window.open(deedNoURL, '_blank')}
-                                                                            style={{
-                                                                                cursor: 'pointer',
-                                                                                color: '#007bff',
-                                                                                textDecoration: 'none',
-                                                                                fontSize: '0.875rem',
-                                                                                userSelect: 'none',
-                                                                            }}
-                                                                            role="button"
-                                                                            tabIndex={0}
-                                                                            onKeyPress={(e) => { if (e.key === 'Enter') window.open(deedNoURL, '_blank'); }}
-                                                                        >
-                                                                            View file
-                                                                        </span>
+                                                                    <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4">
+                                                                        <div style={{ marginTop: '10px' }}>
+                                                                            <label className='form-check-label fw-bold'>Uploaded the JDA Document</label> &nbsp;
+                                                                            <span
+                                                                                onClick={() => window.open(deedNoURL, '_blank')}
+                                                                                style={{
+                                                                                    cursor: 'pointer',
+                                                                                    color: '#007bff',
+                                                                                    textDecoration: 'none',
+                                                                                    fontSize: '0.875rem',
+                                                                                    userSelect: 'none',
+                                                                                }}
+                                                                                role="button"
+                                                                                tabIndex={0}
+                                                                                onKeyPress={(e) => { if (e.key === 'Enter') window.open(deedNoURL, '_blank'); }}
+                                                                            >
+                                                                                View file
+                                                                            </span>
+                                                                        </div>
                                                                     </div>
                                                                 )}
+                                                                <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4">
+                                                                    <label className='form-label'>Enter JDA Document ID <span className='mandatory_color'>*</span></label>
+                                                                    <input
+                                                                        type="text"
+                                                                        className="form-control"
+                                                                        placeholder="Enter your JDA Document ID"
+                                                                        value={jdaDocumentId}
+                                                                        maxLength={15}
+                                                                        readOnly
+                                                                    />
+                                                                </div>
+
+                                                                <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4">
+                                                                    <label className='form-label'>Enter JDA Document Date <span className='mandatory_color'>*</span></label>
+                                                                    <input
+                                                                        type="date"
+                                                                        className="form-control"
+                                                                        value={jdaDocumentDate}
+                                                                        readOnly
+                                                                    />
+                                                                </div>
                                                             </>
                                                         )}
 

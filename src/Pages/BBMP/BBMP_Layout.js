@@ -62,6 +62,8 @@ const BBMP_LayoutForm = () => {
     // const [LKRS_ID, setLKRS_ID] = useState(() => localStorage.getItem("LKRSID") || "");
     const [LKRS_ID, setLKRS_ID] = useState(() => localStorage.getItem("LKRSID") || "");
     const [display_LKRS_ID, setDisplay_LKRS_ID] = useState(() => localStorage.getItem("display_LKRSID") || "");
+    const [totalNoofsites, setTotalNoofsites] = useState("0");
+
 
 
     //save button varaiables
@@ -96,6 +98,7 @@ const BBMP_LayoutForm = () => {
     const RoleID = "user";
 
     useEffect(() => {
+
         generate_Token();
         localStorage.setItem('createdBy', CreatedBy);
         localStorage.setItem('createdName', CreatedName);
@@ -232,9 +235,10 @@ const BBMP_LayoutForm = () => {
 
                             <BDA approval_details={approval_details} setApprovalDetails={setApprovalDetails}
                                 order_details={order_details} setOrderDetails={setOrderDetails} LKRS_ID={LKRS_ID}
-                                isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsApprovalSectionSaved={setIsApprovalSectionSaved} setIsReleaseSectionSaved={setIsReleaseSectionSaved} />
+                                isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsApprovalSectionSaved={setIsApprovalSectionSaved}
+                                setIsReleaseSectionSaved={setIsReleaseSectionSaved} setTotalNoofsites={setTotalNoofsites} />
 
-                            <IndividualGPSBlock areaSqft={areaSqft} LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID}
+                            <IndividualGPSBlock areaSqft={areaSqft} LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID} totalNoofsites={totalNoofsites}
                                 isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsSitesSectionSaved={setIsSitesSectionSaved} ownerName={ownerName} />
 
                             <ECDetailsBlock LKRS_ID={LKRS_ID} isRTCSectionSaved={isRTCSectionSaved} ownerName={ownerName} isEPIDSectionSaved={isEPIDSectionSaved} setIsECSectionSaved={setIsECSectionSaved} />
@@ -640,8 +644,8 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
             lkrS_ID: 0,
             lkrS_LANDTYPE: "surveyNo",
             lkrS_EPID: "9999999999",
-            lkrS_SITEAREA_SQFT: 0,
-            lkrS_SITEAREA_SQMT: 0,
+            lkrS_SITEAREA_SQFT: totalSqFt.toFixed(2),
+            lkrS_SITEAREA_SQMT: totalSqM.toFixed(2),
             lkrS_REMARKS: "",
             lkrS_ADDITIONALINFO: "",
             lkrS_CREATEDBY: createdBy,
@@ -1046,8 +1050,8 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                                 <thead>
                                     <tr>
                                         <th>Survey No/Surnoc/Hissa No</th>
-                                        <th>Owner</th>
-                                        <th>Father</th>
+                                        <th>Owner Name</th>
+                                        <th>Father Name</th>
                                         <th>Extent (Acre)</th>
                                         <th>Extent (Gunta)</th>
                                         <th>Extent (Fgunta)</th>
@@ -1082,122 +1086,125 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                 {/* Added RTC Table */}
                 {combinedData.length > 0 && (
                     <div className="col-12" ref={tableRTCRef}>
-                            <div className="d-flex justify-content-between align-items-center mb-3">
-                                <h4 className=" m-0">Added Survey No Details</h4>
-                                <div className="d-flex align-items-center">
-                                    <label className="me-2 mb-0">Rows per page:</label>
-                                    <select
-                                        className="form-select form-select-sm w-auto"
-                                        value={rowsPerPage}
-                                        onChange={handlePageSizeChange}
-                                    >
-                                        {[5, 10, 15, 20, 25, 30].map((size) => (
-                                            <option key={size} value={size}>{size}</option>
-                                        ))}
-                                    </select>
-                                </div>
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                            <h4 className=" m-0">Added Survey No Details</h4>
+                            <div className="d-flex align-items-center">
+                                <label className="me-2 mb-0">Rows per page:</label>
+                                <select
+                                    className="form-select form-select-sm w-auto"
+                                    value={rowsPerPage}
+                                    onChange={handlePageSizeChange}
+                                >
+                                    {[5, 10, 15, 20, 25, 30].map((size) => (
+                                        <option key={size} value={size}>{size}</option>
+                                    ))}
+                                </select>
                             </div>
+                        </div>
 
-                            <div className="table-responsive custom-scroll-table">
-                                <table className="table table-striped table-hover table-bordered rounded-table">
-                                    <thead className="table-primary sticky-header">
-                                        <tr>
-                                            <th hidden>Action</th>
-                                            <th>S.No</th>
-                                            <th>District</th>
-                                            <th>Taluk</th>
-                                            <th>Hobli</th>
-                                            <th>Village</th>
-                                            <th>Owner Name</th>
-                                            <th>Survey No / Surnoc / Hissa No</th>
-                                            <th>Extent (Acre.Gunta.Fgunta)</th>
-                                            <th>SqFt</th>
-                                            <th>SqM</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {paginatedData.map((row, index) => (
-                                            <tr key={index}>
-                                                <td hidden>
-                                                    <button className="btn btn-sm btn-outline-danger" onClick={() => handleRemoveRTC(index + (currentPage - 1) * rowsPerPage)}>
-                                                        <i className="fa fa-trash" />
-                                                    </button>
-                                                </td>
-                                                <td>{index + 1 + (currentPage - 1) * rowsPerPage}</td>
-                                                <td>{row.district}</td>
-                                                <td>{row.taluk}</td>
-                                                <td>{row.hobli}</td>
-                                                <td>{row.village}</td>
-                                                <td>{row.owner}</td>
-                                                <td>{`${row.survey_no}/${row.surnoc}/${row.hissa_no}`}</td>
-                                                <td>{`${row.ext_acre}.${row.ext_gunta}.${row.ext_fgunta}`}</td>
-                                                <td>
-                                                    {(
+                        <div className="table-responsive custom-scroll-table">
+                            <table className="table table-striped table-hover table-bordered rounded-table">
+                                <thead className="table-primary sticky-header">
+                                    <tr>
+                                        <th hidden>Action</th>
+                                        <th>S.No</th>
+                                        <th>District</th>
+                                        <th>Taluk</th>
+                                        <th>Hobli</th>
+                                        <th>Village</th>
+                                        <th>Owner Name</th>
+                                        <th>Survey No / Surnoc / Hissa No</th>
+                                        <th>Extent (Acre.Gunta.Fgunta)</th>
+                                        <th>SqFt</th>
+                                        <th>SqM</th>
+                                        <th>Validate OTP</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {paginatedData.map((row, index) => (
+                                        <tr key={index}>
+                                            <td hidden>
+                                                <button className="btn btn-sm btn-outline-danger" onClick={() => handleRemoveRTC(index + (currentPage - 1) * rowsPerPage)}>
+                                                    <i className="fa fa-trash" />
+                                                </button>
+                                            </td>
+                                            <td>{index + 1 + (currentPage - 1) * rowsPerPage}</td>
+                                            <td>{row.district}</td>
+                                            <td>{row.taluk}</td>
+                                            <td>{row.hobli}</td>
+                                            <td>{row.village}</td>
+                                            <td>{row.owner}</td>
+                                            <td>{`${row.survey_no}/${row.surnoc}/${row.hissa_no}`}</td>
+                                            <td>{`${row.ext_acre}.${row.ext_gunta}.${row.ext_fgunta}`}</td>
+                                            <td>
+                                                {(
+                                                    (parseFloat(row.ext_acre) * 43560) +
+                                                    (parseFloat(row.ext_gunta) * 1089) +
+                                                    (parseFloat(row.ext_fgunta) * 68.0625)
+                                                ).toFixed(2)}
+                                            </td>
+                                            <td>
+                                                {(
+                                                    (
                                                         (parseFloat(row.ext_acre) * 43560) +
                                                         (parseFloat(row.ext_gunta) * 1089) +
                                                         (parseFloat(row.ext_fgunta) * 68.0625)
-                                                    ).toFixed(2)}
-                                                </td>
-                                                <td>
-                                                    {(
-                                                        (
-                                                            (parseFloat(row.ext_acre) * 43560) +
-                                                            (parseFloat(row.ext_gunta) * 1089) +
-                                                            (parseFloat(row.ext_fgunta) * 68.0625)
-                                                        ) * 0.092903
-                                                    ).toFixed(2)}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                    <tfoot >
-                                        <tr>
-                                            <th colSpan={5}></th>
-                                            <th colSpan={2} className="text-end fw-bold">Total Area:</th>
-                                            <th className="text-left fw-bold" >{`${totalAcre}.${totalGunta}.${totalFGunta}`}</th>
-                                            <th className='fw-bold'>{totalSqFt.toFixed(2)}</th>
-                                            <th className='fw-bold'>{totalSqM.toFixed(2)}</th>
+                                                    ) * 0.092903
+                                                ).toFixed(2)}
+                                            </td>
+                                            <td>{row.village}</td>
                                         </tr>
-                                    </tfoot>
-                                </table>
-                            </div>
-
-                            {/* Pagination Summary and Controls */}
-                            <div className="d-flex justify-content-between align-items-center mt-3 flex-wrap">
-                                <div>
-                                    Showing {Math.min((currentPage - 1) * rowsPerPage + 1, combinedData.length)}–{Math.min(currentPage * rowsPerPage, combinedData.length)} of {combinedData.length} records
-                                </div>
-
-                                <div>
-                                    <button
-                                        className="btn btn-outline-secondary btn-sm mx-1"
-                                        onClick={() => goToPage(currentPage - 1)}
-                                        disabled={currentPage === 1}
-                                    >
-                                        Previous
-                                    </button>
-                                    {[...Array(totalPages).keys()].map((num) => (
-                                        <button
-                                            key={num}
-                                            className={`btn btn-sm mx-1 ${currentPage === num + 1 ? 'btn-primary' : 'btn-outline-primary'}`}
-                                            onClick={() => goToPage(num + 1)}
-                                        >
-                                            {num + 1}
-                                        </button>
                                     ))}
-                                    <button
-                                        className="btn btn-outline-secondary btn-sm mx-1"
-                                        onClick={() => goToPage(currentPage + 1)}
-                                        disabled={currentPage === totalPages}
-                                    >
-                                        Next
-                                    </button>
-                                </div>
+                                </tbody>
+                                <tfoot >
+                                    <tr>
+                                        <th colSpan={5}></th>
+                                        <th colSpan={2} className="text-end fw-bold">Total Area:</th>
+                                        <th className="text-left fw-bold" >{`${totalAcre}.${totalGunta}.${totalFGunta}`}</th>
+                                        <th className='fw-bold'>{totalSqFt.toFixed(2)}</th>
+                                        <th className='fw-bold'>{totalSqM.toFixed(2)}</th>
+                                        <th></th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        {/* Pagination Summary and Controls */}
+                        <div className="d-flex justify-content-between align-items-center mt-3 flex-wrap">
+                            <div>
+                                Showing {Math.min((currentPage - 1) * rowsPerPage + 1, combinedData.length)}–{Math.min(currentPage * rowsPerPage, combinedData.length)} of {combinedData.length} records
                             </div>
-                            <br/>
-                            {/* Layout DC Conversion order No */}
-                            <div className='row'>
-                                <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+
+                            <div>
+                                <button
+                                    className="btn btn-outline-secondary btn-sm mx-1"
+                                    onClick={() => goToPage(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                >
+                                    Previous
+                                </button>
+                                {[...Array(totalPages).keys()].map((num) => (
+                                    <button
+                                        key={num}
+                                        className={`btn btn-sm mx-1 ${currentPage === num + 1 ? 'btn-primary' : 'btn-outline-primary'}`}
+                                        onClick={() => goToPage(num + 1)}
+                                    >
+                                        {num + 1}
+                                    </button>
+                                ))}
+                                <button
+                                    className="btn btn-outline-secondary btn-sm mx-1"
+                                    onClick={() => goToPage(currentPage + 1)}
+                                    disabled={currentPage === totalPages}
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        </div>
+                        <br />
+                        {/* Layout DC Conversion order No */}
+                        <div className='row'>
+                            <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
                                 <div className="form-group">
                                     <label className="form-label">
                                         Enter DC Conversion Order No <span className="mandatory_color">*</span>
@@ -1216,8 +1223,8 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                                     </label>
                                     <button className="btn btn-primary btn-block" onClick={showImplementationAlert} disabled={isSurveyNoSectionDisabled}>Fetch</button>
                                 </div>
-                                </div>
-                                 {/* Scan & Upload Layout DC Conversion order */}
+                            </div>
+                            {/* Scan & Upload Layout DC Conversion order */}
                             <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
                                 <div className="form-group">
                                     <label className="form-label">
@@ -1275,16 +1282,16 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                                     <br />
                                 </div>
                             </div>
-                                </div>
-                           
-                            <div className="row mt-4">
-                                <div className="col-md-10"></div>
-                                <div className="col-md-2">
-                                    <button className="btn btn-success btn-block w-100"
-                                        disabled={isSurveyNoSectionDisabled} // <-- disable condition
-                                        onClick={handleSaveRTC}>Save and continue</button>
-                                </div>
+                        </div>
+
+                        <div className="row mt-4">
+                            <div className="col-md-10"></div>
+                            <div className="col-md-2">
+                                <button className="btn btn-success btn-block w-100"
+                                    disabled={isSurveyNoSectionDisabled} // <-- disable condition
+                                    onClick={handleSaveRTC}>Save and continue</button>
                             </div>
+                        </div>
                     </div>
                 )}
 
@@ -1317,7 +1324,8 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
     const [verifiedNumbers, setVerifiedNumbers] = React.useState({});
 
     const [isEPIDSectionDisabled, setIsEPIDSectionDisabled] = useState(false);
-
+    const [area_Sqft, setArea_Sqft] = useState();
+    const [area_Sqm, setArea_Sqm] = useState();
     const fetchedEPIDData = Array.isArray(epid_fetchedData)
         ? epid_fetchedData
         : [epid_fetchedData];
@@ -1474,6 +1482,14 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
     const [roleID, setRoleID] = useState('');
 
     useEffect(() => {
+  if (area_Sqft && !isNaN(area_Sqft)) {
+    const sqm = parseFloat(area_Sqft) * 0.092903;
+    setArea_Sqm(sqm.toFixed(2));
+  } else {
+    setArea_Sqm("");
+  }
+}, [area_Sqft]);
+    useEffect(() => {
         const storedCreatedBy = localStorage.getItem('createdBy');
         const storedCreatedName = localStorage.getItem('createdName');
         const storedRoleID = localStorage.getItem('RoleID');
@@ -1610,6 +1626,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                 setAreaSqft(0);
                 localStorage.removeItem('areaSqft');
                 setAreaSqft(siteDetails.siteArea);
+                setArea_Sqft(siteDetails.siteArea);
                 localStorage.setItem('areaSqft', siteDetails.siteArea);
                 setOwnerTableData(ownerDetails);
 
@@ -1677,82 +1694,83 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
         },
 
         { name: 'ID Type', width: '120px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idType || 'N/A', center: true },
-        { name: 'ID Number', width: '220px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idNumber || 'N/A', center: true },
-        {
-            name: 'Validate OTP',
-            width: '250px',
-            cell: (row, index) => (
-                <div className='mb-3'><br />
-                    <input
-                        type="tel"
-                        className="form-control mb-1"
-                        placeholder="Mobile Number"
-                        readOnly
-                        value={
-                            phoneNumbers[index] ??
-                            row.MobileNumber ??
-                            epid_fetchedData?.OwnerDetails?.[0]?.mobileNumber ??
-                            ""
-                        }
-                        onChange={(e) => handlePhoneNumberChange(e, index)}
-                        maxLength={10}
-                        disabled={otpSentIndex === index}
-                    />
-                    {phoneErrors[index] && (
-                        <label className="text-danger">{phoneErrors[index]}</label>
-                    )}
 
-                    {/* Show "PHONE NUMBER VERIFIED" if this index is verified */}
-                    {verifiedNumbers[index] ? (
-                        <div className="text-success font-weight-bold mt-2">
-                            OTP Verified <i className="fa fa-check-circle"></i>
-                        </div>
-                    ) : (
-                        // Else show OTP input, verify button, and timer or resend button
-                        otpSentIndex !== index ? (
-                            <button
-                                className="btn btn-primary btn-sm mt-1"
-                                onClick={() => handleSendOtp(index, row)}
-                            >
-                                Send OTP
-                            </button>
-                        ) : (
-                            <>
-                                <div className="mb-1">
-                                    <div className="input-group">
-                                        <input
-                                            type="text"
-                                            className="form-control"
-                                            placeholder="Enter OTP"
-                                            value={otpInputs[index] || ""}
-                                            onChange={(e) => handleOtpChange(e, index)}
-                                            maxLength={6}
-                                        />
-                                    </div>
-                                    <button
-                                        className="btn btn-success btn-sm mt-2"
-                                        disabled={timer <= 0}
-                                        onClick={() => handleVerifyOtp(index, row)}
-                                    >
-                                        Verify OTP
-                                    </button>
-                                </div>
-                                {timer > 0 ? (
-                                    <p className="text-danger mb-0">Resend OTP in: {timer}s</p>
-                                ) : (
-                                    <button
-                                        className="btn btn-warning btn-sm"
-                                        onClick={() => handleResendOtp(index, row)}
-                                    >
-                                        Resend OTP
-                                    </button>
-                                )}
-                            </>
-                        )
-                    )}
-                </div>
-            ), center: true
-        }
+        { name: 'ID Number', width: '220px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idNumber || 'N/A', center: true },
+        // {
+        //     name: 'Validate OTP',
+        //     width: '250px',
+        //     cell: (row, index) => (
+        //         <div className='mb-3'><br />
+        //             <input
+        //                 type="tel"
+        //                 className="form-control mb-1"
+        //                 placeholder="Mobile Number"
+        //                 readOnly
+        //                 value={
+        //                     phoneNumbers[index] ??
+        //                     row.MobileNumber ??
+        //                     epid_fetchedData?.OwnerDetails?.[0]?.mobileNumber ??
+        //                     ""
+        //                 }
+        //                 onChange={(e) => handlePhoneNumberChange(e, index)}
+        //                 maxLength={10}
+        //                 disabled={otpSentIndex === index}
+        //             />
+        //             {phoneErrors[index] && (
+        //                 <label className="text-danger">{phoneErrors[index]}</label>
+        //             )}
+
+        //             {/* Show "PHONE NUMBER VERIFIED" if this index is verified */}
+        //             {verifiedNumbers[index] ? (
+        //                 <div className="text-success font-weight-bold mt-2">
+        //                     OTP Verified <i className="fa fa-check-circle"></i>
+        //                 </div>
+        //             ) : (
+        //                 // Else show OTP input, verify button, and timer or resend button
+        //                 otpSentIndex !== index ? (
+        //                     <button
+        //                         className="btn btn-primary btn-sm mt-1"
+        //                         onClick={() => handleSendOtp(index, row)}
+        //                     >
+        //                         Send OTP
+        //                     </button>
+        //                 ) : (
+        //                     <>
+        //                         <div className="mb-1">
+        //                             <div className="input-group">
+        //                                 <input
+        //                                     type="text"
+        //                                     className="form-control"
+        //                                     placeholder="Enter OTP"
+        //                                     value={otpInputs[index] || ""}
+        //                                     onChange={(e) => handleOtpChange(e, index)}
+        //                                     maxLength={6}
+        //                                 />
+        //                             </div>
+        //                             <button
+        //                                 className="btn btn-success btn-sm mt-2"
+        //                                 disabled={timer <= 0}
+        //                                 onClick={() => handleVerifyOtp(index, row)}
+        //                             >
+        //                                 Verify OTP
+        //                             </button>
+        //                         </div>
+        //                         {timer > 0 ? (
+        //                             <p className="text-danger mb-0">Resend OTP in: {timer}s</p>
+        //                         ) : (
+        //                             <button
+        //                                 className="btn btn-warning btn-sm"
+        //                                 onClick={() => handleResendOtp(index, row)}
+        //                             >
+        //                                 Resend OTP
+        //                             </button>
+        //                         )}
+        //                     </>
+        //                 )
+        //             )}
+        //         </div>
+        //     ), center: true
+        // }
     ];
     const [localLKRSID, setLocalLKRSID] = useState(LKRS_ID || "");
     useEffect(() => {
@@ -1851,20 +1869,20 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
         }
     };
     const handleSaveAndProceed = async (epidNumber) => {
-        const totalRows = fetchedEPIDData?.[0]?.OwnerDetails?.length;
+        // const totalRows = fetchedEPIDData?.[0]?.OwnerDetails?.length;
 
-        if (totalRows > 0) {
-            for (let i = 0; i < totalRows; i++) {
-                if (!verifiedNumbers[i]) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'OTP Not Verified',
-                        text: `Please verify OTP for record #${i + 1} before proceeding.`,
-                    });
-                    return;
-                }
-            }
-        }
+        // if (totalRows > 0) {
+        //     for (let i = 0; i < totalRows; i++) {
+        //         if (!verifiedNumbers[i]) {
+        //             Swal.fire({
+        //                 icon: 'error',
+        //                 title: 'OTP Not Verified',
+        //                 text: `Please verify OTP for record #${i + 1} before proceeding.`,
+        //             });
+        //             return;
+        //         }
+        //     }
+        // }
 
         const storedData = localStorage.getItem("epid_JSON");
         let parsedData = storedData ? JSON.parse(storedData) : "";
@@ -1873,8 +1891,8 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
             lkrS_ID: 0,
             lkrS_LANDTYPE: "khata",
             lkrS_EPID: epid_fetchedData?.PropertyID,
-            lkrS_SITEAREA_SQFT: 0,
-            lkrS_SITEAREA_SQMT: 0,
+            lkrS_SITEAREA_SQFT: area_Sqft,
+            lkrS_SITEAREA_SQMT: area_Sqm,
             lkrS_REMARKS: "",
             lkrS_ADDITIONALINFO: "",
             lkrS_CREATEDBY: createdBy,
@@ -1896,12 +1914,12 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                 owN_ID: 0,
                 owN_LKRS_ID: 0,
                 owN_NAME_KN: owner.owN_NAME_KN || "",
-                owN_NAME_EN: epid_fetchedData?.OwnerDetails?.[0].ownerName || "",
-                owN_IDTYPE: epid_fetchedData?.OwnerDetails?.[0].idType || "",
-                owN_IDNUMBER: epid_fetchedData?.OwnerDetails?.[0].idNumber || "",
+                owN_NAME_EN: owner.ownerName || "",
+                owN_IDTYPE: owner.idType || "",
+                owN_IDNUMBER: owner.idNumber || "",
                 owN_RELATIONTYPE: owner.owN_RELATIONTYPE || "",
                 owN_RELATIONNAME: owner.owN_RELATIONNAME || "",
-                owN_MOBILENUMBER: epid_fetchedData?.OwnerDetails?.[0]?.mobileNumber || "",
+                owN_MOBILENUMBER: owner.mobileNumber || "",
                 owN_REMARKS: "",
                 owN_ADDITIONALINFO: "",
                 owN_CREATEDBY: createdBy,
@@ -2210,7 +2228,8 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
     );
 };
 //BDA secction
-const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDetails, LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsApprovalSectionSaved, setIsReleaseSectionSaved }) => {
+const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDetails, LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsApprovalSectionSaved,
+    setIsReleaseSectionSaved, setTotalNoofsites }) => {
     const { t, i18n } = useTranslation();
     const [formData, setFormData] = useState({
         layoutApprovalNumber: "",
@@ -2218,6 +2237,9 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
         approvalMap: null,
         dateOfApproval: "",
         approvalAuthority: "",
+        layoutApprovalAuthority: "", // NEW
+        totalSites: "",              // NEW
+        releaseType: "",
     });
     const { loading, start_loader, stop_loader } = useLoader();
     const [errors, setErrors] = useState({});
@@ -2262,9 +2284,6 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             await fetchReleaseList(localLKRSID);
         }
     };
-
-
-
     const fetchApprovalList = async (localLKRSID) => {
         start_loader();
         try {
@@ -2280,18 +2299,34 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             const approvalMapFileResponse = await fileListAPI(3, localLKRSID, 2, 0);
 
             if (Array.isArray(listResponse) && listResponse.length > 0) {
-                const formattedList = listResponse.map((item, index) => ({
-                    layoutApprovalNumber: item.apr_Approval_No,
-                    dateOfApproval: item.apr_Approval_Date,
-                    approvalOrder: approvalFileResponse[index]?.doctrN_DOCBASE64 || null,
-                    approvalMap: approvalMapFileResponse[index]?.doctrN_DOCBASE64 || null,
-                    approvalAuthority: item.apR_APPROVALDESIGNATION,
-                    approvalID: item.apr_Id,
-                    approvalOrderDocID: approvalFileResponse[index]?.doctrN_ID || null,
-                    approvalOrderMdocID: approvalFileResponse[index]?.doctrN_MDOC_ID || null,
-                    approvalMapDocID: approvalMapFileResponse[index]?.doctrN_ID || null,
-                    approvalMapMdocID: approvalMapFileResponse[index]?.doctrN_MDOC_ID || null,
-                }));
+
+
+                const formattedList = listResponse.map((item, index) => {
+                    const totalSites = listResponse.map(item => item.lkrS_NUMBEROFSITES);
+
+
+                    sessionStorage.setItem('totalNoOfSites', JSON.stringify(totalSites));
+                    setTotalNoofsites(totalSites);
+                    console.log("totalSites", totalSites);
+
+                    return {
+                        layoutApprovalNumber: item.apr_Approval_No,
+                        dateOfApproval: item.apr_Approval_Date,
+                        approvalOrder: approvalFileResponse[index]?.doctrN_DOCBASE64 || null,
+                        approvalMap: approvalMapFileResponse[index]?.doctrN_DOCBASE64 || null,
+                        approvalAuthority: item.apR_APPROVALDESIGNATION,
+                        approvalAuthorityPlanning: item.apR_APPROVALAUTHORITY_Text,
+                        releaseType: item.sitE_RELS_SITE_RELSTYPE,
+                        totalNoOfSites: totalSites,
+                        approvalID: item.apr_Id,
+                        // Include these IDs for delete API
+                        approvalOrderDocID: approvalFileResponse[index]?.doctrN_ID || null,
+                        approvalOrderMdocID: approvalFileResponse[index]?.doctrN_MDOC_ID || null,
+                        approvalMapDocID: approvalMapFileResponse[index]?.doctrN_ID || null,
+                        approvalMapMdocID: approvalMapFileResponse[index]?.doctrN_MDOC_ID || null,
+                    };
+                });
+
 
                 setIsEditing(false);
                 setisApprovalEditing(true); // Disable edit button
@@ -2349,8 +2384,11 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
     }
     const handleChange = (e) => {
         const { name, value } = e.target;
+        if (name === "totalSites") {
+            if (!/^\d*$/.test(value)) return;
+        }
         setFormData({ ...formData, [name]: value });
-        setErrors({ ...errors, [name]: "" }); // Clear error on input
+        setErrors({ ...errors, [name]: "" });
     };
     const [approvalOrderURL, setApprovalOrderURL] = useState(null);
     const [approvalMapURL, setApprovalMapURL] = useState(null);
@@ -2444,8 +2482,19 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
         } else if (new Date(formData.dateOfApproval) > new Date()) {
             newErrors.dateOfApproval = "Future dates are not allowed.";
         }
+        if (!formData.layoutApprovalAuthority) {
+            newErrors.layoutApprovalAuthority = "Layout approval authority is required.";
+        }
         if (!formData.approvalAuthority.trim()) {
             newErrors.approvalAuthority = "Approval authority designation is required.";
+        }
+        if (!formData.totalSites.trim()) {
+            newErrors.totalSites = "Total number of sites is required.";
+        } else if (!/^\d+$/.test(formData.totalSites)) {
+            newErrors.totalSites = "Total number of sites must be numeric.";
+        }
+        if (!formData.releaseType) {
+            newErrors.releaseType = "Please select a Release Type.";
         }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -2503,8 +2552,6 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             }
         });
     };
-
-
     //Approval  Order Save button
     const handleSave = async () => {
         if (!validateForm()) return;
@@ -2527,6 +2574,9 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             apR_CREATEDNAME: createdName,
             apR_CREATEDROLE: roleID,
             apR_APPROVALDESIGNATION: formData.approvalAuthority,
+            lkrS_NUMBEROFSITES: formData.totalSites,
+            apR_APPROVALAUTHORITY: formData.layoutApprovalAuthority,
+            apR_SITE_RELSTYPE_ID: formData.releaseType,
         };
 
         try {
@@ -2568,19 +2618,31 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
 
                         if (Array.isArray(listResponse)) {
 
-                            const formattedList = listResponse.map((item, index) => ({
-                                layoutApprovalNumber: item.apr_Approval_No,
-                                dateOfApproval: item.apr_Approval_Date,
-                                approvalOrder: approvalFileResponse[index]?.doctrN_DOCBASE64 || null,
-                                approvalMap: approvalMapFileResponse[index]?.doctrN_DOCBASE64 || null,
-                                approvalAuthority: item.apR_APPROVALDESIGNATION,
-                                approvalID: item.apr_Id,
-                                // 🔽 Include these IDs for delete API
-                                approvalOrderDocID: approvalFileResponse[index]?.doctrN_ID || null,
-                                approvalOrderMdocID: approvalFileResponse[index]?.doctrN_MDOC_ID || null,
-                                approvalMapDocID: approvalMapFileResponse[index]?.doctrN_ID || null,
-                                approvalMapMdocID: approvalMapFileResponse[index]?.doctrN_MDOC_ID || null,
-                            }));
+                            const formattedList = listResponse.map((item, index) => {
+                                const totalSites = item.lkrS_NUMBEROFSITES;
+
+                                setTotalNoofsites(totalSites);
+                                sessionStorage.setItem('totalNoOfSites', totalSites);
+
+                                return {
+                                    layoutApprovalNumber: item.apr_Approval_No,
+                                    dateOfApproval: item.apr_Approval_Date,
+                                    approvalOrder: approvalFileResponse[index]?.doctrN_DOCBASE64 || null,
+                                    approvalMap: approvalMapFileResponse[index]?.doctrN_DOCBASE64 || null,
+                                    approvalAuthority: item.apR_APPROVALDESIGNATION,
+                                    approvalAuthorityPlanning: item.apR_APPROVALAUTHORITY_Text,
+                                    releaseType: item.sitE_RELS_SITE_RELSTYPE,
+                                    totalNoOfSites: totalSites,
+                                    approvalID: item.apr_Id,
+                                    // Include these IDs for delete API
+                                    approvalOrderDocID: approvalFileResponse[index]?.doctrN_ID || null,
+                                    approvalOrderMdocID: approvalFileResponse[index]?.doctrN_MDOC_ID || null,
+                                    approvalMapDocID: approvalMapFileResponse[index]?.doctrN_ID || null,
+                                    approvalMapMdocID: approvalMapFileResponse[index]?.doctrN_MDOC_ID || null,
+                                };
+                            });
+
+
 
                             setIsApprovalSectionSaved(true);
                             setIsEditing(false);
@@ -2612,6 +2674,9 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                             approvalMap: null,
                             dateOfApproval: "",
                             approvalAuthority: "",
+                            approvalAuthorityPlanning: "",
+                            releaseType: "",
+                            totalNoOfSites: "",
                         });
 
                         setErrors({});
@@ -2666,14 +2731,17 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             name: t('translation.BDA.table.slno'),
             cell: (row, index) => index + 1,
             width: '80px',
+            center: true,
         },
         {
-            name: t('translation.BDA.table.approvalNo'),
+            name: "Approval No",
             selector: row => row.layoutApprovalNumber,
             sortable: true,
+            center: true,
+            with: '150px'
         },
         {
-            name: t('translation.BDA.table.dateOfApproval'),
+            name: 'Date of Approval',
             selector: row => {
                 const date = new Date(row.dateOfApproval);
 
@@ -2689,6 +2757,8 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                 return `${day}-${month}-${year}`;
             },
             sortable: true,
+            center: true,
+            width: '150px',
         },
         {
             name: t('translation.BDA.table.approvalOrder'),
@@ -2718,6 +2788,8 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                     return 'No file';
                 }
             },
+            center: true,
+            width: '150px',
         },
         {
             name: t('translation.BDA.table.approvalMap'),
@@ -2747,11 +2819,31 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                     return 'No file';
                 }
             },
+            center: true,
         },
         {
-            name: t('translation.BDA.table.approvalAuthority'),
+            name: 'Layout Approval Authority',
+            selector: row => row.approvalAuthorityPlanning,
+            sortable: true,
+            minWidth: '220px', center: true,
+        },
+        {
+            name: "Designation of Approval Authority",
             selector: row => row.approvalAuthority,
             sortable: true,
+            minWidth: '280px', center: true,
+        },
+        {
+            name: "Total No of sites",
+            selector: row => row.totalNoOfSites,
+            sortable: true,
+            minWidth: '150px', center: true,
+        },
+        {
+            name: "Release Type",
+            selector: row => row.releaseType,
+            sortable: true,
+            minWidth: '150px', center: true,
         },
         {
             name: t('translation.BDA.table.action'),
@@ -2792,14 +2884,21 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             },
         },
     };
+
+    const [layoutSiteCount, setLayoutSiteCount] = useState("");
+    const [layoutSiteCountError, setLayoutSiteCountError] = useState("");
+
+    const handleLayoutSiteCountChange = (e) => {
+
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+        setErrors({ ...errors, [name]: "" }); // Clear error on input
+    };
     const [isEditing, setIsEditing] = useState(true); // Controls edit mode
     const [savedRecords, setSavedRecords] = useState([]); // Stores saved records
-
-
     const handleAddMore_again = () => {
         setIsEditing(true); // Enable editing mode
     };
-
     //Order of site Release
     const [release_formData, setRelease_FormData] = useState({
         layoutOrderNumber: "",
@@ -2838,7 +2937,6 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             return null; // return null if decoding fails
         }
     };
-
     const order_columns = [
         {
             name: t('translation.BDA.table1.slno'),
@@ -2993,7 +3091,6 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
         setReleaseOrderURL(URL.createObjectURL(file)); // Set new preview
         setRelease_Errors({ ...release_errors, release_Order: "" });
     };
-
     const validateOrderForm = () => {
         let newErrors = {};
 
@@ -3022,7 +3119,6 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
         setRelease_Errors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
-
     const handleOrderSave = async () => {
         if (!validateOrderForm()) return;
 
@@ -3144,7 +3240,6 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
         setIsOrderEditing(false); // Disable edit button
         setIsOrder_EditingArea(true); // Enable editing mode for area
     };
-
     //file Upload API
     const file_UploadAPI = async (MstDocumentID, documentnumber, file, date, uniqueID, DocName) => {
         const formData = new FormData();
@@ -3254,7 +3349,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                             <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
                                 <div className="form-group">
                                     <label className="form-label">
-                                        {t('translation.BDA.Subdivision.approvalNo')} <span className="mandatory_color">*</span>
+                                        Approval Number <span className="mandatory_color">*</span>
                                     </label>
                                     <input
                                         type="tel"
@@ -3419,6 +3514,28 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                                     )}
                                 </div>
                             </div>
+                            {/* Layout Approval Authority */}
+                            <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                                <label className="form-label">Layout Approval Authority <span className='mandatory_color'>*</span></label>
+                                <div className="d-flex align-items-center gap-3">
+                                    <select
+                                        className="form-select"
+                                        value={formData.layoutApprovalAuthority}
+                                        onChange={(e) => setFormData({ ...formData, layoutApprovalAuthority: e.target.value })}
+                                        disabled={!isEditing}
+                                    >
+                                        <option value="">Select Layout Approval Authority</option>
+                                        <option value="1">BDA</option>
+                                        <option value="2">BIAAPA </option>
+                                        <option value="2">BMRDA</option>
+                                        <option value="3">BBMP</option>
+                                    </select>
+
+                                </div>
+                                {errors.layoutApprovalAuthority && (
+                                    <small className="text-danger">{errors.layoutApprovalAuthority}</small>
+                                )}
+                            </div>
                             {/* Approval Authority */}
                             <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
                                 <div className="form-group">
@@ -3440,7 +3557,141 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                                     )}
                                 </div>
                             </div>
-                            <div className="col-0 col-sm-0 col-md-4 col-lg-4 col-xl-4 mt-5"></div>
+                            {/* Total number of sites */}
+                            <div className='col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6'>
+                                <div className="form-group">
+                                    <label className='form-label'>
+                                        Total number of sites <span className='mandatory_color'>*</span>
+                                    </label>
+                                    <input
+                                        type="number"
+                                        className="form-control"
+                                        name="totalSites"
+                                        placeholder="Enter Total number of sites"
+                                        value={formData.totalSites}
+                                        maxLength={15}
+                                        onChange={handleChange}
+                                        disabled={!isEditing}
+
+                                    />
+                                    {errors.totalSites && (
+                                        <small className="text-danger">{errors.totalSites}</small>
+                                    )}
+                                </div>
+                            </div>
+                            {/* Release Type */}
+                            <div className='col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6'>
+                                <div className="form-group mt-2">
+                                    <label className='form-label'>
+                                        Release Type <span className='mandatory_color'>*</span>
+                                    </label>
+                                    <div className='row'>
+                                        <div className='col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4'>
+                                            <div className="form-check">
+                                                <label className="form-check-label fw-bold">
+                                                    <input
+                                                        className="form-check-input me-2 radioStyle"
+                                                        type="radio"
+                                                        name="releaseType"
+                                                        value="1"
+                                                        checked={formData.releaseType === "1"}
+                                                        onChange={(e) =>
+                                                            setFormData({ ...formData, releaseType: e.target.value })
+                                                        } disabled={!isEditing}
+                                                    />
+                                                    100</label>
+                                            </div>
+                                        </div>
+                                        <div className='col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4'>
+                                            <div className="form-check">
+                                                <label className="form-check-label fw-bold">
+                                                    <input
+                                                        className="form-check-input me-2 radioStyle"
+                                                        type="radio"
+                                                        name="releaseType"
+                                                        value="2"
+                                                        checked={formData.releaseType === "2"}
+                                                        onChange={(e) =>
+                                                            setFormData({ ...formData, releaseType: e.target.value })
+                                                        } disabled={!isEditing}
+                                                    />
+                                                    60 * 40</label>
+                                            </div>
+                                        </div>
+                                        <div className='col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4'>
+                                            <div className="form-check">
+                                                <label className="form-check-label fw-bold">
+                                                    <input
+                                                        className="form-check-input me-2 radioStyle"
+                                                        type="radio"
+                                                        name="releaseType"
+                                                        value="3"
+                                                        checked={formData.releaseType === "3"}
+                                                        onChange={(e) =>
+                                                            setFormData({ ...formData, releaseType: e.target.value })
+                                                        } disabled={!isEditing}
+                                                    />
+                                                    40 * 30 * 30</label>
+                                            </div>
+                                        </div>
+                                        {errors.releaseType && (
+                                            <small className="text-danger">{errors.releaseType}</small>
+                                        )}
+                                    </div>
+                                </div>
+
+                            </div>
+                            {/* <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
+                                <div className="form-check">
+                                    <label className="form-check-label fw-bold">
+                                        <input
+                                            className="form-check-input me-2 radioStyle"
+                                            type="radio"
+                                            name="releaseType"
+                                            value="1"
+                                            checked={release_formData.releaseType === "1"}
+                                            onChange={(e) =>
+                                                setRelease_FormData({ ...release_formData, releaseType: e.target.value })
+                                            } disabled={!isOrder_EditingArea}
+                                        />
+                                        100</label>
+                                </div>
+                            </div>
+                            <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
+                                <div className="form-check">
+                                    <label className="form-check-label fw-bold">
+                                        <input
+                                            className="form-check-input me-2 radioStyle"
+                                            type="radio"
+                                            name="releaseType"
+                                            value="2"
+                                            checked={release_formData.releaseType === "2"}
+                                            onChange={(e) =>
+                                                setRelease_FormData({ ...release_formData, releaseType: e.target.value })
+                                            } disabled={!isOrder_EditingArea}
+                                        />
+                                        60 * 40</label>
+                                </div>
+                            </div>
+                            <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
+                                <div className="form-check">
+                                    <label className="form-check-label fw-bold">
+                                        <input
+                                            className="form-check-input me-2 radioStyle"
+                                            type="radio"
+                                            name="releaseType"
+                                            value="3"
+                                            checked={release_formData.releaseType === "3"}
+                                            onChange={(e) =>
+                                                setRelease_FormData({ ...release_formData, releaseType: e.target.value })
+                                            } disabled={!isOrder_EditingArea}
+                                        />
+                                        40 * 30 * 30</label>
+                                </div>
+                            </div> */}
+
+
+                            <div className="col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10 mt-5"></div>
                             {/* Edit button */}
                             {/* <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-5">
                                 <div className="form-group">
@@ -3615,65 +3866,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                                     )}
                                 </div>
                             </div>
-                            {/* Release Type */}
-                            <div className='col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3'>
-                                <div className="form-group mt-2">
-                                    <label className='form-label'>
-                                        Release Type <span className='mandatory_color'>*</span>
-                                    </label>
-                                </div>
-                                {release_errors.releaseType && (
-                                    <small className="text-danger">{release_errors.releaseType}</small>
-                                )}
-                            </div>
-                            <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
-                                <div className="form-check">
-                                    <label className="form-check-label fw-bold">
-                                        <input
-                                            className="form-check-input me-2 radioStyle"
-                                            type="radio"
-                                            name="releaseType"
-                                            value="1"
-                                            checked={release_formData.releaseType === "1"}
-                                            onChange={(e) =>
-                                                setRelease_FormData({ ...release_formData, releaseType: e.target.value })
-                                            } disabled={!isOrder_EditingArea}
-                                        />
-                                        100</label>
-                                </div>
-                            </div>
-                            <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
-                                <div className="form-check">
-                                    <label className="form-check-label fw-bold">
-                                        <input
-                                            className="form-check-input me-2 radioStyle"
-                                            type="radio"
-                                            name="releaseType"
-                                            value="2"
-                                            checked={release_formData.releaseType === "2"}
-                                            onChange={(e) =>
-                                                setRelease_FormData({ ...release_formData, releaseType: e.target.value })
-                                            } disabled={!isOrder_EditingArea}
-                                        />
-                                        60 * 40</label>
-                                </div>
-                            </div>
-                            <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
-                                <div className="form-check">
-                                    <label className="form-check-label fw-bold">
-                                        <input
-                                            className="form-check-input me-2 radioStyle"
-                                            type="radio"
-                                            name="releaseType"
-                                            value="3"
-                                            checked={release_formData.releaseType === "3"}
-                                            onChange={(e) =>
-                                                setRelease_FormData({ ...release_formData, releaseType: e.target.value })
-                                            } disabled={!isOrder_EditingArea}
-                                        />
-                                        40 * 30 * 30</label>
-                                </div>
-                            </div>
+
 
                             <div className='col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10'></div>
                             {/* edit button */}
@@ -3720,7 +3913,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
     );
 };
 //GPS and Individual Sites Components
-const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID, ownerName, isRTCSectionSaved, isEPIDSectionSaved, setIsSitesSectionSaved, }) => {
+const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID, totalNoofsites, ownerName, isRTCSectionSaved, isEPIDSectionSaved, setIsSitesSectionSaved, }) => {
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
     const [shape, setShape] = useState("regular"); // Track selected shape
 
@@ -3812,6 +4005,8 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
     const [totalSQFT, setTotalSQFT] = useState('');
     const [totalSQM, setTotalSQM] = useState('');
+    const [layoutSiteCount, setLayoutSiteCount] = useState("");
+    const [layoutSiteCountError, setLayoutSiteCountError] = useState("");
 
     useEffect(() => {
 
@@ -3820,6 +4015,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             setTotalSQFT(areaSQFT);
             setTotalSQM(sqftToSqm(areaSQFT));
         }
+
 
 
     }, [areaSqft]);
@@ -3839,12 +4035,17 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             const name = localStorage.getItem("ownerName");
             if (name) setLocalOwnerName(name);
         }
-        console.log("ownername", ownerName);
-    }, [LKRS_ID, ownerName]);
+        console.log("totalNoofsites-", totalNoofsites);
+        if (totalNoofsites) {
+            setLayoutSiteCount(totalNoofsites);
+        } else {
+            const noofsites = localStorage.getItem("totalNoOfSites");
+            if (noofsites) setLayoutSiteCount(noofsites);
+        }
+    }, [LKRS_ID, ownerName, totalNoofsites]);
 
 
     useEffect(() => {
-
         loadData();
     }, [localLKRSID, isRTCSectionSaved, isEPIDSectionSaved]);
 
@@ -4092,6 +4293,28 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             if (!firstErrorField) firstErrorField = northsouthFeetRef;
             isValid = false;
         }
+        //area validation
+        const totalArea = parseFloat(totalSQFT);
+        const enteredArea = parseFloat(regularAreaSqFt);
+
+        if (isNaN(enteredArea) || enteredArea <= 0) {
+            Swal.fire({
+                title: "Invalid Area",
+                text: `Area must be a positive number`,
+                icon: "error",
+                confirmButtonText: "OK",
+            })
+            isValid = false;
+        } else if (enteredArea > totalArea) {
+            Swal.fire({
+                title: "Area Exceeds Limit",
+                text: `Area cannot exceed Total Area of the layout`,
+                icon: "error",
+                confirmButtonText: "OK",
+            })
+            isValid = false;
+        }
+
 
         //corner Site validation
         if (cornerSite === '') {
@@ -4105,6 +4328,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             if (!firstErrorField) firstErrorField = siteTypeRef;
             isValid = false;
         }
+
         // Chakbandi validations
         const chakbandiRegex = /^[a-zA-Z0-9.,\/\\#\s]*$/;
 
@@ -4126,6 +4350,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         validateChakbandi(chakbandiWest, setChakbandiWestError, chakbandiWestRef, 'West');
         validateChakbandi(chakbandiSouth, setChakbandiSouthError, chakbandiSouthRef, 'South');
         validateChakbandi(chakbandiNorth, setChakbandiNorthError, chakbandiNorthRef, 'North');
+
 
 
         if (!latitude || latitude.trim() === '') {
@@ -4317,26 +4542,6 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             setNumSidesError('');  // Clear the error if the validation passes
         }
 
-        //side validation
-        // sides.forEach((side, index) => {
-        //     const sideError = { length: '', roadFacing: '' };
-
-        //     if (!side.lengthInFeet && !side.lengthInMeter) {
-        //         sideError.length = `Side ${side.id}: Enter length in feet or meter.`;
-        //         sideError.roadFacing = ` Side ${side.id}: Select whether it's road facing.`;
-        //         if (!firstErrorField) firstErrorField = sideRefs.current[index];
-        //         isValid = false;
-        //     }
-
-        //     if (side.roadFacing !== true && side.roadFacing !== false) {
-        //         sideError.roadFacing = `Side ${side.id}: Select whether it's road facing.`;
-        //         sideError.roadFacing = `Side ${side.id}: Select whether it's road facing.`;
-        //         if (!firstErrorField) firstErrorField = sideRefs.current[index];
-        //         isValid = false;
-        //     }
-
-        //     sideErrors.push(sideError);
-        // });
 
 
         const newSideErrors = [];
@@ -4364,10 +4569,33 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         setSideErrors(newSideErrors); //  Update state
 
 
+
+
         //area calculation
         if ((!irregularAreaSqFt || parseFloat(irregularAreaSqFt) <= 0) && (!irregularAreaSqM || parseFloat(irregularAreaSqM) <= 0)) {
             setIrregularAreaSqft_sqM_error('Please enter Area  in either Sq.ft or Sq.M');
             if (!firstErrorField) firstErrorField = irregular_AreaSqFtref;
+            isValid = false;
+        }
+        //area validation
+        const totalArea = parseFloat(totalSQFT);
+        const enteredArea = parseFloat(irregularAreaSqFt);
+
+        if (isNaN(enteredArea) || enteredArea <= 0) {
+            Swal.fire({
+                title: "Invalid Area",
+                text: `Area must be a positive number`,
+                icon: "error",
+                confirmButtonText: "OK",
+            })
+            isValid = false;
+        } else if (enteredArea > totalArea) {
+            Swal.fire({
+                title: "Area Exceeds Limit",
+                text: `Area cannot exceed Total Area of the layout`,
+                icon: "error",
+                confirmButtonText: "OK",
+            })
             isValid = false;
         }
 
@@ -4538,8 +4766,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             setIrregularAreaSqFt('');
         }
     };
-    const [layoutSiteCount, setLayoutSiteCount] = useState("");
-    const [layoutSiteCountError, setLayoutSiteCountError] = useState("");
+
 
     const totalSitesCount = Number(layoutSiteCount);
     const totalAddedSites = siteData.length + irregularsiteData.length;
@@ -4591,7 +4818,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                 allowEscapeKey: true
             }).then(() => {
                 layoutSiteCountRef.current.focus();
-                 if (shape === "regular") {
+                if (shape === "regular") {
                     resetFormFields();
                 } else {
                     resetIrregularFormFields();
@@ -4956,7 +5183,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
     //Add site button click API
     const addSites = async (shape) => {
-              const isRegular = shape === "regular";
+        const isRegular = shape === "regular";
         const isIrregular = shape === "irregular";
 
         if (!layoutSiteCount || totalSitesCount <= 0) {
@@ -5000,7 +5227,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                 allowEscapeKey: true
             }).then(() => {
                 layoutSiteCountRef.current?.focus();
-                  if (isRegular) {
+                if (isRegular) {
                     resetFormFields();
                 } else {
                     resetIrregularFormFields();
@@ -5024,7 +5251,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         }
 
 
-  
+
         const isValid = isRegular ? finalValidation() : isIrregular ? irregularFinalValidation() : false;
         if (!isValid) return;
 
@@ -5087,14 +5314,14 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         //     return; // Stop execution if validation fails
         // }
 
-        //  Update logic
-        if (NoofSites === no_of_sites) {
-            updated_sites = NoofSites;
-            status_site = false;
-        } else if (NoofSites != no_of_sites) {
-            updated_sites = NoofSites;
-            status_site = true;
-        }
+        // //  Update logic
+        // if (NoofSites === no_of_sites) {
+        //     updated_sites = NoofSites;
+        //     status_site = false;
+        // } else if (NoofSites != no_of_sites) {
+        //     updated_sites = NoofSites;
+        //     status_site = true;
+        // }
 
         // Prepare payload
         const payload = {
@@ -5122,8 +5349,8 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             sitE_CREATEDBY: createdBy,
             sitE_CREATEDNAME: createdName,
             sitE_CREATEDROLE: roleID,
-            lkrS_NUMBEROFSITES: updated_sites,
-            updatE_LKRS_NUMBEROFSITES: status_site,
+            // lkrS_NUMBEROFSITES: updated_sites,
+            // updatE_LKRS_NUMBEROFSITES: status_site,
             siteDimensions
         };
 
@@ -5363,22 +5590,19 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                                     </label>
                                     <input
                                         type="text"
-                                        ref={layoutSiteCountRef}
+
                                         className="form-control"
                                         placeholder="Enter Total number of sites"
                                         value={layoutSiteCount}
                                         maxLength={15}
-                                        onChange={handleLayoutSiteCountChange}
-                                        readOnly={isReadOnly}
+                                        readOnly
 
                                     />
-                                    {layoutSiteCountError && (
-                                        <small className="text-danger">{layoutSiteCountError}</small>
-                                    )}
+
                                 </div>
                             </div>
-                            <div className='col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10 mb-3'></div>
-                            <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mb-3'>
+                            <div className='col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10 mb-3' hidden></div>
+                            <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mb-3' hidden>
                                 <div className="form-group mt-2">
                                     {!isReadOnly && (
                                         <button className='btn btn-success btn-block' onClick={handle_Save}>
@@ -7171,6 +7395,11 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsE
     const [isdeedFetchDisabled, setIsdeedFetchDisabled] = useState(false);
     const [showDeedEditButton, setShowDeedEditButton] = useState(false);
 
+    const [jdaDocumentId, setJdaDocumentId] = useState('');
+    const [jdaDocumentDate, setJdaDocumentDate] = useState('');
+    const [jdaDocumentIdError, setJdaDocumentIdError] = useState('');
+    const [jdaDocumentDateError, setJdaDocumentDateError] = useState('');
+
 
     const [checkECStatus, setCheckECStatus] = useState(false);
     const [checkDeedStatus, setCheckDeedStatus] = useState(false);
@@ -7377,8 +7606,22 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsE
                 JDAReg = true;
             } else if (isRegistered === false) {
                 JDAReg = false;
-
-                //  Check if file is uploaded
+                if (!jdaDocumentId.trim()) {
+                    Swal.fire({
+                        text: "JDA Document ID is required.",
+                        icon: "error",
+                        confirmButtonText: "OK",
+                    });
+                    return;
+                }
+                if (!jdaDocumentDate) {
+                    Swal.fire({
+                        text: "JDA Document Date is required.",
+                        icon: "error",
+                        confirmButtonText: "OK",
+                    });
+                    return;
+                }
                 if (!file) {
                     Swal.fire({
                         text: "File is required. Please upload the JDA document.",
@@ -7387,7 +7630,10 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsE
                     });
                     return;
                 }
+
+
             }
+
         }
 
         start_loader();
@@ -7397,7 +7643,7 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsE
                 jdA_ID: 0,
                 jdA_LKRS_ID: localLKRSID,
                 jdA_ISREGISTERED: JDAReg,
-                jdA_DEED_NO: isRegistered === true ? deedNumber : "",
+                jdA_DEED_NO: isRegistered === true ? deedNumber : jdaDocumentId,
                 jdA_REMARKS: "",
                 jdA_ADDITIONALINFO: "",
                 jdA_CREATEDBY: createdBy,
@@ -7405,6 +7651,7 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsE
                 jdA_CREATEDROLE: roleID,
                 lkrS_EC: ecNumber,
                 lkrS_IsJDAEXITS: hasJDA,
+                jdA_REGISTEREDDATE: jdaDocumentDate,
             };
 
             if (checkECStatus === true) {
@@ -7626,6 +7873,9 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsE
                 response.responseStatus === true &&
                 response.json
             ) {
+                const deedData = JSON.parse(response.json);
+                console.log("Registration DateTime:", deedData.registrationdatetime);
+                setJdaDocumentDate(deedData.registrationdatetime);
                 setShowViewDeedButton(true);
                 setIsDEEDReadOnly(true);
                 setIsdeedFetchDisabled(true);
@@ -7650,6 +7900,34 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsE
         } finally {
             stop_loader();
         }
+    };
+
+    const handleJdaDocumentIdChange = (e) => {
+        const value = e.target.value;
+
+        // Allow only alphanumeric and spaces (adjust regex if you want to allow hyphens, slashes, etc.)
+        const pattern = /^[a-zA-Z0-9\s-]*$/;
+
+        if (pattern.test(value)) {
+            setJdaDocumentId(value);
+            setJdaDocumentIdError('');
+        } else {
+            setJdaDocumentIdError('Special characters are not allowed.');
+        }
+    };
+
+
+    const handleJdaDocumentDateChange = (e) => {
+        const value = e.target.value;
+        const today = new Date().toISOString().split('T')[0];
+
+        if (value > today) {
+            setJdaDocumentDateError('Future dates are not allowed.');
+        } else {
+            setJdaDocumentDateError('');
+        }
+
+        setJdaDocumentDate(value);
     };
 
     return (
@@ -7799,7 +8077,7 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsE
                                             className="form-control"
                                             placeholder="Enter your Deed Number"
                                             value={deedNumber}
-                                            onChange={handleDeedChange} maxLength={50} readOnly={isDEEDReadOnly || isJDASectionDisabled}
+                                            onChange={handleDeedChange} maxLength={50} readOnly={isJDASectionDisabled}
                                         />
                                         {deedError && <div className="text-danger">{deedError}</div>}
                                     </div>
@@ -7852,7 +8130,35 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsE
                             <>
                                 <div className='row'>
                                     <hr />
-                                    <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                                    <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4">
+                                        <label className='form-label'>Enter JDA Document ID <span className='mandatory_color'>*</span></label>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            placeholder="Enter your JDA Document ID"
+                                            value={jdaDocumentId}
+                                            onChange={handleJdaDocumentIdChange}
+                                            maxLength={15}
+                                            readOnly={isJDASectionDisabled}
+                                        />
+                                        {jdaDocumentIdError && <div className="text-danger">{jdaDocumentIdError}</div>}
+                                    </div>
+
+                                    <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4">
+                                        <label className='form-label'>Enter JDA Document Date <span className='mandatory_color'>*</span></label>
+                                        <input
+                                            type="date"
+                                            className="form-control"
+                                            value={jdaDocumentDate}
+                                            onChange={handleJdaDocumentDateChange}
+                                            readOnly={isJDASectionDisabled}
+                                            max={new Date().toISOString().split('T')[0]}
+                                        />
+                                        {jdaDocumentDateError && <div className="text-danger">{jdaDocumentDateError}</div>}
+                                    </div>
+
+
+                                    <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4">
                                         <label className='form-label'>Scan & upload the JDA</label>
                                         <input
                                             type="file"
@@ -7923,6 +8229,8 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsE
                                         )}
                                     </div>
 
+
+
                                     <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 ">
                                         <div className="form-group mt-4">
                                             <h5>Note: Please do EKYC of JDA / JDA Representative</h5>
@@ -7948,7 +8256,7 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsE
                 </div>
             </div>
             <>
-                <Owner_EKYCBlock LKRS_ID={LKRS_ID} ownerName={ownerName}/>
+                <Owner_EKYCBlock LKRS_ID={LKRS_ID} ownerName={ownerName} />
 
                 {hasJDA && <JDA_EKYCBlock LKRS_ID={LKRS_ID} />}
             </>
@@ -7957,17 +8265,205 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsE
 };
 //Owner EKYC Block
 const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
-    const [selectedOption, setSelectedOption] = useState('owner');
-    const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
+
+
     const [phone, setPhone] = useState('');
     const [isOtpSent, setIsOtpSent] = useState(false);
     const [timer, setTimer] = useState(30);
     const [isTimerActive, setIsTimerActive] = useState(false);
-    const [isVerifyDisabled, setIsVerifyDisabled] = useState(false);
+
     const [showResend, setShowResend] = useState(false);
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const otpInputsRef = useRef([]);
+    const [isVerified, setIsVerified] = useState(false);
+    const [ekyc_Status, setEKYC_Status] = useState(false);
+    const [phone_Status, setPhone_Status] = useState(false)
 
+
+    const handlePhoneChange = (e) => {
+        const value = e.target.value;
+        if (/^\d{0,10}$/.test(value)) {
+            setPhone(value);
+        }
+    };
+    const validatePhoneNumber = (phone) => {
+        // Check if it's exactly 10 digits and only digits
+        if (!/^\d{10}$/.test(phone)) {
+            return "Phone number must be exactly 10 digits and contain only numbers.";
+        }
+        // Should not start with 0
+        if (phone.startsWith('0')) {
+            return "Phone number should not start with 0.";
+        }
+        // Should not be all zeros
+        if (/^0+$/.test(phone)) {
+            return "Phone number cannot be all zeros.";
+        }
+        return null; // Valid
+    };
+    //send OTP
+    const handleSendOtp = async () => {
+        const error = validatePhoneNumber(phone);
+        if (error) {
+            Swal.fire({
+                text: error,
+                icon: "error",
+                confirmButtonText: "OK",
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+            });
+            return;
+        }
+        start_loader();
+        try {
+            const phonenumber = "9999999999";
+            const response = await sendOtpAPI(phonenumber);
+
+            if (response.responseStatus === true) {
+                stop_loader();
+                Swal.fire({
+                    text: response.responseMessage,
+                    icon: "success",
+                    timer: 3000,
+                    confirmButtonText: "OK",
+                });
+                toast.success(response.responseMessage);
+                setIsOtpSent(true);
+                startTimer();
+            } else {
+                stop_loader();
+                Swal.fire({
+                    text: "Failed to send OTP. Please try again later.",
+                    icon: "error",
+                    timer: 2000,
+                    confirmButtonText: "OK",
+                });
+            }
+        } catch (error) {
+            stop_loader();
+            console.error("Failed to send OTP:", error);
+        } finally {
+            stop_loader();
+        }
+    };
+    //verify OTP
+    const handleVerifyOtp = async () => {
+        const enteredOtp = otp.join('');
+        if (enteredOtp.length !== 6) {
+            Swal.fire({
+                text: "Please enter the 6-digit OTP.",
+                icon: "error",
+                confirmButtonText: "OK",
+            });
+            return;
+        }
+        start_loader();
+        try {
+            const response = await verifyOtpAPI(phone, enteredOtp);
+            if (response.responseStatus === true) {
+                setIsOtpSent(false);
+                Swal.fire({
+                    text: response.responseMessage,
+                    icon: "success",
+                    timer: 2000,
+                    confirmButtonText: "OK",
+                });
+                toast.success(response.responseMessage);
+                setPhone_Status(true);
+                setIsVerified(true);
+
+            } else {
+                Swal.fire({
+                    text: response.responseMessage || "OTP verification failed",
+                    icon: "error",
+                    confirmButtonText: "OK",
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                text: "Error verifying OTP.",
+                icon: "error",
+                confirmButtonText: "OK",
+            });
+        } finally {
+            stop_loader();
+        }
+    };
+    //Resend OTP
+    const handleResendOtp = async () => {
+        start_loader();
+        try {
+            const response = await sendOtpAPI(phone);
+            if (response.responseStatus === true) {
+                Swal.fire({
+                    text: response.responseMessage,
+                    icon: "success",
+                    timer: 2000,
+                    confirmButtonText: "OK",
+                });
+                setIsOtpSent(true);
+                setOtp(Array(6).fill(''));
+                startTimer();
+            } else {
+                Swal.fire({
+                    text: "Failed to resend OTP. Please try again later.",
+                    icon: "error",
+                    confirmButtonText: "OK",
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                text: "Error resending OTP.",
+                icon: "error",
+                confirmButtonText: "OK",
+            });
+        } finally {
+            stop_loader();
+        }
+    };
+    const startTimer = () => {
+        setTimer(30); // 30 seconds or your choice
+        setIsTimerActive(true);
+        setIsTimerActive(true);
+        setShowResend(false);
+    };
+    useEffect(() => {
+        let interval = null;
+        if (isTimerActive && timer > 0) {
+            interval = setInterval(() => {
+                setTimer((prev) => prev - 1);
+            }, 1000);
+        } else if (timer === 0) {
+            setIsTimerActive(false);
+            setShowResend(true);
+            clearInterval(interval);
+        }
+        return () => clearInterval(interval);
+    }, [isTimerActive, timer]);
+
+
+
+    const handleOtpChange = (input, idx) => {
+        const value = input.value.replace(/\D/g, ''); // Only digits
+        if (value.length > 1) return; // Only single digit
+
+        const newOtp = [...otp];
+        newOtp[idx] = value;
+        setOtp(newOtp);
+
+        // Move focus to next input if digit entered
+        if (value && idx < otp.length - 1) {
+            otpInputsRef.current[idx + 1].focus();
+        }
+    };
+    const handleOtpKeyDown = (e, idx) => {
+        if (e.key === 'Backspace' && !otp[idx] && idx > 0) {
+            otpInputsRef.current[idx - 1].focus();
+        }
+    };
+
+    const [selectedOption, setSelectedOption] = useState('owner');
+    const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
     const [createdBy, setCreatedBy] = useState(null);
     const [createdName, setCreatedName] = useState('');
     const [roleID, setRoleID] = useState('');
@@ -7986,19 +8482,15 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
     const [localLKRSID, setLocalLKRSID] = useState(() => {
         return localStorage.getItem("LKRSID") || "";
     });
-
     useEffect(() => {
         if (LKRS_ID) {
             setLocalLKRSID(LKRS_ID);
-            fetchOwners();
+            // fetchOwners();
         }
-        if(ownerName){
+        if (ownerName) {
             setLocalOwnerName(ownerName);
-            setOwnerList(ownerName);
         }
     }, [LKRS_ID]);
-
-
     const [selectedOwner, setSelectedOwner] = useState(null);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [showInput, setShowInput] = useState(false);
@@ -8015,33 +8507,34 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
 
     const [ownerNames, setOwnerNames] = useState('');
     const [transactionNo, setTransactionNo] = useState('');
-
+    const [isPhoneFromAPI, setIsPhoneFromAPI] = useState(false);
+    const [isVerifyDisabled, setIsVerifyDisabled] = useState(true);
     const [ownerDataList, setOwnerDataList] = useState([]);
+
+    useEffect(() => {
+        // Disable verify button until all OTP digits are entered
+        const isComplete = otp.every(digit => digit !== '');
+        setIsVerifyDisabled(!isComplete);
+    }, [otp]);
 
     const EKYC_Save = useRef(null);
     useEffect(() => {
         const handleMessage = (event) => {
             // Ensure the message is coming from your domain
             if (event.origin !== "http://localhost:3001") return;
-
             const data = event.data;
-
             // You can store this in state or use it directly
             console.log("eKYC Data received:", data);
             setEkyc_Data(data);
         };
-
         window.addEventListener("message", handleMessage);
-
         return () => window.removeEventListener("message", handleMessage);
     }, []);
-
-
     //multiple owner list fetch
     const fetchOwners = async () => {
         try {
             const apiResponse = await ownerEKYC_Details("1", LKRS_ID);
-
+            console.log("API Response:", apiResponse);
             const owners = (apiResponse || []).map(owner => ({
                 name: owner.owN_NAME_EN,
                 id: owner.owN_ID,
@@ -8058,15 +8551,11 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
             setOwnerNames(''); // fallback if API fails
         }
     };
-
-
     const handleRadioChange = (e) => {
         setSelectedOption(e.target.value);
     };
-
     const [ekycUrl, setEkycUrl] = useState('');
     const ownerNameInputRef = useRef('');
-
     useEffect(() => {
         const handleMessage = (event) => {
             if (event.origin !== "http://localhost:3001") return;
@@ -8098,9 +8587,6 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
         window.addEventListener("message", handleMessage);
         return () => window.removeEventListener("message", handleMessage);
     }, [selectedOwner]);
-
-
-
     //do EKYC API
     const handleDoEKYC = async () => {
         if (!selectedOwner || !selectedOwner.name) {
@@ -8151,7 +8637,6 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
             }
         }
     };
-
     const fetchEKYC_ResponseDetails = async (ownerName, txnno) => {
         const transaction_No = localStorage.getItem("tranNo");
         if (transaction_No === txnno) {
@@ -8168,6 +8653,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
 
                 const response = await ekyc_Response(transactionNumber, OwnerType, ownerName);
                 setOwnerData(response);
+                setEKYC_Status(true);
 
 
             } catch (error) {
@@ -8180,12 +8666,35 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
         }
 
     };
-
     const insertEKYCDetails = async () => {
         let ownerID = 0;
         let ownerName = "";
         let newOwner;
         let ownerPhoneNo;
+
+        if (!(ekyc_Status === true && phone_Status === true)) {
+            Swal.fire({
+                text: "Phone number verification or Owner EKYC is not done",
+                icon: "error",
+                confirmButtonText: "OK",
+            });
+            return;
+        }
+            //  Validate: All owners should have EKYC success
+            const missingEKYC = ownerDataList.some(owner => {
+                return owner.owN_AADHAARVERISTATUS !== true || owner.owN_AADHAARVERISTATUS !== "true";
+            });
+
+            if (missingEKYC) {
+                Swal.fire({
+                    text: "All owners must have successful EKYC before saving.",
+                    icon: "error",
+                    confirmButtonText: "OK",
+                });
+                return;
+            }
+
+
 
         if (selectedOwner.name && selectedOwner.id) {
             ownerID = selectedOwner.id;
@@ -8268,17 +8777,18 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
     }
     const buttonRef = useRef(null);
     const [dropdownWidth, setDropdownWidth] = useState('auto');
-
     useEffect(() => {
         if (buttonRef.current) {
             setDropdownWidth(buttonRef.current.offsetWidth + "px");
         }
     }, [isDropdownOpen]); // update width when dropdown opens
-
-
     //Adding new owner name
     const handleAddMoreOwner = () => {
         setShowInput(true);
+        setSelectedOwner(null);
+        setOwnerNameInput('');
+        setPhone('');
+        setIsPhoneFromAPI(false);  // ensure input is editable
     };
     const handleAddOwner = async (e) => {
         if (e.key === "Enter") {
@@ -8363,8 +8873,6 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
         }
     };
 
-
-
     return (
         <div>
             <div className="card"> {loading && <Loader />}
@@ -8416,7 +8924,13 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
                                 <div className="col-12 col-sm-12 col-md-7 col-lg-7 col-xl-7 mt-2">
                                     <button
                                         className="form-control text-start"
-                                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                        onClick={() => {
+                                            const shouldOpen = !isDropdownOpen;
+                                            setIsDropdownOpen(shouldOpen);
+                                            if (shouldOpen) {
+                                                fetchOwners();
+                                            }
+                                        }}
                                         ref={buttonRef}  // attach ref here
                                     >
                                         {selectedOwner ? selectedOwner.name : "Select an owner"}
@@ -8441,7 +8955,17 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
                                                             onClick={() => {
                                                                 setSelectedOwner(owner);
                                                                 setOwnerNameInput(owner.name);
+                                                                setPhone(owner.phoneNo || '');
                                                                 setIsDropdownOpen(false);
+                                                                setIsPhoneFromAPI(!!owner.phoneNo);  // true if phoneNo exists, false if empty
+                                                                // RESET OTP RELATED STATES
+                                                                setIsOtpSent(false);
+                                                                setIsVerified(false);
+                                                                setShowResend(false);
+                                                                setTimer(0);
+                                                                setOtp(['', '', '', '', '', '']);  // Assuming 6-digit OTP
+                                                                setIsVerifyDisabled(true);
+                                                                setIsTimerActive(false);
                                                             }}
                                                         >
                                                             {owner.name}
@@ -8482,7 +9006,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
                                 <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mt-4" >
                                     <label className="form-label">{selectedOption === 'owner' ? "Owner Name" : "Representative Name"}   <span className='mandatory_color'>*</span></label>
                                 </div>
-                                <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mt-4" >
+                                <div className="col-12 col-sm-12 col-md-5 col-lg-5 col-xl-5 mt-4" >
                                     <input
                                         type="text"
                                         readOnly
@@ -8497,6 +9021,102 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
                                 {/* <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-4" >
                                     <button className='btn btn-info btn-block' onClick={() => fetchEKYC_ResponseDetails()}>eKYC Status</button>
                                 </div> */}
+                                <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 mt-3">
+                                    <div className="row mt-3">
+                                        <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mt-3">
+                                            <label className="form-label">Phone Number <span className='mandatory_color'>*</span></label>
+                                        </div>
+                                        <div className="col-12 col-sm-12 col-md-5 col-lg-5 col-xl-5 mt-3">
+                                            <input
+                                                type="text"
+                                                value={phone}
+                                                onChange={handlePhoneChange}
+                                                maxLength={10}
+                                                className="form-control"
+                                                placeholder="Enter the Phone Number"
+                                                readOnly={isPhoneFromAPI || isVerified}
+                                                onInput={e => {
+                                                    // Remove non-digit characters
+                                                    e.target.value = e.target.value.replace(/\D/g, '');
+                                                    handlePhoneChange(e);
+                                                }}
+                                            />
+                                            {isOtpSent && (
+                                                <>
+                                                    {isTimerActive && (
+                                                        <div className="mb-2">
+                                                            <strong>Resend OTP in : {timer} s</strong>
+                                                        </div>
+                                                    )}
+                                                </>
+                                            )}
+                                        </div>
+
+                                        <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-3'>
+                                            {!isOtpSent && !isVerified && (
+                                                <button className="btn btn-info btn-block" onClick={handleSendOtp}>
+                                                    Send OTP
+                                                </button>
+                                            )}
+                                            {isVerified && (
+                                                <div className="text-success mt-2">
+                                                    <strong>OTP Verified <i className="fa fa-check-circle"></i></strong>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div><br />
+                                    <div className="row">
+                                        <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mt-2">
+
+                                        </div>
+                                        <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mt-2">
+                                            {isOtpSent && !isVerified && (
+                                                <>
+                                                    <label className="form-label">Enter the OTP <span className='mandatory_color'>*</span></label>
+                                                    <div className="d-flex gap-2">
+
+                                                        {otp.map((digit, index) => (
+                                                            <input
+                                                                key={index}
+                                                                type="text"
+                                                                maxLength={1}
+                                                                className="form-control text-center"
+                                                                style={{ width: '40px' }}
+                                                                value={digit}
+                                                                onChange={(e) => handleOtpChange(e.target, index)}
+                                                                onKeyDown={(e) => handleOtpKeyDown(e, index)}
+                                                                ref={(el) => (otpInputsRef.current[index] = el)}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                </>
+                                            )}
+
+                                        </div>
+                                        <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mt-2">
+                                            {isOtpSent && !isVerified && (
+                                                <div className="row">
+                                                    <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mt-6" >
+                                                        <button className="btn btn-success btn-block mb-2"
+                                                            disabled={isVerifyDisabled}
+                                                            onClick={handleVerifyOtp}
+                                                        >
+                                                            Verify OTP
+                                                        </button>
+                                                    </div>
+                                                    <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mt-6" >
+                                                        {showResend && (
+                                                            <button className="btn btn-warning btn-block" onClick={handleResendOtp}>
+                                                                Resend OTP
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                    </div>
+                                </div>
                             </div>
                             <div className='row'>
                                 <div className="col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10 mt-4" ></div>
@@ -9087,7 +9707,7 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
                             <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mt-3">
                                 <label className="form-label">Phone Number <span className='mandatory_color'>*</span></label>
                             </div>
-                            <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mt-3">
+                            <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4 mt-3">
                                 <input
                                     type="text"
                                     value={phone}
@@ -9113,9 +9733,9 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
                                 )}
                             </div>
 
-                            <div className='col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mt-3'>
+                            <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-3'>
                                 {!isOtpSent && !isVerified && (
-                                    <button className="btn btn-info" onClick={handleSendOtp}>
+                                    <button className="btn btn-info btn-block" onClick={handleSendOtp}>
                                         Send OTP
                                     </button>
                                 )}
@@ -9508,7 +10128,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
     };
 
     //Final API for Redirecting to RELEASE DASHBOARD
-     const final_Save_Release = async () => {
+    const final_Save_Release = async () => {
         if (isRTCSectionSaved === false && isEPIDSectionSaved === false) {
             Swal.fire({
                 icon: 'warning',
@@ -10098,6 +10718,9 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                         approvalOrder: approvalFileResponse[index]?.doctrN_DOCBASE64 || null,
                         approvalMap: approvalMapFileResponse[index]?.doctrN_DOCBASE64 || null,
                         approvalAuthority: item.apR_APPROVALDESIGNATION,
+                        approvalAuthorityPlanning: item.apR_APPROVALAUTHORITY_Text,
+                        releaseType: item.sitE_RELS_SITE_RELSTYPE,
+                        totalNoOfSites: item.lkrS_NUMBEROFSITES,
                     };
                 });
 
@@ -10131,7 +10754,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                     dateOfOrder: item.sitE_RELS_DATE,
                     orderReleaseFile: listFileResponse[index]?.doctrN_DOCBASE64 || null,
                     releaseAuthority: item.sitE_RELS_APPROVALDESIGNATION,
-                     releaseType: item.sitE_RELS_SITE_RELSTYPE,
+                    releaseType: item.sitE_RELS_SITE_RELSTYPE,
                 }));
                 setOrder_Records(formattedList);
 
@@ -10283,7 +10906,8 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
     const [isRegistered, setIsRegistered] = useState(false);
     const [deedNumber, setDeedNumber] = useState("");
     const [deedNoURL, setDeedNoURL] = useState(null);
-
+    const [jdaDocumentId, setJdaDocumentId] = useState('');
+    const [jdaDocumentDate, setJdaDocumentDate] = useState('');
 
     const fetchJDAInfo = async (localLKRSID) => {
         try {
@@ -10298,6 +10922,8 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                 if (response[0].jdA_ISREGISTERED === true) {
                     setDeedNumber(response[0].jdA_DEED_NO);
                 } else if (response[0].jdA_ISREGISTERED === false) {
+                    setJdaDocumentId(response[0].jdA_REGISTEREDDATE);
+                    setJdaDocumentDate(response[0].jdA_DEED_NO);
                     const deedFileResponse = await fileListAPI(3, localLKRSID, 4, 0);
                     const base64String = deedFileResponse[0]?.doctrN_DOCBASE64;
                     if (base64String) {
@@ -10740,26 +11366,50 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                                             )}
                                             {isRegistered === false && (
                                                 <>
+
                                                     {deedNoURL && (
-                                                        <div style={{ marginTop: '10px' }}>
-                                                            <label className='form-check-label fw-bold'>Uploaded the JDA Document</label> &nbsp;
-                                                            <span
-                                                                onClick={() => window.open(deedNoURL, '_blank')}
-                                                                style={{
-                                                                    cursor: 'pointer',
-                                                                    color: '#007bff',
-                                                                    textDecoration: 'none',
-                                                                    fontSize: '0.875rem',
-                                                                    userSelect: 'none',
-                                                                }}
-                                                                role="button"
-                                                                tabIndex={0}
-                                                                onKeyPress={(e) => { if (e.key === 'Enter') window.open(deedNoURL, '_blank'); }}
-                                                            >
-                                                                View file
-                                                            </span>
+                                                        <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4">
+                                                            <div style={{ marginTop: '10px' }}>
+                                                                <label className='form-check-label fw-bold'>Uploaded the JDA Document</label> &nbsp;
+                                                                <span
+                                                                    onClick={() => window.open(deedNoURL, '_blank')}
+                                                                    style={{
+                                                                        cursor: 'pointer',
+                                                                        color: '#007bff',
+                                                                        textDecoration: 'none',
+                                                                        fontSize: '0.875rem',
+                                                                        userSelect: 'none',
+                                                                    }}
+                                                                    role="button"
+                                                                    tabIndex={0}
+                                                                    onKeyPress={(e) => { if (e.key === 'Enter') window.open(deedNoURL, '_blank'); }}
+                                                                >
+                                                                    View file
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                     )}
+                                                    <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4">
+                                                        <label className='form-label'>Enter JDA Document ID <span className='mandatory_color'>*</span></label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control"
+                                                            placeholder="Enter your JDA Document ID"
+                                                            value={jdaDocumentId}
+                                                            maxLength={15}
+                                                            readOnly
+                                                        />
+                                                    </div>
+
+                                                    <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4">
+                                                        <label className='form-label'>Enter JDA Document Date <span className='mandatory_color'>*</span></label>
+                                                        <input
+                                                            type="date"
+                                                            className="form-control"
+                                                            value={jdaDocumentDate}
+                                                            readOnly
+                                                        />
+                                                    </div>
                                                 </>
                                             )}
 
@@ -10819,7 +11469,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                                     );
                                 })
                             }
-                           
+
                             {/* JDA EKYC */}
 
 

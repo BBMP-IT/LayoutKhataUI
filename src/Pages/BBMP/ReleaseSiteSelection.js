@@ -7,7 +7,7 @@ import Swal from "sweetalert2";
 import { useLocation } from 'react-router-dom';
 
 import {
-  fetch_LKRSID, fetch_releasePercentageDetails, individualSiteListAPI, final_Release_Sites
+  fetch_LKRSID, fetch_releasePercentageDetails, individualSiteListAPI, final_Release_Sites, listApprovalInfo
 } from '../../API/authService';
 
 export const useLoader = () => {
@@ -22,8 +22,8 @@ export const useLoader = () => {
 const ReleaseSelection = () => {
   const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
   const [selectedValue, setSelectedValue] = useState('');
-    const location = useLocation();
-    const { LKRS_ID, createdBy, createdName, roleID, display_LKRS_ID } = location.state || {};
+  const location = useLocation();
+  const { LKRS_ID, createdBy, createdName, roleID, display_LKRS_ID } = location.state || {};
 
   const [releaseData, setReleaseData] = useState([]); // Data for the "Release Table"
   const [releasedData, setReleasedData] = useState([]); // Data for the "Already Released Table"
@@ -46,11 +46,11 @@ const ReleaseSelection = () => {
 
   const [originalTotalRecords, setOriginalTotalRecords] = useState(0);
 
-   useEffect(() => {
-    if (LKRS_ID) {
-      handleSearchClick(LKRS_ID);  // call the method if LKRS_ID exists
+  useEffect(() => {
+    if (display_LKRS_ID && LKRS_ID) {
+      handleSearchClick(display_LKRS_ID);  // call the method if LKRS_ID exists
     }
-  }, [LKRS_ID]);
+  }, [LKRS_ID, display_LKRS_ID]);
   useEffect(() => {
     if (originalTotalRecords === 0 && (releaseData.length > 0 || finalApiList.length > 0)) {
       const total = releaseData.length + finalApiList.length;
@@ -64,41 +64,41 @@ const ReleaseSelection = () => {
   const fortyPercentCount = originalTotalRecords - sixtyPercentCount;
 
   const getMaxLimitForPhase3 = () => {
-  const fortyPercent = Math.round(0.4 * originalTotalRecords);
-  const thirtyPercent = Math.round(0.3 * originalTotalRecords);
-  const alreadyReleased = finalApiList.length;
+    const fortyPercent = Math.round(0.4 * originalTotalRecords);
+    const thirtyPercent = Math.round(0.3 * originalTotalRecords);
+    const alreadyReleased = finalApiList.length;
 
-  if (alreadyReleased < fortyPercent) return fortyPercent - alreadyReleased;
-  if (alreadyReleased === fortyPercent) return thirtyPercent;
-  if (alreadyReleased === (fortyPercent + thirtyPercent)) return originalTotalRecords - alreadyReleased;
+    if (alreadyReleased < fortyPercent) return fortyPercent - alreadyReleased;
+    if (alreadyReleased === fortyPercent) return thirtyPercent;
+    if (alreadyReleased === (fortyPercent + thirtyPercent)) return originalTotalRecords - alreadyReleased;
 
-  return 0; // invalid state
-};
+    return 0; // invalid state
+  };
 
-const handleRowSelect = (index) => {
-  const isSelected = selectedRows.includes(index);
+  const handleRowSelect = (index) => {
+    const isSelected = selectedRows.includes(index);
 
-  if (isSelected) {
-    setSelectedRows(prev => prev.filter(i => i !== index));
-  } else {
-    const maxLimit = selectedValue === '2'
-      ? Math.round(0.6 * originalTotalRecords) - releasedData.length
-      : selectedValue === '3'
-      ? getMaxLimitForPhase3()
-      : undefined;
-
-    if (maxLimit === undefined || selectedRows.length < maxLimit) {
-      setSelectedRows(prev => [...prev, index]);
+    if (isSelected) {
+      setSelectedRows(prev => prev.filter(i => i !== index));
     } else {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Selection Limit Reached',
-        text: `You can only select up to ${maxLimit} site(s).`,
-        confirmButtonColor: '#3085d6',
-      });
+      const maxLimit = selectedValue === '2'
+        ? Math.round(0.6 * originalTotalRecords) - releasedData.length
+        : selectedValue === '3'
+          ? getMaxLimitForPhase3()
+          : undefined;
+
+      if (maxLimit === undefined || selectedRows.length < maxLimit) {
+        setSelectedRows(prev => [...prev, index]);
+      } else {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Selection Limit Reached',
+          text: `You can only select up to ${maxLimit} site(s).`,
+          confirmButtonColor: '#3085d6',
+        });
+      }
     }
-  }
-};
+  };
 
   const handleSelectAll = (e) => {
     const checked = e.target.checked;
@@ -613,57 +613,57 @@ const handleRowSelect = (index) => {
     {
       name: "Site Number",
       selector: row => row.sitE_NO || '',
-      width: '120px',center: true
+      width: '120px', center: true
     },
     {
       name: "Block/Area",
       selector: row => row.sitE_AREA || '',
-      width: '120px',center: true
+      width: '120px', center: true
     },
     {
       name: "No of sides",
       selector: row => row.sitE_NO_OF_SIDES || '',
-      width: '120px',center: true
+      width: '120px', center: true
     },
     {
-  name: "Dimension",
-  cell: (row) => {
-    if (row.sitE_SHAPETYPE === "Regular") {
-      const feetSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINFT) || [];
-      const meterSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINMT) || [];
-      const roadFacingStatuses = row.siteDimensions?.map(dim => dim.sitediM_ROADFACING ? "yes" : "no") || [];
+      name: "Dimension",
+      cell: (row) => {
+        if (row.sitE_SHAPETYPE === "Regular") {
+          const feetSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINFT) || [];
+          const meterSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINMT) || [];
+          const roadFacingStatuses = row.siteDimensions?.map(dim => dim.sitediM_ROADFACING ? "yes" : "no") || [];
 
-      return (
-        <div className="dimension-cell">
-          <div className="nowrap">{feetSides.join(" x ")} (ft)</div>
-          <div className="nowrap">{meterSides.join(" x ")} (mtr)</div>
-          <div className="nowrap"><b>Road Facing:</b> {roadFacingStatuses.join(", ")}</div>
-        </div>
-      );
-    } else if (row.sitE_SHAPETYPE === "Irregular" && Array.isArray(row.siteDimensions)) {
-      const feetString = row.siteDimensions.map(side => side.sitediM_SIDEINFT).join(' x ');
-      const meterString = row.siteDimensions.map(side => side.sitediM_SIDEINMT).join(' x ');
-      const roadFacingString = row.siteDimensions.map(side => side.sitediM_ROADFACING ? "Yes" : "No").join(', ');
+          return (
+            <div className="dimension-cell">
+              <div className="nowrap">{feetSides.join(" x ")} (ft)</div>
+              <div className="nowrap">{meterSides.join(" x ")} (mtr)</div>
+              <div className="nowrap"><b>Road Facing:</b> {roadFacingStatuses.join(", ")}</div>
+            </div>
+          );
+        } else if (row.sitE_SHAPETYPE === "Irregular" && Array.isArray(row.siteDimensions)) {
+          const feetString = row.siteDimensions.map(side => side.sitediM_SIDEINFT).join(' x ');
+          const meterString = row.siteDimensions.map(side => side.sitediM_SIDEINMT).join(' x ');
+          const roadFacingString = row.siteDimensions.map(side => side.sitediM_ROADFACING ? "Yes" : "No").join(', ');
 
-      return (
-        <div className="dimension-cell">
-          <div className="nowrap">{feetString} (ft)</div>
-          <div className="nowrap">{meterString} (m)</div>
-          <div className="nowrap"><b>Road Facing:</b> {roadFacingString}</div>
-        </div>
-      );
-    }
-    return '';
-  },
-  center: true,
-  width: '200px', // Add fixed width for better control
-},
+          return (
+            <div className="dimension-cell">
+              <div className="nowrap">{feetString} (ft)</div>
+              <div className="nowrap">{meterString} (m)</div>
+              <div className="nowrap"><b>Road Facing:</b> {roadFacingString}</div>
+            </div>
+          );
+        }
+        return '';
+      },
+      center: true,
+      width: '200px', // Add fixed width for better control
+    },
 
     {
       name: "Total Area",
       selector: row => `${row.sitE_AREAINSQFT} [Sq.ft], ${row.sitE_AREAINSQMT} [Sq.mtr]`,
       center: true,
-  width: '200px',
+      width: '200px',
     },
     {
       name: "Corner Site",
@@ -675,16 +675,16 @@ const handleRowSelect = (index) => {
       name: "Type of Site",
       selector: row => row.sitE_TYPE || '',
       center: true,
-  width: '120px',
+      width: '120px',
     },
-{
-  name: (
-    <span title="East | West | North | South">Chakbandi</span>
-  ),
-  selector: row => `${row.sitE_EAST} | ${row.sitE_WEST} | ${row.sitE_NORTH} | ${row.sitE_SOUTH}`,
-  center: true,
-  width: '200px',
-},
+    {
+      name: (
+        <span title="East | West | North | South">Chakbandi</span>
+      ),
+      selector: row => `${row.sitE_EAST} | ${row.sitE_WEST} | ${row.sitE_NORTH} | ${row.sitE_SOUTH}`,
+      center: true,
+      width: '200px',
+    },
     {
       name: "Latitude, Longitude",
       selector: row => `${row.sitE_LATITUDE}, ${row.sitE_LONGITUDE}`,
@@ -707,7 +707,7 @@ const handleRowSelect = (index) => {
         ),
       }
     ] : []),
-    
+
     //     {
     //   name: "Site ID",
     //   selector: row => row.sitE_ID || '',
@@ -726,57 +726,57 @@ const handleRowSelect = (index) => {
     {
       name: "Site Number",
       selector: row => row.sitE_NO || '',
-      width: '120px',center: true
+      width: '120px', center: true
     },
     {
       name: "Block/Area",
       selector: row => row.sitE_AREA || '',
-      width: '120px',center: true
+      width: '120px', center: true
     },
     {
       name: "No of sides",
       selector: row => row.sitE_NO_OF_SIDES || '',
-      width: '120px',center: true
+      width: '120px', center: true
     },
     {
-  name: "Dimension",
-  cell: (row) => {
-    if (row.sitE_SHAPETYPE === "Regular") {
-      const feetSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINFT) || [];
-      const meterSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINMT) || [];
-      const roadFacingStatuses = row.siteDimensions?.map(dim => dim.sitediM_ROADFACING ? "yes" : "no") || [];
+      name: "Dimension",
+      cell: (row) => {
+        if (row.sitE_SHAPETYPE === "Regular") {
+          const feetSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINFT) || [];
+          const meterSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINMT) || [];
+          const roadFacingStatuses = row.siteDimensions?.map(dim => dim.sitediM_ROADFACING ? "yes" : "no") || [];
 
-      return (
-        <div className="dimension-cell">
-          <div className="nowrap">{feetSides.join(" x ")} (ft)</div>
-          <div className="nowrap">{meterSides.join(" x ")} (mtr)</div>
-          <div className="nowrap"><b>Road Facing:</b> {roadFacingStatuses.join(", ")}</div>
-        </div>
-      );
-    } else if (row.sitE_SHAPETYPE === "Irregular" && Array.isArray(row.siteDimensions)) {
-      const feetString = row.siteDimensions.map(side => side.sitediM_SIDEINFT).join(' x ');
-      const meterString = row.siteDimensions.map(side => side.sitediM_SIDEINMT).join(' x ');
-      const roadFacingString = row.siteDimensions.map(side => side.sitediM_ROADFACING ? "Yes" : "No").join(', ');
+          return (
+            <div className="dimension-cell">
+              <div className="nowrap">{feetSides.join(" x ")} (ft)</div>
+              <div className="nowrap">{meterSides.join(" x ")} (mtr)</div>
+              <div className="nowrap"><b>Road Facing:</b> {roadFacingStatuses.join(", ")}</div>
+            </div>
+          );
+        } else if (row.sitE_SHAPETYPE === "Irregular" && Array.isArray(row.siteDimensions)) {
+          const feetString = row.siteDimensions.map(side => side.sitediM_SIDEINFT).join(' x ');
+          const meterString = row.siteDimensions.map(side => side.sitediM_SIDEINMT).join(' x ');
+          const roadFacingString = row.siteDimensions.map(side => side.sitediM_ROADFACING ? "Yes" : "No").join(', ');
 
-      return (
-        <div className="dimension-cell">
-          <div className="nowrap">{feetString} (ft)</div>
-          <div className="nowrap">{meterString} (m)</div>
-          <div className="nowrap"><b>Road Facing:</b> {roadFacingString}</div>
-        </div>
-      );
-    }
-    return '';
-  },
-  center: true,
-  width: '200px', // Add fixed width for better control
-},
+          return (
+            <div className="dimension-cell">
+              <div className="nowrap">{feetString} (ft)</div>
+              <div className="nowrap">{meterString} (m)</div>
+              <div className="nowrap"><b>Road Facing:</b> {roadFacingString}</div>
+            </div>
+          );
+        }
+        return '';
+      },
+      center: true,
+      width: '200px', // Add fixed width for better control
+    },
 
     {
       name: "Total Area",
       selector: row => `${row.sitE_AREAINSQFT} [Sq.ft], ${row.sitE_AREAINSQMT} [Sq.mtr]`,
       center: true,
-  width: '200px',
+      width: '200px',
     },
     {
       name: "Corner Site",
@@ -788,16 +788,16 @@ const handleRowSelect = (index) => {
       name: "Type of Site",
       selector: row => row.sitE_TYPE || '',
       center: true,
-  width: '120px',
+      width: '120px',
     },
-{
-  name: (
-    <span title="East | West | North | South">Chakbandi</span>
-  ),
-  selector: row => `${row.sitE_EAST} | ${row.sitE_WEST} | ${row.sitE_NORTH} | ${row.sitE_SOUTH}`,
-  center: true,
-  width: '200px',
-},
+    {
+      name: (
+        <span title="East | West | North | South">Chakbandi</span>
+      ),
+      selector: row => `${row.sitE_EAST} | ${row.sitE_WEST} | ${row.sitE_NORTH} | ${row.sitE_SOUTH}`,
+      center: true,
+      width: '200px',
+    },
     {
       name: "Latitude, Longitude",
       selector: row => `${row.sitE_LATITUDE}, ${row.sitE_LONGITUDE}`,
@@ -1123,20 +1123,31 @@ const handleRowSelect = (index) => {
   //fetch EPID OR LKRSID 
   const [localLKRSID, setLocalLKRSID] = useState('');
   const handleInputChange = (e) => {
-    const value = e.target.value;
-    // Allow only digits up to 10 characters
-    if (/^\d{0,10}$/.test(value)) {
+    let value = e.target.value;
+
+    if (value.startsWith('l')) {
+      value = 'L' + value.slice(1);
+    }
+    if (/^(L\d{0,9}|\d{0,10})$/.test(value)) {
       setLocalLKRSID(value);
     }
   };
+
   const handleSearchClick = (localLKRSID) => {
-    // Call API even if it's less than 10 digits
     if (!localLKRSID) {
       alert('Please enter EPID or KRSID');
       return;
     }
-    handleGetLKRSID(localLKRSID);
+
+    // Remove leading 'L' or 'l' if present
+    let trimmedLKRSID = localLKRSID;
+    if (/^L\d+$/i.test(localLKRSID)) {
+      trimmedLKRSID = localLKRSID.substring(1);
+    }
+
+    handleGetLKRSID(trimmedLKRSID);
   };
+
   const [selectedLandType, setSelectedLandType] = useState("");
   const handleGetLKRSID = async (localLKRSID) => {
     const payload = {
@@ -1147,10 +1158,18 @@ const handleRowSelect = (index) => {
       start_loader();
       const response = await fetch_LKRSID(payload);
 
-      if (response && response.surveyNumberDetails && response.surveyNumberDetails.length > 0) {
 
+      if (response && response.surveyNumberDetails && response.surveyNumberDetails.length > 0) {
+        setLkrsTableData({
+          lkrS_DISPLAYID: response.lkrS_DISPLAYID || '',
+          lkrS_EPID: response.lkrS_EPID || '',
+          lkrS_SITEAREA_SQFT: response.lkrS_SITEAREA_SQFT || '',
+          lkrS_SITEAREA_SQMT: response.lkrS_SITEAREA_SQMT || '',
+          lkrS_ECNUMBER: response.lkrS_ECNUMBER || ''
+        });
         setSelectedLandType(response.lkrS_LANDTYPE); //  Store the land type
 
+        await fetchApprovalListAndSetTable(localLKRSID);
 
         const parsedSurveyDetails = mapSurveyDetails(response.surveyNumberDetails);
 
@@ -1169,7 +1188,16 @@ const handleRowSelect = (index) => {
         Fetch_release_percentage(response.lkrS_ID);
         stop_loader();
       } else if (response && response.khataDetails && response.khataOwnerDetails && response.khataOwnerDetails.length > 0) {
+        setLkrsTableData({
+          lkrS_DISPLAYID: response.lkrS_DISPLAYID || '',
+          lkrS_EPID: response.lkrS_EPID || '',
+          lkrS_SITEAREA_SQFT: response.lkrS_SITEAREA_SQFT || '',
+          lkrS_SITEAREA_SQMT: response.lkrS_SITEAREA_SQMT || '',
+          lkrS_ECNUMBER: response.lkrS_ECNUMBER || ''
+        });
+
         setSelectedLandType(response.lkrS_LANDTYPE); //  Store the land type
+        await fetchApprovalListAndSetTable(localLKRSID);
         setEPIDShowTable(true);
         let khataDetailsJson = {};
         if (response.khataDetails?.khatA_JSON) {
@@ -1235,94 +1263,94 @@ const handleRowSelect = (index) => {
   const [rtcData, setRtcData] = useState([]);
   const combinedData = [...rtcAddedData, ...rtcData];
 
-  
-      // Define state variables for your totals - keep them as numbers
-      const [totalAcre, setTotalAcre] = useState(0);
-      const [totalGunta, setTotalGunta] = useState(0);
-      const [totalFGunta, setTotalFGunta] = useState(0);
-      const [totalSqFt, setTotalSqFt] = useState(0); // Changed to number (0)
-      const [totalSqM, setTotalSqM] = useState(0); // Changed to number (0)
-  
 
-     useEffect(() => {
-         let calculatedTotalAcre = 0;
-         let calculatedTotalGunta = 0;
-         let calculatedTotalFGunta = 0;
-         let calculatedTotalSqFt = 0;
-         let calculatedTotalSqM = 0;
- 
-         combinedData.forEach((row) => {
-             const acre = parseFloat(row.ext_acre || 0);
-             const gunta = parseFloat(row.ext_gunta || 0);
-             const fgunta = parseFloat(row.ext_fgunta || 0);
- 
-             calculatedTotalAcre += acre;
-             calculatedTotalGunta += gunta;
-             calculatedTotalFGunta += fgunta;
- 
-             const sqft = (acre * 43560) + (gunta * 1089) + (fgunta * 68.0625);
-             calculatedTotalSqFt += sqft;
-             calculatedTotalSqM += sqft * 0.092903;
-         });
- 
-         // Normalize fgunta -> gunta -> acre
-         calculatedTotalGunta += Math.floor(calculatedTotalFGunta / 16);
-         calculatedTotalFGunta = calculatedTotalFGunta % 16;
-         calculatedTotalAcre += Math.floor(calculatedTotalGunta / 40);
-         calculatedTotalGunta = calculatedTotalGunta % 40;
- 
-         // Update state variables with the calculated totals
-         setTotalAcre(calculatedTotalAcre);
-         setTotalGunta(calculatedTotalGunta);
-         setTotalFGunta(calculatedTotalFGunta);
-         // Store them as numbers in state
-         setTotalSqFt(calculatedTotalSqFt);
-         setTotalSqM(calculatedTotalSqM);
- 
-         // Store the rounded value in localStorage if that's what's intended
-         localStorage.setItem('areaSqft', calculatedTotalSqFt.toFixed(2));
- 
-     }, [combinedData]);
- 
-     const totalPages = Math.ceil(combinedData.length / rowsPerPage);
-     const paginatedData = combinedData.slice(
-         (currentPage - 1) * rowsPerPage,
-         currentPage * rowsPerPage
-     );
- 
-     const goToPage = (page) => {
-         if (page >= 1 && page <= totalPages) {
-             setCurrentPage(page);
-         }
-     };
- 
-     const handlePageSizeChange = (e) => {
-         setRowsPerPage(Number(e.target.value));
-         setCurrentPage(1);
-     };
- 
-     useEffect(() => {
-         if (LKRS_ID) {
-             setLocalLKRSID(LKRS_ID);
-         }
-     }, [LKRS_ID]);
- 
-     const mapSurveyDetails = (surveyDetails) => {
-         return surveyDetails.map((item) => ({
-             district: item.suR_DISTRICT_Name || "—",
-             taluk: item.suR_TALUK_Name || "—",
-             hobli: item.suR_HOBLI_Name || "—",
-             village: item.suR_VILLAGE_Name || "—",
-             owner: item.suR_OWNERNAME || "—",
-             survey_no: item.suR_SURVEYNO,
-             surnoc: item.suR_SURNOC,
-             hissa_no: item.suR_HISSA,
-             ext_acre: item.suR_EXTACRE || 0,
-             ext_gunta: item.suR_EXTGUNTA || 0,
-             ext_fgunta: item.suR_EXTFgunta || 0,
-         }));
-     };
- 
+  // Define state variables for your totals - keep them as numbers
+  const [totalAcre, setTotalAcre] = useState(0);
+  const [totalGunta, setTotalGunta] = useState(0);
+  const [totalFGunta, setTotalFGunta] = useState(0);
+  const [totalSqFt, setTotalSqFt] = useState(0); // Changed to number (0)
+  const [totalSqM, setTotalSqM] = useState(0); // Changed to number (0)
+
+
+  useEffect(() => {
+    let calculatedTotalAcre = 0;
+    let calculatedTotalGunta = 0;
+    let calculatedTotalFGunta = 0;
+    let calculatedTotalSqFt = 0;
+    let calculatedTotalSqM = 0;
+
+    combinedData.forEach((row) => {
+      const acre = parseFloat(row.ext_acre || 0);
+      const gunta = parseFloat(row.ext_gunta || 0);
+      const fgunta = parseFloat(row.ext_fgunta || 0);
+
+      calculatedTotalAcre += acre;
+      calculatedTotalGunta += gunta;
+      calculatedTotalFGunta += fgunta;
+
+      const sqft = (acre * 43560) + (gunta * 1089) + (fgunta * 68.0625);
+      calculatedTotalSqFt += sqft;
+      calculatedTotalSqM += sqft * 0.092903;
+    });
+
+    // Normalize fgunta -> gunta -> acre
+    calculatedTotalGunta += Math.floor(calculatedTotalFGunta / 16);
+    calculatedTotalFGunta = calculatedTotalFGunta % 16;
+    calculatedTotalAcre += Math.floor(calculatedTotalGunta / 40);
+    calculatedTotalGunta = calculatedTotalGunta % 40;
+
+    // Update state variables with the calculated totals
+    setTotalAcre(calculatedTotalAcre);
+    setTotalGunta(calculatedTotalGunta);
+    setTotalFGunta(calculatedTotalFGunta);
+    // Store them as numbers in state
+    setTotalSqFt(calculatedTotalSqFt);
+    setTotalSqM(calculatedTotalSqM);
+
+    // Store the rounded value in localStorage if that's what's intended
+    localStorage.setItem('areaSqft', calculatedTotalSqFt.toFixed(2));
+
+  }, [combinedData]);
+
+  const totalPages = Math.ceil(combinedData.length / rowsPerPage);
+  const paginatedData = combinedData.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
+  );
+
+  const goToPage = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+  const handlePageSizeChange = (e) => {
+    setRowsPerPage(Number(e.target.value));
+    setCurrentPage(1);
+  };
+
+  useEffect(() => {
+    if (LKRS_ID) {
+      setLocalLKRSID(LKRS_ID);
+    }
+  }, [LKRS_ID]);
+
+  const mapSurveyDetails = (surveyDetails) => {
+    return surveyDetails.map((item) => ({
+      district: item.suR_DISTRICT_Name || "—",
+      taluk: item.suR_TALUK_Name || "—",
+      hobli: item.suR_HOBLI_Name || "—",
+      village: item.suR_VILLAGE_Name || "—",
+      owner: item.suR_OWNERNAME || "—",
+      survey_no: item.suR_SURVEYNO,
+      surnoc: item.suR_SURNOC,
+      hissa_no: item.suR_HISSA,
+      ext_acre: item.suR_EXTACRE || 0,
+      ext_gunta: item.suR_EXTGUNTA || 0,
+      ext_fgunta: item.suR_EXTFgunta || 0,
+    }));
+  };
+
   // =======================================================Khata details starts=========================================
   const [epidshowTable, setEPIDShowTable] = useState(false);
   const [epid_fetchedData, setEPID_FetchedData] = useState(null);
@@ -1379,32 +1407,32 @@ const handleRowSelect = (index) => {
 
     { name: 'ID Type', width: '120px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idType || 'N/A', center: true },
     { name: 'ID Number', width: '220px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idNumber || 'N/A', center: true },
-    {
-      name: 'Validate OTP',
-      width: '250px',
-      cell: (row, index) => (
-        <div className='mb-3'><br />
-          <input
-            type="tel"
-            className="form-control mb-1"
-            placeholder="Mobile Number"
-            readOnly
-            value={
-              phoneNumbers[index] ??
-              row.MobileNumber ??
-              epid_fetchedData?.OwnerDetails?.[0]?.mobileNumber ??
-              ""
-            }
-            maxLength={10}
-          />
+    // {
+    //   name: 'Validate OTP',
+    //   width: '250px',
+    //   cell: (row, index) => (
+    //     <div className='mb-3'><br />
+    //       <input
+    //         type="tel"
+    //         className="form-control mb-1"
+    //         placeholder="Mobile Number"
+    //         readOnly
+    //         value={
+    //           phoneNumbers[index] ??
+    //           row.MobileNumber ??
+    //           epid_fetchedData?.OwnerDetails?.[0]?.mobileNumber ??
+    //           ""
+    //         }
+    //         maxLength={10}
+    //       />
 
-          <div className="text-success font-weight-bold mt-2">
-            OTP Verified <i className="fa fa-check-circle"></i>
-          </div>
+    //       <div className="text-success font-weight-bold mt-2">
+    //         OTP Verified <i className="fa fa-check-circle"></i>
+    //       </div>
 
-        </div>
-      ), center: true
-    }
+    //     </div>
+    //   ), center: true
+    // }
   ];
   const [release_Data, setRelease_Data] = useState(null); // Entire response
   const [releaseDetails, setReleaseDetails] = useState([]);
@@ -1422,7 +1450,7 @@ const handleRowSelect = (index) => {
 
         // Extract and use `sitE_RELS_SITE_RELSTYPE_ID`
         const releaseTypeId = response.sitE_RELS_SITE_RELSTYPE_ID?.toString();
-    
+
         if (releaseTypeId) {
           handleDimensionChange(releaseTypeId);
         }
@@ -1436,95 +1464,95 @@ const handleRowSelect = (index) => {
       console.error("Failed to fetch LKRSID data:", error);
     }
   };
-const fetchReleaseOrder = async (localLKRSID) => {
-  try {
-    const listPayload = {
-      level: 1,
-      LkrsId: localLKRSID,
-      SiteID: 0,
-    };
-    start_loader();
-    const response = await individualSiteListAPI(listPayload);
+  const fetchReleaseOrder = async (localLKRSID) => {
+    try {
+      const listPayload = {
+        level: 1,
+        LkrsId: localLKRSID,
+        SiteID: 0,
+      };
+      start_loader();
+      const response = await individualSiteListAPI(listPayload);
 
-    if (Array.isArray(response)) {
-      // Filter only unreleased sites
-      const unreleasedSites = response.filter(site => site.sitE_IS_SITE_RELEASED === false);
-      setReleaseData(unreleasedSites); // Only set unreleased records
-      const releasedSites = response.filter(site => site.sitE_IS_SITE_RELEASED === true);
-      setFinalApiList(releasedSites);
+      if (Array.isArray(response)) {
+        // Filter only unreleased sites
+        const unreleasedSites = response.filter(site => site.sitE_IS_SITE_RELEASED === false);
+        setReleaseData(unreleasedSites); // Only set unreleased records
+        const releasedSites = response.filter(site => site.sitE_IS_SITE_RELEASED === true);
+        setFinalApiList(releasedSites);
+      }
+    } catch (error) {
+      console.error("Fetch Site Details Error:", error);
+      if (error.response) {
+        console.error("API responded with error data:", error.response.data);
+      } else if (error.request) {
+        console.error("No response received from API. Request was:", error.request);
+      }
+    } finally {
+      stop_loader();
     }
-  } catch (error) {
-    console.error("Fetch Site Details Error:", error);
-    if (error.response) {
-      console.error("API responded with error data:", error.response.data);
-    } else if (error.request) {
-      console.error("No response received from API. Request was:", error.request);
+  };
+
+  const releaseSites = async () => {
+    try {
+      const payload = {
+        sitE_LKRS_ID: LKRS_ID,
+        sitE_SITE_RELS_ID: 0,
+        site_Remarks: "",
+        site_AdditionalInfo: "",
+        site_UpdatedBy: 0,
+        site_UpdatedName: "user",
+        site_UpdatedRole: "user",
+        releaseSiteList: releasedData.map(site => ({
+          sitE_ID: site.sitE_ID
+        }))
+      };
+
+      start_loader();
+      const response = await final_Release_Sites(payload);
+      console.log("Release response:", response);
+
+      Swal.fire({
+        title: "Site released successfully!",
+        icon: 'success',
+        confirmButtonText: 'OK'
+      });
+      setReleasedData([]);             // Clear the unreleased table data
+      setSelectedRows([]);
+
+
+      fetchReleaseOrder(localLKRSID);  // To refresh `releaseData`
+      fetchFinalReleasedSites(localLKRSID);  // Separate function for `sitE_IS_SITE_RELEASED === true`
+
+    } catch (error) {
+      console.error("Release API Error:", error);
+      if (error.response) {
+        console.error("API responded with error data:", error.response.data);
+      } else if (error.request) {
+        console.error("No response received from API. Request was:", error.request);
+      }
+    } finally {
+      stop_loader();
     }
-  } finally {
-    stop_loader();
-  }
-};
+  };
+  const fetchFinalReleasedSites = async (localLKRSID) => {
+    try {
+      const listPayload = {
+        level: 1,
+        LkrsId: localLKRSID,
+        SiteID: 0,
+      };
+      const response = await individualSiteListAPI(listPayload);
 
-const releaseSites = async () => {
-  try {
-    const payload = {
-      sitE_LKRS_ID: LKRS_ID,
-      sitE_SITE_RELS_ID: 0,
-      site_Remarks: "",
-      site_AdditionalInfo: "",
-      site_UpdatedBy: 0,
-      site_UpdatedName: "user",
-      site_UpdatedRole: "user",
-      releaseSiteList: releasedData.map(site => ({
-        sitE_ID: site.sitE_ID
-      }))
-    };
-
-    start_loader();
-    const response = await final_Release_Sites(payload);
-    console.log("Release response:", response);
-
-    Swal.fire({
-      title: "Site released successfully!",
-      icon: 'success',
-      confirmButtonText: 'OK'
-    });
-    setReleasedData([]);             // Clear the unreleased table data
-    setSelectedRows([]);  
-
-    
-    fetchReleaseOrder(localLKRSID);  // To refresh `releaseData`
-    fetchFinalReleasedSites(localLKRSID);  // Separate function for `sitE_IS_SITE_RELEASED === true`
-
-  } catch (error) {
-    console.error("Release API Error:", error);
-    if (error.response) {
-      console.error("API responded with error data:", error.response.data);
-    } else if (error.request) {
-      console.error("No response received from API. Request was:", error.request);
+      if (Array.isArray(response)) {
+        const releasedSites = response.filter(site => site.sitE_IS_SITE_RELEASED === true);
+        setFinalApiList(releasedSites); // ✅ Move to final table
+      }
+    } catch (error) {
+      console.error("Final Released Sites Fetch Error:", error);
     }
-  } finally {
-    stop_loader();
-  }
-};
-const fetchFinalReleasedSites = async (localLKRSID) => {
-  try {
-    const listPayload = {
-      level: 1,
-      LkrsId: localLKRSID,
-      SiteID: 0,
-    };
-    const response = await individualSiteListAPI(listPayload);
-
-    if (Array.isArray(response)) {
-      const releasedSites = response.filter(site => site.sitE_IS_SITE_RELEASED === true);
-      setFinalApiList(releasedSites); // ✅ Move to final table
-    }
-  } catch (error) {
-    console.error("Final Released Sites Fetch Error:", error);
-  }
-};
- const alreadyreleasedTableColumns = [
+  };
+  const alreadyreleasedTableColumns = [
     {
       name: 'Sl. No.',
       selector: (row, index) => index + 1,
@@ -1539,57 +1567,57 @@ const fetchFinalReleasedSites = async (localLKRSID) => {
     {
       name: "Site Number",
       selector: row => row.sitE_NO || '',
-      width: '120px',center: true
+      width: '120px', center: true
     },
     {
       name: "Block/Area",
       selector: row => row.sitE_AREA || '',
-      width: '120px',center: true
+      width: '120px', center: true
     },
     {
       name: "No of sides",
       selector: row => row.sitE_NO_OF_SIDES || '',
-      width: '120px',center: true
+      width: '120px', center: true
     },
     {
-  name: "Dimension",
-  cell: (row) => {
-    if (row.sitE_SHAPETYPE === "Regular") {
-      const feetSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINFT) || [];
-      const meterSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINMT) || [];
-      const roadFacingStatuses = row.siteDimensions?.map(dim => dim.sitediM_ROADFACING ? "yes" : "no") || [];
+      name: "Dimension",
+      cell: (row) => {
+        if (row.sitE_SHAPETYPE === "Regular") {
+          const feetSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINFT) || [];
+          const meterSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINMT) || [];
+          const roadFacingStatuses = row.siteDimensions?.map(dim => dim.sitediM_ROADFACING ? "yes" : "no") || [];
 
-      return (
-        <div className="dimension-cell">
-          <div className="nowrap">{feetSides.join(" x ")} (ft)</div>
-          <div className="nowrap">{meterSides.join(" x ")} (mtr)</div>
-          <div className="nowrap"><b>Road Facing:</b> {roadFacingStatuses.join(", ")}</div>
-        </div>
-      );
-    } else if (row.sitE_SHAPETYPE === "Irregular" && Array.isArray(row.siteDimensions)) {
-      const feetString = row.siteDimensions.map(side => side.sitediM_SIDEINFT).join(' x ');
-      const meterString = row.siteDimensions.map(side => side.sitediM_SIDEINMT).join(' x ');
-      const roadFacingString = row.siteDimensions.map(side => side.sitediM_ROADFACING ? "Yes" : "No").join(', ');
+          return (
+            <div className="dimension-cell">
+              <div className="nowrap">{feetSides.join(" x ")} (ft)</div>
+              <div className="nowrap">{meterSides.join(" x ")} (mtr)</div>
+              <div className="nowrap"><b>Road Facing:</b> {roadFacingStatuses.join(", ")}</div>
+            </div>
+          );
+        } else if (row.sitE_SHAPETYPE === "Irregular" && Array.isArray(row.siteDimensions)) {
+          const feetString = row.siteDimensions.map(side => side.sitediM_SIDEINFT).join(' x ');
+          const meterString = row.siteDimensions.map(side => side.sitediM_SIDEINMT).join(' x ');
+          const roadFacingString = row.siteDimensions.map(side => side.sitediM_ROADFACING ? "Yes" : "No").join(', ');
 
-      return (
-        <div className="dimension-cell">
-          <div className="nowrap">{feetString} (ft)</div>
-          <div className="nowrap">{meterString} (m)</div>
-          <div className="nowrap"><b>Road Facing:</b> {roadFacingString}</div>
-        </div>
-      );
-    }
-    return '';
-  },
-  center: true,
-  width: '200px', // Add fixed width for better control
-},
+          return (
+            <div className="dimension-cell">
+              <div className="nowrap">{feetString} (ft)</div>
+              <div className="nowrap">{meterString} (m)</div>
+              <div className="nowrap"><b>Road Facing:</b> {roadFacingString}</div>
+            </div>
+          );
+        }
+        return '';
+      },
+      center: true,
+      width: '200px', // Add fixed width for better control
+    },
 
     {
       name: "Total Area",
       selector: row => `${row.sitE_AREAINSQFT} [Sq.ft], ${row.sitE_AREAINSQMT} [Sq.mtr]`,
       center: true,
-  width: '200px',
+      width: '200px',
     },
     {
       name: "Corner Site",
@@ -1601,21 +1629,62 @@ const fetchFinalReleasedSites = async (localLKRSID) => {
       name: "Type of Site",
       selector: row => row.sitE_TYPE || '',
       center: true,
-  width: '120px',
+      width: '120px',
     },
-{
-  name: (
-    <span title="East | West | North | South">Chakbandi</span>
-  ),
-  selector: row => `${row.sitE_EAST} | ${row.sitE_WEST} | ${row.sitE_NORTH} | ${row.sitE_SOUTH}`,
-  center: true,
-  width: '200px',
-},
+    {
+      name: (
+        <span title="East | West | North | South">Chakbandi</span>
+      ),
+      selector: row => `${row.sitE_EAST} | ${row.sitE_WEST} | ${row.sitE_NORTH} | ${row.sitE_SOUTH}`,
+      center: true,
+      width: '200px',
+    },
     {
       name: "Latitude, Longitude",
       selector: row => `${row.sitE_LATITUDE}, ${row.sitE_LONGITUDE}`,
     },
   ];
+  const [lkrsTableData, setLkrsTableData] = useState({
+    lkrS_DISPLAYID: '',
+    lkrS_EPID: '',
+    lkrS_SITEAREA_SQFT: '',
+    lkrS_SITEAREA_SQMT: '',
+    lkrS_ECNUMBER: '',
+  });
+  const [approvalTableData, setApprovalTableData] = useState({
+    approvalOrderNo: '',
+    releaseType: '',
+    totalNoOfSites: '',
+  });
+  const fetchApprovalListAndSetTable = async (localLKRSID) => {
+    try {
+      const listPayload = {
+        level: 1,
+        aprLkrsId: localLKRSID,
+        aprId: 0,
+      };
+
+      const listResponse = await listApprovalInfo(listPayload);
+
+      if (Array.isArray(listResponse) && listResponse.length > 0) {
+        const firstItem = listResponse[0];  // Assuming you want the first record
+
+        setApprovalTableData({
+          approvalOrderNo: firstItem.apr_Approval_No || '',
+          releaseType: firstItem.sitE_RELS_SITE_RELSTYPE || '',
+          totalNoOfSites: firstItem.lkrS_NUMBEROFSITES || '',
+        });
+      } else {
+        setApprovalTableData({
+          approvalOrderNo: '',
+          releaseType: '',
+          totalNoOfSites: '',
+        });
+      }
+    } catch (err) {
+      console.error("Error in fetchApprovalListAndSetTable:", err);
+    }
+  };
 
 
 
@@ -1635,7 +1704,7 @@ const fetchFinalReleasedSites = async (localLKRSID) => {
                 <div className="row">
                   <div className='col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mt-2'>
                     <div className="form-group">
-                      <label className='form-label'>Enter the EPID or KRSID to fetch details</label>
+                      <label className='form-label'>Enter the EPID or KRSID to fetch details <span className='mandatory_color'>*</span></label>
                       <input
                         type="text"
                         className="form-control"
@@ -1665,6 +1734,41 @@ const fetchFinalReleasedSites = async (localLKRSID) => {
                   </div>
 
                 </div>
+                {(lkrsTableData.lkrS_DISPLAYID && approvalTableData.approvalOrderNo) && (
+                  <>
+                    <h5>Property Details</h5>
+                    <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+                      <tbody>
+                        <tr>
+                          <th style={thStyle}>LKRS ID</th>
+                          <td style={tdStyle}>{lkrsTableData.lkrS_DISPLAYID}</td>
+                          <th style={thStyle}>Mother EPID</th>
+                          <td style={tdStyle}>{lkrsTableData.lkrS_EPID}</td>
+                        </tr>
+                        <tr>
+                          <th style={thStyle}>Total No of Sites</th>
+                          <td style={tdStyle}> {approvalTableData.totalNoOfSites}</td>
+                          <th style={thStyle}>Total Extent</th>
+                          <td style={tdStyle}>{lkrsTableData.lkrS_SITEAREA_SQFT} [SQFT] , {lkrsTableData.lkrS_SITEAREA_SQMT} [SQM]</td>
+                        </tr>
+                        <tr>
+                          <th style={thStyle}>DC Conversion</th>
+                          <td style={tdStyle}>N/A</td>
+                          <th style={thStyle}>Approval Order No</th>
+                          <td style={tdStyle}>{approvalTableData.approvalOrderNo || 'N/A'}</td>
+                        </tr>
+                        <tr>
+                          <th style={thStyle}>Release Type</th>
+                          <td style={tdStyle}>{approvalTableData.releaseType || 'N/A'}</td>
+                          <th style={thStyle}>EC Number</th>
+                          <td style={tdStyle}>{lkrsTableData.lkrS_ECNUMBER || 'N/A'}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </>
+                )}
+
+                <hr />
                 {selectedLandType === "surveyNo" && (
                   <>
                     {combinedData.length > 0 && (
@@ -1999,7 +2103,7 @@ const fetchFinalReleasedSites = async (localLKRSID) => {
                       <DataTable
                         columns={releasedTableColumns}
                         data={releasedData}
-                         customStyles={customStyles}
+                        customStyles={customStyles}
                         pagination
                         highlightOnHover
                         striped
@@ -2040,22 +2144,22 @@ const fetchFinalReleasedSites = async (localLKRSID) => {
             {/* Final API list Table */}
             {finalApiList.length > 0 && (
               <div className="card mt-4">
-              <div className="card-header layout_btn_color">
-                <h5 className="card-title" style={{ textAlign: 'center' }}>Released sites </h5>
-              </div>
-              <div className="card-body">
-                <DataTable
-                  columns={alreadyreleasedTableColumns}
-                  data={finalApiList}
-                   customStyles={customStyles}
-                  pagination
-                  striped
-                  highlightOnHover
-                  responsive
-                />
+                <div className="card-header layout_btn_color">
+                  <h5 className="card-title" style={{ textAlign: 'center' }}>Released sites </h5>
+                </div>
+                <div className="card-body">
+                  <DataTable
+                    columns={alreadyreleasedTableColumns}
+                    data={finalApiList}
+                    customStyles={customStyles}
+                    pagination
+                    striped
+                    highlightOnHover
+                    responsive
+                  />
 
+                </div>
               </div>
-            </div>
             )}
           </div>
         </div>
