@@ -4,6 +4,7 @@ import Loader from "../../Layout/Loader";
 import DataTable from 'react-data-table-component';
 import '../../Styles/CSS/ReleaseSiteSelection.css';
 import Swal from "sweetalert2";
+import { useLocation } from 'react-router-dom';
 
 import {
   fetch_LKRSID, fetch_releasePercentageDetails, individualSiteListAPI, final_Release_Sites
@@ -21,7 +22,8 @@ export const useLoader = () => {
 const ReleaseSelection = () => {
   const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
   const [selectedValue, setSelectedValue] = useState('');
-
+    const location = useLocation();
+    const { LKRS_ID, createdBy, createdName, roleID, display_LKRS_ID } = location.state || {};
 
   const [releaseData, setReleaseData] = useState([]); // Data for the "Release Table"
   const [releasedData, setReleasedData] = useState([]); // Data for the "Already Released Table"
@@ -44,6 +46,11 @@ const ReleaseSelection = () => {
 
   const [originalTotalRecords, setOriginalTotalRecords] = useState(0);
 
+   useEffect(() => {
+    if (LKRS_ID) {
+      handleSearchClick(LKRS_ID);  // call the method if LKRS_ID exists
+    }
+  }, [LKRS_ID]);
   useEffect(() => {
     if (originalTotalRecords === 0 && (releaseData.length > 0 || finalApiList.length > 0)) {
       const total = releaseData.length + finalApiList.length;
@@ -588,78 +595,96 @@ const handleRowSelect = (index) => {
       button: true,
     },
 
-    {
-      name: "Site ID",
-      selector: row => row.sitE_ID || '',
-    },
+    // {
+    //   name: "Site ID",
+    //   selector: row => row.sitE_ID || '',
+    // },
     {
       name: 'Sl. No.',
       selector: (row, index) => index + 1,
       sortable: true,
+      width: '90px', center: true
     },
     {
       name: "Shape",
       selector: row => row.sitE_SHAPETYPE || '',
+      width: '100px', center: true
     },
     {
       name: "Site Number",
       selector: row => row.sitE_NO || '',
+      width: '120px',center: true
     },
     {
       name: "Block/Area",
       selector: row => row.sitE_AREA || '',
+      width: '120px',center: true
     },
     {
-      name: "Number of sides",
+      name: "No of sides",
       selector: row => row.sitE_NO_OF_SIDES || '',
+      width: '120px',center: true
     },
     {
-      name: "Dimension",
-      cell: (row) => {
-        if (row.sitE_SHAPETYPE === "Regular") {
-          const feetSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINFT) || [];
-          const meterSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINMT) || [];
-          const roadFacingStatuses = row.siteDimensions?.map(dim => dim.sitediM_ROADFACING ? "yes" : "no") || [];
+  name: "Dimension",
+  cell: (row) => {
+    if (row.sitE_SHAPETYPE === "Regular") {
+      const feetSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINFT) || [];
+      const meterSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINMT) || [];
+      const roadFacingStatuses = row.siteDimensions?.map(dim => dim.sitediM_ROADFACING ? "yes" : "no") || [];
 
-          return (
-            <>
-              {feetSides.join(" x ")} (ft)<br />
-              {meterSides.join(" x ")} (mtr)<br />
-              <b>Road Facing:</b> {roadFacingStatuses.join(", ")}
-            </>
-          );
-        } else if (row.sitE_SHAPETYPE === "Irregular" && Array.isArray(row.siteDimensions)) {
-          const feetString = row.siteDimensions.map(side => side.sitediM_SIDEINFT).join(' x ');
-          const meterString = row.siteDimensions.map(side => side.sitediM_SIDEINMT).join(' x ');
-          const roadFacingString = row.siteDimensions.map(side => side.sitediM_ROADFACING ? "Yes" : "No").join(', ');
+      return (
+        <div className="dimension-cell">
+          <div className="nowrap">{feetSides.join(" x ")} (ft)</div>
+          <div className="nowrap">{meterSides.join(" x ")} (mtr)</div>
+          <div className="nowrap"><b>Road Facing:</b> {roadFacingStatuses.join(", ")}</div>
+        </div>
+      );
+    } else if (row.sitE_SHAPETYPE === "Irregular" && Array.isArray(row.siteDimensions)) {
+      const feetString = row.siteDimensions.map(side => side.sitediM_SIDEINFT).join(' x ');
+      const meterString = row.siteDimensions.map(side => side.sitediM_SIDEINMT).join(' x ');
+      const roadFacingString = row.siteDimensions.map(side => side.sitediM_ROADFACING ? "Yes" : "No").join(', ');
 
-          return (
-            <div>
-              <div>{feetString} (ft)</div>
-              <div>{meterString} (m)</div>
-              <div><b>Road Facing:</b> {roadFacingString}</div>
-            </div>
-          );
-        }
-        return '';
-      }
-    },
+      return (
+        <div className="dimension-cell">
+          <div className="nowrap">{feetString} (ft)</div>
+          <div className="nowrap">{meterString} (m)</div>
+          <div className="nowrap"><b>Road Facing:</b> {roadFacingString}</div>
+        </div>
+      );
+    }
+    return '';
+  },
+  center: true,
+  width: '200px', // Add fixed width for better control
+},
+
     {
       name: "Total Area",
       selector: row => `${row.sitE_AREAINSQFT} [Sq.ft], ${row.sitE_AREAINSQMT} [Sq.mtr]`,
+      center: true,
+  width: '200px',
     },
     {
       name: "Corner Site",
       selector: row => row.sitE_CORNERPLOT ? "YES" : "NO",
+      center: true,
+      width: '120px',
     },
     {
       name: "Type of Site",
       selector: row => row.sitE_TYPE || '',
+      center: true,
+  width: '120px',
     },
-    {
-      name: "Chakbandi [East | West | North | South]",
-      selector: row => `${row.sitE_EAST} | ${row.sitE_WEST} | ${row.sitE_NORTH} | ${row.sitE_SOUTH}`,
-    },
+{
+  name: (
+    <span title="East | West | North | South">Chakbandi</span>
+  ),
+  selector: row => `${row.sitE_EAST} | ${row.sitE_WEST} | ${row.sitE_NORTH} | ${row.sitE_SOUTH}`,
+  center: true,
+  width: '200px',
+},
     {
       name: "Latitude, Longitude",
       selector: row => `${row.sitE_LATITUDE}, ${row.sitE_LONGITUDE}`,
@@ -682,78 +707,97 @@ const handleRowSelect = (index) => {
         ),
       }
     ] : []),
+    
+    //     {
+    //   name: "Site ID",
+    //   selector: row => row.sitE_ID || '',
+    // },
     {
       name: 'Sl. No.',
       selector: (row, index) => index + 1,
       sortable: true,
-    },
-        {
-      name: "Site ID",
-      selector: row => row.sitE_ID || '',
+      width: '90px', center: true
     },
     {
       name: "Shape",
       selector: row => row.sitE_SHAPETYPE || '',
+      width: '100px', center: true
     },
     {
       name: "Site Number",
       selector: row => row.sitE_NO || '',
+      width: '120px',center: true
     },
     {
       name: "Block/Area",
       selector: row => row.sitE_AREA || '',
+      width: '120px',center: true
     },
     {
-      name: "Number of sides",
+      name: "No of sides",
       selector: row => row.sitE_NO_OF_SIDES || '',
+      width: '120px',center: true
     },
     {
-      name: "Dimension",
-      cell: (row) => {
-        if (row.sitE_SHAPETYPE === "Regular") {
-          const feetSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINFT) || [];
-          const meterSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINMT) || [];
-          const roadFacingStatuses = row.siteDimensions?.map(dim => dim.sitediM_ROADFACING ? "yes" : "no") || [];
+  name: "Dimension",
+  cell: (row) => {
+    if (row.sitE_SHAPETYPE === "Regular") {
+      const feetSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINFT) || [];
+      const meterSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINMT) || [];
+      const roadFacingStatuses = row.siteDimensions?.map(dim => dim.sitediM_ROADFACING ? "yes" : "no") || [];
 
-          return (
-            <>
-              {feetSides.join(" x ")} (ft)<br />
-              {meterSides.join(" x ")} (mtr)<br />
-              <b>Road Facing:</b> {roadFacingStatuses.join(", ")}
-            </>
-          );
-        } else if (row.sitE_SHAPETYPE === "Irregular" && Array.isArray(row.siteDimensions)) {
-          const feetString = row.siteDimensions.map(side => side.sitediM_SIDEINFT).join(' x ');
-          const meterString = row.siteDimensions.map(side => side.sitediM_SIDEINMT).join(' x ');
-          const roadFacingString = row.siteDimensions.map(side => side.sitediM_ROADFACING ? "Yes" : "No").join(', ');
+      return (
+        <div className="dimension-cell">
+          <div className="nowrap">{feetSides.join(" x ")} (ft)</div>
+          <div className="nowrap">{meterSides.join(" x ")} (mtr)</div>
+          <div className="nowrap"><b>Road Facing:</b> {roadFacingStatuses.join(", ")}</div>
+        </div>
+      );
+    } else if (row.sitE_SHAPETYPE === "Irregular" && Array.isArray(row.siteDimensions)) {
+      const feetString = row.siteDimensions.map(side => side.sitediM_SIDEINFT).join(' x ');
+      const meterString = row.siteDimensions.map(side => side.sitediM_SIDEINMT).join(' x ');
+      const roadFacingString = row.siteDimensions.map(side => side.sitediM_ROADFACING ? "Yes" : "No").join(', ');
 
-          return (
-            <div>
-              <div>{feetString} (ft)</div>
-              <div>{meterString} (m)</div>
-              <div><b>Road Facing:</b> {roadFacingString}</div>
-            </div>
-          );
-        }
-        return '';
-      }
-    },
+      return (
+        <div className="dimension-cell">
+          <div className="nowrap">{feetString} (ft)</div>
+          <div className="nowrap">{meterString} (m)</div>
+          <div className="nowrap"><b>Road Facing:</b> {roadFacingString}</div>
+        </div>
+      );
+    }
+    return '';
+  },
+  center: true,
+  width: '200px', // Add fixed width for better control
+},
+
     {
       name: "Total Area",
       selector: row => `${row.sitE_AREAINSQFT} [Sq.ft], ${row.sitE_AREAINSQMT} [Sq.mtr]`,
+      center: true,
+  width: '200px',
     },
     {
       name: "Corner Site",
       selector: row => row.sitE_CORNERPLOT ? "YES" : "NO",
+      center: true,
+      width: '120px',
     },
     {
       name: "Type of Site",
       selector: row => row.sitE_TYPE || '',
+      center: true,
+  width: '120px',
     },
-    {
-      name: "Chakbandi [East | West | North | South]",
-      selector: row => `${row.sitE_EAST} | ${row.sitE_WEST} | ${row.sitE_NORTH} | ${row.sitE_SOUTH}`,
-    },
+{
+  name: (
+    <span title="East | West | North | South">Chakbandi</span>
+  ),
+  selector: row => `${row.sitE_EAST} | ${row.sitE_WEST} | ${row.sitE_NORTH} | ${row.sitE_SOUTH}`,
+  center: true,
+  width: '200px',
+},
     {
       name: "Latitude, Longitude",
       selector: row => `${row.sitE_LATITUDE}, ${row.sitE_LONGITUDE}`,
@@ -933,10 +977,10 @@ const handleRowSelect = (index) => {
       if (current30Step === 1) {
         Swal.fire({
           icon: 'success',
-          title: 'First 30% Released',
-          text: 'You have successfully released the first 30% of the sites.',
+          title: ' 30% Released',
+          text: 'You have successfully released the 30% of the sites.',
           showCancelButton: true,
-          confirmButtonText: 'Continue with Final 30%',
+          confirmButtonText: 'Another release',
           cancelButtonText: 'Back to Dashboard',
           confirmButtonColor: '#3085d6',
           cancelButtonColor: '#d33',
@@ -1085,7 +1129,7 @@ const handleRowSelect = (index) => {
       setLocalLKRSID(value);
     }
   };
-  const handleSearchClick = () => {
+  const handleSearchClick = (localLKRSID) => {
     // Call API even if it's less than 10 digits
     if (!localLKRSID) {
       alert('Please enter EPID or KRSID');
@@ -1191,65 +1235,94 @@ const handleRowSelect = (index) => {
   const [rtcData, setRtcData] = useState([]);
   const combinedData = [...rtcAddedData, ...rtcData];
 
-  let totalAcre = 0;
-  let totalGunta = 0;
-  let totalFGunta = 0;
-  let totalSqFt = 0;
+  
+      // Define state variables for your totals - keep them as numbers
+      const [totalAcre, setTotalAcre] = useState(0);
+      const [totalGunta, setTotalGunta] = useState(0);
+      const [totalFGunta, setTotalFGunta] = useState(0);
+      const [totalSqFt, setTotalSqFt] = useState(0); // Changed to number (0)
+      const [totalSqM, setTotalSqM] = useState(0); // Changed to number (0)
+  
 
-  useEffect(() => {
-    combinedData.forEach(row => {
-      const acre = parseFloat(row.ext_acre || 0);
-      const gunta = parseFloat(row.ext_gunta || 0);
-      const fgunta = parseFloat(row.ext_fgunta || 0);
-
-      totalAcre += acre;
-      totalGunta += gunta;
-      totalFGunta += fgunta;
-
-      const sqft = (acre * 43560) + (gunta * 1089) + (fgunta * 68.0625);
-      totalSqFt += sqft;
-    });
-
-    // Normalize fgunta -> gunta and acre
-    totalGunta += Math.floor(totalFGunta / 16);
-    totalFGunta = totalFGunta % 16;
-    totalAcre += Math.floor(totalGunta / 40);
-    totalGunta = totalGunta % 40;
-
-    const totalSqFtRounded = totalSqFt.toFixed(2);
-    setAreaSqft(totalSqFtRounded);
-    localStorage.setItem('areaSqft', totalSqFtRounded);
-  }, [combinedData]);
-
-  const totalPages = Math.ceil(combinedData.length / rowsPerPage);
-  const paginatedData = combinedData.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage
-  );
-  const goToPage = (page) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
-  };
-  const handlePageSizeChange = (e) => {
-    setRowsPerPage(Number(e.target.value));
-    setCurrentPage(1); // Reset to first page when page size changes
-  };
-  const mapSurveyDetails = (surveyDetails) => {
-    return surveyDetails.map((item) => ({
-      district: item.suR_DISTRICT_Name || "—",
-      taluk: item.suR_TALUK_Name || "—",
-      hobli: item.suR_HOBLI_Name || "—",
-      village: item.suR_VILLAGE_Name || "—",
-      owner: item.suR_OWNERNAME || "—",
-      survey_no: item.suR_SURVEYNO,
-      surnoc: item.suR_SURNOC,
-      hissa_no: item.suR_HISSA,
-      ext_acre: item.suR_EXTACRE || 0,
-      ext_gunta: item.suR_EXTGUNTA || 0,
-      ext_fgunta: item.suR_EXTFgunta || 0, // Make sure to handle this if needed
-    }));
-  };
+     useEffect(() => {
+         let calculatedTotalAcre = 0;
+         let calculatedTotalGunta = 0;
+         let calculatedTotalFGunta = 0;
+         let calculatedTotalSqFt = 0;
+         let calculatedTotalSqM = 0;
+ 
+         combinedData.forEach((row) => {
+             const acre = parseFloat(row.ext_acre || 0);
+             const gunta = parseFloat(row.ext_gunta || 0);
+             const fgunta = parseFloat(row.ext_fgunta || 0);
+ 
+             calculatedTotalAcre += acre;
+             calculatedTotalGunta += gunta;
+             calculatedTotalFGunta += fgunta;
+ 
+             const sqft = (acre * 43560) + (gunta * 1089) + (fgunta * 68.0625);
+             calculatedTotalSqFt += sqft;
+             calculatedTotalSqM += sqft * 0.092903;
+         });
+ 
+         // Normalize fgunta -> gunta -> acre
+         calculatedTotalGunta += Math.floor(calculatedTotalFGunta / 16);
+         calculatedTotalFGunta = calculatedTotalFGunta % 16;
+         calculatedTotalAcre += Math.floor(calculatedTotalGunta / 40);
+         calculatedTotalGunta = calculatedTotalGunta % 40;
+ 
+         // Update state variables with the calculated totals
+         setTotalAcre(calculatedTotalAcre);
+         setTotalGunta(calculatedTotalGunta);
+         setTotalFGunta(calculatedTotalFGunta);
+         // Store them as numbers in state
+         setTotalSqFt(calculatedTotalSqFt);
+         setTotalSqM(calculatedTotalSqM);
+ 
+         // Store the rounded value in localStorage if that's what's intended
+         localStorage.setItem('areaSqft', calculatedTotalSqFt.toFixed(2));
+ 
+     }, [combinedData]);
+ 
+     const totalPages = Math.ceil(combinedData.length / rowsPerPage);
+     const paginatedData = combinedData.slice(
+         (currentPage - 1) * rowsPerPage,
+         currentPage * rowsPerPage
+     );
+ 
+     const goToPage = (page) => {
+         if (page >= 1 && page <= totalPages) {
+             setCurrentPage(page);
+         }
+     };
+ 
+     const handlePageSizeChange = (e) => {
+         setRowsPerPage(Number(e.target.value));
+         setCurrentPage(1);
+     };
+ 
+     useEffect(() => {
+         if (LKRS_ID) {
+             setLocalLKRSID(LKRS_ID);
+         }
+     }, [LKRS_ID]);
+ 
+     const mapSurveyDetails = (surveyDetails) => {
+         return surveyDetails.map((item) => ({
+             district: item.suR_DISTRICT_Name || "—",
+             taluk: item.suR_TALUK_Name || "—",
+             hobli: item.suR_HOBLI_Name || "—",
+             village: item.suR_VILLAGE_Name || "—",
+             owner: item.suR_OWNERNAME || "—",
+             survey_no: item.suR_SURVEYNO,
+             surnoc: item.suR_SURNOC,
+             hissa_no: item.suR_HISSA,
+             ext_acre: item.suR_EXTACRE || 0,
+             ext_gunta: item.suR_EXTGUNTA || 0,
+             ext_fgunta: item.suR_EXTFgunta || 0,
+         }));
+     };
+ 
   // =======================================================Khata details starts=========================================
   const [epidshowTable, setEPIDShowTable] = useState(false);
   const [epid_fetchedData, setEPID_FetchedData] = useState(null);
@@ -1377,6 +1450,8 @@ const fetchReleaseOrder = async (localLKRSID) => {
       // Filter only unreleased sites
       const unreleasedSites = response.filter(site => site.sitE_IS_SITE_RELEASED === false);
       setReleaseData(unreleasedSites); // Only set unreleased records
+      const releasedSites = response.filter(site => site.sitE_IS_SITE_RELEASED === true);
+      setFinalApiList(releasedSites);
     }
   } catch (error) {
     console.error("Fetch Site Details Error:", error);
@@ -1393,7 +1468,7 @@ const fetchReleaseOrder = async (localLKRSID) => {
 const releaseSites = async () => {
   try {
     const payload = {
-      sitE_LKRS_ID: localLKRSID,
+      sitE_LKRS_ID: LKRS_ID,
       sitE_SITE_RELS_ID: 0,
       site_Remarks: "",
       site_AdditionalInfo: "",
@@ -1414,8 +1489,10 @@ const releaseSites = async () => {
       icon: 'success',
       confirmButtonText: 'OK'
     });
+    setReleasedData([]);             // Clear the unreleased table data
+    setSelectedRows([]);  
 
-    // ✅ Fetch updated list and move released sites to finalApiList
+    
     fetchReleaseOrder(localLKRSID);  // To refresh `releaseData`
     fetchFinalReleasedSites(localLKRSID);  // Separate function for `sitE_IS_SITE_RELEASED === true`
 
@@ -1430,7 +1507,115 @@ const releaseSites = async () => {
     stop_loader();
   }
 };
+const fetchFinalReleasedSites = async (localLKRSID) => {
+  try {
+    const listPayload = {
+      level: 1,
+      LkrsId: localLKRSID,
+      SiteID: 0,
+    };
+    const response = await individualSiteListAPI(listPayload);
 
+    if (Array.isArray(response)) {
+      const releasedSites = response.filter(site => site.sitE_IS_SITE_RELEASED === true);
+      setFinalApiList(releasedSites); // ✅ Move to final table
+    }
+  } catch (error) {
+    console.error("Final Released Sites Fetch Error:", error);
+  }
+};
+ const alreadyreleasedTableColumns = [
+    {
+      name: 'Sl. No.',
+      selector: (row, index) => index + 1,
+      sortable: true,
+      width: '90px', center: true
+    },
+    {
+      name: "Shape",
+      selector: row => row.sitE_SHAPETYPE || '',
+      width: '100px', center: true
+    },
+    {
+      name: "Site Number",
+      selector: row => row.sitE_NO || '',
+      width: '120px',center: true
+    },
+    {
+      name: "Block/Area",
+      selector: row => row.sitE_AREA || '',
+      width: '120px',center: true
+    },
+    {
+      name: "No of sides",
+      selector: row => row.sitE_NO_OF_SIDES || '',
+      width: '120px',center: true
+    },
+    {
+  name: "Dimension",
+  cell: (row) => {
+    if (row.sitE_SHAPETYPE === "Regular") {
+      const feetSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINFT) || [];
+      const meterSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINMT) || [];
+      const roadFacingStatuses = row.siteDimensions?.map(dim => dim.sitediM_ROADFACING ? "yes" : "no") || [];
+
+      return (
+        <div className="dimension-cell">
+          <div className="nowrap">{feetSides.join(" x ")} (ft)</div>
+          <div className="nowrap">{meterSides.join(" x ")} (mtr)</div>
+          <div className="nowrap"><b>Road Facing:</b> {roadFacingStatuses.join(", ")}</div>
+        </div>
+      );
+    } else if (row.sitE_SHAPETYPE === "Irregular" && Array.isArray(row.siteDimensions)) {
+      const feetString = row.siteDimensions.map(side => side.sitediM_SIDEINFT).join(' x ');
+      const meterString = row.siteDimensions.map(side => side.sitediM_SIDEINMT).join(' x ');
+      const roadFacingString = row.siteDimensions.map(side => side.sitediM_ROADFACING ? "Yes" : "No").join(', ');
+
+      return (
+        <div className="dimension-cell">
+          <div className="nowrap">{feetString} (ft)</div>
+          <div className="nowrap">{meterString} (m)</div>
+          <div className="nowrap"><b>Road Facing:</b> {roadFacingString}</div>
+        </div>
+      );
+    }
+    return '';
+  },
+  center: true,
+  width: '200px', // Add fixed width for better control
+},
+
+    {
+      name: "Total Area",
+      selector: row => `${row.sitE_AREAINSQFT} [Sq.ft], ${row.sitE_AREAINSQMT} [Sq.mtr]`,
+      center: true,
+  width: '200px',
+    },
+    {
+      name: "Corner Site",
+      selector: row => row.sitE_CORNERPLOT ? "YES" : "NO",
+      center: true,
+      width: '120px',
+    },
+    {
+      name: "Type of Site",
+      selector: row => row.sitE_TYPE || '',
+      center: true,
+  width: '120px',
+    },
+{
+  name: (
+    <span title="East | West | North | South">Chakbandi</span>
+  ),
+  selector: row => `${row.sitE_EAST} | ${row.sitE_WEST} | ${row.sitE_NORTH} | ${row.sitE_SOUTH}`,
+  center: true,
+  width: '200px',
+},
+    {
+      name: "Latitude, Longitude",
+      selector: row => `${row.sitE_LATITUDE}, ${row.sitE_LONGITUDE}`,
+    },
+  ];
 
 
 
@@ -1450,7 +1635,7 @@ const releaseSites = async () => {
                 <div className="row">
                   <div className='col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mt-2'>
                     <div className="form-group">
-                      <label className='form-label'>Enter the EPID or KRSID</label>
+                      <label className='form-label'>Enter the EPID or KRSID to fetch details</label>
                       <input
                         type="text"
                         className="form-control"
@@ -1464,7 +1649,7 @@ const releaseSites = async () => {
                   <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2  mt-2'>
                     <div className="form-group">
                       <label className='form-label'>&nbsp;</label>
-                      <button className='btn btn-primary btn-block' onClick={handleSearchClick}>
+                      <button className='btn btn-primary btn-block' onClick={() => handleSearchClick(localLKRSID)}>
                         Search
                       </button>
                     </div>
@@ -1486,7 +1671,7 @@ const releaseSites = async () => {
                       <div className="col-12">
                         <div className="">
                           <div className="d-flex justify-content-between align-items-center mb-3">
-                            <h4 className=" m-0">Added Survey No Details</h4>
+                            <h4 className=" m-0">Survey No Details</h4>
                             <div className="d-flex align-items-center">
                               <label className="me-2 mb-0">Rows per page:</label>
                               <select
@@ -1512,7 +1697,7 @@ const releaseSites = async () => {
                                   <th>Hobli</th>
                                   <th>Village</th>
                                   <th>Owner Name</th>
-                                  <th>Survey No / Surnoc / Hissa No</th>
+                                  <th>SNo / Surnoc / Hissa</th>
                                   <th>Extent (Acre.Gunta.Fgunta)</th>
                                   <th>SqFt</th>
                                   <th>SqM</th>
@@ -1637,11 +1822,11 @@ const releaseSites = async () => {
                       <thead>
                         <tr style={{ backgroundColor: "#fff", color: "#000", textAlign: "left" }}>
                           {/* <th style={thStyle}>ID</th> */}
-                          <th style={thStyle}>LKRS ID</th>
-                          <th style={thStyle}>Order No</th>
-                          <th style={thStyle}>Date</th>
-                          <th style={thStyle}>Designation</th>
-                          <th style={thStyle}>Type</th>
+                          <th style={thStyle}>KRS ID</th>
+                          <th style={thStyle}>Site Release order Number</th>
+                          <th style={thStyle}>Date of Order</th>
+                          <th style={thStyle}>Designation of Authority issued </th>
+                          <th style={thStyle}>Release Type</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1759,7 +1944,7 @@ const releaseSites = async () => {
             {releaseData.length > 0 && (
               <div className="card">
                 <div className="card-header layout_btn_color">
-                  <h5 className="card-title" style={{ textAlign: 'center' }}>Yet to be release sites</h5>
+                  <h5 className="card-title" style={{ textAlign: 'center' }}>Sites to be released</h5>
                 </div>
                 <div className="card-body">
                   <div className='row'>
@@ -1790,7 +1975,7 @@ const releaseSites = async () => {
                         <div className='col-md-9'></div>
                         <div className='col-md-3'>
                           <button className="btn btn-primary btn-block mt-3" onClick={moveToReleasedTable}>
-                            Save & next
+                            Add
                           </button>
                         </div>
 
@@ -1806,7 +1991,7 @@ const releaseSites = async () => {
             {releasedData.length > 0 && (
               <div className="card">
                 <div className="card-header layout_btn_color">
-                  <h5 className="card-title" style={{ textAlign: 'center' }}>Selected record list</h5>
+                  <h5 className="card-title" style={{ textAlign: 'center' }}>Selected sites</h5>
                 </div>
                 <div className="card-body">
                   <div className='row'>
@@ -1814,6 +1999,7 @@ const releaseSites = async () => {
                       <DataTable
                         columns={releasedTableColumns}
                         data={releasedData}
+                         customStyles={customStyles}
                         pagination
                         highlightOnHover
                         striped
@@ -1828,7 +2014,7 @@ const releaseSites = async () => {
                           // onClick={handleInitial60PercentSave}
                           onClick={releaseSites}
                         >
-                          Save & proceed
+                          Save
                         </button>
                       </div>
                     )}
@@ -1852,20 +2038,16 @@ const releaseSites = async () => {
 
 
             {/* Final API list Table */}
-            <div className="card mt-4">
+            {finalApiList.length > 0 && (
+              <div className="card mt-4">
               <div className="card-header layout_btn_color">
-                <h5 className="card-title" style={{ textAlign: 'center' }}>Already released sites </h5>
+                <h5 className="card-title" style={{ textAlign: 'center' }}>Released sites </h5>
               </div>
               <div className="card-body">
                 <DataTable
-                  columns={[
-                    { name: 'ID', selector: row => row.id, sortable: true },
-                    { name: 'Dimension  ', selector: row => row.dimension, sortable: true },
-                    { name: 'Status', selector: row => row.status, sortable: true },
-                    { name: 'Date  ', selector: row => row.date, sortable: true },
-                    // Add more columns if needed
-                  ]}
+                  columns={alreadyreleasedTableColumns}
                   data={finalApiList}
+                   customStyles={customStyles}
                   pagination
                   striped
                   highlightOnHover
@@ -1874,6 +2056,7 @@ const releaseSites = async () => {
 
               </div>
             </div>
+            )}
           </div>
         </div>
       </div>

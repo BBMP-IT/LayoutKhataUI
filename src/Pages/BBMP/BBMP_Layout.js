@@ -194,7 +194,6 @@ const BBMP_LayoutForm = () => {
                                                 </label>
                                             </div>
                                         </div>
-
                                         {/* Second Radio Button */}
                                         <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mt-3">
                                             <div className="form-check">
@@ -238,9 +237,9 @@ const BBMP_LayoutForm = () => {
                             <IndividualGPSBlock areaSqft={areaSqft} LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID}
                                 isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsSitesSectionSaved={setIsSitesSectionSaved} ownerName={ownerName} />
 
-                            <ECDetailsBlock LKRS_ID={LKRS_ID} isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsECSectionSaved={setIsECSectionSaved} />
+                            <ECDetailsBlock LKRS_ID={LKRS_ID} isRTCSectionSaved={isRTCSectionSaved} ownerName={ownerName} isEPIDSectionSaved={isEPIDSectionSaved} setIsECSectionSaved={setIsECSectionSaved} />
 
-                            <DeclarationBlock LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID} isRTCSectionSaved={isRTCSectionSaved}
+                            <DeclarationBlock LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID} display_LKRS_ID={display_LKRS_ID} isRTCSectionSaved={isRTCSectionSaved}
                                 isEPIDSectionSaved={isEPIDSectionSaved} isApprovalSectionSaved={isApprovalSectionSaved} isReleaseSectionSaved={isReleaseSectionSaved}
                                 isSitesSectionSaved={isSitesSectionSaved} isECSectionSaved={isECSectionSaved} />
                         </div>
@@ -1083,7 +1082,6 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                 {/* Added RTC Table */}
                 {combinedData.length > 0 && (
                     <div className="col-12" ref={tableRTCRef}>
-                        <div className="">
                             <div className="d-flex justify-content-between align-items-center mb-3">
                                 <h4 className=" m-0">Added Survey No Details</h4>
                                 <div className="d-flex align-items-center">
@@ -1196,7 +1194,89 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                                     </button>
                                 </div>
                             </div>
-
+                            <br/>
+                            {/* Layout DC Conversion order No */}
+                            <div className='row'>
+                                <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                                <div className="form-group">
+                                    <label className="form-label">
+                                        Enter DC Conversion Order No <span className="mandatory_color">*</span>
+                                    </label>
+                                    <input
+                                        type="tel"
+                                        className="form-control"
+                                        placeholder="Enter DC Conversion Order No"
+                                        name="layoutApprovalNumber" disabled={isSurveyNoSectionDisabled}
+                                    />
+                                </div>
+                            </div>
+                            <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 '>
+                                <div className="form-group">
+                                    <label className="form-label">&nbsp;
+                                    </label>
+                                    <button className="btn btn-primary btn-block" onClick={showImplementationAlert} disabled={isSurveyNoSectionDisabled}>Fetch</button>
+                                </div>
+                                </div>
+                                 {/* Scan & Upload Layout DC Conversion order */}
+                            <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                                <div className="form-group">
+                                    <label className="form-label">
+                                        Upload Conversion order
+                                    </label>
+                                    <input
+                                        type="file"
+                                        accept=".pdf"
+                                        className="form-control" disabled={isSurveyNoSectionDisabled}
+                                    />
+                                    {/* {formData.approvalOrder && approvalOrderURL && (
+                                        <div className="mt-2">
+                                            <div
+                                                className="iframe-container"
+                                                style={{
+                                                    border: "1px solid #ddd",
+                                                    borderRadius: "5px",
+                                                    overflow: "hidden",
+                                                    padding: "0",
+                                                    width: "120px",
+                                                    height: "120px",
+                                                }}
+                                            >
+                                                <iframe
+                                                    src={approvalOrderURL}
+                                                    width="100%"
+                                                    height="100%"
+                                                    title="Approval Order"
+                                                    onClick={() =>
+                                                        window.open(approvalOrderURL, "_blank")
+                                                    }
+                                                    style={{ cursor: "pointer", border: "none" }}
+                                                />
+                                            </div>
+                                            <p className="mt-1" style={{ fontSize: "0.875rem" }}>
+                                                Current File:{" "}
+                                                <a
+                                                    href={approvalOrderURL}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    style={{
+                                                        textDecoration: "underline",
+                                                        color: "#007bff",
+                                                        fontSize: "0.875rem",
+                                                    }}
+                                                >
+                                                    {formData.approvalOrder.name}
+                                                </a>
+                                            </p>
+                                        </div>
+                                    )} */}
+                                    <span className="note_color">
+                                        {t("translation.BDA.Subdivision.fileSize&format")}
+                                    </span>
+                                    <br />
+                                </div>
+                            </div>
+                                </div>
+                           
                             <div className="row mt-4">
                                 <div className="col-md-10"></div>
                                 <div className="col-md-2">
@@ -1205,7 +1285,6 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                                         onClick={handleSaveRTC}>Save and continue</button>
                                 </div>
                             </div>
-                        </div>
                     </div>
                 )}
 
@@ -4512,6 +4591,11 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                 allowEscapeKey: true
             }).then(() => {
                 layoutSiteCountRef.current.focus();
+                 if (shape === "regular") {
+                    resetFormFields();
+                } else {
+                    resetIrregularFormFields();
+                }
             });
 
             return;
@@ -4872,6 +4956,9 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
     //Add site button click API
     const addSites = async (shape) => {
+              const isRegular = shape === "regular";
+        const isIrregular = shape === "irregular";
+
         if (!layoutSiteCount || totalSitesCount <= 0) {
             setLayoutSiteCountError("Please enter a valid number of total sites");
             layoutSiteCountRef.current?.focus();
@@ -4913,6 +5000,11 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                 allowEscapeKey: true
             }).then(() => {
                 layoutSiteCountRef.current?.focus();
+                  if (isRegular) {
+                    resetFormFields();
+                } else {
+                    resetIrregularFormFields();
+                }
             });
             return;
         }
@@ -4932,9 +5024,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         }
 
 
-        const isRegular = shape === "regular";
-        const isIrregular = shape === "irregular";
-
+  
         const isValid = isRegular ? finalValidation() : isIrregular ? irregularFinalValidation() : false;
         if (!isValid) return;
 
@@ -5681,6 +5771,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                                                     <option value="3">Industrial</option>
                                                     <option value="4">Park</option>
                                                     <option value="5">Residential</option>
+                                                    <option value="8">Road</option>
                                                     <option value="6">Sump</option>
                                                     <option value="7">Utility</option>
                                                 </select>
@@ -6028,6 +6119,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                                                 <option value="3">Industrial</option>
                                                 <option value="4">Park</option>
                                                 <option value="5">Residential</option>
+                                                <option value="8">Road</option>
                                                 <option value="6">Sump</option>
                                                 <option value="7">Utility</option>
                                             </select>
@@ -6927,7 +7019,7 @@ const Preview_siteDetailsTable = ({ data, setData, totalSitesCount, onSave, onEd
 
 };
 
-const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsECSectionSaved }) => {
+const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsECSectionSaved, ownerName }) => {
     const [ecNumber, setECNumber] = useState("");
     const [ecNumberError, setEcNumberError] = useState('');
     const [hasJDA, setHasJDA] = useState(false);
@@ -7856,7 +7948,7 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsE
                 </div>
             </div>
             <>
-                <Owner_EKYCBlock LKRS_ID={LKRS_ID} />
+                <Owner_EKYCBlock LKRS_ID={LKRS_ID} ownerName={ownerName}/>
 
                 {hasJDA && <JDA_EKYCBlock LKRS_ID={LKRS_ID} />}
             </>
@@ -7864,7 +7956,7 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsE
     );
 };
 //Owner EKYC Block
-const Owner_EKYCBlock = ({ LKRS_ID }) => {
+const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
     const [selectedOption, setSelectedOption] = useState('owner');
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
     const [phone, setPhone] = useState('');
@@ -7880,6 +7972,7 @@ const Owner_EKYCBlock = ({ LKRS_ID }) => {
     const [createdName, setCreatedName] = useState('');
     const [roleID, setRoleID] = useState('');
     const [LKRSID, setLKRSID] = useState('');
+    const [localownerName, setLocalOwnerName] = useState('');
     useEffect(() => {
         const storedCreatedBy = localStorage.getItem('createdBy');
         const storedCreatedName = localStorage.getItem('createdName');
@@ -7898,6 +7991,10 @@ const Owner_EKYCBlock = ({ LKRS_ID }) => {
         if (LKRS_ID) {
             setLocalLKRSID(LKRS_ID);
             fetchOwners();
+        }
+        if(ownerName){
+            setLocalOwnerName(ownerName);
+            setOwnerList(ownerName);
         }
     }, [LKRS_ID]);
 
@@ -8148,7 +8245,7 @@ const Owner_EKYCBlock = ({ LKRS_ID }) => {
                     if (result.isConfirmed) {
                         try {
                             const response = await ownerEKYC_Details("1", LKRS_ID);
-                            setOwnerDataList(response); // assuming response is the array you shared
+                            setOwnerDataList(response || []);
                         } catch (error) {
                             console.error("Failed to fetch EKYC owner details:", error);
                         }
@@ -8420,57 +8517,54 @@ const Owner_EKYCBlock = ({ LKRS_ID }) => {
 
                             <hr />
                             <div className='row'>
+                                {ownerDataList.filter(owner => owner.owN_AADHAARVERISTATUS === "Success")
+                                    .map((owner, index) => {
+                                        let parsedAadhaar = {};
+                                        try {
+                                            parsedAadhaar = JSON.parse(owner.owN_AADHAAR_RESPONSE).ekycResponse || {};
+                                        } catch (err) {
+                                            console.warn("Invalid Aadhaar JSON for owner:", owner.owN_NAME_EN);
+                                        }
 
-                                {ownerDataList.length > 0 && (
+                                        return (
+                                            <div className='col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12'>
+                                                <h5>Owner / Owner Representative EKYC Details</h5>
+                                                <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
+                                                    <thead className="table-light">
+                                                        <tr>
+                                                            <th>ಫೋಟೋ / Photo</th>
+                                                            <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>
+                                                            <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhar Number</th>
+                                                            <th>ಲಿಂಗ / Gender</th>
+                                                            <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th>
+                                                            <th>ವಿಳಾಸ / Address</th>
+                                                            <th>ಇಕೆವೈಸಿ ಸ್ಥಿತಿ / EKYC Status</th>
+                                                            <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr key={index}>
+                                                            <td style={{ textAlign: 'center' }}>
+                                                                <img src={usericon} alt="Owner" width="50" height="50" />
+                                                            </td>
+                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.ownerNameEng || 'N/A'}</td>
+                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.maskedAadhaar || 'N/A'}</td>
+                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.gender || 'N/A'}</td>
+                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.dateOfBirth || 'N/A'}</td>
+                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.addressEng || 'N/A'}</td>
+                                                            <td style={{ textAlign: 'center' }}>Verified</td>
+                                                            <td style={{ textAlign: 'center' }}>
+                                                                {owner.owN_NAMEMATCHSCORE > 80 ? 'Matched' : 'Not Matched'}
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
 
-                                    <div className='col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12'>
-                                        <h5>Owner / Owner Representative EKYC Details</h5>
-                                        <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
-                                            <thead className="table-light">
-                                                <tr>
-                                                    <th>ಫೋಟೋ / Photo</th>
-                                                    <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>
-                                                    <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhar Number</th>
-                                                    <th>ಲಿಂಗ / Gender</th>
-                                                    <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th>
-                                                    <th>ವಿಳಾಸ / Address</th>
-                                                    <th>ಇಕೆವೈಸಿ ಸ್ಥಿತಿ / EKYC Status</th>
-                                                    <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {ownerDataList
-                                                    .filter(owner => owner.owN_AADHAARVERISTATUS === "Success")
-                                                    .map((owner, index) => {
-                                                        let parsedAadhaar = {};
-                                                        try {
-                                                            parsedAadhaar = JSON.parse(owner.owN_AADHAAR_RESPONSE).ekycResponse || {};
-                                                        } catch (err) {
-                                                            console.warn("Invalid Aadhaar JSON for owner:", owner.owN_NAME_EN);
-                                                        }
+                                                </table>
+                                            </div>
+                                        );
+                                    })
+                                }
 
-                                                        return (
-                                                            <tr key={index}>
-                                                                <td style={{ textAlign: 'center' }}>
-                                                                    <img src={usericon} alt="Owner" width="50" height="50" />
-                                                                </td>
-                                                                <td style={{ textAlign: 'center' }}>{parsedAadhaar.ownerNameEng || 'N/A'}</td>
-                                                                <td style={{ textAlign: 'center' }}>{parsedAadhaar.maskedAadhaar || 'N/A'}</td>
-                                                                <td style={{ textAlign: 'center' }}>{parsedAadhaar.gender || 'N/A'}</td>
-                                                                <td style={{ textAlign: 'center' }}>{parsedAadhaar.dateOfBirth || 'N/A'}</td>
-                                                                <td style={{ textAlign: 'center' }}>{parsedAadhaar.addressEng || 'N/A'}</td>
-                                                                <td style={{ textAlign: 'center' }}>Verified</td>
-                                                                <td style={{ textAlign: 'center' }}>
-                                                                    {owner.owN_NAMEMATCHSCORE > 80 ? 'Matched' : 'Not Matched'}
-                                                                </td>
-                                                            </tr>
-                                                        );
-                                                    })}
-                                            </tbody>
-
-                                        </table>
-                                    </div>
-                                )}
 
                             </div>
                         </div>
@@ -9093,63 +9187,62 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
                 <div className='row'>
 
 
-                    {ownerDataList.length > 0 && (
 
-                        <div className='col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12'>
-                            <h5>JDA / JDA Representative EKYC Details</h5>
-                            <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
-                                <thead className="table-light">
-                                    <tr>
-                                        <th>ಫೋಟೋ / Photo</th>
-                                        <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>
-                                        <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhar Number</th>
-                                        <th>ಲಿಂಗ / Gender</th>
-                                        <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th>
-                                        <th>ವಿಳಾಸ / Address</th>
-                                        <th>ಇಕೆವೈಸಿ ಸ್ಥಿತಿ / EKYC Status</th>
-                                        <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {ownerDataList
-                                        .filter(owner => owner.owN_AADHAARVERISTATUS === "Success")
-                                        .map((owner, index) => {
-                                            let parsedAadhaar = {};
-                                            try {
-                                                parsedAadhaar = JSON.parse(owner.owN_AADHAAR_RESPONSE).ekycResponse || {};
-                                            } catch (err) {
-                                                console.warn("Invalid Aadhaar JSON for owner:", owner.owN_NAME_EN);
-                                            }
 
-                                            return (
-                                                <tr key={index}>
-                                                    <td style={{ textAlign: 'center' }}>
-                                                        <img src={usericon} alt="Owner" width="50" height="50" />
-                                                    </td>
-                                                    <td style={{ textAlign: 'center' }}>{parsedAadhaar.ownerNameEng || 'N/A'}</td>
-                                                    <td style={{ textAlign: 'center' }}>{parsedAadhaar.maskedAadhaar || 'N/A'}</td>
-                                                    <td style={{ textAlign: 'center' }}>{parsedAadhaar.gender || 'N/A'}</td>
-                                                    <td style={{ textAlign: 'center' }}>{parsedAadhaar.dateOfBirth || 'N/A'}</td>
-                                                    <td style={{ textAlign: 'center' }}>{parsedAadhaar.addressEng || 'N/A'}</td>
-                                                    <td style={{ textAlign: 'center' }}>Verified</td>
-                                                    <td style={{ textAlign: 'center' }}>
-                                                        {owner.owN_NAMEMATCHSCORE > 80 ? 'Matched' : 'Not Matched'}
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                </tbody>
+                    {ownerDataList
+                        .filter(owner => owner.owN_AADHAARVERISTATUS === "Success")
+                        .map((owner, index) => {
+                            let parsedAadhaar = {};
+                            try {
+                                parsedAadhaar = JSON.parse(owner.owN_AADHAAR_RESPONSE).ekycResponse || {};
+                            } catch (err) {
+                                console.warn("Invalid Aadhaar JSON for owner:", owner.owN_NAME_EN);
+                            }
 
-                            </table>
-                        </div>
-                    )}
+                            return (
+                                <div className='col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12'>
+                                    <h5>JDA / JDA Representative EKYC Details</h5>
+                                    <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
+                                        <thead className="table-light">
+                                            <tr>
+                                                <th>ಫೋಟೋ / Photo</th>
+                                                <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>
+                                                <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhar Number</th>
+                                                <th>ಲಿಂಗ / Gender</th>
+                                                <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th>
+                                                <th>ವಿಳಾಸ / Address</th>
+                                                <th>ಇಕೆವೈಸಿ ಸ್ಥಿತಿ / EKYC Status</th>
+                                                <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr key={index}>
+                                                <td style={{ textAlign: 'center' }}>
+                                                    <img src={usericon} alt="Owner" width="50" height="50" />
+                                                </td>
+                                                <td style={{ textAlign: 'center' }}>{parsedAadhaar.ownerNameEng || 'N/A'}</td>
+                                                <td style={{ textAlign: 'center' }}>{parsedAadhaar.maskedAadhaar || 'N/A'}</td>
+                                                <td style={{ textAlign: 'center' }}>{parsedAadhaar.gender || 'N/A'}</td>
+                                                <td style={{ textAlign: 'center' }}>{parsedAadhaar.dateOfBirth || 'N/A'}</td>
+                                                <td style={{ textAlign: 'center' }}>{parsedAadhaar.addressEng || 'N/A'}</td>
+                                                <td style={{ textAlign: 'center' }}>Verified</td>
+                                                <td style={{ textAlign: 'center' }}>
+                                                    {owner.owN_NAMEMATCHSCORE > 80 ? 'Matched' : 'Not Matched'}
+                                                </td>
+                                            </tr>
+                                        </tbody>
+
+                                    </table>
+                                </div>
+                            );
+                        })}
                 </div>
             </div>
         </div>
     );
 };
 //Declaration Block
-const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectionSaved, isEPIDSectionSaved, isApprovalSectionSaved, isReleaseSectionSaved, isSitesSectionSaved, isECSectionSaved }) => {
+const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, isApprovalSectionSaved, isReleaseSectionSaved, isSitesSectionSaved, isECSectionSaved }) => {
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
@@ -9388,6 +9481,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
                     text: response.responseMessage,
                     icon: "success",
                     confirmButtonText: "OK",
+                    allowOutsideClick: false, // Prevent closing by clicking outside
                 }).then((result) => {
                     if (result.isConfirmed) {
                         navigate('/Info', {
@@ -9395,7 +9489,119 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
                                 LKRS_ID,
                                 createdBy,
                                 createdName,
-                                roleID
+                                roleID,
+                                display_LKRS_ID
+                            }
+                        });
+                    }
+                });
+
+                stop_loader();
+            } else {
+                stop_loader();
+            }
+
+        } catch (error) {
+            stop_loader();
+            console.error('Error fetching data:', error);
+        }
+    };
+
+    //Final API for Redirecting to RELEASE DASHBOARD
+     const final_Save_Release = async () => {
+        if (isRTCSectionSaved === false && isEPIDSectionSaved === false) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Important!',
+                text: 'Please save the land details before proceeding with layout approval.',
+                confirmButtonText: 'Ok'
+            });
+            return;
+        }
+
+        if (isApprovalSectionSaved === false) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Important!',
+                text: 'Please save the Approval order details before proceeding.',
+                confirmButtonText: 'Ok'
+            });
+            return;
+        }
+
+        if (isReleaseSectionSaved === false) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Important!',
+                text: 'Please save the release order details before proceeding.',
+                confirmButtonText: 'Ok'
+            });
+            return;
+        }
+
+        if (isSitesSectionSaved === false) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Important!',
+                text: 'Please save the sites details before proceeding.',
+                confirmButtonText: 'Ok'
+            });
+            return;
+        }
+
+
+        if (isECSectionSaved === false) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Important!',
+                text: 'Please save the EC details before proceeding.',
+                confirmButtonText: 'Ok'
+            });
+            return;
+        }
+        // if (ownerList.some(owner => owner.owN_AADHAARVERISTATUS !== "Success")) {
+        //     Swal.fire({
+        //         icon: 'error',
+        //         title: 'Aadhaar Verification Failed',
+        //         text: 'One or more owners have not completed Aadhaar eKYC successfully.',
+        //         confirmButtonText: 'Ok'
+        //     });
+        //     return;
+        // }
+        if (!declaration1Checked || !declaration2Checked || !declaration3Checked) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Important!',
+                text: 'Please agree to all declarations before proceeding.',
+                confirmButtonText: 'Ok'
+            });
+            return;
+        }
+        start_loader();
+        try {
+            const payload = {
+                level: 1,
+                lkrS_ID: LKRS_ID,
+                lkrS_REMARKS: "",
+                lkrS_ADDITIONALINFO: "",
+                lkrS_UPDATEDBY: createdBy,
+                lkrS_UPDATEDNAME: createdName,
+                lkrS_UPDATEDROLE: roleID,
+            }
+
+            const response = await update_Final_SaveAPI(payload);
+            if (response.responseStatus === true) {
+                Swal.fire({
+                    text: response.responseMessage,
+                    icon: "success",
+                    confirmButtonText: "OK",
+                    allowOutsideClick: false, // Prevent closing by clicking outside
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        navigate('/release', {
+                            state: {
+                                LKRS_ID,
+                                display_LKRS_ID
                             }
                         });
                     }
@@ -9414,41 +9620,58 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
 
     // =======================================================survey no details starts=========================================
     const [rtcAddedData, setRtcAddedData] = useState([]);
-    const [areaSqft, setAreaSqft] = useState("0");
-
+    const [rtcData, setRtcData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(5);
-    const [rtcData, setRtcData] = useState([]);
+
+    // Define state variables for your totals - keep them as numbers
+    const [totalAcre, setTotalAcre] = useState(0);
+    const [totalGunta, setTotalGunta] = useState(0);
+    const [totalFGunta, setTotalFGunta] = useState(0);
+    const [totalSqFt, setTotalSqFt] = useState(0); // Changed to number (0)
+    const [totalSqM, setTotalSqM] = useState(0); // Changed to number (0)
+
+
     const combinedData = [...rtcAddedData, ...rtcData];
 
-    let totalAcre = 0;
-    let totalGunta = 0;
-    let totalFGunta = 0;
-    let totalSqFt = 0;
-
     useEffect(() => {
-        combinedData.forEach(row => {
+        let calculatedTotalAcre = 0;
+        let calculatedTotalGunta = 0;
+        let calculatedTotalFGunta = 0;
+        let calculatedTotalSqFt = 0;
+        let calculatedTotalSqM = 0;
+
+        combinedData.forEach((row) => {
             const acre = parseFloat(row.ext_acre || 0);
             const gunta = parseFloat(row.ext_gunta || 0);
             const fgunta = parseFloat(row.ext_fgunta || 0);
 
-            totalAcre += acre;
-            totalGunta += gunta;
-            totalFGunta += fgunta;
+            calculatedTotalAcre += acre;
+            calculatedTotalGunta += gunta;
+            calculatedTotalFGunta += fgunta;
 
             const sqft = (acre * 43560) + (gunta * 1089) + (fgunta * 68.0625);
-            totalSqFt += sqft;
+            calculatedTotalSqFt += sqft;
+            calculatedTotalSqM += sqft * 0.092903;
         });
 
-        // Normalize fgunta -> gunta and acre
-        totalGunta += Math.floor(totalFGunta / 16);
-        totalFGunta = totalFGunta % 16;
-        totalAcre += Math.floor(totalGunta / 40);
-        totalGunta = totalGunta % 40;
+        // Normalize fgunta -> gunta -> acre
+        calculatedTotalGunta += Math.floor(calculatedTotalFGunta / 16);
+        calculatedTotalFGunta = calculatedTotalFGunta % 16;
+        calculatedTotalAcre += Math.floor(calculatedTotalGunta / 40);
+        calculatedTotalGunta = calculatedTotalGunta % 40;
 
-        const totalSqFtRounded = totalSqFt.toFixed(2);
-        setAreaSqft(totalSqFtRounded);
-        localStorage.setItem('areaSqft', totalSqFtRounded);
+        // Update state variables with the calculated totals
+        setTotalAcre(calculatedTotalAcre);
+        setTotalGunta(calculatedTotalGunta);
+        setTotalFGunta(calculatedTotalFGunta);
+        // Store them as numbers in state
+        setTotalSqFt(calculatedTotalSqFt);
+        setTotalSqM(calculatedTotalSqM);
+
+        // Store the rounded value in localStorage if that's what's intended
+        localStorage.setItem('areaSqft', calculatedTotalSqFt.toFixed(2));
+
     }, [combinedData]);
 
     const totalPages = Math.ceil(combinedData.length / rowsPerPage);
@@ -9456,16 +9679,17 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
         (currentPage - 1) * rowsPerPage,
         currentPage * rowsPerPage
     );
+
     const goToPage = (page) => {
         if (page >= 1 && page <= totalPages) {
             setCurrentPage(page);
         }
     };
+
     const handlePageSizeChange = (e) => {
         setRowsPerPage(Number(e.target.value));
-        setCurrentPage(1); // Reset to first page when page size changes
+        setCurrentPage(1);
     };
-
 
     const [localLKRSID, setLocalLKRSID] = useState(LKRS_ID || "");
     useEffect(() => {
@@ -9473,11 +9697,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
             setLocalLKRSID(LKRS_ID);
         }
     }, [LKRS_ID]);
-    useEffect(() => {
-        if (localLKRSID) {
 
-        }
-    }, [localLKRSID]);
     const mapSurveyDetails = (surveyDetails) => {
         return surveyDetails.map((item) => ({
             district: item.suR_DISTRICT_Name || "—",
@@ -9490,7 +9710,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
             hissa_no: item.suR_HISSA,
             ext_acre: item.suR_EXTACRE || 0,
             ext_gunta: item.suR_EXTGUNTA || 0,
-            ext_fgunta: item.suR_EXTFgunta || 0, // Make sure to handle this if needed
+            ext_fgunta: item.suR_EXTFgunta || 0,
         }));
     };
 
@@ -9501,7 +9721,8 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
     const [phoneNumbers, setPhoneNumbers] = useState({});
     const [ownerTableData, setOwnerTableData] = useState([]);
     const [ecNumber, setECNumber] = useState("")
-    const [isJDA, setIsJDA] = useState(null);
+    const [hasJDA, setHasJDA] = useState(false);
+
     const customStyles = {
         headCells: {
             style: {
@@ -9574,7 +9795,11 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
 
                 setSelectedLandType(response.lkrS_LANDTYPE); //  Store the land type
                 setECNumber(response.lkrS_ECNUMBER);         // Set EC Number
-                setIsJDA(response.lkrS_ISJDA);
+                // if (response.lkrS_ISJDA === "1") {
+                //     setHasJDA(true);
+                // } else {
+                //     setHasJDA(false);
+                // }
 
 
                 const parsedSurveyDetails = mapSurveyDetails(response.surveyNumberDetails);
@@ -9595,7 +9820,11 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
             } else if (response && response.khataDetails && response.khataOwnerDetails && response.khataOwnerDetails.length > 0) {
                 setSelectedLandType(response.lkrS_LANDTYPE); //  Store the land type
                 setECNumber(response.lkrS_ECNUMBER);         // Set EC Number
-                setIsJDA(response.lkrS_ISJDA);
+                // if (response.lkrS_ISJDA === "1") {
+                //     setHasJDA(true);
+                // } else {
+                //     setHasJDA(false);
+                // }
                 setEPIDShowTable(true);
                 let khataDetailsJson = {};
                 if (response.khataDetails?.khatA_JSON) {
@@ -9629,10 +9858,10 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
 
                 // Optionally update area sqft if siteDetails present
                 if (khataDetailsJson.siteDetails?.siteArea) {
-                    setAreaSqft(khataDetailsJson.siteDetails.siteArea);
+                    setTotalSqFt(khataDetailsJson.siteDetails.siteArea);
                     localStorage.setItem('areaSqft', khataDetailsJson.siteDetails.siteArea);
                 } else {
-                    setAreaSqft(0);
+                    setTotalSqFt(0);
                     localStorage.removeItem('areaSqft');
                 }
 
@@ -9902,7 +10131,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
                     dateOfOrder: item.sitE_RELS_DATE,
                     orderReleaseFile: listFileResponse[index]?.doctrN_DOCBASE64 || null,
                     releaseAuthority: item.sitE_RELS_APPROVALDESIGNATION,
-                    releaseType: item.sitE_RELS_SITE_RELSTYPE_ID,
+                     releaseType: item.sitE_RELS_SITE_RELSTYPE,
                 }));
                 setOrder_Records(formattedList);
 
@@ -10008,9 +10237,140 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
         await fetchSiteDetails(localLKRSID);
         await owner_EKYCDetails(localLKRSID);
         await JDA_EKYCDetails(localLKRSID);
+        await fetchJDAInfo(localLKRSID);
         setIsModalOpen(true); // Show modal after fetching
     };
 
+    //========================================EC Details Start======================
+    const viewEC = async (ecNumber) => {
+        try {
+            start_loader();
+            const payload = {
+                finalRegNumber: ecNumber,
+                lkrsid: localLKRSID,
+            }
+            const response = await fetchECDetails(payload);
+
+            if (
+                response.responseStatus === true &&
+                response.base64 &&
+                response.json
+            ) {
+
+
+                const pdfWindow = window.open();
+                pdfWindow.document.write(
+                    `<iframe width='100%' height='100%' src='data:application/pdf;base64,${response.base64}'></iframe>`
+                );
+                stop_loader();
+            } else {
+                stop_loader();
+                Swal.fire({
+                    text: response.responseMessage,
+                    icon: "error",
+                    confirmButtonText: "OK",
+                });
+
+            }
+        } catch (error) {
+            stop_loader();
+            console.error("Failed to insert data:", error);
+
+        } finally {
+            stop_loader();
+        }
+    }
+    const [isRegistered, setIsRegistered] = useState(false);
+    const [deedNumber, setDeedNumber] = useState("");
+    const [deedNoURL, setDeedNoURL] = useState(null);
+
+
+    const fetchJDAInfo = async (localLKRSID) => {
+        try {
+            start_loader();
+            const response = await fetchJDA_details(1, parseInt(localLKRSID, 10), 0);
+
+            if (response && Object.keys(response).length > 0) {
+
+                setHasJDA(response[0].lkrS_IsJDAEXITS);
+                setIsRegistered(response[0].jdA_ISREGISTERED);
+
+                if (response[0].jdA_ISREGISTERED === true) {
+                    setDeedNumber(response[0].jdA_DEED_NO);
+                } else if (response[0].jdA_ISREGISTERED === false) {
+                    const deedFileResponse = await fileListAPI(3, localLKRSID, 4, 0);
+                    const base64String = deedFileResponse[0]?.doctrN_DOCBASE64;
+                    if (base64String) {
+                        const blob = base64ToBlob(base64String, 'application/pdf');
+                        if (blob) {
+                            const url = URL.createObjectURL(blob);
+                            setDeedNoURL(url);
+                        }
+                    }
+                }
+            }
+            stop_loader();
+        } catch (error) {
+            stop_loader();
+            console.error("Failed to fetch LKRSID data:", error);
+        }
+    };
+    const handleViewDeed = async () => {
+        let newTab = window.open('', '_blank'); // Open early to avoid popup block
+
+        if (!newTab) {
+            Swal.fire({
+                text: "Pop-up blocked. Please allow pop-ups to view the document.",
+                icon: "error",
+                confirmButtonText: "OK",
+            });
+            return;
+        }
+
+        try {
+            start_loader();
+
+            const payload = {
+                finalRegNumber: deedNumber,
+                lkrsid: localLKRSID,
+            };
+
+            const response = await fetchDeedDocDetails(payload);
+
+            if (response.responseStatus === true && response.base64) {
+                const binary = atob(response.base64.replace(/\s/g, ''));
+                const len = binary.length;
+                const buffer = new Uint8Array(len);
+
+                for (let i = 0; i < len; i++) {
+                    buffer[i] = binary.charCodeAt(i);
+                }
+
+                const blob = new Blob([buffer], { type: 'application/pdf' });
+                const pdfUrl = URL.createObjectURL(blob);
+
+                // Redirect the already opened tab to the blob URL
+                newTab.location.href = pdfUrl;
+
+                stop_loader();
+            } else {
+                stop_loader();
+                newTab.close(); // Close the tab if the request fails
+                Swal.fire({
+                    text: response.responseMessage,
+                    icon: "error",
+                    confirmButtonText: "OK",
+                });
+            }
+        } catch (error) {
+            stop_loader();
+            newTab.close(); // Close tab on error
+            console.error("Failed to fetch deed data:", error);
+
+        } finally {
+            stop_loader();
+        }
+    };
 
     return (
         <div className="card"> {loading && <Loader />}
@@ -10056,11 +10416,14 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
                     </label>
                 </div>
                 <div className='row'>
-                    <div className='col-md-3 mt-2'>
+                    <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-3'>
                         <button onClick={handlePreviewClick} className='btn btn-warning btn-block'>Preview</button>
                     </div>
-                    <div className='col-md-3 mt-2'>
-                        <button className='btn btn-primary btn-block' onClick={final_Save}>{t('translation.buttons.save&submit')}</button>
+                    <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-3'>
+                        <button className='btn btn-info btn-block' onClick={final_Save}>Save & see information</button>
+                    </div>
+                    <div className='col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mt-3'>
+                        <button className='btn btn-primary btn-block' onClick={final_Save_Release}>Save & proceed to release</button>
                     </div>
                 </div>
 
@@ -10068,11 +10431,11 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
 
                 <div id="modal-content">
                     <Modal isOpen={isModalOpen} onClose={closeModal} lkrSid={LKRS_ID}>
+                        {loading && <Loader />}
                         <div style={{ padding: '20px' }}>
                             {/* survey number preview block */}
                             {selectedLandType === "surveyNo" && (
                                 <>
-
                                     {combinedData.length > 0 && (
                                         <div className="col-12">
                                             <div className="">
@@ -10188,8 +10551,8 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
 
                                             </div>
                                         </div>
-                                    )
-                                    }
+                                    )}
+                                    <hr />
                                 </>
                             )}
                             {/* EPID preview block */}
@@ -10211,9 +10574,10 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
 
                                         </div>
                                     )}
+                                    <hr />
                                 </>
                             )}
-                            <hr />
+
                             {records.length > 0 && (
                                 <div className="mt-4">
                                     <h4>Layout Approval order</h4>
@@ -10225,9 +10589,9 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
                                         highlightOnHover
                                         striped
                                     />
+                                    <hr />
                                 </div>
                             )}
-                            <hr />
                             {order_records.length > 0 && (
                                 <div className="mt-4">
                                     <h4>{t('translation.BDA.table1.heading')}</h4>
@@ -10241,153 +10605,271 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, isRTCSectio
                                     />
                                 </div>
                             )}
-                            <hr />
                             {allSites.length > 0 && (
-                                <Preview_siteDetailsTable
-                                    data={allSites}
-                                    setData={setAllSites}
-                                    totalSitesCount={totalSitesCount}
-                                    LKRS_ID={localLKRSID}
-                                    createdBy={createdBy}
-                                    createdName={createdName}
-                                    roleID={roleID}
-                                />
+                                <>
+                                    <Preview_siteDetailsTable
+                                        data={allSites}
+                                        setData={setAllSites}
+                                        totalSitesCount={totalSitesCount}
+                                        LKRS_ID={localLKRSID}
+                                        createdBy={createdBy}
+                                        createdName={createdName}
+                                        roleID={roleID}
+                                    />
+                                    <hr />
+                                </>
                             )}
-                            <hr />
+
                             {/* EC Details */}
                             {(ecNumber || typeof isJDA === 'boolean') && (
-                                <div style={{ marginTop: '20px' }}>
-                                    <table
-                                        style={{
-                                            borderCollapse: 'collapse',
-                                            width: '100%',
-                                            fontFamily: 'Arial, sans-serif',
-                                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                                        }}
-                                    >
-                                        <thead>
-                                            <tr style={{ backgroundColor: '#fff', color: '#000', textAlign: 'left' }}>
-                                                <th style={thStyle}>EC Number</th>
-                                                <th style={thStyle}>Is there a Joint Development Agreement?</th>
-                                                <th style={thStyle}>Deed Number</th>
-                                             
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td style={tdStyle}>{ecNumber || '-'}</td>
-                                                <td style={tdStyle}><span style={{ color: isJDA ? 'green' : 'red' }}>{isJDA ? 'YES' : 'NO'}</span></td>
-                                                <td style={tdStyle}>RRN-1-12780-2023-24</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
+                                <>
+                                    <div style={{ marginTop: '20px' }}>
+                                        <h5>EC Details & JDA Details</h5>
+                                        <p className='mb-4'>Note : EC should be atleast 1 day before registered deed of property until 31-10-2024 or later. If sale / registered deed date is before 01-04-2004 then EC should be from 01-04-2004 to 31-10-2024 after</p>
 
-                            <hr />
+                                        <div className='row'>
+                                            <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mt-3">
+                                                <div className="form-group mt-2">
+                                                    <label className='form-label'>EC Number of Mother Property</label>
+                                                    <input
+                                                        type="text"
+                                                        className='form-control'
+                                                        placeholder="Enter EC Number of Mother Property"
+                                                        value={ecNumber}
+                                                        readOnly
+                                                    />
+                                                </div>
+                                                <div className="text-success">
+                                                    <strong>EC Check successfully <i className="fa fa-check-circle"></i></strong>
+                                                </div>
+                                            </div>
+                                            <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-7">
+                                                <div className="form-group">
+                                                    <button className="btn btn-warning btn-block" onClick={() => viewEC(ecNumber)}>
+                                                        View EC
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <hr />
+                                            <div className='col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6'>
+                                                <div className="d-flex align-items-center gap-3">
+                                                    <label className="form-check-label fw-bold">Is there a Joint Development Agreement?</label>
+                                                    <div className="form-check">
+                                                        <label className="form-check-label">
+                                                            <input
+                                                                className="form-check-input radioStyle"
+                                                                type="radio"
+                                                                name="hasJDA"
+                                                                value="yes"
+                                                                checked={hasJDA === true}
+                                                                onChange={() => setHasJDA(true)}
+                                                                disabled
+                                                            />
+                                                            Yes</label>
+                                                    </div>
+                                                    <div className="form-check">
+                                                        <label className="form-check-label">
+                                                            <input className="form-check-input radioStyle"
+                                                                type="radio"
+                                                                name="hasJDA"
+                                                                value="no"
+                                                                checked={hasJDA === false}
+                                                                onChange={() => setHasJDA(false)}
+                                                                disabled
+                                                            />
+                                                            No</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {hasJDA === true && (
+                                                <div className='col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6'>
+                                                    <div className="d-flex align-items-center gap-3 ">
+                                                        <label className="form-check-label fw-bold">Is Joint Development Agreement Registered?</label>
+                                                        <div className="form-check">
+                                                            <label className="form-check-label">
+                                                                <input
+                                                                    className="form-check-input radioStyle"
+                                                                    type="radio"
+                                                                    name="isRegistered"
+                                                                    value="yes"
+                                                                    checked={isRegistered === true}
+                                                                    onChange={() => setIsRegistered(true)}
+                                                                    disabled
+                                                                />
+                                                                Yes</label>
+                                                        </div>
+                                                        <div className="form-check">
+                                                            <label className="form-check-label">
+                                                                <input
+                                                                    className="form-check-input radioStyle"
+                                                                    type="radio"
+                                                                    name="isRegistered"
+                                                                    value="yes"
+                                                                    checked={isRegistered === false}
+                                                                    onChange={() => setIsRegistered(false)}
+                                                                    disabled
+                                                                />
+                                                                No</label>
+                                                        </div>
+                                                    </div></div>
+                                            )}
+                                            {isRegistered === true && (
+                                                <>
+                                                    <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6" >
+                                                        <label className='form-label'>Enter JDA registered Deed Number <span className='mandatory_color'>*</span></label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control"
+                                                            placeholder="Enter your Deed Number"
+                                                            value={deedNumber}
+                                                            maxLength={50} readOnly
+                                                        />
+                                                        <div className="text-success">
+                                                            <strong>Deed Check successfully <i className="fa fa-check-circle"></i></strong>
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-5">
+                                                        <div className="form-group">
+                                                            <button className="btn btn-warning btn-block" onClick={handleViewDeed}>
+                                                                View Deed
+                                                            </button>
+                                                        </div>
+
+                                                    </div>
+                                                </>
+                                            )}
+                                            {isRegistered === false && (
+                                                <>
+                                                    {deedNoURL && (
+                                                        <div style={{ marginTop: '10px' }}>
+                                                            <label className='form-check-label fw-bold'>Uploaded the JDA Document</label> &nbsp;
+                                                            <span
+                                                                onClick={() => window.open(deedNoURL, '_blank')}
+                                                                style={{
+                                                                    cursor: 'pointer',
+                                                                    color: '#007bff',
+                                                                    textDecoration: 'none',
+                                                                    fontSize: '0.875rem',
+                                                                    userSelect: 'none',
+                                                                }}
+                                                                role="button"
+                                                                tabIndex={0}
+                                                                onKeyPress={(e) => { if (e.key === 'Enter') window.open(deedNoURL, '_blank'); }}
+                                                            >
+                                                                View file
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                </>
+                                            )}
+
+                                        </div>
+
+
+
+                                    </div>
+                                    <hr />
+                                </>
+                            )}
                             {/* Owner EKYC */}
-                            {ownerEKYCDataList.length > 0 && (
+                            {ownerDataList.filter(owner => owner.owN_AADHAARVERISTATUS === "Success")
+                                .map((owner, index) => {
+                                    let parsedAadhaar = {};
+                                    try {
+                                        parsedAadhaar = JSON.parse(owner.owN_AADHAAR_RESPONSE).ekycResponse || {};
+                                    } catch (err) {
+                                        console.warn("Invalid Aadhaar JSON for owner:", owner.owN_NAME_EN);
+                                    }
 
-                                <div className='col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12'>
-                                    <h5>Owner / Owner Representative EKYC Details</h5>
-                                    <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
-                                        <thead className="table-light">
-                                            <tr>
-                                                <th>ಫೋಟೋ / Photo</th>
-                                                <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>
-                                                <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhar Number</th>
-                                                <th>ಲಿಂಗ / Gender</th>
-                                                <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th>
-                                                <th>ವಿಳಾಸ / Address</th>
-                                                <th>ಇಕೆವೈಸಿ ಸ್ಥಿತಿ / EKYC Status</th>
-                                                <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {ownerEKYCDataList
-                                                .filter(owner => owner.owN_AADHAARVERISTATUS === "Success")
-                                                .map((owner, index) => {
-                                                    let parsedAadhaar = {};
-                                                    try {
-                                                        parsedAadhaar = JSON.parse(owner.owN_AADHAAR_RESPONSE).ekycResponse || {};
-                                                    } catch (err) {
-                                                        console.warn("Invalid Aadhaar JSON for owner:", owner.owN_NAME_EN);
-                                                    }
+                                    return (
+                                        <div className='col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12'>
+                                            <h5>Owner / Owner Representative EKYC Details</h5>
+                                            <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
+                                                <thead className="table-light">
+                                                    <tr>
+                                                        <th>ಫೋಟೋ / Photo</th>
+                                                        <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>
+                                                        <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhar Number</th>
+                                                        <th>ಲಿಂಗ / Gender</th>
+                                                        <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th>
+                                                        <th>ವಿಳಾಸ / Address</th>
+                                                        <th>ಇಕೆವೈಸಿ ಸ್ಥಿತಿ / EKYC Status</th>
+                                                        <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr key={index}>
+                                                        <td style={{ textAlign: 'center' }}>
+                                                            <img src={usericon} alt="Owner" width="50" height="50" />
+                                                        </td>
+                                                        <td style={{ textAlign: 'center' }}>{parsedAadhaar.ownerNameEng || 'N/A'}</td>
+                                                        <td style={{ textAlign: 'center' }}>{parsedAadhaar.maskedAadhaar || 'N/A'}</td>
+                                                        <td style={{ textAlign: 'center' }}>{parsedAadhaar.gender || 'N/A'}</td>
+                                                        <td style={{ textAlign: 'center' }}>{parsedAadhaar.dateOfBirth || 'N/A'}</td>
+                                                        <td style={{ textAlign: 'center' }}>{parsedAadhaar.addressEng || 'N/A'}</td>
+                                                        <td style={{ textAlign: 'center' }}>Verified</td>
+                                                        <td style={{ textAlign: 'center' }}>
+                                                            {owner.owN_NAMEMATCHSCORE > 80 ? 'Matched' : 'Not Matched'}
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
 
-                                                    return (
-                                                        <tr key={index}>
-                                                            <td style={{ textAlign: 'center' }}>
-                                                                <img src={usericon} alt="Owner" width="50" height="50" />
-                                                            </td>
-                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.ownerNameEng || 'N/A'}</td>
-                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.maskedAadhaar || 'N/A'}</td>
-                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.gender || 'N/A'}</td>
-                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.dateOfBirth || 'N/A'}</td>
-                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.addressEng || 'N/A'}</td>
-                                                            <td style={{ textAlign: 'center' }}>Verified</td>
-                                                            <td style={{ textAlign: 'center' }}>
-                                                                {owner.owN_NAMEMATCHSCORE > 80 ? 'Matched' : 'Not Matched'}
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                })}
-                                        </tbody>
-
-                                    </table>
-                                </div>
-                            )}
-                            <hr />
+                                            </table>
+                                        </div>
+                                    );
+                                })
+                            }
+                           
                             {/* JDA EKYC */}
-                            {ownerDataList.length > 0 && (
 
-                                <div className='col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12'>
-                                    <h5>JDA / JDA Representative EKYC Details</h5>
-                                    <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
-                                        <thead className="table-light">
-                                            <tr>
-                                                <th>ಫೋಟೋ / Photo</th>
-                                                <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>
-                                                <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhar Number</th>
-                                                <th>ಲಿಂಗ / Gender</th>
-                                                <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th>
-                                                <th>ವಿಳಾಸ / Address</th>
-                                                <th>ಇಕೆವೈಸಿ ಸ್ಥಿತಿ / EKYC Status</th>
-                                                <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {ownerDataList
-                                                .filter(owner => owner.owN_AADHAARVERISTATUS === "Success")
-                                                .map((owner, index) => {
-                                                    let parsedAadhaar = {};
-                                                    try {
-                                                        parsedAadhaar = JSON.parse(owner.owN_AADHAAR_RESPONSE).ekycResponse || {};
-                                                    } catch (err) {
-                                                        console.warn("Invalid Aadhaar JSON for owner:", owner.owN_NAME_EN);
-                                                    }
 
-                                                    return (
-                                                        <tr key={index}>
-                                                            <td style={{ textAlign: 'center' }}>
-                                                                <img src={usericon} alt="Owner" width="50" height="50" />
-                                                            </td>
-                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.ownerNameEng || 'N/A'}</td>
-                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.maskedAadhaar || 'N/A'}</td>
-                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.gender || 'N/A'}</td>
-                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.dateOfBirth || 'N/A'}</td>
-                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.addressEng || 'N/A'}</td>
-                                                            <td style={{ textAlign: 'center' }}>Verified</td>
-                                                            <td style={{ textAlign: 'center' }}>
-                                                                {owner.owN_NAMEMATCHSCORE > 80 ? 'Matched' : 'Not Matched'}
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                })}
-                                        </tbody>
+                            {ownerDataList
+                                .filter(owner => owner.owN_AADHAARVERISTATUS === "Success")
+                                .map((owner, index) => {
+                                    let parsedAadhaar = {};
+                                    try {
+                                        parsedAadhaar = JSON.parse(owner.owN_AADHAAR_RESPONSE).ekycResponse || {};
+                                    } catch (err) {
+                                        console.warn("Invalid Aadhaar JSON for owner:", owner.owN_NAME_EN);
+                                    }
 
-                                    </table>
-                                </div>
-                            )}
+                                    return (
+                                        <div className='col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12'>
+                                            <h5>JDA / JDA Representative EKYC Details</h5>
+                                            <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
+                                                <thead className="table-light">
+                                                    <tr>
+                                                        <th>ಫೋಟೋ / Photo</th>
+                                                        <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>
+                                                        <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhar Number</th>
+                                                        <th>ಲಿಂಗ / Gender</th>
+                                                        <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th>
+                                                        <th>ವಿಳಾಸ / Address</th>
+                                                        <th>ಇಕೆವೈಸಿ ಸ್ಥಿತಿ / EKYC Status</th>
+                                                        <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr key={index}>
+                                                        <td style={{ textAlign: 'center' }}>
+                                                            <img src={usericon} alt="Owner" width="50" height="50" />
+                                                        </td>
+                                                        <td style={{ textAlign: 'center' }}>{parsedAadhaar.ownerNameEng || 'N/A'}</td>
+                                                        <td style={{ textAlign: 'center' }}>{parsedAadhaar.maskedAadhaar || 'N/A'}</td>
+                                                        <td style={{ textAlign: 'center' }}>{parsedAadhaar.gender || 'N/A'}</td>
+                                                        <td style={{ textAlign: 'center' }}>{parsedAadhaar.dateOfBirth || 'N/A'}</td>
+                                                        <td style={{ textAlign: 'center' }}>{parsedAadhaar.addressEng || 'N/A'}</td>
+                                                        <td style={{ textAlign: 'center' }}>Verified</td>
+                                                        <td style={{ textAlign: 'center' }}>
+                                                            {owner.owN_NAMEMATCHSCORE > 80 ? 'Matched' : 'Not Matched'}
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+
+                                            </table>
+                                        </div>
+                                    );
+                                })}
                         </div>
                     </Modal>
                 </div>
