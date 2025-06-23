@@ -32,6 +32,7 @@
     "ekyc_response": "/api/EKYC/GetEKYCResponse",
     "ekyc_ownerInsert": "/api/Owner/fnInsertOwnerinfo",
     "delete_siteInfo": "/api/Site/fnDeleteSiteinfo",
-    "fetchLKRSID": "/api/LKRS/fnGetLKRSInfo"
+    "fetchLKRSID": "/api/LKRS/fnGetLKRSInfo",
+    "insertJDAEKYC":"/api/JDA/fnInsertJDAEkycinfo"
   }
 }

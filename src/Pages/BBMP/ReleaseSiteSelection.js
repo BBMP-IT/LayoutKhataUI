@@ -5,9 +5,11 @@ import DataTable from 'react-data-table-component';
 import '../../Styles/CSS/ReleaseSiteSelection.css';
 import Swal from "sweetalert2";
 import { useLocation } from 'react-router-dom';
+import { useTranslation } from "react-i18next";
 
 import {
-  fetch_LKRSID, fetch_releasePercentageDetails, individualSiteListAPI, final_Release_Sites, listApprovalInfo
+  fetch_LKRSID, fetch_releasePercentageDetails, individualSiteListAPI, final_Release_Sites, listApprovalInfo, fileUploadAPI, listReleaseInfo, fileListAPI, insertReleaseInfo,
+  deleteReleaseInfo,
 } from '../../API/authService';
 
 export const useLoader = () => {
@@ -20,6 +22,7 @@ export const useLoader = () => {
 };
 
 const ReleaseSelection = () => {
+  const { t, i18n } = useTranslation();
   const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
   const [selectedValue, setSelectedValue] = useState('');
   const location = useLocation();
@@ -45,7 +48,10 @@ const ReleaseSelection = () => {
   const fileInputRef = useRef(null);
 
   const [originalTotalRecords, setOriginalTotalRecords] = useState(0);
-
+      const CreatedBy = 1;
+    const CreatedName = "username";
+    const RoleID = "user";
+  const [LKRSID, setLKRSID] = useState('');
   useEffect(() => {
     if (display_LKRS_ID && LKRS_ID) {
       handleSearchClick(display_LKRS_ID);  // call the method if LKRS_ID exists
@@ -1156,7 +1162,13 @@ const ReleaseSelection = () => {
     };
     try {
       start_loader();
-      const response = await fetch_LKRSID(payload);
+      setRtcAddedData([]);          // Clear survey data table
+      setOwnerTableData([]);        // Clear khata owner table
+      setEPID_FetchedData(null);    // Clear EPID fetched data
+      setEPIDShowTable(false);      // Hide khata table until data comes
+      setLkrsTableData({});         // Clear LKRS table data
+      setSelectedLandType('');
+      const response = await fetch_LKRSID(localLKRSID);
 
 
       if (response && response.surveyNumberDetails && response.surveyNumberDetails.length > 0) {
@@ -1167,6 +1179,7 @@ const ReleaseSelection = () => {
           lkrS_SITEAREA_SQMT: response.lkrS_SITEAREA_SQMT || '',
           lkrS_ECNUMBER: response.lkrS_ECNUMBER || ''
         });
+        await Fetch_Approval_percentage(response.lkrS_ID);
         setSelectedLandType(response.lkrS_LANDTYPE); //  Store the land type
 
         await fetchApprovalListAndSetTable(localLKRSID);
@@ -1185,7 +1198,7 @@ const ReleaseSelection = () => {
 
           return [...prev, ...filteredNewData];
         });
-        Fetch_release_percentage(response.lkrS_ID);
+
         stop_loader();
       } else if (response && response.khataDetails && response.khataOwnerDetails && response.khataOwnerDetails.length > 0) {
         setLkrsTableData({
@@ -1195,7 +1208,7 @@ const ReleaseSelection = () => {
           lkrS_SITEAREA_SQMT: response.lkrS_SITEAREA_SQMT || '',
           lkrS_ECNUMBER: response.lkrS_ECNUMBER || ''
         });
-
+        await Fetch_Approval_percentage(response.lkrS_ID);
         setSelectedLandType(response.lkrS_LANDTYPE); //  Store the land type
         await fetchApprovalListAndSetTable(localLKRSID);
         setEPIDShowTable(true);
@@ -1232,14 +1245,14 @@ const ReleaseSelection = () => {
         // Optionally update area sqft if siteDetails present
         if (khataDetailsJson.siteDetails?.siteArea) {
           setAreaSqft(khataDetailsJson.siteDetails.siteArea);
-          sessionStorage.setItem('areaSqft', khataDetailsJson.siteDetails.siteArea);
+          localStorage.setItem('areaSqft', khataDetailsJson.siteDetails.siteArea);
         } else {
           setAreaSqft(0);
-          sessionStorage.removeItem('areaSqft');
+          localStorage.removeItem('areaSqft');
         }
 
         setOwnerTableData(khataDetailsJson.ownerDetails || []);
-        Fetch_release_percentage(response.lkrS_ID);
+
         stop_loader();
       } else {
         stop_loader();
@@ -1307,8 +1320,8 @@ const ReleaseSelection = () => {
     setTotalSqFt(calculatedTotalSqFt);
     setTotalSqM(calculatedTotalSqM);
 
-    // Store the rounded value in sessionStorage if that's what's intended
-    sessionStorage.setItem('areaSqft', calculatedTotalSqFt.toFixed(2));
+    // Store the rounded value in localStorage if that's what's intended
+    localStorage.setItem('areaSqft', calculatedTotalSqFt.toFixed(2));
 
   }, [combinedData]);
 
@@ -1330,10 +1343,10 @@ const ReleaseSelection = () => {
   };
 
   useEffect(() => {
-    if (LKRS_ID) {
-      setLocalLKRSID(LKRS_ID);
+    if (display_LKRS_ID) {
+      setLocalLKRSID(display_LKRS_ID);
     }
-  }, [LKRS_ID]);
+  }, [display_LKRS_ID]);
 
   const mapSurveyDetails = (surveyDetails) => {
     return surveyDetails.map((item) => ({
@@ -1436,20 +1449,25 @@ const ReleaseSelection = () => {
   ];
   const [release_Data, setRelease_Data] = useState(null); // Entire response
   const [releaseDetails, setReleaseDetails] = useState([]);
+  const [isOrderEditing, setIsOrderEditing] = useState(false);
   //Fetch release Details
-  const Fetch_release_percentage = async (localLKRSID) => {
+  const Fetch_Approval_percentage = async (localLKRSID) => {
     try {
+      let level = "1";
+      let appId = "0";
       start_loader();
-      const response = await fetch_releasePercentageDetails(localLKRSID);
+      const response = await listApprovalInfo({
+        level,
+        aprLkrsId: localLKRSID,
+        aprId: appId,
+      });
 
       if (response) {
         console.log(response);
-
-        setRelease_Data(response); // store full response if needed
-        setReleaseDetails(response.siteReleaseDetailList || []); // set only list
+        setReleaseDetails(response);
 
         // Extract and use `sitE_RELS_SITE_RELSTYPE_ID`
-        const releaseTypeId = response.sitE_RELS_SITE_RELSTYPE_ID?.toString();
+        const releaseTypeId = response[0]?.apR_SITE_RELSTYPE_ID?.toString();
 
         if (releaseTypeId) {
           handleDimensionChange(releaseTypeId);
@@ -1685,8 +1703,445 @@ const ReleaseSelection = () => {
       console.error("Error in fetchApprovalListAndSetTable:", err);
     }
   };
+  //Release order fields 
+  const [release_formData, setRelease_FormData] = useState({
+    layoutOrderNumber: "",
+    release_Order: null,
+    dateOfOrder: "",
+    orderAuthority: "",
+  });
+  const [release_errors, setRelease_Errors] = useState({});
+  const [order_records, setOrder_Records] = useState([]);
+  const [edit_OrderIndex, setEdit_OrderIndex] = useState(null);
+  const fileReleaseOrderInputRef = useRef(null);
+  const [isOrder_EditingArea, setIsOrder_EditingArea] = useState(true);
+  const [savedOrder_Records, setSavedOrder_Records] = useState([]);
+  const handleOrderChange = (e) => {
+    const { name, value } = e.target;
+    setRelease_FormData({ ...release_formData, [name]: value });
+    setRelease_Errors({ ...release_errors, [name]: "" }); // Clear error on input
+  };
+
+  const [releaseOrderURL, setReleaseOrderURL] = useState(null);
+  const handleFilereleaseOrderChange = (e) => {
+    if (!e || !e.target || !e.target.files) {
+      console.error("Invalid event or no files found.");
+      return;
+    }
+
+    const file = e.target.files[0];
+
+    if (!file) {
+      setRelease_FormData({ ...release_formData, release_Order: null });
+      setReleaseOrderURL(null); // Clear preview
+      setRelease_Errors({ ...release_errors, release_Order: "No file selected." });
+      return;
+    }
+
+    if (file.type !== "application/pdf") {
+      setRelease_Errors({ ...release_errors, release_Order: "Only PDF files are allowed." });
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setRelease_Errors({ ...release_errors, release_Order: "File size must be less than 5MB." });
+      return;
+    }
+
+    // Clear old preview URL
+    if (releaseOrderURL) {
+      URL.revokeObjectURL(releaseOrderURL);
+    }
+
+    setRelease_FormData({ ...release_formData, release_Order: file });
+    setReleaseOrderURL(URL.createObjectURL(file)); // Set new preview
+    setRelease_Errors({ ...release_errors, release_Order: "" });
+  };
+  const validateOrderForm = () => {
+    let newErrors = {};
+
+    if (!release_formData.layoutOrderNumber.trim()) {
+      newErrors.layoutOrderNumber = "Layout Order of site release Number is required.";
+    }
+
+    if (!release_formData.release_Order) {
+      newErrors.release_Order = "Please upload a valid PDF (max 5MB).";
+    }
+
+    if (!release_formData.dateOfOrder) {
+      newErrors.dateOfOrder = "Date of approval is required.";
+    } else if (new Date(release_formData.dateOfOrder) > new Date()) {
+      newErrors.dateOfOrder = "Future dates are not allowed.";
+    }
+
+    if (!release_formData.orderAuthority.trim()) {
+      newErrors.orderAuthority = "Approval authority designation is required.";
+    }
 
 
+    return Object.keys(newErrors).length === 0;
+  };
+  const handleOrderSave = async () => {
+    if (!validateOrderForm()) return;
+
+  let trimmedLKRSID = localLKRSID;
+    if (/^L\d+$/i.test(localLKRSID)) {
+      trimmedLKRSID = localLKRSID.substring(1);
+    }
+
+    const payload = {
+      sitE_RELS_ID: 0,
+      sitE_RELS_LKRS_ID: trimmedLKRSID,
+      sitE_RELS_ORDER_NO: release_formData.layoutOrderNumber,
+      sitE_RELS_DATE: release_formData.dateOfOrder,
+      sitE_RELS_REMARKS: "",
+      sitE_RELS_ADDITIONALINFO: "",
+      sitE_RELS_CREATEDBY: CreatedBy,
+      sitE_RELS_CREATEDNAME: CreatedName,
+      sitE_RELS_CREATEDROLE: RoleID,
+      sitE_RELS_APPROVALDESIGNATION: release_formData.orderAuthority,
+    };
+
+    try {
+      start_loader();
+      const response = await insertReleaseInfo(payload);
+
+      if (response.responseStatus === true) {
+        const uploadSuccess = await file_UploadAPI(
+          3,
+          release_formData.layoutOrderNumber,
+          release_formData.release_Order,
+          release_formData.dateOfOrder,
+          response.sitE_RELS_ID,
+          "Release Order",
+          trimmedLKRSID,
+        );
+
+        if (uploadSuccess) {
+          start_loader();
+          try {
+            const listPayload = {
+              level: 1,
+              lkrsId: trimmedLKRSID,
+              siteRelsId: 0,
+            };
+
+            const listResponse = await listReleaseInfo(listPayload);
+            console.table(listResponse);
+            const listFileResponse = await fileListAPI(3, trimmedLKRSID, 3, 0); //level, LKRSID, MdocID, docID
+
+
+
+            if (Array.isArray(listResponse)) {
+              const formattedList = listResponse.map((item, index) => ({
+                layoutReleaseNumber: item.sitE_RELS_ORDER_NO,
+                dateOfOrder: item.sitE_RELS_DATE,
+                orderReleaseFile: listFileResponse[index]?.doctrN_DOCBASE64 || null,
+                releaseAuthority: item.sitE_RELS_APPROVALDESIGNATION,
+                releaseType: item.sitE_RELS_SITE_RELSTYPE,
+                releaseOrderDocID: listFileResponse[index]?.doctrN_ID || null,
+                releaseID: item.sitE_RELS_ID || null,
+              }));
+              setOrder_Records(formattedList);
+              setIsOrderEditing(true); // Disable edit button
+              setIsOrder_EditingArea(false); // Disable editing mode
+            }
+            stop_loader();
+          } catch (error) {
+            stop_loader();
+            console.error("Error fetching approval list:", error);
+          } finally {
+            stop_loader();
+          }
+
+          Swal.fire({
+            title: response.responseMessage,
+            icon: "success",
+            confirmButtonText: "OK",
+          });
+
+          // Reset form
+          if (fileReleaseOrderInputRef.current) {
+            fileReleaseOrderInputRef.current.value = "";
+          }
+          setRelease_FormData({
+            layoutOrderNumber: "",
+            release_Order: null,
+            dateOfOrder: "",
+            orderAuthority: "",
+          });
+          setRelease_Errors({});
+        } else {
+          stop_loader();
+          Swal.fire({
+            title: "Upload Error",
+            text: "Document upload failed. Please try again.",
+            icon: "error",
+            confirmButtonText: "OK",
+          });
+        }
+      } else {
+        stop_loader();
+        Swal.fire({
+          title: "Error",
+          text: "Something went wrong. Please try again later!",
+          icon: "error",
+          confirmButtonText: "OK",
+        });
+      }
+    } catch (error) {
+      stop_loader();
+      console.error("Error saving approval info:", error);
+    } finally {
+      stop_loader();
+    }
+  };
+  const handleEditRelease = () => {
+    setIsOrderEditing(false); // Disable edit button
+    setIsOrder_EditingArea(true); // Enable editing mode for area
+  };
+  //file Upload API
+  const file_UploadAPI = async (MstDocumentID, documentnumber, file, date, uniqueID, DocName, trimmedLKRSID) => {
+    const formData = new FormData();
+
+    try {
+      start_loader();
+      formData.append("DOCTRN_ID", 0);
+      formData.append("DOCTRN_LKRS_ID", trimmedLKRSID);
+      formData.append("DOCTRN_MDOC_ID", MstDocumentID);
+      formData.append("DOCTRN_REMARKS", "");
+      formData.append("DOCTRN_ADDITIONALINFO", "");
+      formData.append("DOCTRN_CREATEDBY", CreatedBy);
+      formData.append("DOCTRN_CREATEDNAME", CreatedName);
+      formData.append("DOCTRN_CREATEDROLE", RoleID);
+      formData.append("DocTrn_Document_No", documentnumber);
+      formData.append("DocTrn_Document_Date", date);
+      formData.append("DocTrn_UniqueIdentifier", uniqueID);
+      formData.append("DOCTRN_DOCUMENTTYPE", DocName)
+      formData.append("file", file);
+
+      const listResponse = await fileUploadAPI(formData);
+
+      stop_loader();
+
+      // Assuming listResponse has a boolean flag
+      return listResponse?.responseStatus === true;
+
+    } catch (error) {
+      stop_loader();
+      console.error("Error Uploading file:", error);
+      return false;
+    } finally {
+      stop_loader();
+    }
+  };
+  const order_columns = [
+    {
+      name: t('translation.BDA.table1.slno'),
+      cell: (row, index) => index + 1, // Adding 1 to start serial numbers from 1
+      width: '80px', // Adjust width as needed
+      center: true,
+    },
+    {
+      name: t('translation.BDA.table1.siteOrderNo'),
+      selector: row => row.layoutReleaseNumber,
+      sortable: true, center: true,
+    },
+    {
+      name: t('translation.BDA.table1.dateOforder'),
+      center: true,
+      selector: row => {
+        const date = new Date(row.dateOfOrder);
+
+        // Ensure the date is valid
+        if (isNaN(date)) {
+          return '';  // Handle invalid date by returning an empty string or a placeholder
+        }
+
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+        const year = date.getFullYear();
+
+        return `${day}-${month}-${year}`;
+      },
+      sortable: true,
+    },
+    {
+      name: t('translation.BDA.table1.siteOrder'),
+      center: true,
+      cell: row => {
+        if (row.orderReleaseFile) {
+          const blob = base64ToBlob(row.orderReleaseFile);
+
+          if (blob) {
+            const fileUrl = URL.createObjectURL(blob);
+            return (
+              <a
+                href={fileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="stableBlueLink"
+                onClick={() => {
+                  setTimeout(() => URL.revokeObjectURL(fileUrl), 1000);
+                }}
+              >
+                View File
+              </a>
+            );
+          } else {
+            return 'Invalid file';
+          }
+        } else {
+          return 'No file';
+        }
+      },
+    },
+    {
+      name: t('translation.BDA.table1.approvalAuthority'),
+      selector: row => row.releaseAuthority,
+      sortable: true,
+      center: true,
+    },
+
+    {
+      name: t('translation.BDA.table1.action'),
+      center: true,
+      cell: (row, index) => (
+        <div>
+          {/* <button
+                        className="btn btn-warning btn-sm me-2"
+                        onClick={() => handleOrderEdit(index)} disabled={!isOrder_Editing}
+                    >
+                        <i className="fa fa-pencil"></i>
+                    </button> */}
+          <button
+            className="btn btn-danger btn-sm"
+            onClick={() =>
+              handleDeleteRelease(
+                row.releaseID,
+                row.releaseOrderDocID
+              )
+            }
+          >
+            <i className="fa fa-trash"></i>
+          </button>
+        </div>
+      ),
+      ignoreRowClick: true,
+      allowOverflow: true,
+      button: true,
+    },
+  ];
+  //Release order delete info button
+  const handleDeleteRelease = async (releaseID, releaseOrderDocID) => {
+      let trimmedLKRSID = localLKRSID;
+    if (/^L\d+$/i.test(localLKRSID)) {
+      trimmedLKRSID = localLKRSID.substring(1);
+    }
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!"
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          start_loader();
+
+          const deletePayload = {
+            level: 1,
+            lkrS_ID: trimmedLKRSID,
+            sitE_RELS_ID: releaseID,
+            sitE_RELS_REMARKS: "",
+            sitE_RELS_ADDITIONALINFO: "",
+            site_Rels_UpdatedBy: createdBy,
+            site_Rels_UpdatedName: createdName,
+            site_Rels_UpdatedRole: roleID,
+            sitE_RELS_DOCUMENT_ID: releaseOrderDocID
+          };
+
+          const response = await deleteReleaseInfo(deletePayload);
+
+          if (response.responseStatus === true) {
+            Swal.fire("Deleted!", response.responseMessage, "success");
+            setIsOrderEditing(false);
+            setIsOrder_EditingArea(true);
+            fetchReleaseList(trimmedLKRSID);
+          }
+          else {
+            Swal.fire("Error!", "Failed to delete. Please try again.", "error");
+          }
+        } catch (error) {
+          console.error("Delete Error:", error);
+          Swal.fire("Error!", "Something went wrong.", "error");
+        } finally {
+          stop_loader();
+        }
+      }
+    });
+  };
+  const fetchReleaseList = async (trimmedLKRSID) => {
+    start_loader();
+    try {
+      const listPayload = {
+        level: 1,
+        lkrsId: trimmedLKRSID,
+        siteRelsId: 0,
+      };
+
+      const listResponse = await listReleaseInfo(listPayload);
+      const listFileResponse = await fileListAPI(3, trimmedLKRSID, 3, 0); //level, LKRSID, MdocID, docID
+
+      if (Array.isArray(listResponse) && listResponse.length > 0) {
+        const formattedList = listResponse.map((item, index) => ({
+          layoutReleaseNumber: item.sitE_RELS_ORDER_NO,
+          dateOfOrder: item.sitE_RELS_DATE,
+          orderReleaseFile: listFileResponse[index]?.doctrN_DOCBASE64 || null,
+          releaseAuthority: item.sitE_RELS_APPROVALDESIGNATION,
+          releaseType: item.sitE_RELS_SITE_RELSTYPE,
+          releaseOrderDocID: listFileResponse[index]?.doctrN_ID || null,
+          releaseID: item.sitE_RELS_ID || null,
+        }));
+
+        setIsOrderEditing(true); // Disable edit button
+        setIsOrder_EditingArea(false); // Disable editing mode
+        setOrder_Records(formattedList);
+      } else {
+        console.warn("Empty or invalid approval list");
+        setOrder_Records([]); // clear any stale data
+      }
+      stop_loader();
+    } catch (error) {
+      stop_loader();
+      console.error("Error fetching approval list:", error);
+    } finally {
+      stop_loader();
+    }
+  }
+  const base64ToBlob = (dataUrl, mimeType = 'application/pdf') => {
+    try {
+      // If it's a full Data URL, split it
+      const base64 = dataUrl.includes('base64,') ? dataUrl.split('base64,')[1] : dataUrl;
+
+      const byteCharacters = atob(base64);
+      const byteArrays = [];
+
+      for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+        const slice = byteCharacters.slice(offset, offset + 512);
+        const byteNumbers = Array.from(slice).map(char => char.charCodeAt(0));
+        const byteArray = new Uint8Array(byteNumbers);
+        byteArrays.push(byteArray);
+      }
+
+      return new Blob(byteArrays, { type: mimeType });
+    } catch (error) {
+      console.error("Invalid base64 input:", dataUrl);
+      return null; // return null if decoding fails
+    }
+  };
 
   return (
     <DashboardLayout>
@@ -1740,7 +2195,7 @@ const ReleaseSelection = () => {
                     <table style={{ borderCollapse: 'collapse', width: '100%' }}>
                       <tbody>
                         <tr>
-                          <th style={thStyle}>LKRS ID</th>
+                          <th style={thStyle}>KRS ID</th>
                           <td style={tdStyle}>{lkrsTableData.lkrS_DISPLAYID}</td>
                           <th style={thStyle}>Mother EPID</th>
                           <td style={tdStyle}>{lkrsTableData.lkrS_EPID}</td>
@@ -1912,12 +2367,12 @@ const ReleaseSelection = () => {
                   </>
                 )}
                 <hr />
-                
+
                 {releaseDetails.length > 0 && (
                   <div style={{ marginTop: '20px' }}>
-                    <h2 style={{ marginBottom: '15px', fontSize: '24px', fontWeight: 'bold', color: '#333' }}>
-                      Layout Release Order
-                    </h2>
+                    <h5 style={{ marginBottom: '15px', fontSize: '20px', fontWeight: 'bold', color: '#333' }}>
+                      Layout Approval Order
+                    </h5>
                     <table style={{
                       borderCollapse: "collapse",
                       width: "100%",
@@ -1927,10 +2382,12 @@ const ReleaseSelection = () => {
                       <thead>
                         <tr style={{ backgroundColor: "#fff", color: "#000", textAlign: "left" }}>
                           {/* <th style={thStyle}>ID</th> */}
-                          <th style={thStyle}>KRS ID</th>
+                          {/* <th style={thStyle}>KRS ID</th> */}
                           <th style={thStyle}>Site Release order Number</th>
                           <th style={thStyle}>Date of Order</th>
+                          <th style={thStyle}>Approval Authority</th>
                           <th style={thStyle}>Designation of Authority issued </th>
+                          <th style={thStyle}>Total Number of sites </th>
                           <th style={thStyle}>Release Type</th>
                         </tr>
                       </thead>
@@ -1938,10 +2395,12 @@ const ReleaseSelection = () => {
                         {releaseDetails.map((item, index) => (
                           <tr key={index} style={{ backgroundColor: index % 2 === 0 ? "#f9f9f9" : "#fff" }}>
                             {/* <td style={tdStyle}>{item.sitE_RELS_ID}</td> */}
-                            <td style={tdStyle}>{item.sitE_RELS_LKRS_ID}</td>
-                            <td style={tdStyle}>{item.sitE_RELS_ORDER_NO}</td>
-                            <td style={tdStyle}>{new Date(item.sitE_RELS_DATE).toLocaleDateString()}</td>
-                            <td style={tdStyle}>{item.sitE_RELS_APPROVALDESIGNATION}</td>
+                            {/* <td style={tdStyle}>{item.apr_LKRS_Id}</td> */}
+                            <td style={tdStyle}>{item.apr_Approval_No}</td>
+                            <td style={tdStyle}>{new Date(item.apr_Approval_Date).toLocaleDateString()}</td>
+                            <td style={tdStyle}>{item.apR_APPROVALAUTHORITY_Text}</td>
+                            <td style={tdStyle}>{item.apR_APPROVALDESIGNATION}</td>
+                            <td style={tdStyle}>{item.lkrS_NUMBEROFSITES}</td>
                             <td style={tdStyle}>{item.sitE_RELS_SITE_RELSTYPE}</td>
                           </tr>
                         ))}
@@ -1949,6 +2408,178 @@ const ReleaseSelection = () => {
                     </table>
                   </div>
                 )}
+
+                <div className="mt-5" >
+                  <hr className='mt-1' />
+                  <h6 className='fw-normal fs-5' style={{ color: '#0077b6' }}>{t('translation.BDA.Subdivision1.heading')}</h6>
+                  <hr className='mt-1' style={{ border: '1px dashed #0077b6' }} />
+                  <div className="row">
+                    {/* release Order Number */}
+                    <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                      <div className="form-group">
+                        <label className="form-label">
+                          {t('translation.BDA.Subdivision1.orderNo')} <span className="mandatory_color">*</span>
+                        </label>
+                        <input
+                          type="tel"
+                          className="form-control"
+                          placeholder={t('translation.BDA.Subdivision1.orderNoPlaceholder')}
+                          name="layoutOrderNumber"  // <-- Corrected here
+                          value={release_formData.layoutOrderNumber}
+                          onChange={handleOrderChange}
+                          disabled={!isOrder_EditingArea}
+                        />
+                        {release_errors.layoutOrderNumber && (
+                          <small className="text-danger">{release_errors.layoutOrderNumber}</small>
+                        )}
+
+                      </div>
+                    </div>
+                    {/* Date of order */}
+                    <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                      <div className="form-group">
+                        <label className="form-label">
+                          {t('translation.BDA.Subdivision1.dateofOrder')} <span className="mandatory_color">*</span>
+                        </label>
+                        <input
+                          type="date"
+                          className="form-control"
+                          name="dateOfOrder"
+                          value={release_formData.dateOfOrder}
+                          max={new Date().toISOString().split("T")[0]}
+                          onChange={handleOrderChange}
+                          disabled={!isOrder_EditingArea} // Disable when not editing
+                        />
+                        {release_errors.dateOfOrder && (
+                          <small className="text-danger">{release_errors.dateOfOrder}</small>
+                        )}
+                      </div>
+                    </div>
+                    {/* Scan & Upload Layout release order */}
+                    <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                      <div className="form-group">
+                        <label className="form-label">
+                          {t('translation.BDA.Subdivision1.scanUploadOrder')}
+                          <span className="mandatory_color">*</span>
+                        </label>
+                        <input
+                          type="file"
+                          accept=".pdf"
+                          className="form-control"
+                          onChange={handleFilereleaseOrderChange}
+                          ref={fileReleaseOrderInputRef}
+                          disabled={!isOrder_EditingArea} // Disable when not editing
+                        />
+                        {release_formData.release_Order && releaseOrderURL && (
+                          <div className="mt-2">
+                            <div
+                              style={{
+                                width: "120px",
+                                height: "120px",
+                                border: "1px solid #ccc",
+                                borderRadius: "8px",
+                                overflow: "hidden",
+                              }}
+                            >
+                              <iframe
+                                src={releaseOrderURL}
+                                title="Release Order"
+                                width="100%"
+                                height="100%"
+                                style={{ cursor: "pointer", border: "none" }}
+                                onClick={() =>
+                                  window.open(releaseOrderURL, "_blank")
+                                }
+                              />
+                            </div>
+                            <p className="mt-1" style={{ fontSize: "0.875rem" }}>
+                              Current File:{" "}
+                              <a
+                                href={releaseOrderURL}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  textDecoration: "underline",
+                                  color: "#007bff",
+                                  fontSize: "0.875rem",
+                                }}
+                              >
+                                {release_formData.release_Order.name}
+                              </a>
+                            </p>
+                          </div>
+                        )}
+                        <span className="note_color">
+                          {t('translation.BDA.Subdivision1.noteFile')}
+                        </span>
+                        <br />
+                        {release_errors.release_Order && (
+                          <small className="text-danger">{release_errors.release_Order}</small>
+                        )}
+                      </div>
+                    </div>
+                    {/* release Authority */}
+                    <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                      <div className="form-group">
+                        <label className="form-label">
+                          {t('translation.BDA.Subdivision1.designation')}
+                          <span className="mandatory_color">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder={t('translation.BDA.Subdivision1.placeholderDesignation')}
+                          name="orderAuthority"
+                          value={release_formData.orderAuthority}
+                          onChange={handleOrderChange}
+                          disabled={!isOrder_EditingArea} // Disable when not editing
+                        />
+                        {release_errors.orderAuthority && (
+                          <small className="text-danger">{release_errors.orderAuthority}</small>
+                        )}
+                      </div>
+                    </div>
+
+
+                    <div className='col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10'></div>
+                    {/* edit button */}
+                    {/* <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 ">
+                                <div className="form-group">
+                                    <button className="btn btn-info btn-block" disabled={!isOrderEditing} onClick={handleEditRelease}>
+                                        Edit
+                                    </button>
+                                </div>
+                            </div> */}
+                    {/* Save Button */}
+                    <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 ">
+                      <div className="form-group">
+                        <button className="btn btn-success btn-block" onClick={handleOrderSave} disabled={!isOrder_EditingArea}>
+                          Save and continue
+                        </button>
+                      </div>
+                    </div>
+                    {/* Save Button */}
+                    <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+                      <div className="form-group">
+                        {order_records.length > 0 && (
+                          <div className="mt-4">
+                            <h4>{t('translation.BDA.table1.heading')}</h4>
+                            <DataTable
+                              columns={order_columns}
+                              data={order_records}
+                              customStyles={customStyles}
+                              pagination
+                              highlightOnHover
+                              striped
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    {/* Table to Display Records */}
+
+                  </div>
+                </div>
 
                 {showNextReleaseForm && (
                   <div className="card mt-4">
@@ -2046,62 +2677,62 @@ const ReleaseSelection = () => {
 
               </div>
             </div>
-             <div className="card">
-  <div className="card-header layout_btn_color">
-    <h5 className="card-title" style={{ textAlign: 'center' }}>Sites to be released</h5>
-  </div>
-  <div className="card-body">
-    <div className='row'>
-      <div className='col-md-12 my-3'>
-        {((selectedValue === '2' && releasedData.length === 0) || selectedValue === '3' || selectedValue === '1') && (
-          <p style={{
-            backgroundColor: '#e8f4ff',
-            border: '1px solid #b3d8ff',
-            padding: '10px 15px',
-            borderRadius: '6px',
-            color: '#0056b3',
-            fontWeight: '500',
-            marginTop: '10px'
-          }}>
-            {selectedRows.length} record selected
-          </p>
-        )}
+            <div className="card">
+              <div className="card-header layout_btn_color">
+                <h5 className="card-title" style={{ textAlign: 'center' }}>Sites to be released</h5>
+              </div>
+              <div className="card-body">
+                <div className='row'>
+                  <div className='col-md-12 my-3'>
+                    {((selectedValue === '2' && releasedData.length === 0) || selectedValue === '3' || selectedValue === '1') && (
+                      <p style={{
+                        backgroundColor: '#e8f4ff',
+                        border: '1px solid #b3d8ff',
+                        padding: '10px 15px',
+                        borderRadius: '6px',
+                        color: '#0056b3',
+                        fontWeight: '500',
+                        marginTop: '10px'
+                      }}>
+                        {selectedRows.length} record selected
+                      </p>
+                    )}
 
-        {releaseData.length > 0 ? (
-          <>
-            <DataTable
-              columns={releaseTableColumns}
-              data={releaseData}
-              customStyles={customStyles}
-              pagination
-              highlightOnHover
-              striped
-            />
-            <div className='row'>
-              <div className='col-md-9'></div>
-              <div className='col-md-3'>
-                <button className="btn btn-primary btn-block mt-3" onClick={moveToReleasedTable}>
-                  Add
-                </button>
+                    {releaseData.length > 0 ? (
+                      <>
+                        <DataTable
+                          columns={releaseTableColumns}
+                          data={releaseData}
+                          customStyles={customStyles}
+                          pagination
+                          highlightOnHover
+                          striped
+                        />
+                        <div className='row'>
+                          <div className='col-md-9'></div>
+                          <div className='col-md-3'>
+                            <button className="btn btn-primary btn-block mt-3" onClick={moveToReleasedTable}>
+                              Add
+                            </button>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div style={{
+                        textAlign: 'center',
+                        padding: '20px',
+                        fontWeight: '500',
+                        color: '#999'
+                      }}>
+                        There are no sites to display
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
-          </>
-        ) : (
-          <div style={{
-            textAlign: 'center',
-            padding: '20px',
-            fontWeight: '500',
-            color: '#999'
-          }}>
-            There are no sites to display
-          </div>
-        )}
-      </div>
-    </div>
-  </div>
-</div>
 
-           
+
 
             {/* Already Released Table */}
             {releasedData.length > 0 && (

@@ -18,7 +18,7 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import apiService from '../../API/apiService';
 import {
-    handleFetchDistricts, handleFetchTalukOptions, handleFetchHobliOptions, handleFetchVillageOptions,
+    handleFetchDistricts, handleFetchTalukOptions, handleFetchHobliOptions, handleFetchVillageOptions, jdaEKYC_Details,
     handleFetchHissaOptions, fetchRTCDetailsAPI, handleFetchEPIDDetails, getAccessToken, sendOtpAPI, verifyOtpAPI, submitEPIDDetails, submitsurveyNoDetails,
     insertApprovalInfo, listApprovalInfo, deleteApprovalInfo, insertReleaseInfo, listReleaseInfo, fileUploadAPI, fileListAPI, insertJDA_details, ownerEKYC_Details, ekyc_Details, ekyc_Response, ekyc_insertOwnerDetails,
     individualSiteAPI, individualSiteListAPI, fetchECDetails, fetchDeedDocDetails, fetchDeedDetails, fetchJDA_details, deleteSiteInfo, fetch_LKRSID, update_Final_SaveAPI
@@ -54,7 +54,7 @@ const BBMP_SubmittedInfo = () => {
                 buttonRef.current.click();
             }
         } else {
-            const id = sessionStorage.getItem("LKRSID");
+            const id = localStorage.getItem("LKRSID");
             if (id) setLocalLKRSID(id);
         }
     }, [LKRS_ID]);
@@ -119,8 +119,8 @@ const BBMP_SubmittedInfo = () => {
         setTotalSqFt(calculatedTotalSqFt);
         setTotalSqM(calculatedTotalSqM);
 
-        // Store the rounded value in sessionStorage if that's what's intended
-        sessionStorage.setItem('areaSqft', calculatedTotalSqFt.toFixed(2));
+        // Store the rounded value in localStorage if that's what's intended
+        localStorage.setItem('areaSqft', calculatedTotalSqFt.toFixed(2));
 
     }, [combinedData]);
 
@@ -238,7 +238,7 @@ const BBMP_SubmittedInfo = () => {
         };
         try {
             start_loader();
-            const response = await fetch_LKRSID(payload);
+            const response = await fetch_LKRSID(localLKRSID);
 
             if (response && response.surveyNumberDetails && response.surveyNumberDetails.length > 0) {
 
@@ -308,10 +308,10 @@ const BBMP_SubmittedInfo = () => {
                 // Optionally update area sqft if siteDetails present
                 if (khataDetailsJson.siteDetails?.siteArea) {
                     setTotalSqFt(khataDetailsJson.siteDetails.siteArea);
-                    sessionStorage.setItem('areaSqft', khataDetailsJson.siteDetails.siteArea);
+                    localStorage.setItem('areaSqft', khataDetailsJson.siteDetails.siteArea);
                 } else {
                     setTotalSqFt(0);
-                    sessionStorage.removeItem('areaSqft');
+                    localStorage.removeItem('areaSqft');
                 }
 
                 setOwnerTableData(khataDetailsJson.ownerDetails || []);
@@ -408,18 +408,21 @@ const BBMP_SubmittedInfo = () => {
     ];
 
     const approval_columns = [
-        {
+      {
             name: t('translation.BDA.table.slno'),
             cell: (row, index) => index + 1,
             width: '80px',
+            center: true,
         },
         {
-            name: t('translation.BDA.table.approvalNo'),
+            name: "Approval No",
             selector: row => row.layoutApprovalNumber,
             sortable: true,
+            center: true,
+            with: '150px'
         },
         {
-            name: t('translation.BDA.table.dateOfApproval'),
+            name: 'Date of Approval',
             selector: row => {
                 const date = new Date(row.dateOfApproval);
 
@@ -435,6 +438,8 @@ const BBMP_SubmittedInfo = () => {
                 return `${day}-${month}-${year}`;
             },
             sortable: true,
+            center: true,
+            width: '150px',
         },
         {
             name: t('translation.BDA.table.approvalOrder'),
@@ -464,6 +469,8 @@ const BBMP_SubmittedInfo = () => {
                     return 'No file';
                 }
             },
+            center: true,
+            width: '150px',
         },
         {
             name: t('translation.BDA.table.approvalMap'),
@@ -493,12 +500,31 @@ const BBMP_SubmittedInfo = () => {
                     return 'No file';
                 }
             },
+            center: true,
         },
-
         {
-            name: t('translation.BDA.table.approvalAuthority'),
+            name: 'Layout Approval Authority',
+            selector: row => row.approvalAuthorityPlanning,
+            sortable: true,
+            minWidth: '220px', center: true,
+        },
+        {
+            name: "Designation of Approval Authority",
             selector: row => row.approvalAuthority,
             sortable: true,
+            minWidth: '280px', center: true,
+        },
+        {
+            name: "Total No of sites",
+            selector: row => row.totalNoOfSites,
+            sortable: true,
+            minWidth: '150px', center: true,
+        },
+        {
+            name: "Release Type",
+            selector: row => row.releaseType,
+            sortable: true,
+            minWidth: '150px', center: true,
         },
     ];
     const base64ToBlob = (dataUrl, mimeType = 'application/pdf') => {
@@ -547,6 +573,9 @@ const BBMP_SubmittedInfo = () => {
                         approvalOrder: approvalFileResponse[index]?.doctrN_DOCBASE64 || null,
                         approvalMap: approvalMapFileResponse[index]?.doctrN_DOCBASE64 || null,
                         approvalAuthority: item.apR_APPROVALDESIGNATION,
+                        approvalAuthorityPlanning: item.apR_APPROVALAUTHORITY_Text,
+                        releaseType: item.sitE_RELS_SITE_RELSTYPE,
+                        totalNoOfSites: item.lkrS_NUMBEROFSITES,
                     };
                 });
 
@@ -669,13 +698,24 @@ const BBMP_SubmittedInfo = () => {
             console.error("Failed to fetch EKYC owner details:", error);
         }
     }
+    const [jdaDataList, setJDADataList] = useState([]);
+    
     const JDA_EKYCDetails = async (localLKRSID) => {
-        try {
-            const response = await ownerEKYC_Details("1", localLKRSID);
-            setOwnerDataList(response); // assuming response is the array you shared
-        } catch (error) {
-            console.error("Failed to fetch EKYC owner details:", error);
-        }
+       try {
+                   const apiResponse = await jdaEKYC_Details("1", localLKRSID);
+               
+                   const owners = (apiResponse || []).filter(owner => owner.jdAekyc_ID !== 0);
+               
+                   if (owners.length > 0) {
+                     console.table(owners);
+                     setJDADataList(owners);
+                   } else {
+                     setJDADataList([]);
+                   }
+                 } catch (error) {
+                   console.error("Error fetching owner data:", error);
+                   setJDADataList([]);
+                 }
     }
 
 
@@ -1213,7 +1253,7 @@ const BBMP_SubmittedInfo = () => {
                                             </>
                                         )}
                                         {/* Owner EKYC */}
-                                        {ownerDataList.filter(owner => owner.owN_AADHAARVERISTATUS === "Success")
+                                        {ownerEKYCDataList.filter(owner => owner.owN_AADHAARVERISTATUS === "Success")
                                             .map((owner, index) => {
                                                 let parsedAadhaar = {};
                                                 try {
@@ -1262,53 +1302,36 @@ const BBMP_SubmittedInfo = () => {
                                         }
 
                                         {/* JDA EKYC */}
-                                        {ownerDataList
-                                            .filter(owner => owner.owN_AADHAARVERISTATUS === "Success")
-                                            .map((owner, index) => {
-                                                let parsedAadhaar = {};
-                                                try {
-                                                    parsedAadhaar = JSON.parse(owner.owN_AADHAAR_RESPONSE).ekycResponse || {};
-                                                } catch (err) {
-                                                    console.warn("Invalid Aadhaar JSON for owner:", owner.owN_NAME_EN);
-                                                }
+                                        {jdaDataList.length > 0 && (
 
-                                                return (
-                                                    <div className='col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12'>
-                                                        <h5>JDA / JDA Representative EKYC Details</h5>
-                                                        <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
-                                                            <thead className="table-light">
-                                                                <tr>
-                                                                    <th>ಫೋಟೋ / Photo</th>
-                                                                    <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>
-                                                                    <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhar Number</th>
-                                                                    <th>ಲಿಂಗ / Gender</th>
-                                                                    <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th>
-                                                                    <th>ವಿಳಾಸ / Address</th>
-                                                                    <th>ಇಕೆವೈಸಿ ಸ್ಥಿತಿ / EKYC Status</th>
-                                                                    <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                <tr key={index}>
-                                                                    <td style={{ textAlign: 'center' }}>
-                                                                        <img src={usericon} alt="Owner" width="50" height="50" />
-                                                                    </td>
-                                                                    <td style={{ textAlign: 'center' }}>{parsedAadhaar.ownerNameEng || 'N/A'}</td>
-                                                                    <td style={{ textAlign: 'center' }}>{parsedAadhaar.maskedAadhaar || 'N/A'}</td>
-                                                                    <td style={{ textAlign: 'center' }}>{parsedAadhaar.gender || 'N/A'}</td>
-                                                                    <td style={{ textAlign: 'center' }}>{parsedAadhaar.dateOfBirth || 'N/A'}</td>
-                                                                    <td style={{ textAlign: 'center' }}>{parsedAadhaar.addressEng || 'N/A'}</td>
-                                                                    <td style={{ textAlign: 'center' }}>Verified</td>
-                                                                    <td style={{ textAlign: 'center' }}>
-                                                                        {owner.owN_NAMEMATCHSCORE > 80 ? 'Matched' : 'Not Matched'}
-                                                                    </td>
-                                                                </tr>
-                                                            </tbody>
+                        <div className="col-12">
+                            <h5>JDA / JDA Representative EKYC Details</h5>
+                            <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
+                                <thead className="table-light">
+                                    <tr>
+                                        <th>JDA Name</th>
+                                        <th>Aadhaar Number</th>
+                                        <th>Name Match Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
 
-                                                        </table>
-                                                    </div>
-                                                );
-                                            })}
+
+                                    {jdaDataList.map((owner, index) => (
+
+                                        <tr key={index}>
+                                            <td style={{ textAlign: 'center' }}>{owner.jdAekyc_JDA_Name || 'N/A'}</td>
+                                            <td style={{ textAlign: 'center' }}>{owner.jdAekyc_AadhaarNumber || 'N/A'}</td>
+                                            <td style={{ textAlign: 'center' }}>
+                                                {parseFloat(owner.jdAekyc_NameMatchScore) > 60 ? 'Name Match Successful' : 'Name Match Failed'}
+                                            </td>
+                                        </tr>
+
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
                                     </div>
                                 </div>
                             </div>

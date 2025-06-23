@@ -13,12 +13,12 @@ export const getAccessToken = async () => {
   return await apiService.postRequest('/Token', formData);
 };
 export const checkTokenExpiry = () => {
-    const sessionData = JSON.parse(sessionStorage.getItem('sessionData'));
+    const sessionData = JSON.parse(localStorage.getItem('sessionData'));
     if (sessionData) {
         const currentTime = Date.now();
         if (currentTime >= sessionData.expiry) {
             // Expired
-            sessionStorage.clear();
+            localStorage.clear();
             return false;
         }
         return true;
@@ -37,8 +37,8 @@ export const regenerateToken = async () => {
 //handle session expired
 export const handleSessionExpired = () => {
   // Clear the token or set a session-expired flag
-  sessionStorage.removeItem('access_token');
-  sessionStorage.setItem('sessionExpired', 'true');
+  localStorage.removeItem('access_token');
+  localStorage.setItem('sessionExpired', 'true');
 };
 //send otp API
 export const sendOtpAPI = async (mobileNumber) => {
@@ -70,7 +70,7 @@ export const verifyOtpAPI = async (mobileNumber, otp) => {
 //District API 
 export const handleFetchDistricts = async (newLanguage) => {
   try {
-    sessionStorage.setItem('isTokenRequired', false);
+   
 
     const response = await apiService.getRequest(`${config.endpoints.kaveriDistrict}`, {}); // assuming relative path only
 
@@ -92,7 +92,7 @@ export const handleFetchDistricts = async (newLanguage) => {
 //taluk API
 export const handleFetchTalukOptions = async (districtCode, language) => {
   try {
-    sessionStorage.setItem('isTokenRequired', false); // mark token needed if required
+    
 
     const response = await apiService.postRequest(`${config.endpoints.kaveriTaluk}`, {
       districT_CODE: String(districtCode),
@@ -117,7 +117,7 @@ export const handleFetchTalukOptions = async (districtCode, language) => {
 //Hobli API
 export const handleFetchHobliOptions = async (districtCode, talukCode, language) => {
   try {
-    sessionStorage.setItem('isTokenRequired', false);
+   
     const response = await apiService.postRequest(`${config.endpoints.kaveriHobli}`, {
       districT_CODE: String(districtCode),
       taluK_CODE: String(talukCode),
@@ -140,7 +140,7 @@ export const handleFetchHobliOptions = async (districtCode, talukCode, language)
 //Village API
 export const handleFetchVillageOptions = async (districtCode, talukCode, hobliCode, language) => {
   try {
-    sessionStorage.setItem('isTokenRequired', false);
+
     const response = await apiService.postRequest(`${config.endpoints.kaveriVillage}`, {
       districT_CODE: String(districtCode),
       taluK_CODE: String(talukCode),
@@ -170,7 +170,6 @@ export const handleFetchHissaOptions = async ({
   surveyNo
 }) => {
   try {
-    sessionStorage.setItem('isTokenRequired', false);
     const payload = {
       bhm_dist_code: String(districtCode),
       bhm_taluk_code: String(talukCode),
@@ -243,7 +242,6 @@ export const submitsurveyNoDetails = async (payload) => {
 //EPID fetching API
 export const handleFetchEPIDDetails = async (epidNumber) => {
   try {
-    sessionStorage.setItem('isTokenRequired', false); // Assuming this controls token usage
 
     const response = await apiService.postRequest(`${config.endpoints.epid}`, {
       propertyEPID: epidNumber,
@@ -410,7 +408,7 @@ export const ownerEKYC_Details = async (level, LKRSID) => {
 //EKYC JDA Owner list API
 export const jdaEKYC_Details = async (level, LKRSID) => {
   try {
-    const url = `${config.endpoints.jdaEKYCOwnerfetch}?level=${level}&ownLkrsId=${LKRSID}&jdaId=0&jdaEkycJdaId=0`;
+    const url = `${config.endpoints.jdaEKYCOwnerfetch}?level=${level}&lkrsId=${LKRSID}&jdaId=0&jdaEkycJdaId=0`;
     const response = await apiService.getRequest(url);
     return response;
   } catch (error) {
@@ -458,6 +456,16 @@ export const ekyc_Response = async (transactionNumber, OwnerType, ownName) => {
 export const ekyc_insertOwnerDetails = async (payload) => {
   try {
     const response = await apiService.postRequest(config.endpoints.ekyc_ownerInsert, payload);
+    return response;
+  } catch (error) {
+    console.error("EKYC insert owner details Error:", error);
+    throw error;
+  }
+};
+//EKYC JDA Insert API
+export const ekyc_insertJDADetails = async (payload) => {
+  try {
+    const response = await apiService.postRequest(config.endpoints.jdaEKYCInsert, payload);
     return response;
   } catch (error) {
     console.error("EKYC insert owner details Error:", error);
@@ -526,9 +534,10 @@ export const deleteSiteInfo = async (payload) => {
   }
 };
 //Fetch LKRSID
-export const fetch_LKRSID = async (payload) => {
+export const fetch_LKRSID = async (localLKRSID) => {
   try {
-    const url = `${config.endpoints.fetchLKRSID}?level=${payload.level}&LkrsId=${payload.LkrsId}`;
+    const url = `${config.endpoints.fetchLKRSID}?level=1&LkrsId=${localLKRSID}`;
+    
     const response = await apiService.getRequest(url);
     return response;
   } catch (error) {

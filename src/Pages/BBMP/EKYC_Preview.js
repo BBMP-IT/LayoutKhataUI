@@ -1,6 +1,8 @@
 // EKYCResultHandler.js
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import config from '../../Config/config';
+
 
 const EKYCResultHandler = () => {
   const location = useLocation();
@@ -24,13 +26,13 @@ console.log({ txnno, txndatetime, status, vaultrefno });
           ekycStatus: status,
           ekycVaultRefNo: vaultrefno
         },
-        "http://localhost:3001/LayoutForm"
+          `${config.redirectBaseURL}/layoutForm`
       );
     }
 
     setTimeout(() => {
       window.close();
-    }, 5000);
+    }, 1000);
   }, [location]);
 
   // Handler for the "Go Back" button

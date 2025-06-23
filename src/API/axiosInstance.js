@@ -14,12 +14,9 @@ axiosInstance.interceptors.request.use(
     const accessToken = localStorage.getItem('access_token');
     const isTokenRequired = localStorage.getItem('isTokenRequired');
 
-    if (isTokenRequired === "false") {
-      if (accessToken) {
-        config.headers.Authorization = `Bearer ${accessToken}`;
-      }
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
     }
-
     return config;
   },
   (error) => {
@@ -27,25 +24,43 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// Response interceptor for handling errors
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-      console.error('Unauthorized, redirecting to login...');
-      Swal.fire({
-        title: "Session Expired",
-        text: "Your token has expired. Please re-login to access the dashboard.",
-        icon: "warning",
-        confirmButtonText: "Re-login",
-        allowOutsideClick: false
-      }).then(() => {
-        window.location.href = "/";
-      });
+    if (error.response) {
+      const status = error.response.status;
+debugger;
+      if (status === 401) {
+        console.error('401 Unauthorized, redirecting to login...');
+        localStorage.clear();
+        Swal.fire({
+          title: "Unauthorized",
+          text: "Your session has expired or you are unauthorized. Please re-login.",
+          icon: "warning",
+          confirmButtonText: "Re-login",
+          allowOutsideClick: false
+        }).then(() => {
+          window.location.href = "/";
+        });
+
+      } else if (status === 403) {
+        debugger;
+        console.error('403 Forbidden, access denied...');
+        
+        Swal.fire({
+          title: "Access Denied",
+          text: "You do not have permission to access this resource.",
+          icon: "error",
+          confirmButtonText: "Ok",
+          allowOutsideClick: false
+        })
+      }
     }
+
     return Promise.reject(error);
   }
 );
+
 
 export default axiosInstance;
 

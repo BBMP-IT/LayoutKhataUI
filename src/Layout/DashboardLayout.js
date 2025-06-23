@@ -27,7 +27,7 @@ const DashboardLayout = ({ children }) => {
     const newLang = event.target.value;
     setLanguage(newLang);
     i18n.changeLanguage(newLang);
-    sessionStorage.setItem("selectedLanguage", newLang);
+    localStorage.setItem("selectedLanguage", newLang);
 
   };
 
@@ -48,7 +48,7 @@ const DashboardLayout = ({ children }) => {
   });
 
   useEffect(() => {
-    const storedLang = sessionStorage.getItem('selectedLanguage') || 'kn'; // Default to 'kn' if nothing in storage
+    const storedLang = localStorage.getItem('selectedLanguage') || 'kn'; // Default to 'kn' if nothing in storage
     setLanguage(storedLang);
     i18n.changeLanguage(storedLang);
     const dropdownSubmenus = document.querySelectorAll(".dropdown-submenu > a");
@@ -159,7 +159,7 @@ const DashboardLayout = ({ children }) => {
     }).then((result) => {
       if (result.isConfirmed) {
         // Clear session values
-        sessionStorage.clear();
+        localStorage.clear();
         // Redirect to login page
         navigate('/');
       }
@@ -405,7 +405,7 @@ const DashboardLayout = ({ children }) => {
                     </ul>
                   </li>
                   <li className="nav-item dropdown">
-                    <a href="/LayoutForm" className="nav-link" >
+                    <a href="/LayoutDashboard" className="nav-link" >
                       <i className="fa fa-file"></i>&nbsp; Layout Khata
                     </a>
                   </li>

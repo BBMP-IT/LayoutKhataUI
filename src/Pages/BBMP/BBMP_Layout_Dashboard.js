@@ -1,7 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../Layout/DashboardLayout';
 import Loader from "../../Layout/Loader";
 import '../../Styles/CSS/LDashboard.css';
+import { getAccessToken } from '../../API/authService';
+
+
 
 export const useLoader = () => {
   const [loading, setLoading] = useState(false);
@@ -14,7 +18,7 @@ export const useLoader = () => {
 
 
 const BBMP_Layout_Dashboard = () => {
-
+const navigate = useNavigate();
 
   const columns = [
     { id: "ACT1234", label: "Action", key: "action" },
@@ -64,6 +68,51 @@ const BBMP_Layout_Dashboard = () => {
     setCurrentPage(pageNumber);
   };
 
+  //   const generate_Token = async () => {
+  //   try {
+      
+  //     const response = await getAccessToken();
+  //     if (response?.access_token) {
+  //       localStorage.setItem('access_token', response.access_token);
+  //       localStorage.setItem('isTokenRequired', true);
+  //       return true;  // Indicate success
+  //     } else {
+  //       console.error("No access token received");
+  //       return false;
+  //     }
+  //   } catch (err) {
+  //     console.error("Error generating token", err);
+  //     return false;
+  //   }
+  // };
+  const generate_Token = async () => {
+  try {
+    const response = await getAccessToken();
+    if (response?.access_token) {
+      localStorage.clear();
+      localStorage.setItem('access_token', response.access_token);
+      return true;  // Indicate success
+    } else {
+      console.error("No access token received");
+      return false;
+    }
+  } catch (err) {
+    console.error("Error generating token", err);
+    return false;
+  }
+};
+
+  const handleClick = async () => {
+    const success = await generate_Token();
+    if (success) {
+
+      navigate('/LayoutForm');
+    } else {
+      // Optionally show an error alert here
+      alert("Token generation failed. Please try again.");
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="container pt-4 pb-4">
@@ -75,7 +124,7 @@ const BBMP_Layout_Dashboard = () => {
               <center>
                 <h3 className="mb-2 text-black">Create New</h3>
                 <button
-                  className="mt-4 px-4 py-2 bg-blue-600 text-primary rounded hover:bg-blue-600"
+                  className="mt-4 px-4 py-2 bg-blue-600 text-primary rounded hover:bg-blue-600"   onClick={handleClick}
                 >
                   <i className="fa fa-plus"></i>
                 </button>

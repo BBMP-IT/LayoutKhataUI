@@ -3,15 +3,18 @@
 const ApiCredentials = {
     credentials: {
         apiUrl: "https://testapps.bbmpgov.in/LayoutKhataAPI",
-        loginUrl: "https://testapps.bbmpgov.in/ekhata/api/values",
+        loginUrl: "https://testapps.bbmpgov.in/testEaasthiAPI/api/values",
         username: "BBMPOTP",
-        password: "10750b6bdc29495297efd2fb29047a94"
+        password: "10750b6bdc29495297efd2fb29047a94",
+        layoutForm: "http://localhost:3001",
+        
     }
 };
 
 const config = {
       apiBaseUrl: ApiCredentials.credentials.apiUrl,
-  apiLoginBaseUrl: ApiCredentials.credentials.loginUrl,
+      apiLoginBaseUrl: ApiCredentials.credentials.loginUrl,
+      redirectBaseURL: ApiCredentials.credentials.layoutForm,
 
   credentials: ApiCredentials.credentials, 
 
@@ -53,6 +56,7 @@ const config = {
         releasePercentage:'/api/Release/fnGetReleasePercentage',
         releaseSites: '/api/Site/fnReleaseSites',
         jdaEKYCOwnerfetch: '/api/JDA/fnGetJDAEkycinfo',
+        jdaEKYCInsert: '/api/JDA/fnInsertJDAEkycinfo',
     }
 };
 
