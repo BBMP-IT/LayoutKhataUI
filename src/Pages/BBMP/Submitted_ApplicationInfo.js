@@ -741,8 +741,9 @@ const BBMP_SubmittedInfo = () => {
                     setDeedNumber(response[0].jdA_DEED_NO);
                 } else if (response[0].jdA_ISREGISTERED === false) {
                     
-                    setJdaDocumentId(response[0].jdA_REGISTEREDDATE);
-                    setJdaDocumentDate(response[0].jdA_DEED_NO);
+                      setJdaDocumentId(response[0].jdA_DEED_NO);
+                    const dateStr = response[0].jdA_REGISTEREDDATE?.split('T')[0];
+                    setJdaDocumentDate(dateStr);
                     const deedFileResponse = await fileListAPI(3, localLKRSID, 4, 0);
                     const base64String = deedFileResponse[0]?.doctrN_DOCBASE64;
                     if (base64String) {
@@ -1156,28 +1157,7 @@ const BBMP_SubmittedInfo = () => {
                                                         )}
                                                         {isRegistered === false && (
                                                             <>
-                                                                {deedNoURL && (
-                                                                    <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4">
-                                                                        <div style={{ marginTop: '10px' }}>
-                                                                            <label className='form-check-label fw-bold'>Uploaded the JDA Document</label> &nbsp;
-                                                                            <span
-                                                                                onClick={() => window.open(deedNoURL, '_blank')}
-                                                                                style={{
-                                                                                    cursor: 'pointer',
-                                                                                    color: '#007bff',
-                                                                                    textDecoration: 'none',
-                                                                                    fontSize: '0.875rem',
-                                                                                    userSelect: 'none',
-                                                                                }}
-                                                                                role="button"
-                                                                                tabIndex={0}
-                                                                                onKeyPress={(e) => { if (e.key === 'Enter') window.open(deedNoURL, '_blank'); }}
-                                                                            >
-                                                                                View file
-                                                                            </span>
-                                                                        </div>
-                                                                    </div>
-                                                                )}
+                                                               
                                                                 <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4">
                                                                     <label className='form-label'>Enter JDA Document ID <span className='mandatory_color'>*</span></label>
                                                                     <input
@@ -1199,6 +1179,28 @@ const BBMP_SubmittedInfo = () => {
                                                                         readOnly
                                                                     />
                                                                 </div>
+                                                                 {deedNoURL && (
+                                                                    <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4">
+                                                                        <div style={{ marginTop: '10px' }}>
+                                                                            <label className='form-check-label fw-bold'>Uploaded the JDA Document</label> &nbsp;
+                                                                            <span
+                                                                                onClick={() => window.open(deedNoURL, '_blank')}
+                                                                                style={{
+                                                                                    cursor: 'pointer',
+                                                                                    color: '#007bff',
+                                                                                    textDecoration: 'none',
+                                                                                    fontSize: '0.875rem',
+                                                                                    userSelect: 'none',
+                                                                                }}
+                                                                                role="button"
+                                                                                tabIndex={0}
+                                                                                onKeyPress={(e) => { if (e.key === 'Enter') window.open(deedNoURL, '_blank'); }}
+                                                                            >
+                                                                                View file
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+                                                                )}
                                                             </>
                                                         )}
 

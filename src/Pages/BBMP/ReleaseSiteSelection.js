@@ -1912,6 +1912,7 @@ const ReleaseSelection = () => {
                   </>
                 )}
                 <hr />
+                
                 {releaseDetails.length > 0 && (
                   <div style={{ marginTop: '20px' }}>
                     <h2 style={{ marginBottom: '15px', fontSize: '24px', fontWeight: 'bold', color: '#333' }}>
@@ -2045,51 +2046,62 @@ const ReleaseSelection = () => {
 
               </div>
             </div>
-            {releaseData.length > 0 && (
-              <div className="card">
-                <div className="card-header layout_btn_color">
-                  <h5 className="card-title" style={{ textAlign: 'center' }}>Sites to be released</h5>
-                </div>
-                <div className="card-body">
-                  <div className='row'>
-                    <div className='col-md-12 my-3'>
-                      {((selectedValue === '2' && releasedData.length === 0) || selectedValue === '3' || selectedValue === '1') && (
-                        <p style={{
-                          backgroundColor: '#e8f4ff',
-                          border: '1px solid #b3d8ff',
-                          padding: '10px 15px',
-                          borderRadius: '6px',
-                          color: '#0056b3',
-                          fontWeight: '500',
-                          marginTop: '10px'
-                        }}>
-                          {selectedRows.length} record selected
-                        </p>
-                      )}
+             <div className="card">
+  <div className="card-header layout_btn_color">
+    <h5 className="card-title" style={{ textAlign: 'center' }}>Sites to be released</h5>
+  </div>
+  <div className="card-body">
+    <div className='row'>
+      <div className='col-md-12 my-3'>
+        {((selectedValue === '2' && releasedData.length === 0) || selectedValue === '3' || selectedValue === '1') && (
+          <p style={{
+            backgroundColor: '#e8f4ff',
+            border: '1px solid #b3d8ff',
+            padding: '10px 15px',
+            borderRadius: '6px',
+            color: '#0056b3',
+            fontWeight: '500',
+            marginTop: '10px'
+          }}>
+            {selectedRows.length} record selected
+          </p>
+        )}
 
-                      <DataTable
-                        columns={releaseTableColumns}
-                        data={releaseData}
-                        customStyles={customStyles}
-                        pagination
-                        highlightOnHover
-                        striped
-                      />
-                      <div className='row'>
-                        <div className='col-md-9'></div>
-                        <div className='col-md-3'>
-                          <button className="btn btn-primary btn-block mt-3" onClick={moveToReleasedTable}>
-                            Add
-                          </button>
-                        </div>
-
-                      </div>
-                    </div>
-                  </div>
-
-                </div>
+        {releaseData.length > 0 ? (
+          <>
+            <DataTable
+              columns={releaseTableColumns}
+              data={releaseData}
+              customStyles={customStyles}
+              pagination
+              highlightOnHover
+              striped
+            />
+            <div className='row'>
+              <div className='col-md-9'></div>
+              <div className='col-md-3'>
+                <button className="btn btn-primary btn-block mt-3" onClick={moveToReleasedTable}>
+                  Add
+                </button>
               </div>
-            )}
+            </div>
+          </>
+        ) : (
+          <div style={{
+            textAlign: 'center',
+            padding: '20px',
+            fontWeight: '500',
+            color: '#999'
+          }}>
+            There are no sites to display
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+</div>
+
+           
 
             {/* Already Released Table */}
             {releasedData.length > 0 && (

@@ -12,6 +12,19 @@ export const getAccessToken = async () => {
 
   return await apiService.postRequest('/Token', formData);
 };
+export const checkTokenExpiry = () => {
+    const sessionData = JSON.parse(localStorage.getItem('sessionData'));
+    if (sessionData) {
+        const currentTime = Date.now();
+        if (currentTime >= sessionData.expiry) {
+            // Expired
+            localStorage.clear();
+            return false;
+        }
+        return true;
+    }
+    return false;  // no session data
+};
 //Regenerate token API
 export const regenerateToken = async () => {
   const formData = new FormData();
@@ -394,6 +407,18 @@ export const ownerEKYC_Details = async (level, LKRSID) => {
     throw error;
   }
 };
+//EKYC JDA Owner list API
+export const jdaEKYC_Details = async (level, LKRSID) => {
+  try {
+    const url = `${config.endpoints.jdaEKYCOwnerfetch}?level=${level}&ownLkrsId=${LKRSID}&jdaId=0&jdaEkycJdaId=0`;
+    const response = await apiService.getRequest(url);
+    return response;
+  } catch (error) {
+    console.error("multiple Owner fetch Error:", error);
+    throw error;
+  }
+};
+
 //DO EKYC API
 export const ekyc_Details = async ({ OwnerNumber, BOOK_APP_NO, PROPERTY_CODE }) => {
   try {

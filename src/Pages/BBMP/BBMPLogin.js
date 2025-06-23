@@ -1,24 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../Styles/CSS/BBMPLogin.css';
+import '../../Styles/CSS/BBMPLogin.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
-import nicLogo from '../assets/NIC_Logo1-01.png';
-import digital_logo from '../assets/digital_india.png';
-import bbmpLogo from '../assets/bbmp.png'
+import nicLogo from '../../assets/NIC_Logo1-01.png';
+import digital_logo from '../../assets/digital_india.png';
+import bbmpLogo from '../../assets/bbmp.png'
 import { useTranslation } from "react-i18next";
-import i18n from "../localization/i18n";
-import DashboardLayout from '../Layout/DashboardLayout';
+import i18n from "../../localization/i18n";
+import DashboardLayout from '../../Layout/DashboardLayout';
 import Swal from "sweetalert2";
-import Loader from "../Layout/Loader";
-import config from '../Config/config';
+import Loader from "../../Layout/Loader";
+import config from '../../Config/config';
 import axios from 'axios';
 
-import cmlogo from '../assets/chief_minister_of_karrnataka_icon.png';
-import dcmlogo from '../assets/DeputyCM.jpeg';
-import gokLogo from '../assets/gok.png';
-import bbmplogo from '../assets/bbmp.png';
+import cmlogo from '../../assets/chief_minister_of_karrnataka_icon.png';
+import dcmlogo from '../../assets/DeputyCM.jpeg';
+import gokLogo from '../../assets/gok.png';
+import bbmplogo from '../../assets/bbmp.png';
 
+import { getAccessToken }  from '../../API/authService';
+ 
 
 const BBMPLogin = () => {
     const navigate = useNavigate();
@@ -112,7 +114,7 @@ const BBMPLogin = () => {
         try {
             start_loader();
             const response = await axios.post(
-                `${config.apiBaseUrl}${config.endpoints.sendOTP}`,
+                `${config.apiLoginBaseUrl}${config.endpoints.sendOTP}`,
                 {
                     mobileNumber: phoneNumber,
                     source: "e-Aasthi"
@@ -120,15 +122,14 @@ const BBMPLogin = () => {
                 {
                     headers: {
                         'Content-Type': 'application/json',
-                        'username': config.ApiCredentials.credentials.username,
-                        'password': config.ApiCredentials.credentials.password
+                        'username': config.credentials.username,
+                        'password': config.credentials.password
                     }
                 }
             );
 
             // Axios automatically parses JSON, so use response.data
             const data = response.data;
-            console.log("response", data);
 
             if (data.responseStatus === true && data.responseCode === "200") {
                 Swal.fire({
@@ -150,7 +151,7 @@ const BBMPLogin = () => {
                 setPhoneError("Failed to send OTP. Please try again.");
             }
         } catch (error) {
-            console.log("Error sending OTP:", error);
+            console.error("Error sending OTP:", error);
         } finally {
             stop_loader();
         }
@@ -166,7 +167,7 @@ const BBMPLogin = () => {
         try {
             start_loader();
             const response = await axios.post(
-                `${config.apiBaseUrl}${config.endpoints.verifyOTP}`,
+                `${config.apiLoginBaseUrl}${config.endpoints.verifyOTP}`,
                 {
                     mobileNumber: phoneNumber,
                     OTP: otp,
@@ -181,16 +182,17 @@ const BBMPLogin = () => {
                 }
             );
             const data = response.data;
-            console.log("OTP Verification Response:", data);
 
             if (data.responseCode === "200" && data.responseStatus === true) {
+                
                 Swal.fire({
                     title: "OTP Verified!",
                     text: "Your OTP has been successfully verified.",
                     icon: "success",
                     confirmButtonText: "OK"
-                }).then(() => {
+                }).then(async() => {
                     navigate('/homePage');
+                    await generate_Token();
 
                 });
             } else {
@@ -199,13 +201,23 @@ const BBMPLogin = () => {
                 otpRef.current?.focus();
             }
         } catch (error) {
-            console.log("Error verifying OTP:", error);
+            console.error("Error verifying OTP:", error);
             setOtpError("An error occurred while verifying OTP. Please try again.");
         } finally {
             stop_loader();
         }
     };
-
+  const generate_Token = async () => { 
+        try {
+            localStorage.clear();
+            const response = await getAccessToken();
+            if (response?.access_token) {
+                localStorage.setItem('access_token', response.access_token);
+            }
+        } catch (err) {
+            console.error("Error generating token", err);
+        }
+    };
 
 
 
@@ -231,7 +243,6 @@ const BBMPLogin = () => {
             );
 
             const data = response.data;
-            console.log("OTP Verification Response:", data);
 
             if (data.responseCode === "200" && data.responseStatus === true) {
                 Swal.fire({
@@ -249,7 +260,7 @@ const BBMPLogin = () => {
             setOtpError("Invalid OTP. Please try again.");
         }
     } catch (error) {
-        console.log("Error verifying OTP:", error);
+        console.error("Error verifying OTP:", error);
         setOtpError("An error occurred while verifying OTP. Please try again.");
     } finally {
         stop_loader();

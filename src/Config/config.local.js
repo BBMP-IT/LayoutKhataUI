@@ -3,13 +3,17 @@
 const ApiCredentials = {
     credentials: {
         apiUrl: "https://testapps.bbmpgov.in/LayoutKhataAPI",
+        loginUrl: "https://testapps.bbmpgov.in/ekhata/api/values",
         username: "BBMPOTP",
         password: "10750b6bdc29495297efd2fb29047a94"
     }
 };
 
 const config = {
-    apiBaseUrl: ApiCredentials.credentials.apiUrl,
+      apiBaseUrl: ApiCredentials.credentials.apiUrl,
+  apiLoginBaseUrl: ApiCredentials.credentials.loginUrl,
+
+  credentials: ApiCredentials.credentials, 
 
     endpoints: {
         sendOTP: '/fnSendOtp',
@@ -48,7 +52,7 @@ const config = {
         layoutKhata_Save: '/api/LKRS/fnSaveLKRSinfo',
         releasePercentage:'/api/Release/fnGetReleasePercentage',
         releaseSites: '/api/Site/fnReleaseSites',
-
+        jdaEKYCOwnerfetch: '/api/JDA/fnGetJDAEkycinfo',
     }
 };
 

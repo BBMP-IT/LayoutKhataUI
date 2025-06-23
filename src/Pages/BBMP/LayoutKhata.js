@@ -20,8 +20,7 @@ import apiService from '../../API/apiService';
 import {
     handleFetchDistricts, handleFetchTalukOptions, handleFetchHobliOptions, handleFetchVillageOptions,
     handleFetchHissaOptions, fetchRTCDetailsAPI, handleFetchEPIDDetails, getAccessToken, sendOtpAPI, verifyOtpAPI, submitEPIDDetails, submitsurveyNoDetails,
-    insertApprovalInfo, listApprovalInfo, deleteApprovalInfo, insertReleaseInfo, deleteReleaseInfo, listReleaseInfo, fileUploadAPI, fileListAPI, insertJDA_details, ownerEKYC_Details, 
-    ekyc_Details, ekyc_Response, ekyc_insertOwnerDetails, jdaEKYC_Details,
+    insertApprovalInfo, listApprovalInfo, deleteApprovalInfo, insertReleaseInfo, deleteReleaseInfo, listReleaseInfo, fileUploadAPI, fileListAPI, insertJDA_details, ownerEKYC_Details, ekyc_Details, ekyc_Response, ekyc_insertOwnerDetails,
     individualSiteAPI, individualSiteListAPI, fetchECDetails, fetchDeedDocDetails, fetchDeedDetails, fetchJDA_details, deleteSiteInfo, fetch_LKRSID, update_Final_SaveAPI
 } from '../../API/authService';
 
@@ -100,7 +99,7 @@ const BBMP_LayoutForm = () => {
 
     useEffect(() => {
 
-        // generate_Token();
+        generate_Token();
         localStorage.setItem('createdBy', CreatedBy);
         localStorage.setItem('createdName', CreatedName);
         localStorage.setItem('RoleID', RoleID);
@@ -119,16 +118,16 @@ const BBMP_LayoutForm = () => {
 
     }, [display_LKRS_ID]);
 
-    // const generate_Token = async () => { 
-    //     try {
-    //         const response = await getAccessToken();
-    //         if (response?.access_token) {
-    //             localStorage.setItem('access_token', response.access_token);
-    //         }
-    //     } catch (err) {
-    //         console.error("Error generating token", err);
-    //     }
-    // };
+    const generate_Token = async () => {
+        try {
+            const response = await getAccessToken();
+            localStorage.setItem('access_token', response.access_token);
+        } catch (err) {
+            console.error("Error fetching districts", err);
+        } finally {
+
+        }
+    };
 
     //fetching Details from LKRSID
     const handleGetLKRSID = async (localLKRSID) => {
@@ -234,7 +233,7 @@ const BBMP_LayoutForm = () => {
                                 </div>
                             </div>
 
-                            <BDA approval_details={approval_details} setApprovalDetails={setApprovalDetails}
+                            {/* <BDA approval_details={approval_details} setApprovalDetails={setApprovalDetails}
                                 order_details={order_details} setOrderDetails={setOrderDetails} LKRS_ID={LKRS_ID}
                                 isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsApprovalSectionSaved={setIsApprovalSectionSaved}
                                 setIsReleaseSectionSaved={setIsReleaseSectionSaved} setTotalNoofsites={setTotalNoofsites} />
@@ -246,7 +245,7 @@ const BBMP_LayoutForm = () => {
 
                             <DeclarationBlock LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID} display_LKRS_ID={display_LKRS_ID} isRTCSectionSaved={isRTCSectionSaved}
                                 isEPIDSectionSaved={isEPIDSectionSaved} isApprovalSectionSaved={isApprovalSectionSaved} isReleaseSectionSaved={isReleaseSectionSaved}
-                                isSitesSectionSaved={isSitesSectionSaved} isECSectionSaved={isECSectionSaved} />
+                                isSitesSectionSaved={isSitesSectionSaved} isECSectionSaved={isECSectionSaved} /> */}
                         </div>
 
                     </div>
@@ -315,11 +314,33 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
         setCreatedName(storedCreatedName);
         setRoleID(storedRoleID);
 
-        if (LKRS_ID) {
-            handleGetLKRSID(LKRS_ID);
-        }
+        // Wrap LKRS_ID logic in a Promise
+        const handleLKRSWithPromise = () => {
+            return new Promise((resolve, reject) => {
+                if (LKRS_ID) {
+                    setLocalLKRSID(LKRS_ID);
+                    try {
+                        const result = handleGetLKRSID(LKRS_ID); // assume this may return something
+                        resolve(result);
+                    } catch (error) {
+                        reject(error);
+                    }
+                } else {
+                    resolve(); // or reject("No LKRS_ID") if needed
+                }
+            });
+        };
+
+        handleLKRSWithPromise()
+            .then((res) => {
+                console.log("LKRS_ID handled with Promise", res);
+            })
+            .catch((err) => {
+                console.error("Error handling LKRS_ID:", err);
+            });
 
     }, [LKRS_ID]);
+
 
 
 
@@ -1461,13 +1482,13 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
     const [roleID, setRoleID] = useState('');
 
     useEffect(() => {
-        if (area_Sqft && !isNaN(area_Sqft)) {
-            const sqm = parseFloat(area_Sqft) * 0.092903;
-            setArea_Sqm(sqm.toFixed(2));
-        } else {
-            setArea_Sqm("");
-        }
-    }, [area_Sqft]);
+  if (area_Sqft && !isNaN(area_Sqft)) {
+    const sqm = parseFloat(area_Sqft) * 0.092903;
+    setArea_Sqm(sqm.toFixed(2));
+  } else {
+    setArea_Sqm("");
+  }
+}, [area_Sqft]);
     useEffect(() => {
         const storedCreatedBy = localStorage.getItem('createdBy');
         const storedCreatedName = localStorage.getItem('createdName');
@@ -2286,6 +2307,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
 
                     sessionStorage.setItem('totalNoOfSites', JSON.stringify(totalSites));
                     setTotalNoofsites(totalSites);
+                    console.log("totalSites", totalSites);
 
                     return {
                         layoutApprovalNumber: item.apr_Approval_No,
@@ -3993,6 +4015,9 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             setTotalSQFT(areaSQFT);
             setTotalSQM(sqftToSqm(areaSQFT));
         }
+
+
+
     }, [areaSqft]);
 
     const [localLKRSID, setLocalLKRSID] = useState("");
@@ -4010,6 +4035,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             const name = localStorage.getItem("ownerName");
             if (name) setLocalOwnerName(name);
         }
+        console.log("totalNoofsites-", totalNoofsites);
         if (totalNoofsites) {
             setLayoutSiteCount(totalNoofsites);
         } else {
@@ -4020,14 +4046,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
 
     useEffect(() => {
-        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-        if (localLKRSID && (isRTCSectionSaved || isEPIDSectionSaved)) {
-            fetchSiteDetails(localLKRSID);
-            delay(2000); // 1 second delay
-            fetchOwners(localLKRSID);
-            // delay(2000);
-            // Save_Handler();
-        }
+        loadData();
     }, [localLKRSID, isRTCSectionSaved, isEPIDSectionSaved]);
 
     const loadData = () => {
@@ -5439,13 +5458,13 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             // --- MODIFICATION STARTS HERE ---
             if (Array.isArray(response) && response.length === 0) {
                 // If the response is an empty array, stop here.
+                console.log("API returned an empty array for site details.");
                 return; // Exit the function
             }
 
             if (Array.isArray(response)) {
                 setAllSites(response);
                 setIsSitesSectionSaved(true);
-                setIsAddDisabled(true);
 
                 const totalSitesFromAPI = response[0]?.lkrS_NUMBEROFSITES;
                 localStorage.setItem("NUMBEROFSITES", totalSitesFromAPI);
@@ -7271,17 +7290,17 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsE
     }, [LKRS_ID]);
 
     useEffect(() => {
+        loadData();
+    }, [localLKRSID]);
+
+
+    const loadData = async () => {
         const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
         if (localLKRSID) {
             handleGetLKRSID(localLKRSID);
             delay(5000);
             fetchJDAInfo(localLKRSID);
         }
-    }, [localLKRSID]);
-
-
-    const loadData = async () => {
-
     };
     const handleGetLKRSID = async (localLKRSID) => {
         const payload = {
@@ -7325,9 +7344,6 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsE
                     setIsECSectionSaved(true);
                 } else if (response[0].jdA_ISREGISTERED === false) {
                     const deedFileResponse = await fileListAPI(3, localLKRSID, 4, 0);
-                    setJdaDocumentId(response[0].jdA_DEED_NO);
-                    const dateStr = response[0].jdA_REGISTEREDDATE?.split('T')[0];
-                    setJdaDocumentDate(dateStr);
                     const base64String = deedFileResponse[0]?.doctrN_DOCBASE64;
                     setIsECSectionSaved(true);
                     if (base64String) {
@@ -7858,6 +7874,7 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsE
                 response.json
             ) {
                 const deedData = JSON.parse(response.json);
+                console.log("Registration DateTime:", deedData.registrationdatetime);
                 setJdaDocumentDate(deedData.registrationdatetime);
                 setShowViewDeedButton(true);
                 setIsDEEDReadOnly(true);
@@ -8507,6 +8524,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
             if (event.origin !== "http://localhost:3001") return;
             const data = event.data;
             // You can store this in state or use it directly
+            console.log("eKYC Data received:", data);
             setEkyc_Data(data);
         };
         window.addEventListener("message", handleMessage);
@@ -8516,6 +8534,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
     const fetchOwners = async () => {
         try {
             const apiResponse = await ownerEKYC_Details("1", LKRS_ID);
+            console.log("API Response:", apiResponse);
             const owners = (apiResponse || []).map(owner => ({
                 name: owner.owN_NAME_EN,
                 id: owner.owN_ID,
@@ -8661,19 +8680,19 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
             });
             return;
         }
-        //  Validate: All owners should have EKYC success
-        const missingEKYC = ownerDataList.some(owner => {
-            return owner.owN_AADHAARVERISTATUS !== true || owner.owN_AADHAARVERISTATUS !== "true";
-        });
+            //  Validate: All owners should have EKYC success
+            const missingEKYC = ownerDataList.some(owner => {
+                return owner.owN_AADHAARVERISTATUS !== true || owner.owN_AADHAARVERISTATUS !== "true";
+            });
 
-        // if (missingEKYC) {
-        //     Swal.fire({
-        //         text: "All owners must have successful EKYC before saving.",
-        //         icon: "error",
-        //         confirmButtonText: "OK",
-        //     });
-        //     return;
-        // }
+            if (missingEKYC) {
+                Swal.fire({
+                    text: "All owners must have successful EKYC before saving.",
+                    icon: "error",
+                    confirmButtonText: "OK",
+                });
+                return;
+            }
 
 
 
@@ -8858,7 +8877,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
         <div>
             <div className="card"> {loading && <Loader />}
                 <div className="card-header layout_btn_color" >
-                    <h5 className="card-title" style={{ textAlign: 'center' }}>Owner/Owner Representative eKYC</h5>
+                    <h5 className="card-title" style={{ textAlign: 'center' }}>Owner/Owner representative eKYC</h5>
                 </div>
                 <div className="card-body">
                     <div className='row'>
@@ -9415,7 +9434,7 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
     //multiple owner list fetch
     const fetchOwners = async (LKRSID) => {
         try {
-            const apiResponse = await jdaEKYC_Details("1", LKRSID);
+            const apiResponse = await ownerEKYC_Details("1", LKRSID);
 
             const owners = (apiResponse || []).map(owner => ({
                 name: owner.owN_NAME_EN,
@@ -9440,6 +9459,7 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
             const data = event.data;
 
             // You can store this in state or use it directly
+            console.log("eKYC Data received:", data);
             setEkyc_Data(data);
         };
 
@@ -9856,7 +9876,6 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
     const [declaration2Checked, setDeclaration2Checked] = useState(false);
     const [declaration3Checked, setDeclaration3Checked] = useState(false);
     const [ownerDataList, setOwnerDataList] = useState([]);
-    const [jdaDataList, setJDADataList] = useState([]);
 
 
     const [selectedLandType, setSelectedLandType] = useState("");
@@ -10012,15 +10031,15 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
             return;
         }
 
-        // if (isReleaseSectionSaved === false) {
-        //     Swal.fire({
-        //         icon: 'warning',
-        //         title: 'Important!',
-        //         text: 'Please save the release order details before proceeding.',
-        //         confirmButtonText: 'Ok'
-        //     });
-        //     return;
-        // }
+        if (isReleaseSectionSaved === false) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Important!',
+                text: 'Please save the release order details before proceeding.',
+                confirmButtonText: 'Ok'
+            });
+            return;
+        }
 
         if (isSitesSectionSaved === false) {
             Swal.fire({
@@ -10130,15 +10149,15 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
             return;
         }
 
-        // if (isReleaseSectionSaved === false) {
-        //     Swal.fire({
-        //         icon: 'warning',
-        //         title: 'Important!',
-        //         text: 'Please save the release order details before proceeding.',
-        //         confirmButtonText: 'Ok'
-        //     });
-        //     return;
-        // }
+        if (isReleaseSectionSaved === false) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Important!',
+                text: 'Please save the release order details before proceeding.',
+                confirmButtonText: 'Ok'
+            });
+            return;
+        }
 
         if (isSitesSectionSaved === false) {
             Swal.fire({
@@ -10826,8 +10845,8 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
     }
     const JDA_EKYCDetails = async (localLKRSID) => {
         try {
-            const response = await jdaEKYC_Details("1", localLKRSID);
-            setJDADataList(response); // assuming response is the array you shared
+            const response = await ownerEKYC_Details("1", localLKRSID);
+            setOwnerDataList(response); // assuming response is the array you shared
         } catch (error) {
             console.error("Failed to fetch EKYC owner details:", error);
         }
@@ -10903,9 +10922,8 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                 if (response[0].jdA_ISREGISTERED === true) {
                     setDeedNumber(response[0].jdA_DEED_NO);
                 } else if (response[0].jdA_ISREGISTERED === false) {
-                    setJdaDocumentId(response[0].jdA_DEED_NO);
-                     const dateStr = response[0].jdA_REGISTEREDDATE?.split('T')[0];
-                    setJdaDocumentDate(dateStr);
+                    setJdaDocumentId(response[0].jdA_REGISTEREDDATE);
+                    setJdaDocumentDate(response[0].jdA_DEED_NO);
                     const deedFileResponse = await fileListAPI(3, localLKRSID, 4, 0);
                     const base64String = deedFileResponse[0]?.doctrN_DOCBASE64;
                     if (base64String) {
@@ -11028,7 +11046,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                         <button onClick={handlePreviewClick} className='btn btn-warning btn-block'>Preview</button>
                     </div>
                     <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-3'>
-                        <button className='btn btn-info btn-block' onClick={final_Save}>Save & View information</button>
+                        <button className='btn btn-info btn-block' onClick={final_Save}>Save & see information</button>
                     </div>
                     <div className='col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mt-3'>
                         <button className='btn btn-primary btn-block' onClick={final_Save_Release}>Save & proceed to release</button>
@@ -11349,28 +11367,6 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                                             {isRegistered === false && (
                                                 <>
 
-                                                    
-                                                    <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4">
-                                                        <label className='form-label'>Enter JDA Document ID <span className='mandatory_color'>*</span></label>
-                                                        <input
-                                                            type="text"
-                                                            className="form-control"
-                                                            placeholder="Enter your JDA Document ID"
-                                                            value={jdaDocumentId}
-                                                            maxLength={15}
-                                                            readOnly
-                                                        />
-                                                    </div>
-
-                                                    <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4">
-                                                        <label className='form-label'>Enter JDA Document Date <span className='mandatory_color'>*</span></label>
-                                                        <input
-                                                            type="date"
-                                                            className="form-control"
-                                                            value={jdaDocumentDate}
-                                                            readOnly
-                                                        />
-                                                    </div>
                                                     {deedNoURL && (
                                                         <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4">
                                                             <div style={{ marginTop: '10px' }}>
@@ -11393,6 +11389,27 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                                                             </div>
                                                         </div>
                                                     )}
+                                                    <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4">
+                                                        <label className='form-label'>Enter JDA Document ID <span className='mandatory_color'>*</span></label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control"
+                                                            placeholder="Enter your JDA Document ID"
+                                                            value={jdaDocumentId}
+                                                            maxLength={15}
+                                                            readOnly
+                                                        />
+                                                    </div>
+
+                                                    <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4">
+                                                        <label className='form-label'>Enter JDA Document Date <span className='mandatory_color'>*</span></label>
+                                                        <input
+                                                            type="date"
+                                                            className="form-control"
+                                                            value={jdaDocumentDate}
+                                                            readOnly
+                                                        />
+                                                    </div>
                                                 </>
                                             )}
 
@@ -11456,7 +11473,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                             {/* JDA EKYC */}
 
 
-                            {jdaDataList
+                            {ownerDataList
                                 .filter(owner => owner.owN_AADHAARVERISTATUS === "Success")
                                 .map((owner, index) => {
                                     let parsedAadhaar = {};

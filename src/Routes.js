@@ -44,7 +44,7 @@ import Final_eKhatha_Status_based_on_ePID from './Pages/Final_eKhatha_Status_bas
 import Amalgamation from './Pages/Amalgamation';
 import EKYCAmalgamationResponse from "./Pages/EKYCAmalgamationResponse";
 import GetNewKhataReport from './Pages/NewKhataReport';
-import BBMPLogin from './Pages/BBMPLogin';
+import BBMPLogin from './Pages/BBMP/BBMPLogin';
 import BBMP_TaxDetails from './Pages/BBMP/taxDetails';
 import BBMP_Homepage from './Pages/BBMP/homePage';
 import BBMP_LayoutForm from './Pages/BBMP/BBMP_Layout';
@@ -52,30 +52,46 @@ import BBMP_Layout_Dashboard from './Pages/BBMP/BBMP_Layout_Dashboard';
 
 import EKYCResultHandler from './Pages/BBMP/EKYC_Preview';
 import ReleaseSelection from './Pages/BBMP/ReleaseSiteSelection';
-import BBMP_SubmittedInfo
- from './Pages/BBMP/Submitted_ApplicationInfo';
+import BBMP_SubmittedInfo from './Pages/BBMP/Submitted_ApplicationInfo';
+import LayoutForm from './Pages/BBMP/LayoutKhata';
+import ProtectedRoute from './ProtectedRoute';
+
+
+
 const AppRoutes = () => {
+  
   return (
     <AuthProvider>
       <Router basename="/">
-       {/* <Router basename="/objection_form_test/">  */}
-      <ScrollToTop />
+        {/* <Router basename="/objection_form_test/">  */}
+        <ScrollToTop />
         {/* <Header /> */}
         <div className="App">
           {/* <Breadcrumbs /> */}
           <Routes>
-      <Route path="/" element={<BBMPLogin />} />
-            <Route path="/tax_Details" element={<BBMP_TaxDetails />} />
+            {/* <Route path="/" element={<BBMPLogin />} />
             <Route path="/homePage" element={<BBMP_Homepage />} />
-            <Route path="/LayoutForm" element={<BBMP_LayoutForm/>}/>
-            <Route path="/login" element={<Login />} />
-            <Route path="/LayoutDashboard" element={<BBMP_Layout_Dashboard/>}/>
-            <Route path="/Release" element = {<ReleaseSelection />}/>
-            <Route path='/EKYCResponse' element = {<EKYCResultHandler/>}/>
+            <Route path="/LayoutForm" element={<BBMP_LayoutForm />} />
+            <Route path="/LayoutDashboard" element={<BBMP_Layout_Dashboard />} />
+            <Route path="/Release" element={<ReleaseSelection />} />
+            <Route path='/EKYCResponse' element={<EKYCResultHandler />} />
             <Route path='/Info' element={<BBMP_SubmittedInfo />} />
+            <Route path='/layoutKhata' element={<LayoutForm />} /> */}
+
+            <Route path="/" element={<BBMPLogin />} />
+
+            {/* Protected Routes */}
+            <Route path="/homePage" element={<ProtectedRoute element={<BBMP_Homepage />} />} />
+            <Route path="/LayoutForm" element={<ProtectedRoute element={<BBMP_LayoutForm />} />} />
+            <Route path="/LayoutDashboard" element={<ProtectedRoute element={<BBMP_Layout_Dashboard />} />} />
+            <Route path="/Release" element={<ProtectedRoute element={<ReleaseSelection />} />} />
+            <Route path="/EKYCResponse" element={<ProtectedRoute element={<EKYCResultHandler />} />} />
+            <Route path="/Info" element={<ProtectedRoute element={<BBMP_SubmittedInfo />} />} />
 
 
 
+            <Route path="/tax_Details" element={<BBMP_TaxDetails />} />
+            <Route path="/login" element={<Login />} />
             <Route path="/PropertyList" element={<PropertyList />} />
             {/* <Route
               path="/BBDDraftGenerated"
@@ -83,104 +99,104 @@ const AppRoutes = () => {
             />  */}
             <Route
               path="/GoogleMapsWardCoordinates"
-              element={<GoogleMapsWardCoordinates />} 
-            /> 
-              <Route
+              element={<GoogleMapsWardCoordinates />}
+            />
+            <Route
               path="/Get_EAASTHI_Status"
-              element={<Get_EAASTHI_Status />} 
-            /> 
-             <Route
+              element={<Get_EAASTHI_Status />}
+            />
+            <Route
               path="/GetDailyReport"
-              element={<GetDailyReport />} 
+              element={<GetDailyReport />}
             />
-             <Route
+            <Route
               path="/DailyReportDetails"
-              element={<DailyReportDetails />} 
+              element={<DailyReportDetails />}
             />
-              <Route
+            <Route
               path="/PendanceReport"
-              element={<PendanceReport />} 
+              element={<PendanceReport />}
             />
-              <Route
+            <Route
               path="/PendanceReportDetails"
-              element={<PendanceReportDetails />} 
+              element={<PendanceReportDetails />}
             />
             <Route
               path="/ObjectorsPage"
-              element={<ObjectorsPage />}  /> 
-              <Route
+              element={<ObjectorsPage />} />
+            <Route
               path="/EKYCResponse"
-              element={<EKYCResponse />}  />
-                    <Route
+              element={<EKYCResponse />} />
+            <Route
               path="/EKYCSearchResponse"
-              element={<EKYCSearchResponse />}  />
-               <Route
+              element={<EKYCSearchResponse />} />
+            <Route
               path="/UploadECPage"
-              element={<UploadECPage />}  />
-              <Route 
+              element={<UploadECPage />} />
+            <Route
               path='/ECDailyReport'
-              element={<ECDailyReport/>}/>
-                 <Route 
+              element={<ECDailyReport />} />
+            <Route
               path='/SearchProperty'
-              element={<SearchProperty/>}/>
-              <Route 
+              element={<SearchProperty />} />
+            <Route
               path='/MutationDailyReport'
-              element={<MutationDailyReport/>}/>
-                 <Route 
+              element={<MutationDailyReport />} />
+            <Route
               path='/PublicNoticesReport'
-              element={<PublicNoticesReport/>}/>
-                 <Route 
+              element={<PublicNoticesReport />} />
+            <Route
               path='/MasterReportPage'
-              element={<MasterReportPage/>}/>
-                <Route 
+              element={<MasterReportPage />} />
+            <Route
               path='/PendingMutationReport'
-              element={<PendingMutationReport/>}/>
-               <Route 
+              element={<PendingMutationReport />} />
+            <Route
               path='/MutationObjection'
-              element={<MutationObjection/>}/>
-               <Route 
+              element={<MutationObjection />} />
+            <Route
               path='/EKYCMutationObjectionResponse'
-              element={<EKYCMutationObjectionResponse/>}/>
-               <Route 
+              element={<EKYCMutationObjectionResponse />} />
+            <Route
               path='/DraftDownloadedReport'
-              element={<DraftDownloadedReport/>}/>
-              <Route
+              element={<DraftDownloadedReport />} />
+            <Route
               path='/Final_eKhatha_Status_based_on_ePID'
-              element={<Final_eKhatha_Status_based_on_ePID/>}/>
-              <Route
+              element={<Final_eKhatha_Status_based_on_ePID />} />
+            <Route
               path='/Amalgamation'
-              element={<Amalgamation />}/>
-                <Route
+              element={<Amalgamation />} />
+            <Route
               path='/EKYCAmalgamationResponse'
-              element={<EKYCAmalgamationResponse />}/>
-              <Route
+              element={<EKYCAmalgamationResponse />} />
+            <Route
               path='/GetNewKhataReport'
-              element={<GetNewKhataReport />}/>
-                <Route
+              element={<GetNewKhataReport />} />
+            <Route
               path="/TaxDetails"
               element={<PrivateRoute element={<TaxDetails />} requiredStep={3} />}
             />
-                 <Route
+            <Route
               path="/EKYCResponse"
-              element={<EKYCResponse />}  />
-           
+              element={<EKYCResponse />} />
+
             {/* <Route
               path="/BBDDraft"
               element={<PrivateRoute element={<BBDDraft />} requiredStep={1} />}
             />   */}
-                <Route
+            <Route
               path="/ObjectorsPage"
               element={<PrivateRoute element={<ObjectorsPage />} requiredStep={3} />}
-            /> 
-             <Route
+            />
+            <Route
               path="/TaxDetails"
               element={<PrivateRoute element={<TaxDetails />} requiredStep={3} />}
             />
-             <Route
+            <Route
               path="/KaveriData"
-              element={<PrivateRoute element={<KaveriData />} requiredStep={4}  />}
-            /> 
-             <Route
+              element={<PrivateRoute element={<KaveriData />} requiredStep={4} />}
+            />
+            <Route
               path="/OwnerDetails"
               element={<PrivateRoute element={<OwnerDetails />} requiredStep={5} />}
             />
@@ -190,7 +206,7 @@ const AppRoutes = () => {
             />
             <Route
               path="/AreaDimension"
-              element={<PrivateRoute element={<AreaDimension />}requiredStep={7}  />}
+              element={<PrivateRoute element={<AreaDimension />} requiredStep={7} />}
             />
             <Route
               path="/SiteDetails"
@@ -202,17 +218,17 @@ const AppRoutes = () => {
             />
             <Route
               path="/MultiStoreyBuildingDetails"
-              element={<PrivateRoute element={<MultiStoreyBuildingDetails  />} requiredStep={8}/>}
+              element={<PrivateRoute element={<MultiStoreyBuildingDetails />} requiredStep={8} />}
             />
             <Route
               path="/ClassificationDocumentUploadPage"
               element={<PrivateRoute element={<ClassificationDocumentUploadPage />} requiredStep={9} />}
             />
-           
-              <Route
+
+            <Route
               path="/ESignPage"
               element={<PrivateRoute element={<ESignPage />} />}
-            /> 
+            />
             <Route path="*" element={<ErrorPage />} />
           </Routes>
         </div>

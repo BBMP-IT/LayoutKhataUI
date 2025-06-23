@@ -7,7 +7,7 @@ const apiService = {
   postRequest: async (url, data) => {
     try {
       const response = await axiosInstance.post(url, data);
-      console.log(response);
+     
       if (response.status === 200) {
         return response.data;
       } else {
@@ -16,7 +16,6 @@ const apiService = {
 
     } catch (error) {
       console.error(`POST request to ${url} failed:`, error);
-      console.log(`POST request to ${url} failed:`, error);
       throw error;
     }
   },
@@ -44,7 +43,6 @@ const apiService = {
           'Content-Type': 'application/json',
         }
       });
-      console.log(response.data);
       if (response.status === 200) {
         return response.data;
       } else {

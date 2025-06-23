@@ -17,7 +17,7 @@ switch (process.env.REACT_APP_ENV) {
     config = configLocal;
     break;
   default:
-    config = configTest;
+    config = configLocal;
     break;
 }
 if (process.env.REACT_APP_ENV === 'prod') {
