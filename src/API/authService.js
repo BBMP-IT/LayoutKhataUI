@@ -13,12 +13,12 @@ export const getAccessToken = async () => {
   return await apiService.postRequest('/Token', formData);
 };
 export const checkTokenExpiry = () => {
-    const sessionData = JSON.parse(localStorage.getItem('sessionData'));
+    const sessionData = JSON.parse(sessionStorage.getItem('sessionData'));
     if (sessionData) {
         const currentTime = Date.now();
         if (currentTime >= sessionData.expiry) {
             // Expired
-            localStorage.clear();
+            sessionStorage.clear();
             return false;
         }
         return true;
@@ -37,8 +37,8 @@ export const regenerateToken = async () => {
 //handle session expired
 export const handleSessionExpired = () => {
   // Clear the token or set a session-expired flag
-  localStorage.removeItem('access_token');
-  localStorage.setItem('sessionExpired', 'true');
+  sessionStorage.removeItem('access_token');
+  sessionStorage.setItem('sessionExpired', 'true');
 };
 //send otp API
 export const sendOtpAPI = async (mobileNumber) => {
@@ -70,7 +70,7 @@ export const verifyOtpAPI = async (mobileNumber, otp) => {
 //District API 
 export const handleFetchDistricts = async (newLanguage) => {
   try {
-    localStorage.setItem('isTokenRequired', false);
+    sessionStorage.setItem('isTokenRequired', false);
 
     const response = await apiService.getRequest(`${config.endpoints.kaveriDistrict}`, {}); // assuming relative path only
 
@@ -92,7 +92,7 @@ export const handleFetchDistricts = async (newLanguage) => {
 //taluk API
 export const handleFetchTalukOptions = async (districtCode, language) => {
   try {
-    localStorage.setItem('isTokenRequired', false); // mark token needed if required
+    sessionStorage.setItem('isTokenRequired', false); // mark token needed if required
 
     const response = await apiService.postRequest(`${config.endpoints.kaveriTaluk}`, {
       districT_CODE: String(districtCode),
@@ -117,7 +117,7 @@ export const handleFetchTalukOptions = async (districtCode, language) => {
 //Hobli API
 export const handleFetchHobliOptions = async (districtCode, talukCode, language) => {
   try {
-    localStorage.setItem('isTokenRequired', false);
+    sessionStorage.setItem('isTokenRequired', false);
     const response = await apiService.postRequest(`${config.endpoints.kaveriHobli}`, {
       districT_CODE: String(districtCode),
       taluK_CODE: String(talukCode),
@@ -140,7 +140,7 @@ export const handleFetchHobliOptions = async (districtCode, talukCode, language)
 //Village API
 export const handleFetchVillageOptions = async (districtCode, talukCode, hobliCode, language) => {
   try {
-    localStorage.setItem('isTokenRequired', false);
+    sessionStorage.setItem('isTokenRequired', false);
     const response = await apiService.postRequest(`${config.endpoints.kaveriVillage}`, {
       districT_CODE: String(districtCode),
       taluK_CODE: String(talukCode),
@@ -170,7 +170,7 @@ export const handleFetchHissaOptions = async ({
   surveyNo
 }) => {
   try {
-    localStorage.setItem('isTokenRequired', false);
+    sessionStorage.setItem('isTokenRequired', false);
     const payload = {
       bhm_dist_code: String(districtCode),
       bhm_taluk_code: String(talukCode),
@@ -243,7 +243,7 @@ export const submitsurveyNoDetails = async (payload) => {
 //EPID fetching API
 export const handleFetchEPIDDetails = async (epidNumber) => {
   try {
-    localStorage.setItem('isTokenRequired', false); // Assuming this controls token usage
+    sessionStorage.setItem('isTokenRequired', false); // Assuming this controls token usage
 
     const response = await apiService.postRequest(`${config.endpoints.epid}`, {
       propertyEPID: epidNumber,

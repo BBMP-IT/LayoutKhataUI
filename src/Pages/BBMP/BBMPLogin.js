@@ -21,9 +21,12 @@ import bbmplogo from '../../assets/bbmp.png';
 
 import { getAccessToken }  from '../../API/authService';
  
+import { useAuth } from '../../AuthContext';
 
 const BBMPLogin = () => {
     const navigate = useNavigate();
+    const { UseLogin } = useAuth();
+
     const [menuOpen, setMenuOpen] = useState(false);
     const { t, i18n } = useTranslation();
     const isEnglish = i18n.language === 'kn';
@@ -69,7 +72,7 @@ const BBMPLogin = () => {
         const newLang = event.target.value;
         setLanguage(newLang);
         i18n.changeLanguage(newLang);
-        localStorage.setItem("selectedLanguage", newLang);
+        sessionStorage.setItem("selectedLanguage", newLang);
     };
 
     const start_loader = () => {
@@ -184,7 +187,8 @@ const BBMPLogin = () => {
             const data = response.data;
 
             if (data.responseCode === "200" && data.responseStatus === true) {
-                
+                await generate_Token();
+
                 Swal.fire({
                     title: "OTP Verified!",
                     text: "Your OTP has been successfully verified.",
@@ -192,8 +196,7 @@ const BBMPLogin = () => {
                     confirmButtonText: "OK"
                 }).then(async() => {
                     navigate('/homePage');
-                    await generate_Token();
-
+                    
                 });
             } else {
                 setOtp('');
@@ -209,10 +212,15 @@ const BBMPLogin = () => {
     };
   const generate_Token = async () => { 
         try {
-            localStorage.clear();
+             
+            // sessionStorage.clear();
+            sessionStorage.setItem('isTokenRequired', true);
             const response = await getAccessToken();
             if (response?.access_token) {
-                localStorage.setItem('access_token', response.access_token);
+                sessionStorage.setItem('access_token', response.access_token);
+                const token = response.access_token;
+                 sessionStorage.setItem('isTokenRequired', false);
+                 UseLogin(token);
             }
         } catch (err) {
             console.error("Error generating token", err);

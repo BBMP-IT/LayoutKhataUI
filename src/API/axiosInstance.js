@@ -17,20 +17,6 @@ axiosInstance.interceptors.request.use(
     if (isTokenRequired === "false") {
       if (accessToken) {
         config.headers.Authorization = `Bearer ${accessToken}`;
-      } else {
-        // Token is required but missing
-        Swal.fire({
-          title: "Login Required",
-          text: "Please login first to access the website.",
-          icon: "info",
-          confirmButtonText: "Login",
-          allowOutsideClick: false
-        }).then(() => {
-          window.location.href = "/"; // Redirect to login page
-        });
-
-        // Stop the request from being sent
-        return Promise.reject(new Error("Token missing — login required"));
       }
     }
 

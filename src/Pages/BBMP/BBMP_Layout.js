@@ -20,7 +20,7 @@ import apiService from '../../API/apiService';
 import {
     handleFetchDistricts, handleFetchTalukOptions, handleFetchHobliOptions, handleFetchVillageOptions,
     handleFetchHissaOptions, fetchRTCDetailsAPI, handleFetchEPIDDetails, getAccessToken, sendOtpAPI, verifyOtpAPI, submitEPIDDetails, submitsurveyNoDetails,
-    insertApprovalInfo, listApprovalInfo, deleteApprovalInfo, insertReleaseInfo, deleteReleaseInfo, listReleaseInfo, fileUploadAPI, fileListAPI, insertJDA_details, ownerEKYC_Details, 
+    insertApprovalInfo, listApprovalInfo, deleteApprovalInfo, insertReleaseInfo, deleteReleaseInfo, listReleaseInfo, fileUploadAPI, fileListAPI, insertJDA_details, ownerEKYC_Details,
     ekyc_Details, ekyc_Response, ekyc_insertOwnerDetails, jdaEKYC_Details,
     individualSiteAPI, individualSiteListAPI, fetchECDetails, fetchDeedDocDetails, fetchDeedDetails, fetchJDA_details, deleteSiteInfo, fetch_LKRSID, update_Final_SaveAPI
 } from '../../API/authService';
@@ -43,7 +43,7 @@ const BBMP_LayoutForm = () => {
 
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
     const [zoomLevel] = useState(0.9);
-    const [newLanguage, setNewLanguage] = useState(localStorage.getItem('selectedLanguage'));
+    const [newLanguage, setNewLanguage] = useState(sessionStorage.getItem('selectedLanguage'));
 
     const [siteData, setSiteData] = useState([]);
     const [gpsData, setGpsData] = useState({});
@@ -60,9 +60,9 @@ const BBMP_LayoutForm = () => {
     const [order_details, setOrderDetails] = useState([]);
 
     const [areaSqft, setAreaSqft] = useState("0");
-    // const [LKRS_ID, setLKRS_ID] = useState(() => localStorage.getItem("LKRSID") || "");
-    const [LKRS_ID, setLKRS_ID] = useState(() => localStorage.getItem("LKRSID") || "");
-    const [display_LKRS_ID, setDisplay_LKRS_ID] = useState(() => localStorage.getItem("display_LKRSID") || "");
+    // const [LKRS_ID, setLKRS_ID] = useState(() => sessionStorage.getItem("LKRSID") || "");
+    const [LKRS_ID, setLKRS_ID] = useState(() => sessionStorage.getItem("LKRSID") || "");
+    const [display_LKRS_ID, setDisplay_LKRS_ID] = useState(() => sessionStorage.getItem("display_LKRSID") || "");
     const [totalNoofsites, setTotalNoofsites] = useState("0");
 
 
@@ -86,7 +86,7 @@ const BBMP_LayoutForm = () => {
 
     useEffect(() => {
         const interval = setInterval(() => {
-            const storedLang = localStorage.getItem('selectedLanguage') || 'en';
+            const storedLang = sessionStorage.getItem('selectedLanguage') || 'en';
             if (storedLang !== newLanguage) {
                 setNewLanguage(storedLang);
             }
@@ -101,9 +101,9 @@ const BBMP_LayoutForm = () => {
     useEffect(() => {
 
         // generate_Token();
-        localStorage.setItem('createdBy', CreatedBy);
-        localStorage.setItem('createdName', CreatedName);
-        localStorage.setItem('RoleID', RoleID);
+        sessionStorage.setItem('createdBy', CreatedBy);
+        sessionStorage.setItem('createdName', CreatedName);
+        sessionStorage.setItem('RoleID', RoleID);
 
         if (display_LKRS_ID) {
             toast.success(`KRSID: ${display_LKRS_ID}`, {
@@ -123,7 +123,7 @@ const BBMP_LayoutForm = () => {
     //     try {
     //         const response = await getAccessToken();
     //         if (response?.access_token) {
-    //             localStorage.setItem('access_token', response.access_token);
+    //             sessionStorage.setItem('access_token', response.access_token);
     //         }
     //     } catch (err) {
     //         console.error("Error generating token", err);
@@ -259,7 +259,7 @@ const BBMP_LayoutForm = () => {
 const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, setDisplay_LKRS_ID, setIsRTCSectionSaved, setOwnerName }) => {
 
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
-    const [language, setLanguage] = useState(localStorage.getItem("selectedLanguage"));
+    const [language, setLanguage] = useState(sessionStorage.getItem("selectedLanguage"));
     const { t, i18n } = useTranslation();
     const [districts, setDistricts] = useState([]);
     const [selectedDistrict, setSelectedDistrict] = useState("");
@@ -307,20 +307,28 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
     const [localLKRSID, setLocalLKRSID] = useState(LKRS_ID || "");
 
     useEffect(() => {
-        const storedCreatedBy = localStorage.getItem('createdBy');
-        const storedCreatedName = localStorage.getItem('createdName');
-        const storedRoleID = localStorage.getItem('RoleID');
+        const storedCreatedBy = sessionStorage.getItem('createdBy');
+        const storedCreatedName = sessionStorage.getItem('createdName');
+        const storedRoleID = sessionStorage.getItem('RoleID');
 
         setCreatedBy(storedCreatedBy);
         setCreatedName(storedCreatedName);
         setRoleID(storedRoleID);
 
-        if (LKRS_ID) {
-            handleGetLKRSID(LKRS_ID);
+        // if (LKRS_ID) {
+        //     handleGetLKRSID(LKRS_ID);
+        // }
+        if (buttonRef.current) {
+            buttonRef.current.click();
         }
+
 
     }, [LKRS_ID]);
 
+    const fetch_details = async () => {
+        if (!localLKRSID) return;
+        await handleGetLKRSID(LKRS_ID);
+    }
 
 
     const [isDistrictReadonly, setIsDistrictReadonly] = useState(false);
@@ -664,10 +672,10 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
             const response = await submitsurveyNoDetails(payload);
             if (response.responseStatus === true) {
                 stop_loader();
-                localStorage.removeItem('LKRSID');
-                localStorage.removeItem('display_LKRSID');
-                localStorage.setItem('LKRSID', response.lkrsid);
-                localStorage.setItem('display_LKRSID', response.display_LKRSID);
+                sessionStorage.removeItem('LKRSID');
+                sessionStorage.removeItem('display_LKRSID');
+                sessionStorage.setItem('LKRSID', response.lkrsid);
+                sessionStorage.setItem('display_LKRSID', response.display_LKRSID);
                 setDisplay_LKRS_ID(response.display_LKRSID);
                 setLKRS_ID(response.lkrsid);
                 const ownerNames = rtcAddedData
@@ -675,7 +683,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                     .filter(Boolean)                  // Remove empty/null values
                     .join(', ');                      // Join with comma and space
 
-                localStorage.setItem("ownerName", ownerNames);
+                sessionStorage.setItem("ownerName", ownerNames);
                 setOwnerName(ownerNames);
                 const fetch_payload = {
                     level: 1,
@@ -855,7 +863,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
         totalSqM += sqft * 0.092903;
 
         setAreaSqft(totalSqFt);
-        localStorage.setItem('areaSqft', totalSqFt);
+        sessionStorage.setItem('areaSqft', totalSqFt);
     });
     // Normalize fgunta -> gunta and acre
     totalGunta += Math.floor(totalFGunta / 16);
@@ -884,12 +892,12 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
             confirmButtonText: 'OK'
         });
     };
-
+    const buttonRef = useRef(null);
     return (
         <div className={`layout-form-container ${loading ? 'no-interaction' : ''}`}>
             {loading && <Loader />}
             <div className='row mt-5'>
-
+                <button className='btn btn-block' onClick={fetch_details} ref={buttonRef} hidden>Click me</button>
                 {/* District */}
                 <div className="col-12 col-sm-12 col-md-6 col-lg-2 col-xl-2  mb-3" >
                     <label className="form-label">District</label>
@@ -1285,7 +1293,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
     const [epidNumber, setEpidNumber] = useState("");
 
     const epidNoRef = useRef(null);
-
+    const buttonRef = useRef(null);
     const [epidshowTable, setEPIDShowTable] = useState(false);
     const [epid_fetchedData, setEPID_FetchedData] = useState(null);
 
@@ -1469,9 +1477,9 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
         }
     }, [area_Sqft]);
     useEffect(() => {
-        const storedCreatedBy = localStorage.getItem('createdBy');
-        const storedCreatedName = localStorage.getItem('createdName');
-        const storedRoleID = localStorage.getItem('RoleID');
+        const storedCreatedBy = sessionStorage.getItem('createdBy');
+        const storedCreatedName = sessionStorage.getItem('createdName');
+        const storedRoleID = sessionStorage.getItem('RoleID');
 
         setCreatedBy(storedCreatedBy);
         setCreatedName(storedCreatedName);
@@ -1553,10 +1561,10 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
         }
 
         try {
-            localStorage.setItem('isTokenRequired', false);
+            sessionStorage.setItem('isTokenRequired', false);
             const fetchedData = await handleFetchEPIDDetails(epidNumber);
 
-            localStorage.setItem("epid_JSON", JSON.stringify(fetchedData));
+            sessionStorage.setItem("epid_JSON", JSON.stringify(fetchedData));
             if (fetchedData) {
                 const {
                     propertyID,
@@ -1603,10 +1611,10 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                     OwnerDetails: ownerDetails,
                 });
                 setAreaSqft(0);
-                localStorage.removeItem('areaSqft');
+                sessionStorage.removeItem('areaSqft');
                 setAreaSqft(siteDetails.siteArea);
                 setArea_Sqft(siteDetails.siteArea);
-                localStorage.setItem('areaSqft', siteDetails.siteArea);
+                sessionStorage.setItem('areaSqft', siteDetails.siteArea);
                 setOwnerTableData(ownerDetails);
 
                 Swal.fire({
@@ -1755,7 +1763,9 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
     useEffect(() => {
         if (LKRS_ID) {
             setLocalLKRSID(LKRS_ID);
-            handleGetLKRSID(LKRS_ID);
+            if (buttonRef.current) {
+                buttonRef.current.click();
+            }
         }
     }, [LKRS_ID]);
     // useEffect(() => {
@@ -1811,10 +1821,10 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                 // Optionally update area sqft if siteDetails present
                 if (khataDetailsJson.siteDetails?.siteArea) {
                     setAreaSqft(khataDetailsJson.siteDetails.siteArea);
-                    localStorage.setItem('areaSqft', khataDetailsJson.siteDetails.siteArea);
+                    sessionStorage.setItem('areaSqft', khataDetailsJson.siteDetails.siteArea);
                 } else {
                     setAreaSqft(0);
-                    localStorage.removeItem('areaSqft');
+                    sessionStorage.removeItem('areaSqft');
                 }
 
                 setOwnerTableData(khataDetailsJson.ownerDetails || []);
@@ -1838,7 +1848,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                 setEPID_FetchedData({});
                 setOwnerTableData([]);
                 setAreaSqft(0);
-                localStorage.removeItem('areaSqft');
+                sessionStorage.removeItem('areaSqft');
             }
         } catch (error) {
             console.error("Failed to fetch LKRSID data:", error);
@@ -1863,7 +1873,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
         //     }
         // }
 
-        const storedData = localStorage.getItem("epid_JSON");
+        const storedData = sessionStorage.getItem("epid_JSON");
         let parsedData = storedData ? JSON.parse(storedData) : "";
 
         const payload = {
@@ -1920,10 +1930,10 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
 
             if (response.responseStatus === true) {
                 stop_loader();
-                localStorage.removeItem('LKRSID');
-                localStorage.setItem('LKRSID', response.lkrsid);
-                localStorage.removeItem('display_LKRSID');
-                localStorage.setItem('display_LKRSID', response.display_LKRSID);
+                sessionStorage.removeItem('LKRSID');
+                sessionStorage.setItem('LKRSID', response.lkrsid);
+                sessionStorage.removeItem('display_LKRSID');
+                sessionStorage.setItem('display_LKRSID', response.display_LKRSID);
                 setDisplay_LKRS_ID(response.display_LKRSID);
                 setLKRS_ID(response.lkrsid);
                 const ownerDetails = fetchedEPIDData?.[0]?.OwnerDetails;
@@ -1933,7 +1943,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                         .map(owner => owner.ownerName?.trim())
                         .filter(Boolean)
                         .join(', ');
-                    localStorage.setItem("ownerName", ownerNames);
+                    sessionStorage.setItem("ownerName", ownerNames);
                     setOwnerName(ownerNames);
                 } else {
                     console.warn("Owner details array is empty or invalid");
@@ -1975,7 +1985,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
     return (
         <div className="row g-3">
             {loading && <Loader />}
-
+            <button className='btn btn-block' onClick={handleGetLKRSID} ref={buttonRef} hidden>Click me</button>
             <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4  mt-3">
                 <div className="form-group mt-2">
                     <label className='form-label'>Enter EPID of eKhata of A-property <span className='mandatory_color'>*</span></label>
@@ -2235,12 +2245,12 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
     const [LKRSID, setLKRSID] = useState('');
     const buttonRef = useRef(null);
     const [localLKRSID, setLocalLKRSID] = useState(() => {
-        return localStorage.getItem("LKRSID") || "";
+        return sessionStorage.getItem("LKRSID") || "";
     });
     useEffect(() => {
-        const storedCreatedBy = localStorage.getItem('createdBy');
-        const storedCreatedName = localStorage.getItem('createdName');
-        const storedRoleID = localStorage.getItem('RoleID');
+        const storedCreatedBy = sessionStorage.getItem('createdBy');
+        const storedCreatedName = sessionStorage.getItem('createdName');
+        const storedRoleID = sessionStorage.getItem('RoleID');
 
         setCreatedBy(storedCreatedBy);
         setCreatedName(storedCreatedName);
@@ -2259,8 +2269,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
 
         if (localLKRSID && (isRTCSectionSaved || isEPIDSectionSaved)) {
             await fetchApprovalList(localLKRSID);
-            await delay(5000); // 1 second delay
-            await fetchReleaseList(localLKRSID);
+
         }
     };
     const fetchApprovalList = async (localLKRSID) => {
@@ -3988,7 +3997,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
     useEffect(() => {
 
-        const areaSQFT = localStorage.getItem('areaSqft');
+        const areaSQFT = sessionStorage.getItem('areaSqft');
         if (areaSQFT) {
             setTotalSQFT(areaSQFT);
             setTotalSQM(sqftToSqm(areaSQFT));
@@ -4001,19 +4010,19 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         if (LKRS_ID) {
             setLocalLKRSID(LKRS_ID);
         } else {
-            const id = localStorage.getItem("LKRSID");
+            const id = sessionStorage.getItem("LKRSID");
             if (id) setLocalLKRSID(id);
         }
         if (ownerName) {
             setLocalOwnerName(ownerName)
         } else {
-            const name = localStorage.getItem("ownerName");
+            const name = sessionStorage.getItem("ownerName");
             if (name) setLocalOwnerName(name);
         }
         if (totalNoofsites) {
             setLayoutSiteCount(totalNoofsites);
         } else {
-            const noofsites = localStorage.getItem("totalNoOfSites");
+            const noofsites = sessionStorage.getItem("totalNoOfSites");
             if (noofsites) setLayoutSiteCount(noofsites);
         }
     }, [LKRS_ID, ownerName, totalNoofsites]);
@@ -5144,7 +5153,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             return;
         }
 
-        const storedSiteCount = parseInt(localStorage.getItem("NUMBEROFSITES"), 10);
+        const storedSiteCount = parseInt(sessionStorage.getItem("NUMBEROFSITES"), 10);
         const totalAddedSites = allSites.length;
 
         // Check if trying to reduce below original count
@@ -5180,7 +5189,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
         const totalAddedSites = allSites.length;
         const textboxSitesCount = parseInt(layoutSiteCount, 10);
-        const storedSiteCount = parseInt(localStorage.getItem("NUMBEROFSITES"), 10);
+        const storedSiteCount = parseInt(sessionStorage.getItem("NUMBEROFSITES"), 10);
 
         // Check if trying to reduce below original count
         if (textboxSitesCount >= totalAddedSites) {
@@ -5280,7 +5289,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             sitediM_CREATEDROLE: roleID
         }));
 
-        let no_of_sites = Number(localStorage.getItem("NUMBEROFSITES")) || 0;
+        let no_of_sites = Number(sessionStorage.getItem("NUMBEROFSITES")) || 0;
         let updated_sites = "";
         let status_site = true;
         const NoofSites = parseInt(layoutSiteCount, 10);
@@ -5354,7 +5363,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                         setIsSitesSectionSaved(true);
 
                         const totalSitesFromAPI = response[0]?.lkrS_NUMBEROFSITES;
-                        localStorage.setItem("NUMBEROFSITES", totalSitesFromAPI);
+                        sessionStorage.setItem("NUMBEROFSITES", totalSitesFromAPI);
                     }
 
                 } catch (error) {
@@ -5421,7 +5430,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
     };
 
     const fetchSiteDetails = async (LKRS_ID) => {
-        const storedSiteCount = localStorage.getItem("NUMBEROFSITES");
+        const storedSiteCount = sessionStorage.getItem("NUMBEROFSITES");
         if (storedSiteCount) {
             setLayoutSiteCount(storedSiteCount);
             setIsReadOnly(true);     // Make input and Save button readonly/disabled
@@ -5448,7 +5457,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                 setIsAddDisabled(true);
 
                 const totalSitesFromAPI = response[0]?.lkrS_NUMBEROFSITES;
-                localStorage.setItem("NUMBEROFSITES", totalSitesFromAPI);
+                sessionStorage.setItem("NUMBEROFSITES", totalSitesFromAPI);
 
                 // Check if the response length matches the totalSitesFromAPI
                 if (response.length === Number(totalSitesFromAPI)) {
@@ -6558,8 +6567,8 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
         if (LKRS_ID) {
             setLocalLKRSID(LKRS_ID);
         } else {
-            // fallback to localStorage if needed
-            const id = localStorage.getItem("LKRSID");
+            // fallback to sessionStorage if needed
+            const id = sessionStorage.getItem("LKRSID");
             if (id) setLocalLKRSID(id);
         }
     }, [LKRS_ID]);
@@ -6954,8 +6963,8 @@ const Preview_siteDetailsTable = ({ data, setData, totalSitesCount, onSave, onEd
         if (LKRS_ID) {
             setLocalLKRSID(LKRS_ID);
         } else {
-            // fallback to localStorage if needed
-            const id = localStorage.getItem("LKRSID");
+            // fallback to sessionStorage if needed
+            const id = sessionStorage.getItem("LKRSID");
             if (id) setLocalLKRSID(id);
         }
     }, [LKRS_ID]);
@@ -7249,9 +7258,9 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsE
         };
     }, [deedNoURL]);
     useEffect(() => {
-        const storedCreatedBy = localStorage.getItem('createdBy');
-        const storedCreatedName = localStorage.getItem('createdName');
-        const storedRoleID = localStorage.getItem('RoleID');
+        const storedCreatedBy = sessionStorage.getItem('createdBy');
+        const storedCreatedName = sessionStorage.getItem('createdName');
+        const storedRoleID = sessionStorage.getItem('RoleID');
 
         setCreatedBy(storedCreatedBy);
         setCreatedName(storedCreatedName);
@@ -7264,8 +7273,8 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsE
         if (LKRS_ID) {
             setLocalLKRSID(LKRS_ID);
         } else {
-            // fallback to localStorage if needed
-            const id = localStorage.getItem("LKRSID");
+            // fallback to sessionStorage if needed
+            const id = sessionStorage.getItem("LKRSID");
             if (id) setLocalLKRSID(id);
         }
     }, [LKRS_ID]);
@@ -8453,9 +8462,9 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
     const [LKRSID, setLKRSID] = useState('');
     const [localownerName, setLocalOwnerName] = useState('');
     useEffect(() => {
-        const storedCreatedBy = localStorage.getItem('createdBy');
-        const storedCreatedName = localStorage.getItem('createdName');
-        const storedRoleID = localStorage.getItem('RoleID');
+        const storedCreatedBy = sessionStorage.getItem('createdBy');
+        const storedCreatedName = sessionStorage.getItem('createdName');
+        const storedRoleID = sessionStorage.getItem('RoleID');
 
         setCreatedBy(storedCreatedBy);
         setCreatedName(storedCreatedName);
@@ -8463,7 +8472,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
 
     }, ["1"]);
     const [localLKRSID, setLocalLKRSID] = useState(() => {
-        return localStorage.getItem("LKRSID") || "";
+        return sessionStorage.getItem("LKRSID") || "";
     });
     useEffect(() => {
         if (LKRS_ID) {
@@ -8599,7 +8608,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
                 });
 
                 const resultUrl = response?.ekycRequestUrl;
-                localStorage.setItem("tranNo", response?.tranNo);
+                sessionStorage.setItem("tranNo", response?.tranNo);
                 if (resultUrl) {
                     window.open(
                         resultUrl,
@@ -8619,7 +8628,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
         }
     };
     const fetchEKYC_ResponseDetails = async (ownerName, txnno) => {
-        const transaction_No = localStorage.getItem("tranNo");
+        const transaction_No = sessionStorage.getItem("tranNo");
         if (transaction_No === txnno) {
             try {
                 const payload = {
@@ -9207,9 +9216,9 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
     const [ownerDataList, setOwnerDataList] = useState([]);
     const [ekyc_Data, setEkyc_Data] = useState(null);
     useEffect(() => {
-        const storedCreatedBy = localStorage.getItem('createdBy');
-        const storedCreatedName = localStorage.getItem('createdName');
-        const storedRoleID = localStorage.getItem('RoleID');
+        const storedCreatedBy = sessionStorage.getItem('createdBy');
+        const storedCreatedName = sessionStorage.getItem('createdName');
+        const storedRoleID = sessionStorage.getItem('RoleID');
 
 
         setCreatedBy(storedCreatedBy);
@@ -9218,7 +9227,7 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
 
     }, ["1"]);
     const [localLKRSID, setLocalLKRSID] = useState(() => {
-        return localStorage.getItem("LKRSID") || "";
+        return sessionStorage.getItem("LKRSID") || "";
     });
 
     useEffect(() => {
@@ -9507,7 +9516,7 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
                 });
 
                 const resultUrl = response?.ekycRequestUrl;
-                localStorage.setItem("tranNo", response?.tranNo);
+                sessionStorage.setItem("tranNo", response?.tranNo);
                 if (resultUrl) {
                     window.open(
                         resultUrl,
@@ -9528,7 +9537,7 @@ const JDA_EKYCBlock = ({ LKRS_ID }) => {
     };
 
     const fetchEKYC_ResponseDetails = async (jdaRepName, txnno) => {
-        const transaction_No = localStorage.getItem("tranNo");
+        const transaction_No = sessionStorage.getItem("tranNo");
         if (transaction_No === txnno) {
             try {
                 const payload = {
@@ -10270,8 +10279,8 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
         setTotalSqFt(calculatedTotalSqFt);
         setTotalSqM(calculatedTotalSqM);
 
-        // Store the rounded value in localStorage if that's what's intended
-        localStorage.setItem('areaSqft', calculatedTotalSqFt.toFixed(2));
+        // Store the rounded value in sessionStorage if that's what's intended
+        sessionStorage.setItem('areaSqft', calculatedTotalSqFt.toFixed(2));
 
     }, [combinedData]);
 
@@ -10460,10 +10469,10 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                 // Optionally update area sqft if siteDetails present
                 if (khataDetailsJson.siteDetails?.siteArea) {
                     setTotalSqFt(khataDetailsJson.siteDetails.siteArea);
-                    localStorage.setItem('areaSqft', khataDetailsJson.siteDetails.siteArea);
+                    sessionStorage.setItem('areaSqft', khataDetailsJson.siteDetails.siteArea);
                 } else {
                     setTotalSqFt(0);
-                    localStorage.removeItem('areaSqft');
+                    sessionStorage.removeItem('areaSqft');
                 }
 
                 setOwnerTableData(khataDetailsJson.ownerDetails || []);
@@ -10904,7 +10913,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                     setDeedNumber(response[0].jdA_DEED_NO);
                 } else if (response[0].jdA_ISREGISTERED === false) {
                     setJdaDocumentId(response[0].jdA_DEED_NO);
-                     const dateStr = response[0].jdA_REGISTEREDDATE?.split('T')[0];
+                    const dateStr = response[0].jdA_REGISTEREDDATE?.split('T')[0];
                     setJdaDocumentDate(dateStr);
                     const deedFileResponse = await fileListAPI(3, localLKRSID, 4, 0);
                     const base64String = deedFileResponse[0]?.doctrN_DOCBASE64;
@@ -11349,7 +11358,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                                             {isRegistered === false && (
                                                 <>
 
-                                                    
+
                                                     <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4">
                                                         <label className='form-label'>Enter JDA Document ID <span className='mandatory_color'>*</span></label>
                                                         <input

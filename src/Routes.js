@@ -1,6 +1,6 @@
 // src/Routes.js
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './Pages/Login';
 import PropertyList from './Pages/BBDDraft';
 import ObjectorsPage from './Pages/ObjectorsPage';
@@ -55,11 +55,11 @@ import ReleaseSelection from './Pages/BBMP/ReleaseSiteSelection';
 import BBMP_SubmittedInfo from './Pages/BBMP/Submitted_ApplicationInfo';
 import LayoutForm from './Pages/BBMP/LayoutKhata';
 import ProtectedRoute from './ProtectedRoute';
-
+import { useAuth } from './AuthContext';
 
 
 const AppRoutes = () => {
-  
+  const { isAuthenticated } = useAuth();
   return (
     <AuthProvider>
       <Router basename="/">
@@ -79,6 +79,9 @@ const AppRoutes = () => {
             <Route path='/layoutKhata' element={<LayoutForm />} /> */}
 
             <Route path="/" element={<BBMPLogin />} />
+            <Route path="/loginForm" element={<BBMPLogin />} />
+
+               <Route path='/loginForm' element={isAuthenticated ? <Navigate to="/homePage" replace /> : <BBMPLogin />} />
 
             {/* Protected Routes */}
             <Route path="/homePage" element={<ProtectedRoute element={<BBMP_Homepage />} />} />
