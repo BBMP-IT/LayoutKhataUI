@@ -340,7 +340,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                     const response = await deleteApprovalInfo(deletePayload);
 
                     if (response.responseStatus === true) {
-                        Swal.fire("Deleted!", response.responseMessage, "success");
+                        Swal.fire(response.responseMessage, "success");
                         setisApprovalEditing(false);
                         setIsEditing(true);
                         fetchApprovalList(localLKRSID);

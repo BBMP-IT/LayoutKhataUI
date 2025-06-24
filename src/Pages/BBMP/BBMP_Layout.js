@@ -30,7 +30,7 @@ import DeclarationBlock from './DeclarationBlock';
 import JDA_EKYCBlock from './JDA_EKYCBlock';
 import Owner_EKYCBlock from './Owner_EKYCBlock';
 import ECDetailsBlock from './ECDetailsBlock';
-import Preview_siteDetailsTable from './Preview_siteDetailsTable'; 
+import Preview_siteDetailsTable from './Preview_siteDetailsTable';
 import IndividualGPSBlock from './IndividualGPSBlock';
 
 import usericon from '../../assets/usericon.png';
@@ -140,7 +140,7 @@ const BBMP_LayoutForm = () => {
 
     //fetching Details from LKRSID
     const handleGetLKRSID = async (localLKRSID) => {
-       
+
         const payload = {
             level: 1,
             LkrsId: localLKRSID,
@@ -638,10 +638,19 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
             Swal.fire("Area Required", "The area cannot be zero. Please provide a valid area.", "warning");
             return;
         }
+         // ✅ Check DC Conversion No
+    if (!dcNumber.trim()) {
+       Swal.fire("Missing Field", "Please enter DC Conversion Order No.", "warning");
+        return
+    }
+         if (!uploadedFile) {
+        Swal.fire("Missing File", "Please upload DC Conversion Order file.", "warning");
+        return
+    } 
         const payload = {
             lkrS_ID: 0,
             lkrS_LANDTYPE: "surveyNo",
-            lkrS_EPID: "9999999999",
+            lkrS_EPID: "",
             lkrS_SITEAREA_SQFT: totalSqFt.toFixed(2),
             lkrS_SITEAREA_SQMT: totalSqM.toFixed(2),
             lkrS_REMARKS: "",
@@ -677,7 +686,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                 suR_CREATEDROLE: roleID
             }))
         };
-//reference error
+        //reference error
         // try {
         //     start_loader();
         //     const response = await submitsurveyNoDetails(payload);
@@ -753,74 +762,74 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
         // }
 
         try {
-    start_loader();
-    const saveResponse = await submitsurveyNoDetails(payload);
-    if (saveResponse.responseStatus === true) {
-        stop_loader();
-        localStorage.removeItem('LKRSID');
-        localStorage.removeItem('display_LKRSID');
-        localStorage.setItem('LKRSID', saveResponse.lkrsid);
-        localStorage.setItem('display_LKRSID', saveResponse.display_LKRSID);
-        setDisplay_LKRS_ID(saveResponse.display_LKRSID);
-        setLKRS_ID(saveResponse.lkrsid);
-        const ownerNames = rtcAddedData
-            .map(item => item.owner?.trim())
-            .filter(Boolean)
-            .join(', ');
-
-        localStorage.setItem("ownerName", ownerNames);
-        setOwnerName(ownerNames);
-
-        try {
             start_loader();
-            const fetchResponse = await fetch_LKRSID(saveResponse.lkrsid);
-
-            if (fetchResponse && fetchResponse.surveyNumberDetails && fetchResponse.surveyNumberDetails.length > 0) {
-                const parsedSurveyDetails = mapSurveyDetails(fetchResponse.surveyNumberDetails);
-
-                setRtcAddedData(prev => {
-                    const existingKeys = new Set(
-                        prev.map(item => `${item.surveyNumber}_${item.ownerName}`)
-                    );
-
-                    const filteredNewData = parsedSurveyDetails.filter(item => {
-                        const key = `${item.surveyNumber}_${item.ownerName}`;
-                        return !existingKeys.has(key);
-                    });
-
-                    return [...prev, ...filteredNewData];
-                });
-                setIsSurveyNoSectionDisabled(true);
-                onDisableEPIDSection();
-                setIsRTCSectionSaved(true);
+            const saveResponse = await submitsurveyNoDetails(payload);
+            if (saveResponse.responseStatus === true) {
                 stop_loader();
+                localStorage.removeItem('LKRSID');
+                localStorage.removeItem('display_LKRSID');
+                localStorage.setItem('LKRSID', saveResponse.lkrsid);
+                localStorage.setItem('display_LKRSID', saveResponse.display_LKRSID);
+                setDisplay_LKRS_ID(saveResponse.display_LKRSID);
+                setLKRS_ID(saveResponse.lkrsid);
+                const ownerNames = rtcAddedData
+                    .map(item => item.owner?.trim())
+                    .filter(Boolean)
+                    .join(', ');
+
+                localStorage.setItem("ownerName", ownerNames);
+                setOwnerName(ownerNames);
+
+                try {
+                    start_loader();
+                    const fetchResponse = await fetch_LKRSID(saveResponse.lkrsid);
+
+                    if (fetchResponse && fetchResponse.surveyNumberDetails && fetchResponse.surveyNumberDetails.length > 0) {
+                        const parsedSurveyDetails = mapSurveyDetails(fetchResponse.surveyNumberDetails);
+
+                        setRtcAddedData(prev => {
+                            const existingKeys = new Set(
+                                prev.map(item => `${item.surveyNumber}_${item.ownerName}`)
+                            );
+
+                            const filteredNewData = parsedSurveyDetails.filter(item => {
+                                const key = `${item.surveyNumber}_${item.ownerName}`;
+                                return !existingKeys.has(key);
+                            });
+
+                            return [...prev, ...filteredNewData];
+                        });
+                        setIsSurveyNoSectionDisabled(true);
+                        onDisableEPIDSection();
+                        setIsRTCSectionSaved(true);
+                        stop_loader();
+                    } else {
+                        stop_loader();
+                    }
+                } catch (error) {
+                    stop_loader();
+                    console.error("Failed to fetch LKRSID data:", error);
+                }
+
+                Swal.fire({
+                    title: saveResponse.responseMessage,
+                    icon: "success",
+                    confirmButtonText: "OK",
+                });
             } else {
                 stop_loader();
+                Swal.fire({
+                    text: saveResponse.responseMessage || "Failed to save data",
+                    icon: "error",
+                    confirmButtonText: "OK",
+                });
             }
         } catch (error) {
             stop_loader();
-            console.error("Failed to fetch LKRSID data:", error);
+            console.error("Failed to insert data:", error);
+        } finally {
+            stop_loader();
         }
-
-        Swal.fire({
-            title: saveResponse.responseMessage,
-            icon: "success",
-            confirmButtonText: "OK",
-        });
-    } else {
-        stop_loader();
-        Swal.fire({
-            text: saveResponse.responseMessage || "Failed to save data",
-            icon: "error",
-            confirmButtonText: "OK",
-        });
-    }
-} catch (error) {
-    stop_loader();
-    console.error("Failed to insert data:", error);
-} finally {
-    stop_loader();
-}
 
     };
 
@@ -967,14 +976,47 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
         setCurrentPage(1); // Reset to first page when page size changes
     };
     const showImplementationAlert = () => {
-        Swal.fire({
-            title: 'Coming Soon!',
-            text: 'Implementation is in progress.',
-            icon: 'info',
-            confirmButtonText: 'OK'
-        });
+          if (!dcNumber.trim()) {
+       Swal.fire("Missing Field", "Please enter DC Conversion Order No.", "warning");
+        return
+    }
+        
     };
     const buttonRef = useRef(null);
+
+
+
+    const [dcNumber, setDcNumber] = useState('');
+    const [uploadedFile, setUploadedFile] = useState(null);
+    const [uploadedFileURL, setUploadedFileURL] = useState(null);
+    const [errors, setErrors] = useState({
+        dcNumber: '',
+        file: ''
+    });
+
+    const handleDCNumberChange = (e) => {
+        setDcNumber(e.target.value);
+        setErrors(prev => ({ ...prev, dcNumber: '' }));
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+
+        if (file) {
+            if (file.size >5000 * 1024) {  // 300KB size limit
+                setErrors(prev => ({ ...prev, file: 'File size should be less than 5MB.' }));
+                setUploadedFile(null);
+                setUploadedFileURL(null);
+                return;
+            }
+
+            setUploadedFile(file);
+            setUploadedFileURL(URL.createObjectURL(file));
+            setErrors(prev => ({ ...prev, file: '' }));
+        }
+    };
+
+
     return (
         <div className={`layout-form-container ${loading ? 'no-interaction' : ''}`}>
             {loading && <Loader />}
@@ -1279,8 +1321,14 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                                         type="tel"
                                         className="form-control"
                                         placeholder="Enter DC Conversion Order No"
-                                        name="layoutApprovalNumber" disabled={isSurveyNoSectionDisabled}
+                                        name="layoutApprovalNumber"
+                                        value={dcNumber}
+                                        onChange={handleDCNumberChange}
+                                        disabled={isSurveyNoSectionDisabled}
                                     />
+                                    {errors.dcNumber && (
+                                        <span className="text-danger" style={{ fontSize: '0.875rem' }}>{errors.dcNumber}</span>
+                                    )}
                                 </div>
                             </div>
                             <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 '>
@@ -1293,15 +1341,19 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                             {/* Scan & Upload Layout DC Conversion order */}
                             <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
                                 <div className="form-group">
-                                    <label className="form-label">
-                                        Upload Conversion order
-                                    </label>
+                                    <label className="form-label">Upload Conversion order</label>
                                     <input
                                         type="file"
                                         accept=".pdf"
-                                        className="form-control" disabled={isSurveyNoSectionDisabled}
+                                        className="form-control"
+                                        onChange={handleFileChange}
+                                        disabled={isSurveyNoSectionDisabled}
                                     />
-                                    {/* {formData.approvalOrder && approvalOrderURL && (
+                                    {errors.file && (
+                                        <span className="text-danger" style={{ fontSize: '0.875rem' }}>{errors.file}</span>
+                                    )}
+
+                                    {uploadedFile && uploadedFileURL && (
                                         <div className="mt-2">
                                             <div
                                                 className="iframe-container"
@@ -1315,20 +1367,18 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                                                 }}
                                             >
                                                 <iframe
-                                                    src={approvalOrderURL}
+                                                    src={uploadedFileURL}
                                                     width="100%"
                                                     height="100%"
-                                                    title="Approval Order"
-                                                    onClick={() =>
-                                                        window.open(approvalOrderURL, "_blank")
-                                                    }
+                                                    title="Conversion Order"
+                                                    onClick={() => window.open(uploadedFileURL, "_blank")}
                                                     style={{ cursor: "pointer", border: "none" }}
                                                 />
                                             </div>
                                             <p className="mt-1" style={{ fontSize: "0.875rem" }}>
                                                 Current File:{" "}
                                                 <a
-                                                    href={approvalOrderURL}
+                                                    href={uploadedFileURL}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     style={{
@@ -1337,15 +1387,15 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                                                         fontSize: "0.875rem",
                                                     }}
                                                 >
-                                                    {formData.approvalOrder.name}
+                                                    {uploadedFile.name}
                                                 </a>
                                             </p>
                                         </div>
-                                    )} */}
+                                    )}
+
                                     <span className="note_color">
-                                        {t("translation.BDA.Subdivision.fileSize&format")}
+                                        [ Only PDF files are allowed, file size must be less than 5MB ]
                                     </span>
-                                    <br />
                                 </div>
                             </div>
                         </div>
@@ -1623,6 +1673,121 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
 
     const [ownerTableData, setOwnerTableData] = useState([]);
 
+    // const handleFetchDetails = async () => {
+    //     start_loader();
+
+    //     if (!epidNumber.trim()) {
+    //         stop_loader();
+    //         Swal.fire("Error", "Please enter EPID Number!", "error");
+    //         return;
+    //     }
+
+    //     const epidRegex = /^[1-9][0-9]{9}$/;
+    //     if (!epidRegex.test(epidNumber)) {
+    //         stop_loader();
+    //         Swal.fire("Error", "Please enter a valid 10-digit EPID Number that does not start with 0!", "error");
+    //         return;
+    //     }
+
+    //     try {
+    //         // localStorage.setItem('isTokenRequired', false);
+    //         const fetchedData = await handleFetchEPIDDetails(epidNumber);
+
+    //         localStorage.setItem("epid_JSON", JSON.stringify(fetchedData));
+    //         console.log(fetchedData,"Epid");
+
+    //         if (fetchedData ) {
+    //             const {
+    //                 propertyID,
+    //                 propertyCategory,
+    //                 propertyClassification,
+    //                 wardNumber,
+    //                 wardName,
+    //                 streetName,
+    //                 streetcode,
+    //                 sasApplicationNumber,
+    //                 isMuation,
+    //                 kaveriRegistrationNumber,
+    //                 assessmentNumber,
+    //                 courtStay,
+    //                 enquiryDispute,
+    //                 checkBandi,
+    //                 siteDetails,
+    //                 ownerDetails,
+    //             } = fetchedData;
+
+    //             //  Safely access and log the first owner's name
+    //             if (Array.isArray(ownerDetails) && ownerDetails.length > 0) {
+
+    //             } else {
+    //                 console.warn("Owner details array is empty or invalid");
+    //             }
+    //             setOwnerTableData(ownerDetails); // clear table data first
+    //             setEPID_FetchedData({
+    //                 PropertyID: propertyID,
+    //                 PropertyCategory: propertyCategory,
+    //                 PropertyClassification: propertyClassification,
+    //                 WardNumber: wardNumber,
+    //                 WardName: wardName,
+    //                 StreetName: streetName,
+    //                 Streetcode: streetcode,
+    //                 SASApplicationNumber: sasApplicationNumber,
+    //                 IsMuation: isMuation,
+    //                 KaveriRegistrationNumber: kaveriRegistrationNumber,
+    //                 AssessmentNumber: assessmentNumber,
+    //                 courtStay,
+    //                 enquiryDispute,
+    //                 CheckBandi: checkBandi,
+    //                 SiteDetails: siteDetails,
+    //                 OwnerDetails: ownerDetails,
+    //             });
+    //             setAreaSqft(0);
+    //             localStorage.removeItem('areaSqft');
+    //             setAreaSqft(siteDetails.siteArea);
+    //             setArea_Sqft(siteDetails.siteArea);
+    //             localStorage.setItem('areaSqft', siteDetails.siteArea);
+    //             setOwnerTableData(ownerDetails);
+
+    //             Swal.fire({
+    //                 title: "Success",
+    //                 text: "EPID Details fetched successfully!",
+    //                 icon: "success",
+    //                 confirmButtonText: "OK",
+    //             }).then(() => {
+    //                 setEpidNumber("");
+    //                 setEPIDShowTable(true);
+    //             });
+    //         } else {
+    //             Swal.fire({
+    //                 title: "Error",
+    //                 text: "EPID is invalid. Please provide a correct EPID",
+    //                 icon: "error",
+    //                 confirmButtonText: "OK",
+    //                 allowOutsideClick: false,    // Prevent clicking outside to close
+    //                 allowEscapeKey: false,       // Prevent pressing ESC to close
+    //             }).then((result) => {
+    //                 if (result.isConfirmed) {
+    //                     // User clicked OK
+    //                     setEpidNumber("");
+    //                     setEPIDShowTable(false);
+    //                     setEPID_FetchedData(false);
+    //                 }
+    //             });
+    //         }
+    //     } catch (error) {
+    //         console.error("Error fetching EPID details:", error);
+    //         Swal.fire({
+    //             title: "Error",
+    //             text: "Failed to fetch EPID Details.",
+    //             icon: "error",
+    //             confirmButtonText: "OK",
+    //         });
+    //     } finally {
+    //         stop_loader();
+    //     }
+
+    // };
+
     const handleFetchDetails = async () => {
         start_loader();
 
@@ -1640,101 +1805,91 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
         }
 
         try {
-            // localStorage.setItem('isTokenRequired', false);
             const fetchedData = await handleFetchEPIDDetails(epidNumber);
 
-            localStorage.setItem("epid_JSON", JSON.stringify(fetchedData));
-            if (fetchedData) {
-                const {
-                    propertyID,
-                    propertyCategory,
-                    propertyClassification,
-                    wardNumber,
-                    wardName,
-                    streetName,
-                    streetcode,
-                    sasApplicationNumber,
-                    isMuation,
-                    kaveriRegistrationNumber,
-                    assessmentNumber,
-                    courtStay,
-                    enquiryDispute,
-                    checkBandi,
-                    siteDetails,
-                    ownerDetails,
-                } = fetchedData;
-
-                //  Safely access and log the first owner's name
-                if (Array.isArray(ownerDetails) && ownerDetails.length > 0) {
-
-                } else {
-                    console.warn("Owner details array is empty or invalid");
-                }
-                setOwnerTableData(ownerDetails); // clear table data first
-                setEPID_FetchedData({
-                    PropertyID: propertyID,
-                    PropertyCategory: propertyCategory,
-                    PropertyClassification: propertyClassification,
-                    WardNumber: wardNumber,
-                    WardName: wardName,
-                    StreetName: streetName,
-                    Streetcode: streetcode,
-                    SASApplicationNumber: sasApplicationNumber,
-                    IsMuation: isMuation,
-                    KaveriRegistrationNumber: kaveriRegistrationNumber,
-                    AssessmentNumber: assessmentNumber,
-                    courtStay,
-                    enquiryDispute,
-                    CheckBandi: checkBandi,
-                    SiteDetails: siteDetails,
-                    OwnerDetails: ownerDetails,
-                });
-                setAreaSqft(0);
-                localStorage.removeItem('areaSqft');
-                setAreaSqft(siteDetails.siteArea);
-                setArea_Sqft(siteDetails.siteArea);
-                localStorage.setItem('areaSqft', siteDetails.siteArea);
-                setOwnerTableData(ownerDetails);
-
-                Swal.fire({
-                    title: "Success",
-                    text: "EPID Details fetched successfully!",
-                    icon: "success",
-                    confirmButtonText: "OK",
-                }).then(() => {
-                    setEpidNumber("");
-                    setEPIDShowTable(true);
-                });
-            } else {
-                Swal.fire({
-                    title: "Error",
-                    text: "EPID is invalid. Please provide a correct EPID",
-                    icon: "error",
-                    confirmButtonText: "OK",
-                    allowOutsideClick: false,    // Prevent clicking outside to close
-                    allowEscapeKey: false,       // Prevent pressing ESC to close
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // User clicked OK
-                        setEpidNumber("");
-                        setEPIDShowTable(false);
-                        setEPID_FetchedData(false);
-                    }
-                });
+            if (!fetchedData) {
+                Swal.fire("Error", "Failed to fetch EPID details. Please try again.", "error");
+                setEPIDShowTable(false);
+                setEPID_FetchedData(false);
+                return;
             }
-        } catch (error) {
-            console.error("Error fetching EPID details:", error);
-            Swal.fire({
-                title: "Error",
-                text: "Failed to fetch EPID Details.",
-                icon: "error",
-                confirmButtonText: "OK",
+
+            if (fetchedData.error) {
+                Swal.fire("Error", fetchedData.error, "error");
+                setEPIDShowTable(false);
+                setEPID_FetchedData(false);
+                return;
+            }
+
+            // Process and update UI with the data
+            const {
+                propertyID,
+                propertyCategory,
+                propertyClassification,
+                wardNumber,
+                wardName,
+                streetName,
+                streetcode,
+                sasApplicationNumber,
+                isMuation,
+                kaveriRegistrationNumber,
+                assessmentNumber,
+                courtStay,
+                enquiryDispute,
+                checkBandi,
+                siteDetails,
+                ownerDetails,
+            } = fetchedData;
+
+            if (!Array.isArray(ownerDetails) || ownerDetails.length === 0) {
+                console.warn("Owner details array is empty or invalid");
+            }
+
+            setOwnerTableData(ownerDetails);
+            setEPID_FetchedData({
+                PropertyID: propertyID,
+                PropertyCategory: propertyCategory,
+                PropertyClassification: propertyClassification,
+                WardNumber: wardNumber,
+                WardName: wardName,
+                StreetName: streetName,
+                Streetcode: streetcode,
+                SASApplicationNumber: sasApplicationNumber,
+                IsMuation: isMuation,
+                KaveriRegistrationNumber: kaveriRegistrationNumber,
+                AssessmentNumber: assessmentNumber,
+                courtStay,
+                enquiryDispute,
+                CheckBandi: checkBandi,
+                SiteDetails: siteDetails,
+                OwnerDetails: ownerDetails,
             });
+
+            setAreaSqft(0);
+            localStorage.removeItem('areaSqft');
+            setAreaSqft(siteDetails.siteArea);
+            setArea_Sqft(siteDetails.siteArea);
+            localStorage.setItem('areaSqft', siteDetails.siteArea);
+            setOwnerTableData(ownerDetails);
+
+            Swal.fire({
+                title: "Success",
+                text: "EPID Details fetched successfully!",
+                icon: "success",
+                confirmButtonText: "OK",
+            }).then(() => {
+                setEpidNumber("");
+                setEPIDShowTable(true);
+            });
+
+        } catch (error) {
+            console.error("Error in handleFetchDetails:", error);
+            Swal.fire("Error", "Failed to fetch EPID Details due to a server error.", "error");
         } finally {
             stop_loader();
         }
-
     };
+
 
     const customStyles = {
         headCells: {

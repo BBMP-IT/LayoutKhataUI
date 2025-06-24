@@ -1,9 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import DataTable from "react-data-table-component";
 import DashboardLayout from '../../Layout/DashboardLayout';
 import Loader from "../../Layout/Loader";
 import '../../Styles/CSS/LDashboard.css';
-import { getAccessToken } from '../../API/authService';
+import Swal from "sweetalert2";
+import { getAccessToken, fetch_DashboardDetails, fetch_DashboarddataDetails } from '../../API/authService';
 
 
 
@@ -18,18 +20,108 @@ export const useLoader = () => {
 
 
 const BBMP_Layout_Dashboard = () => {
-const navigate = useNavigate();
+  const navigate = useNavigate();
+  const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
+  const [records, setRecords] = useState([]);
+  const [selectedLevel, setSelectedLevel] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+
 
   const columns = [
-    { id: "ACT1234", label: "Action", key: "action" },
-    { id: "ZON4567", label: "Zone Name", key: "zoneName" },
-    { id: "WAR8901", label: "Ward Name", key: "wardName" },
-    { id: "AID5678", label: "App ID", key: "appId" },
-    { id: "SPT9123", label: "SAS Property Tax Application No", key: "taxNo" },
-    { id: "", label: "EPID", key: "epid" },
-    { id: "APP2345", label: "Application Date", key: "appDate" },
-    { id: "STA6789", label: "Status", key: "status" },
+    {
+      name: "S.No",
+      cell: (row, index) => (currentPage - 1) * rowsPerPage + index + 1,
+      width: "70px",
+      center: true,
+    },
+    {
+      name: "LKRS ID",
+      selector: (row) => row.lkrS_DISPLAYID,
+      width: "100px",
+      center: true,
+    },
+    {
+      name: "Land Type",
+      selector: (row) => row.lkrS_LANDTYPE,
+      center: true,
+    },
+    {
+      name: "No. of Sites",
+      selector: (row) => row.lkrS_NUMBEROFSITES,
+      center: true,
+    },
+    {
+      name: "EPID",
+      selector: (row) => row.lkrS_EPID,
+      center: true,
+    },
+    {
+  name: "Created Date",
+  selector: (row) => {
+    const date = new Date(row.lkrS_CREATEDDATE);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  },
+  center: true,
+},  {
+  name: "Detailed Status",
+  selector: (row) => row.lkrS_APPDETAILEDSTATUS,
+  center: true,
+  cell: (row) => {
+    const isSubmitted =
+      row.lkrS_APPSTATUS === "8" && row.lkrS_APPDETAILEDSTATUS === "Application Submitted";
+
+    return (
+      <div
+        style={{
+          backgroundColor: isSubmitted ? 'green' : 'transparent',
+          color: isSubmitted ? 'white' : 'inherit',
+          padding: '4px 8px',
+          borderRadius: '4px',
+        }}
+      >
+        {row.lkrS_APPDETAILEDSTATUS}
+      </div>
+    );
+  },
+},
   ];
+  const customStyles = {
+    headCells: {
+      style: {
+        backgroundColor: '#f0f0f0', // Light grey background
+        color: '#333',              // Dark grey text
+        fontWeight: 'bold',         // Bold text
+      },
+    },
+  };
+
+
+  const dashboard_Data = async (level) => {
+    console.log("selectedLevel", selectedLevel);
+    try {
+      start_loader();
+      const response = await fetch_DashboarddataDetails(level);
+      if (response.length > 0) {
+        setRecords(response || []);
+      } else {
+        Swal.fire("Error!", "Failed to fetch data. Please try again.", "error");
+      }
+    } catch (error) {
+      console.error("fetching data Error:", error);
+    } finally {
+      stop_loader();
+    }
+  };
+
+  const handleLevelChange = (level) => {
+    setSelectedLevel(level);
+    dashboard_Data(level);
+  };
 
   const data = [
     {
@@ -54,53 +146,58 @@ const navigate = useNavigate();
     },
     // ➕ Add more dummy entries as needed
   ];
+  const [dashboardData, setDashboardData] = useState({
+    allCount: 0,
+    incompletedCount: 0,
+    submittedCount: 0,
+    completedCount: 0,
+  });
+  useEffect(() => {
+    const initDashboard = async () => {
+      try {
+        start_loader();
+        const tokenGenerated = await generate_Token();
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+        if (!tokenGenerated) {
+          console.error("Token generation failed. Dashboard data not fetched.");
+          return;
+        }
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = data.slice(indexOfFirstItem, indexOfLastItem);
+        const data = await fetch_DashboardDetails();
+        setDashboardData(data);
+        await dashboard_Data(1);
+        setSelectedLevel(1);
+      } catch (err) {
+        console.error("Failed to initialize dashboard:", err);
+      } finally {
+        stop_loader();
+      }
+    };
 
-  const totalPages = Math.ceil(data.length / itemsPerPage);
+    initDashboard();
+  }, []);
+
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
 
-  //   const generate_Token = async () => {
-  //   try {
-      
-  //     const response = await getAccessToken();
-  //     if (response?.access_token) {
-  //       localStorage.setItem('access_token', response.access_token);
-  //       localStorage.setItem('isTokenRequired', true);
-  //       return true;  // Indicate success
-  //     } else {
-  //       console.error("No access token received");
-  //       return false;
-  //     }
-  //   } catch (err) {
-  //     console.error("Error generating token", err);
-  //     return false;
-  //   }
-  // };
   const generate_Token = async () => {
-  try {
-    const response = await getAccessToken();
-    if (response?.access_token) {
-      localStorage.clear();
-      localStorage.setItem('access_token', response.access_token);
-      return true;  // Indicate success
-    } else {
-      console.error("No access token received");
+    try {
+      const response = await getAccessToken();
+      if (response?.access_token) {
+        localStorage.clear();
+        localStorage.setItem('access_token', response.access_token);
+        return true;  // Indicate success
+      } else {
+        console.error("No access token received");
+        return false;
+      }
+    } catch (err) {
+      console.error("Error generating token", err);
       return false;
     }
-  } catch (err) {
-    console.error("Error generating token", err);
-    return false;
-  }
-};
+  };
 
   const handleClick = async () => {
     const success = await generate_Token();
@@ -113,6 +210,7 @@ const navigate = useNavigate();
     }
   };
 
+
   return (
     <DashboardLayout>
       <div className="container pt-4 pb-4">
@@ -124,7 +222,7 @@ const navigate = useNavigate();
               <center>
                 <h3 className="mb-2 text-black">Create New</h3>
                 <button
-                  className="mt-4 px-4 py-2 bg-blue-600 text-primary rounded hover:bg-blue-600"   onClick={handleClick}
+                  className="mt-4 px-4 py-2 bg-blue-600 text-primary rounded hover:bg-blue-600" onClick={handleClick}
                 >
                   <i className="fa fa-plus"></i>
                 </button>
@@ -134,31 +232,122 @@ const navigate = useNavigate();
           <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
             <div className="bg-white shadow-md rounded-lg p-4 border border-transparent hover:border-blue-500 transition-all duration-300" style={{ borderRadius: '0.8rem' }}>
               <center>
-                <h3 className="mb-2 text-black">Sent to ARO </h3>
-                <i className="fa fa-recycle mt-4 px-4 py-2 bg-blue-600 text-primary rounded hover:bg-blue-600" style={{fontSize:'30px'}}></i>
+                <h3 className="mb-2 text-black">Completed ({dashboardData.completedCount}) </h3>
+                <i className="fa fa-check-circle mt-4 px-4 py-2 bg-blue-600 text-success rounded hover:bg-blue-600" style={{ fontSize: '30px' }}></i>
               </center>
             </div>
           </div>
           <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
             <div className="bg-white shadow-md rounded-lg p-4 border border-transparent hover:border-blue-500 transition-all duration-300" style={{ borderRadius: '0.8rem' }}>
               <center>
-                <h3 className="mb-2 text-black">Submitted </h3>
-                <i className="fa fa-check-circle mt-4 px-4 py-2 bg-blue-600 text-success rounded hover:bg-blue-600" style={{fontSize:'30px'}}></i>
+                <h3 className="mb-2 text-black">Submitted ({dashboardData.submittedCount}) </h3>
+                <i className="fa fa-clock mt-4 px-4 py-2 bg-blue-600 text-warning rounded hover:bg-blue-600" style={{ fontSize: '30px' }}></i>
               </center>
             </div>
           </div>
           <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
             <div className="bg-white shadow-md rounded-lg p-4 border border-transparent hover:border-blue-500 transition-all duration-300" style={{ borderRadius: '0.8rem' }}>
               <center>
-                <h3 className="mb-2 text-black">Incomplete</h3>
-                  <i className="fa fa-clock mt-4 px-4 py-2 bg-blue-600 text-warning rounded hover:bg-blue-600" style={{fontSize:'30px'}}></i>
+                <h3 className="mb-2 text-black">Incomplete ({dashboardData.incompletedCount})</h3>
+                <i className="fa fa-recycle mt-4 px-4 py-2 bg-blue-600 text-danger rounded hover:bg-blue-600" style={{ fontSize: '30px' }}></i>
               </center>
             </div>
           </div>
-
         </div>
+        <br/>
+            {/* Data Table */}
+            <DataTable
+              title={
+                <div className="text-center">
+                 <div className="row">
+  <div className="col-3">
+    <div className="form-check">
+      <label className="form-check-label fs-6">
+        <input
+          className="form-check-input"
+          type="radio"
+          name="levelOptions"
+          value="1"
+          checked={selectedLevel === 1}
+          onChange={() => handleLevelChange(1)}
+        />
+        All ({dashboardData.allCount})
+      </label>
+    </div>
+  </div>
 
-        {/* Data Table */}
+  <div className="col-3">
+    <div className="form-check">
+      <label className="form-check-label fs-6">
+        <input
+          className="form-check-input"
+          type="radio"
+          name="levelOptions"
+          value="2"
+          checked={selectedLevel === 2}
+          onChange={() => handleLevelChange(2)}
+        />
+        Incomplete ({dashboardData.incompletedCount})
+      </label>
+    </div>
+  </div>
+
+  <div className="col-3">
+    <div className="form-check">
+      <label className="form-check-label fs-6">
+        <input
+          className="form-check-input"
+          type="radio"
+          name="levelOptions"
+          value="3"
+          checked={selectedLevel === 3}
+          onChange={() => handleLevelChange(3)}
+        />
+        Submitted ({dashboardData.submittedCount})
+      </label>
+    </div>
+  </div>
+
+  <div className="col-3">
+    <div className="form-check">
+      <label className="form-check-label fs-6">
+        <input
+          className="form-check-input"
+          type="radio"
+          name="levelOptions"
+          value="4"
+          checked={selectedLevel === 4}
+          onChange={() => handleLevelChange(4)}
+        />
+        Completed ({dashboardData.completedCount})
+      </label>
+    </div>
+  </div>
+</div>
+
+                </div>
+              }
+              columns={columns}
+              data={records}
+              pagination
+              customStyles={customStyles}
+              paginationServer={false}
+              paginationDefaultPage={currentPage}
+              paginationPerPage={rowsPerPage}
+              onChangePage={(page) => setCurrentPage(page)}
+              onChangeRowsPerPage={(newPerPage, page) => {
+                setRowsPerPage(newPerPage);
+                setCurrentPage(page);
+              }}
+              highlightOnHover
+              striped
+              
+            />
+
+
+
+
+        
 
       </div>
     </DashboardLayout>

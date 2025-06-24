@@ -1,5 +1,7 @@
 // config.local.js
 
+import { Dashboard } from "@mui/icons-material";
+
 const ApiCredentials = {
     credentials: {
         apiUrl: "https://testapps.bbmpgov.in/LayoutKhataAPI",
@@ -57,6 +59,8 @@ const config = {
         releaseSites: '/api/Site/fnReleaseSites',
         jdaEKYCOwnerfetch: '/api/JDA/fnGetJDAEkycinfo',
         jdaEKYCInsert: '/api/JDA/fnInsertJDAEkycinfo',
+        dashboardcount: '/api/LKRS/fnGetDashCount',
+        dashboardData: '/api/LKRS/fnGetDashData',
     }
 };
 

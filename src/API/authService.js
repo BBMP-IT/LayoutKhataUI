@@ -240,41 +240,80 @@ export const submitsurveyNoDetails = async (payload) => {
   }
 };
 //EPID fetching API
+// export const handleFetchEPIDDetails = async (epidNumber) => {
+//   try {
+
+//     const response = await apiService.postRequest(`${config.endpoints.epid}`, {
+//       propertyEPID: epidNumber,
+//     });
+
+//     // The API returns approvedPropertyDetails inside epidKhataDetails.response
+//     const parsedResponse = response.epidKhataDetails?.response;
+
+//     if (parsedResponse?.isValueExists === "Y") {
+//       if (response.responseCode === 200 && response.responseStatus === true) {
+//         const approvedDetails = parsedResponse.approvedPropertyDetails;
+
+//         if (!approvedDetails) {
+//           throw new Error("No property details found");
+//         }
+
+//         return approvedDetails;
+//       } else {
+//         var message = response.responseMessage;
+//         if(message === "NOT AUTHORISED"){
+//           message = "NOT AUTHORISED";
+          
+//         }
+//         Swal.fire({
+//         title: "Error",
+//         text: message,
+//         icon: "error",
+//         confirmButtonText: "OK",
+//       });
+//       }
+//     } else {
+//       Swal.fire({
+//         title: "Error",
+//         text: "EPID is invalid. Please provide a correct EPID",
+//         icon: "error",
+//         confirmButtonText: "OK",
+//       });
+//     }
+//   } catch (err) {
+//     console.error("Error fetching EPID details:", err);
+//     throw err;
+//   }
+// };
+
 export const handleFetchEPIDDetails = async (epidNumber) => {
   try {
-
     const response = await apiService.postRequest(`${config.endpoints.epid}`, {
       propertyEPID: epidNumber,
     });
 
-    // The API returns approvedPropertyDetails inside epidKhataDetails.response
     const parsedResponse = response.epidKhataDetails?.response;
 
     if (parsedResponse?.isValueExists === "Y") {
       if (response.responseCode === 200 && response.responseStatus === true) {
         const approvedDetails = parsedResponse.approvedPropertyDetails;
-
         if (!approvedDetails) {
           throw new Error("No property details found");
         }
-
         return approvedDetails;
       } else {
-        throw new Error("Please provide a correct EPID");
+        // You can just return null, let the calling method handle UI feedback
+        return { error: response.responseMessage || "Unknown error" };
       }
     } else {
-      Swal.fire({
-        title: "Error",
-        text: "EPID is invalid. Please provide a correct EPID",
-        icon: "error",
-        confirmButtonText: "OK",
-      });
+      return { error: "EPID is invalid. Please provide a correct EPID" };
     }
   } catch (err) {
     console.error("Error fetching EPID details:", err);
-    throw err;
+    throw err; // let handleFetchDetails catch this
   }
 };
+
 //EPID first block Save API
 export const submitEPIDDetails = async (payload) => {
   try {
@@ -574,6 +613,28 @@ export const final_Release_Sites = async (payload) => {
      return response;
   } catch (error) {
     console.error("Sites release Details Error:", error);
+    throw error;
+  }
+};
+//Layoutkhata dashoard Counts
+export const fetch_DashboardDetails = async () => {
+  try {
+    const url = `${config.endpoints.dashboardcount}?level=1&LKRS_CREATEDBY=1`;
+    const response = await apiService.getRequest(url);
+    return response;
+  } catch (error) {
+    console.error("Fetch LKRSID Info Error:", error);
+    throw error;
+  }
+};
+//Layoutkhata dashoard Data
+export const fetch_DashboarddataDetails = async (level) => {
+  try {
+    const url = `${config.endpoints.dashboardData}?level=${level}&LKRS_CREATEDBY=1`;
+    const response = await apiService.getRequest(url);
+    return response;
+  } catch (error) {
+    console.error("Fetch LKRSID Info Error:", error);
     throw error;
   }
 };

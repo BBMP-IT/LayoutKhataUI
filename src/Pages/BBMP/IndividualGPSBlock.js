@@ -432,7 +432,7 @@ const buttonRef = useRef(null);
         } else if (enteredArea > totalArea) {
             Swal.fire({
                 title: "Area Exceeds Limit",
-                text: `Area cannot exceed Total Area of the layout`,
+                text: `Area cannot exceed Total Area (${totalArea} SqFt) of the layout`, 
                 icon: "error",
                 confirmButtonText: "OK",
             })

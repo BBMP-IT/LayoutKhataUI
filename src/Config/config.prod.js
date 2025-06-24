@@ -53,6 +53,8 @@ const config = {
         releaseSites: '/api/Site/fnReleaseSites',
         jdaEKYCOwnerfetch: '/api/JDA/fnGetJDAEkycinfo',
         jdaEKYCInsert: '/api/JDA/fnInsertJDAEkycinfo',
+        dashboardcount: '/api/LKRS/fnGetDashCount',
+        dashboardData: '/api/LKRS/fnGetDashData',
 
     }
 };

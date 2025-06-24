@@ -2383,7 +2383,7 @@ const ReleaseSelection = () => {
                         <tr style={{ backgroundColor: "#fff", color: "#000", textAlign: "left" }}>
                           {/* <th style={thStyle}>ID</th> */}
                           {/* <th style={thStyle}>KRS ID</th> */}
-                          <th style={thStyle}>Site Release order Number</th>
+                          <th style={thStyle}>Site Approval order Number</th>
                           <th style={thStyle}>Date of Order</th>
                           <th style={thStyle}>Approval Authority</th>
                           <th style={thStyle}>Designation of Authority issued </th>

@@ -926,6 +926,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
                                                     <thead className="table-light">
                                                         <tr>
                                                             <th>ಫೋಟೋ / Photo</th>
+                                                            <th>ಮಾಲೀಕರ ಹೆಸರು / Owner Name</th>
                                                             <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>
                                                             <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhar Number</th>
                                                             <th>ಲಿಂಗ / Gender</th>
@@ -940,6 +941,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
                                                             <td style={{ textAlign: 'center' }}>
                                                                 <img src={usericon} alt="Owner" width="50" height="50" />
                                                             </td>
+                                                             <td style={{ textAlign: 'center' }}>{owner.owN_NAME_EN || 'N/A'}</td> 
                                                             <td style={{ textAlign: 'center' }}>{parsedAadhaar.ownerNameEng || 'N/A'}</td>
                                                             <td style={{ textAlign: 'center' }}>{parsedAadhaar.maskedAadhaar || 'N/A'}</td>
                                                             <td style={{ textAlign: 'center' }}>{parsedAadhaar.gender || 'N/A'}</td>

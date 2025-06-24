@@ -288,26 +288,26 @@ const JDA_EKYCBlock = ({ LKRS_ID, jdaID }) => {
     const [ownerNames, setOwnerNames] = useState('');
     const [ownerEKYCDataList, setownerEKYCDataList] = useState([]);
     //multiple owner list fetch
-  const fetchOwners = async (LKRSID) => {
-  try {
-    const apiResponse = await jdaEKYC_Details("1", LKRSID);
+    const fetchOwners = async (LKRSID) => {
+        try {
+            const apiResponse = await jdaEKYC_Details("1", LKRSID);
 
-    const owners = (apiResponse || []).filter(owner => owner.jdAekyc_ID !== 0);
+            const owners = (apiResponse || []).filter(owner => owner.jdAekyc_ID !== 0);
 
-    if (owners.length > 0) {
-      console.table(owners);
-      setownerEKYCDataList(owners);
-      setIsEKYCCompleted(true);
-    } else {
-      setownerEKYCDataList([]);
-      setIsEKYCCompleted(false);
-    }
-  } catch (error) {
-    console.error("Error fetching owner data:", error);
-    setownerEKYCDataList([]);
-    setIsEKYCCompleted(false);
-  }
-};
+            if (owners.length > 0) {
+                console.table(owners);
+                setownerEKYCDataList(owners);
+                setIsEKYCCompleted(true);
+            } else {
+                setownerEKYCDataList([]);
+                setIsEKYCCompleted(false);
+            }
+        } catch (error) {
+            console.error("Error fetching owner data:", error);
+            setownerEKYCDataList([]);
+            setIsEKYCCompleted(false);
+        }
+    };
 
     // useEffect(() => {
     //     const handleMessage = (event) => {
@@ -693,31 +693,57 @@ const JDA_EKYCBlock = ({ LKRS_ID, jdaID }) => {
                 <div className='row'>
 
                     {ownerEKYCDataList.length > 0 && (
-
                         <div className="col-12">
                             <h5>JDA / JDA Representative EKYC Details</h5>
                             <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
                                 <thead className="table-light">
                                     <tr>
-                                        <th>JDA Name</th>
-                                        <th>Aadhaar Number</th>
-                                        <th>Name Match Score</th>
+                                        <th>ಫೋಟೋ / Photo</th>
+                                        <th>ಜೆಡಿಎ ಹೆಸರು / JDA Name</th> 
+                                         <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>  
+                                        <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhar Number</th>
+                                        <th>ಲಿಂಗ / Gender</th> {/* New column */}
+                                        <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th> {/* New column */}
+                                        <th>ವಿಳಾಸ / Address</th> {/* New column */}
+                                        <th>ಇಕೆವೈಸಿ ಸ್ಥಿತಿ / EKYC Status</th> {/* New column */}
+                                        <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th> {/* New column */}
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    {ownerEKYCDataList.map((owner, index) => {
+                                        let aadhaarResponse = {};
+                                        try {
+                                            aadhaarResponse = JSON.parse(owner.jdaekyC_AADHAAR_RESPONSE || '{}').ekycResponse || {};
+                                        } catch (e) {
+                                            console.error("Error parsing AADHAAR_RESPONSE:", e);
+                                        }
 
+                                        const nameMatchStatus = parseFloat(owner.jdAekyc_NameMatchScore) > 60 ? 'Name Match Successful' : 'Not Matched';
+                                        const ekycStatus = aadhaarResponse.maskedAadhaar ? 'Verified' : 'Not Verified'; // Assuming if maskedAadhaar exists, EKYC is complete
 
-                                    {ownerEKYCDataList.map((owner, index) => (
-
-                                        <tr key={index}>
-                                            <td style={{ textAlign: 'center' }}>{owner.jdAekyc_JDA_Name || 'N/A'}</td>
-                                            <td style={{ textAlign: 'center' }}>{owner.jdAekyc_AadhaarNumber || 'N/A'}</td>
-                                            <td style={{ textAlign: 'center' }}>
-                                                {parseFloat(owner.jdAekyc_NameMatchScore) > 60 ? 'Name Match Successful' : 'Name Match Failed'}
-                                            </td>
-                                        </tr>
-
-                                    ))}
+                                        return (
+                                            <tr key={index}>
+                                                <td style={{ textAlign: 'center'}}><img src={usericon} alt="Owner" width="50" height="50" /></td>
+                                                
+                                                <td style={{ textAlign: 'center' }}>{owner.jdAekyc_JDA_Name || 'N/A'}</td>
+                                                <td style={{ textAlign: 'center' }}>{aadhaarResponse.ownerNameEng || 'N/A'}</td>
+                                                <td style={{ textAlign: 'center' }}>{owner.jdAekyc_AadhaarNumber || 'N/A'}</td>
+                                                <td style={{ textAlign: 'center' }}>{aadhaarResponse.gender || 'N/A'}</td>
+                                                <td style={{ textAlign: 'center' }}>{aadhaarResponse.dateOfBirth || 'N/A'}</td>
+                                                <td style={{ textAlign: 'center' }}>{aadhaarResponse.addressEng || 'N/A'}</td>
+                                                
+{/*                                                
+                                                <td style={{ textAlign: 'center' }}>
+                                                    {aadhaarResponse.photoContent ? <img src={`data:image/jpeg;base64,${aadhaarResponse.photoContent}`} alt="Aadhaar Photo" style={{ width: '50px', height: '50px' }} /> : 'No Photo'}
+                                                </td> */}
+                                                
+                                                
+                                                
+                                                <td style={{ textAlign: 'center' }}>{ekycStatus}</td>
+                                                <td style={{ textAlign: 'center' }}>{nameMatchStatus}</td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>
