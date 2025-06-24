@@ -5,7 +5,7 @@ import config from '../../Config/config';
 import { useSSR } from 'react-i18next';
 
 
-const EKYCResultHandler = () => {
+const ReleaseEKYCResultHandler = () => {
   const location = useLocation();
   const navigate = useNavigate();
   useEffect(() => {
@@ -28,7 +28,7 @@ const EKYCResultHandler = () => {
           ekycStatus: status,
           ekycVaultRefNo: vaultrefno
         },
-          `${config.redirectBaseURL}/layoutForm`
+          `${config.redirectBaseURL}/Release`
       );
     }
 
@@ -39,7 +39,7 @@ const EKYCResultHandler = () => {
 
   // Handler for the "Go Back" button
   const handleGoBack = () => {
-    navigate('/LayoutForm');
+    navigate('/Release');
   };
 
   return (
@@ -53,4 +53,4 @@ const EKYCResultHandler = () => {
   );
 };
 
-export default EKYCResultHandler;
+export default ReleaseEKYCResultHandler;

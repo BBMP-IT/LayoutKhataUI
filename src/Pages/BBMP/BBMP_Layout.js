@@ -251,11 +251,11 @@ const BBMP_LayoutForm = () => {
                             <IndividualGPSBlock areaSqft={areaSqft} LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID} totalNoofsites={totalNoofsites}
                                 isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsSitesSectionSaved={setIsSitesSectionSaved} ownerName={ownerName} />
 
-                            <ECDetailsBlock LKRS_ID={LKRS_ID} isRTCSectionSaved={isRTCSectionSaved} ownerName={ownerName} isEPIDSectionSaved={isEPIDSectionSaved} setIsECSectionSaved={setIsECSectionSaved} />
+                            <ECDetailsBlock LKRS_ID={LKRS_ID} isRTCSectionSaved={isRTCSectionSaved} ownerName={ownerName} isEPIDSectionSaved={isEPIDSectionSaved} setIsECSectionSaved={setIsECSectionSaved} setIsJDAEKYCSectionSaved={setIsJDAEKYCSectionSaved} />
 
                             <DeclarationBlock LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID} display_LKRS_ID={display_LKRS_ID} isRTCSectionSaved={isRTCSectionSaved}
                                 isEPIDSectionSaved={isEPIDSectionSaved} isApprovalSectionSaved={isApprovalSectionSaved} isReleaseSectionSaved={isReleaseSectionSaved}
-                                isSitesSectionSaved={isSitesSectionSaved} isECSectionSaved={isECSectionSaved} />
+                                isSitesSectionSaved={isSitesSectionSaved} isECSectionSaved={isECSectionSaved} isJDAEKYCSectionSaved={isJDAEKYCSectionSaved} />
                         </div>
 
                     </div>
@@ -638,15 +638,15 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
             Swal.fire("Area Required", "The area cannot be zero. Please provide a valid area.", "warning");
             return;
         }
-         // ✅ Check DC Conversion No
-    if (!dcNumber.trim()) {
-       Swal.fire("Missing Field", "Please enter DC Conversion Order No.", "warning");
-        return
-    }
-         if (!uploadedFile) {
-        Swal.fire("Missing File", "Please upload DC Conversion Order file.", "warning");
-        return
-    } 
+        // ✅ Check DC Conversion No
+        if (!dcNumber.trim()) {
+            Swal.fire("Missing Field", "Please enter DC Conversion Order No.", "warning");
+            return
+        }
+        if (!uploadedFile) {
+            Swal.fire("Missing File", "Please upload DC Conversion Order file.", "warning");
+            return
+        }
         const payload = {
             lkrS_ID: 0,
             lkrS_LANDTYPE: "surveyNo",
@@ -976,11 +976,11 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
         setCurrentPage(1); // Reset to first page when page size changes
     };
     const showImplementationAlert = () => {
-          if (!dcNumber.trim()) {
-       Swal.fire("Missing Field", "Please enter DC Conversion Order No.", "warning");
-        return
-    }
-        
+        if (!dcNumber.trim()) {
+            Swal.fire("Missing Field", "Please enter DC Conversion Order No.", "warning");
+            return
+        }
+
     };
     const buttonRef = useRef(null);
 
@@ -1003,7 +1003,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
         const file = e.target.files[0];
 
         if (file) {
-            if (file.size >5000 * 1024) {  // 300KB size limit
+            if (file.size > 5000 * 1024) {  // 300KB size limit
                 setErrors(prev => ({ ...prev, file: 'File size should be less than 5MB.' }));
                 setUploadedFile(null);
                 setUploadedFileURL(null);
@@ -1840,7 +1840,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                 siteDetails,
                 ownerDetails,
             } = fetchedData;
-
+            localStorage.setItem("epid_JSON", JSON.stringify(fetchedData));
             if (!Array.isArray(ownerDetails) || ownerDetails.length === 0) {
                 console.warn("Owner details array is empty or invalid");
             }
@@ -1910,13 +1910,29 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
         {
             name: 'Owner Name',
             center: true,
+            selector: (row) => row.ownerName || '-',
+            // Example of inline style if supported by your table component
+            style: {
+                wordWrap: 'break-word',
+                overflowWrap: 'break-word'
+            }
+        },
+        {
+            name: 'Relationship Type',
+            center: true,
             // Access ownerName directly from the 'row' object
-            selector: (row) => row.ownerName || 'N/A'
+            selector: (row) => row.relationShipType || '-'
+        },
+        {
+            name: 'Relationship Name',
+            center: true,
+            // Access ownerName directly from the 'row' object
+            selector: (row) => row.identifierName || '-'
         },
 
-        { name: 'ID Type', width: '120px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idType || 'N/A', center: true },
+        { name: 'ID Type', width: '120px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idType || '-', center: true },
 
-        { name: 'ID Number', width: '220px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idNumber || 'N/A', center: true },
+        { name: 'ID Number', width: '220px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idNumber || '-', center: true },
         // {
         //     name: 'Validate OTP',
         //     width: '250px',
@@ -2092,28 +2108,15 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
         }
     };
     const handleSaveAndProceed = async (epidNumber) => {
-        // const totalRows = fetchedEPIDData?.[0]?.OwnerDetails?.length;
 
-        // if (totalRows > 0) {
-        //     for (let i = 0; i < totalRows; i++) {
-        //         if (!verifiedNumbers[i]) {
-        //             Swal.fire({
-        //                 icon: 'error',
-        //                 title: 'OTP Not Verified',
-        //                 text: `Please verify OTP for record #${i + 1} before proceeding.`,
-        //             });
-        //             return;
-        //         }
-        //     }
-        // }
 
         const storedData = localStorage.getItem("epid_JSON");
-        let parsedData = storedData ? JSON.parse(storedData) : "";
+        let parsedData = storedData ? JSON.parse(storedData) : {}; // Always good to default to {} for robustness
 
         const payload = {
             lkrS_ID: 0,
             lkrS_LANDTYPE: "khata",
-            lkrS_EPID: epid_fetchedData?.PropertyID,
+            lkrS_EPID: String(epid_fetchedData?.PropertyID),
             lkrS_SITEAREA_SQFT: area_Sqft,
             lkrS_SITEAREA_SQMT: area_Sqm,
             lkrS_REMARKS: "",
@@ -2124,8 +2127,8 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
             khatA_DETAILS: {
                 khatA_ID: 0,
                 khatA_LKRS_ID: 0,
-                khatA_EPID: epid_fetchedData?.PropertyID,
-                khatA_JSON: storedData,
+                khatA_EPID: String(epid_fetchedData?.PropertyID),
+                khatA_JSON: JSON.stringify(parsedData), // <-- Applying the fix here
                 khatA_TYPE: "A-Khata",
                 khatA_REMARKS: "",
                 khatA_ADDITIONALINFO: "",
@@ -2140,8 +2143,8 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                 owN_NAME_EN: owner.ownerName || "",
                 owN_IDTYPE: owner.idType || "",
                 owN_IDNUMBER: owner.idNumber || "",
-                owN_RELATIONTYPE: owner.owN_RELATIONTYPE || "",
-                owN_RELATIONNAME: owner.owN_RELATIONNAME || "",
+                owN_RELATIONTYPE: owner.relationShipType || "",
+                owN_RELATIONNAME: owner.identifierName || "",
                 owN_MOBILENUMBER: owner.mobileNumber || "",
                 owN_REMARKS: "",
                 owN_ADDITIONALINFO: "",
@@ -2174,8 +2177,10 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
 
                 if (Array.isArray(ownerDetails) && ownerDetails.length > 0) {
                     const ownerNames = ownerDetails
-                        .map(owner => owner.ownerName?.trim())
-                        .filter(Boolean)
+                        .map(owner => {
+                            return (owner.ownerName || "").trim();
+                        })
+                        .filter(name => name !== null && name !== undefined && name !== '') // Filter out empty strings after trimming
                         .join(', ');
                     localStorage.setItem("ownerName", ownerNames);
                     setOwnerName(ownerNames);
@@ -5254,9 +5259,9 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
 //     //map block
 //     const mapRef = useRef(null);
 //     const searchInputRef = useRef(null);
-//     const [latitude, setLatitude] = useState('N/A');
+//     const [latitude, setLatitude] = useState('-');
 //     const [latitudeerror, setLatitudeError] = useState('');
-//     const [longitude, setLongitude] = useState('N/A');
+//     const [longitude, setLongitude] = useState('-');
 //     const [longitudeerror, setLongitudeError] = useState('');
 //     const [resultType, setResultType] = useState('Please select a property on Google Maps: *');
 //     const [resultTypeError, setResultTypeError] = useState('');
@@ -5362,8 +5367,8 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
 //                     moveMapTo(results[0].geometry.location, "Landmark Search", results[0].name);
 //                 } else {
 //                     setResultType("No results found. Please try again.");
-//                     setLatitude("N/A");
-//                     setLongitude("N/A");
+//                     setLatitude("-");
+//                     setLongitude("-");
 //                 }
 //             });
 //         }
@@ -6748,9 +6753,9 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
 //                                             {/* {
 //                                                 ownerList.length > 0
 //                                                     ? ownerList.map(owner => owner.name).join(", ")
-//                                                     : "N/A"
+//                                                     : "-"
 //                                             } */}
-//                                             {localOwnername || "N/A"}
+//                                             {localOwnername || "-"}
 //                                         </label>
 //                                     </span>
 //                                 </div>
@@ -8799,7 +8804,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
 
 //                 Swal.fire({
 //                     title: 'eKYC Result',
-//                     text: `Status: ${event.data.ekycStatus}\nName: ${selectedOwner?.name || 'N/A'}`,
+//                     text: `Status: ${event.data.ekycStatus}\nName: ${selectedOwner?.name || '-'}`,
 //                     icon: 'success',
 //                     allowOutsideClick: false,
 //                     allowEscapeKey: false,
@@ -9393,11 +9398,11 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
 //                                                             <td style={{ textAlign: 'center' }}>
 //                                                                 <img src={usericon} alt="Owner" width="50" height="50" />
 //                                                             </td>
-//                                                             <td style={{ textAlign: 'center' }}>{parsedAadhaar.ownerNameEng || 'N/A'}</td>
-//                                                             <td style={{ textAlign: 'center' }}>{parsedAadhaar.maskedAadhaar || 'N/A'}</td>
-//                                                             <td style={{ textAlign: 'center' }}>{parsedAadhaar.gender || 'N/A'}</td>
-//                                                             <td style={{ textAlign: 'center' }}>{parsedAadhaar.dateOfBirth || 'N/A'}</td>
-//                                                             <td style={{ textAlign: 'center' }}>{parsedAadhaar.addressEng || 'N/A'}</td>
+//                                                             <td style={{ textAlign: 'center' }}>{parsedAadhaar.ownerNameEng || '-'}</td>
+//                                                             <td style={{ textAlign: 'center' }}>{parsedAadhaar.maskedAadhaar || '-'}</td>
+//                                                             <td style={{ textAlign: 'center' }}>{parsedAadhaar.gender || '-'}</td>
+//                                                             <td style={{ textAlign: 'center' }}>{parsedAadhaar.dateOfBirth || '-'}</td>
+//                                                             <td style={{ textAlign: 'center' }}>{parsedAadhaar.addressEng || '-'}</td>
 //                                                             <td style={{ textAlign: 'center' }}>Verified</td>
 //                                                             <td style={{ textAlign: 'center' }}>
 //                                                                 {owner.owN_NAMEMATCHSCORE > 80 ? 'Matched' : 'Not Matched'}
@@ -10065,11 +10070,11 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
 //                                                 <td style={{ textAlign: 'center' }}>
 //                                                     <img src={usericon} alt="Owner" width="50" height="50" />
 //                                                 </td>
-//                                                 <td style={{ textAlign: 'center' }}>{parsedAadhaar.ownerNameEng || 'N/A'}</td>
-//                                                 <td style={{ textAlign: 'center' }}>{parsedAadhaar.maskedAadhaar || 'N/A'}</td>
-//                                                 <td style={{ textAlign: 'center' }}>{parsedAadhaar.gender || 'N/A'}</td>
-//                                                 <td style={{ textAlign: 'center' }}>{parsedAadhaar.dateOfBirth || 'N/A'}</td>
-//                                                 <td style={{ textAlign: 'center' }}>{parsedAadhaar.addressEng || 'N/A'}</td>
+//                                                 <td style={{ textAlign: 'center' }}>{parsedAadhaar.ownerNameEng || '-'}</td>
+//                                                 <td style={{ textAlign: 'center' }}>{parsedAadhaar.maskedAadhaar || '-'}</td>
+//                                                 <td style={{ textAlign: 'center' }}>{parsedAadhaar.gender || '-'}</td>
+//                                                 <td style={{ textAlign: 'center' }}>{parsedAadhaar.dateOfBirth || '-'}</td>
+//                                                 <td style={{ textAlign: 'center' }}>{parsedAadhaar.addressEng || '-'}</td>
 //                                                 <td style={{ textAlign: 'center' }}>Verified</td>
 //                                                 <td style={{ textAlign: 'center' }}>
 //                                                     {owner.owN_NAMEMATCHSCORE > 80 ? 'Matched' : 'Not Matched'}
@@ -10592,13 +10597,13 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
 //                 <div style={{
 
 //                 }}>
-//                     {epid_fetchedData?.OwnerDetails?.[0].ownerName || 'N/A'}
+//                     {epid_fetchedData?.OwnerDetails?.[0].ownerName || '-'}
 //                 </div>
 //             )
 //         },
 
-//         { name: 'ID Type', width: '120px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idType || 'N/A', center: true },
-//         { name: 'ID Number', width: '220px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idNumber || 'N/A', center: true },
+//         { name: 'ID Type', width: '120px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idType || '-', center: true },
+//         { name: 'ID Number', width: '220px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idNumber || '-', center: true },
 //         {
 //             name: 'Validate OTP',
 //             width: '250px',
@@ -11038,25 +11043,25 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
 //     const owner_columns = [
 //         {
 //             name: 'Name',
-//             selector: row => row.owN_NAME_EN || 'N/A',
+//             selector: row => row.owN_NAME_EN || '-',
 //             sortable: true,
 //         },
 //         {
 //             name: 'Aadhar Number',
-//             selector: row => row.owN_AADHAARNUMBER || 'N/A',
+//             selector: row => row.owN_AADHAARNUMBER || '-',
 //         },
 //         {
 //             name: 'Aadhaar Verification Status',
-//             selector: row => row.owN_AADHAARVERISTATUS || 'N/A',
+//             selector: row => row.owN_AADHAARVERISTATUS || '-',
 //         },
 //         {
 //             name: 'Name match Status',
-//             selector: row => row.owN_IDNUMBER || 'N/A',
+//             selector: row => row.owN_IDNUMBER || '-',
 //         },
 
 //         {
 //             name: 'EKYC status',
-//             selector: row => row.owN_IDNUMBER || 'N/A',
+//             selector: row => row.owN_IDNUMBER || '-',
 //         },
 //     ];
 
@@ -11680,11 +11685,11 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
 //                                                         <td style={{ textAlign: 'center' }}>
 //                                                             <img src={usericon} alt="Owner" width="50" height="50" />
 //                                                         </td>
-//                                                         <td style={{ textAlign: 'center' }}>{parsedAadhaar.ownerNameEng || 'N/A'}</td>
-//                                                         <td style={{ textAlign: 'center' }}>{parsedAadhaar.maskedAadhaar || 'N/A'}</td>
-//                                                         <td style={{ textAlign: 'center' }}>{parsedAadhaar.gender || 'N/A'}</td>
-//                                                         <td style={{ textAlign: 'center' }}>{parsedAadhaar.dateOfBirth || 'N/A'}</td>
-//                                                         <td style={{ textAlign: 'center' }}>{parsedAadhaar.addressEng || 'N/A'}</td>
+//                                                         <td style={{ textAlign: 'center' }}>{parsedAadhaar.ownerNameEng || '-'}</td>
+//                                                         <td style={{ textAlign: 'center' }}>{parsedAadhaar.maskedAadhaar || '-'}</td>
+//                                                         <td style={{ textAlign: 'center' }}>{parsedAadhaar.gender || '-'}</td>
+//                                                         <td style={{ textAlign: 'center' }}>{parsedAadhaar.dateOfBirth || '-'}</td>
+//                                                         <td style={{ textAlign: 'center' }}>{parsedAadhaar.addressEng || '-'}</td>
 //                                                         <td style={{ textAlign: 'center' }}>Verified</td>
 //                                                         <td style={{ textAlign: 'center' }}>
 //                                                             {owner.owN_NAMEMATCHSCORE > 80 ? 'Matched' : 'Not Matched'}
@@ -11732,11 +11737,11 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
 //                                                         <td style={{ textAlign: 'center' }}>
 //                                                             <img src={usericon} alt="Owner" width="50" height="50" />
 //                                                         </td>
-//                                                         <td style={{ textAlign: 'center' }}>{parsedAadhaar.ownerNameEng || 'N/A'}</td>
-//                                                         <td style={{ textAlign: 'center' }}>{parsedAadhaar.maskedAadhaar || 'N/A'}</td>
-//                                                         <td style={{ textAlign: 'center' }}>{parsedAadhaar.gender || 'N/A'}</td>
-//                                                         <td style={{ textAlign: 'center' }}>{parsedAadhaar.dateOfBirth || 'N/A'}</td>
-//                                                         <td style={{ textAlign: 'center' }}>{parsedAadhaar.addressEng || 'N/A'}</td>
+//                                                         <td style={{ textAlign: 'center' }}>{parsedAadhaar.ownerNameEng || '-'}</td>
+//                                                         <td style={{ textAlign: 'center' }}>{parsedAadhaar.maskedAadhaar || '-'}</td>
+//                                                         <td style={{ textAlign: 'center' }}>{parsedAadhaar.gender || '-'}</td>
+//                                                         <td style={{ textAlign: 'center' }}>{parsedAadhaar.dateOfBirth || '-'}</td>
+//                                                         <td style={{ textAlign: 'center' }}>{parsedAadhaar.addressEng || '-'}</td>
 //                                                         <td style={{ textAlign: 'center' }}>Verified</td>
 //                                                         <td style={{ textAlign: 'center' }}>
 //                                                             {owner.owN_NAMEMATCHSCORE > 80 ? 'Matched' : 'Not Matched'}

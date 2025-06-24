@@ -40,7 +40,8 @@ export const useLoader = () => {
     return { loading, start_loader, stop_loader };
 };
 
-const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, isApprovalSectionSaved, isReleaseSectionSaved, isSitesSectionSaved, isECSectionSaved }) => {
+const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, isApprovalSectionSaved, 
+    isReleaseSectionSaved, isSitesSectionSaved, isECSectionSaved, isJDAEKYCSectionSaved }) => {
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context

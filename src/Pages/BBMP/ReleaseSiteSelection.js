@@ -6,10 +6,13 @@ import '../../Styles/CSS/ReleaseSiteSelection.css';
 import Swal from "sweetalert2";
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from "react-i18next";
+import config from '../../Config/config';
+
+
 
 import {
   fetch_LKRSID, fetch_releasePercentageDetails, individualSiteListAPI, final_Release_Sites, listApprovalInfo, fileUploadAPI, listReleaseInfo, fileListAPI, insertReleaseInfo,
-  deleteReleaseInfo,
+  deleteReleaseInfo, ownerEKYC_Details, ekyc_Details, ekyc_Response
 } from '../../API/authService';
 
 export const useLoader = () => {
@@ -48,9 +51,9 @@ const ReleaseSelection = () => {
   const fileInputRef = useRef(null);
 
   const [originalTotalRecords, setOriginalTotalRecords] = useState(0);
-      const CreatedBy = 1;
-    const CreatedName = "username";
-    const RoleID = "user";
+  const CreatedBy = 1;
+  const CreatedName = "username";
+  const RoleID = "user";
   const [LKRSID, setLKRSID] = useState('');
   useEffect(() => {
     if (display_LKRS_ID && LKRS_ID) {
@@ -1151,7 +1154,9 @@ const ReleaseSelection = () => {
       trimmedLKRSID = localLKRSID.substring(1);
     }
 
+
     handleGetLKRSID(trimmedLKRSID);
+    fetchFinalReleasedSites(trimmedLKRSID);
   };
 
   const [selectedLandType, setSelectedLandType] = useState("");
@@ -1784,7 +1789,7 @@ const ReleaseSelection = () => {
   const handleOrderSave = async () => {
     if (!validateOrderForm()) return;
 
-  let trimmedLKRSID = localLKRSID;
+    let trimmedLKRSID = localLKRSID;
     if (/^L\d+$/i.test(localLKRSID)) {
       trimmedLKRSID = localLKRSID.substring(1);
     }
@@ -2034,7 +2039,7 @@ const ReleaseSelection = () => {
   ];
   //Release order delete info button
   const handleDeleteRelease = async (releaseID, releaseOrderDocID) => {
-      let trimmedLKRSID = localLKRSID;
+    let trimmedLKRSID = localLKRSID;
     if (/^L\d+$/i.test(localLKRSID)) {
       trimmedLKRSID = localLKRSID.substring(1);
     }
@@ -2142,6 +2147,154 @@ const ReleaseSelection = () => {
       return null; // return null if decoding fails
     }
   };
+  //EKYC block starts
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const buttonRef = useRef(null);
+  const [selectedOwner, setSelectedOwner] = useState(null);
+  const [loadingOwners, setLoadingOwners] = useState(false);
+  const [ownerList, setOwnerList] = useState([]);
+  const [ownerNameInput, setOwnerNameInput] = useState('');
+  const [ownerNames, setOwnerNames] = useState('');
+  const [dropdownWidth, setDropdownWidth] = useState('auto');
+  const [ownerDataList, setOwnerDataList] = useState([]);
+  const [ekyc_Status, setEKYC_Status] = useState(false);
+  const [ownerData, setOwnerData] = useState(null);
+  useEffect(() => {
+    if (buttonRef.current) {
+      setDropdownWidth(buttonRef.current.offsetWidth + "px");
+    }
+  }, [isDropdownOpen]); // update width when dropdown opens
+  const fetchOwners = async () => {
+    let trimmedLKRSID = localLKRSID;
+    if (/^L\d+$/i.test(localLKRSID)) {
+      trimmedLKRSID = localLKRSID.substring(1);
+    }
+    try {
+      const apiResponse = await ownerEKYC_Details("1", trimmedLKRSID);
+      const owners = (apiResponse || []).map(owner => ({
+        name: owner.owN_NAME_EN,
+        id: owner.owN_ID,
+        phoneNo: owner.owN_MOBILENUMBER,
+      }));
+
+      setOwnerList(owners);
+
+      const ownerNameList = owners.map(o => o.name).join(', ');
+      setOwnerNames(ownerNameList); //  Set comma-separated owner names
+      setOwnerDataList(apiResponse);
+    } catch (error) {
+      setOwnerList([]);
+      setOwnerNames(''); // fallback if API fails
+    }
+  };
+  const [isEKYCCompleted, setIsEKYCCompleted] = useState(false);
+  const [ekyc_Data, setEkyc_Data] = useState(null);
+  useEffect(() => {
+    const handleMessage = (event) => {
+      if (event.origin !== `${config.redirectBaseURL}`) return;
+
+      const data = event.data;
+      setEkyc_Data(data);
+
+      if (window.location.pathname !== "/Release") return;
+
+      if (data.ekycStatus === "Success") {
+        Swal.fire({
+          title: 'eKYC Result',
+          text: `Status: ${data.ekycStatus}`,
+          icon: 'success',
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          confirmButtonText: 'OK'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            fetchEKYC_ResponseDetails(selectedOwner?.name, data.ekycTxnNo);
+          }
+        });
+      } else if (data.ekycStatus === "Failure") {
+        Swal.fire('eKYC Result', `Status: ${data.ekycStatus}`, 'error');
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [selectedOwner?.name]);
+  //DO EKYC
+  const handleDoEKYC = async () => {
+    if (!selectedOwner || !selectedOwner.name) {
+      Swal.fire('Warning', 'Please select an owner before proceeding with e-KYC.', 'warning');
+      return;
+    }
+
+    const swalResult = await Swal.fire({
+      title: 'Redirecting for e-KYC Verification',
+      text: 'You are being redirected to another tab for e-KYC verification. Once the e-KYC verification is complete, please return to this tab and click the verify e-KYC button.',
+      icon: 'info',
+      confirmButtonText: 'OK',
+      allowOutsideClick: false
+    });
+
+    if (swalResult.isConfirmed) {
+      start_loader();
+      try {
+        // Use selectedOwner.id and selectedOwner.name
+        const OwnerNumber = selectedOwner.id;
+        const BOOK_APP_NO = 2;
+        const PROPERTY_CODE = 1;
+
+        // Pass them to your API
+        const response = await ekyc_Details({
+          OwnerNumber,
+          BOOK_APP_NO,
+          PROPERTY_CODE
+        });
+
+        const resultUrl = response?.ekycRequestUrl;
+        localStorage.setItem("tranNo", response?.tranNo);
+        if (resultUrl) {
+          window.open(
+            resultUrl,
+            '_blank',
+            `toolbar=0,location=0,menubar=0,width=${window.screen.width},height=${window.screen.height},top=0,left=0`
+          );
+          stop_loader();
+        } else {
+          stop_loader();
+          Swal.fire('Error', 'No redirect URL returned', 'error');
+        }
+      } catch (error) {
+        Swal.fire('Error', 'eKYC API call failed', 'error');
+        console.error('eKYC API call failed:', error);
+        stop_loader();
+      }
+    }
+  };
+  const fetchEKYC_ResponseDetails = async (jdaRepName, txnno) => {
+    const transaction_No = localStorage.getItem("tranNo");
+    if (transaction_No === txnno) {
+      try {
+        const payload = {
+          transactionNumber: 83,
+          OwnerType: 'NEWOWNER',
+          ownName: jdaRepName,
+        };
+        const transactionNumber = 83;
+        const OwnerType = "NEWOWNER";
+
+        const response = await ekyc_Response(transactionNumber, OwnerType, jdaRepName);
+        setOwnerData(response);
+        setEKYC_Status(true);
+        setIsEKYCCompleted(true);
+
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+
+      }
+    } else {
+
+    }
+  };
 
   return (
     <DashboardLayout>
@@ -2149,7 +2302,7 @@ const ReleaseSelection = () => {
         {loading && <Loader />}
         <div className="my-3 my-md-5">
           <div className="container mt-5">
-
+            
             {/* Release Table */}
             <div className="card">
               <div className="card-header layout_btn_color">
@@ -2187,7 +2340,7 @@ const ReleaseSelection = () => {
                       <option value="40*30*30">40 * 30 * 30</option>
                     </select>
                   </div>
-
+<h1>${sixtyPercentCount}</h1>
                 </div>
                 {(lkrsTableData.lkrS_DISPLAYID && approvalTableData.approvalOrderNo) && (
                   <>
@@ -2406,6 +2559,61 @@ const ReleaseSelection = () => {
                         ))}
                       </tbody>
                     </table>
+                    <hr />
+                    <div className='row mt-2'>
+                      <h5 style={{ marginBottom: '15px', fontSize: '20px', fontWeight: 'bold', color: '#333' }}>Owner EKYC</h5>
+
+                      <div className="col-12 col-sm-12 col-md-7 col-lg-7 col-xl-7 mt-2">
+                        <label className="form-label">Select Owner <span className='mandatory_color'>*</span></label>
+                        <button
+                          className="form-control text-start"
+                          onClick={() => {
+                            const shouldOpen = !isDropdownOpen;
+                            setIsDropdownOpen(shouldOpen);
+                            if (shouldOpen) {
+                              fetchOwners();
+                            }
+                          }}
+                          ref={buttonRef}  // attach ref here
+                        >
+                          {selectedOwner ? selectedOwner.name : "Select an owner"}
+                        </button>
+
+                        {isDropdownOpen && (
+                          <ul
+                            className="dropdown-menu show"
+                            style={{
+                              overflowY: "auto",
+                              width: dropdownWidth,
+                              maxHeight: "250px", marginLeft: "13px",
+                            }}
+                          >
+                            {loadingOwners ? (
+                              <li className="px-3 py-2">Loading...</li>
+                            ) : (
+                              ownerList.map((owner, index) => (
+                                <li key={owner.id || index}>
+                                  <button
+                                    className="dropdown-item"
+                                    onClick={() => {
+                                      setSelectedOwner(owner);
+                                      setOwnerNameInput(owner.name);
+                                      setIsDropdownOpen(false);
+                                    }}
+                                  >
+                                    {owner.name}
+                                  </button>
+                                </li>
+                              ))
+                            )}
+                          </ul>
+                        )}
+                      </div>
+                      <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-5" >
+                        <label className="form-label"></label>
+                        <button className='btn btn-info btn-block' disabled={!selectedOwner} onClick={handleDoEKYC}>Do eKYC</button>
+                      </div>
+                    </div>
                   </div>
                 )}
 

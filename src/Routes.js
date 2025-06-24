@@ -55,7 +55,7 @@ import ReleaseSelection from './Pages/BBMP/ReleaseSiteSelection';
 import BBMP_SubmittedInfo from './Pages/BBMP/Submitted_ApplicationInfo';
 import LayoutForm from './Pages/BBMP/LayoutKhata';
 import ProtectedRoute from './ProtectedRoute';
-
+import ReleaseEKYCResultHandler from './Pages/BBMP/Release_EKYC_Preview';
 
 
 const AppRoutes = () => {
@@ -86,6 +86,7 @@ const AppRoutes = () => {
             <Route path="/LayoutDashboard" element={<ProtectedRoute element={<BBMP_Layout_Dashboard />} />} />
             <Route path="/Release" element={<ProtectedRoute element={<ReleaseSelection />} />} />
             <Route path="/EKYCResponse" element={<ProtectedRoute element={<EKYCResultHandler />} />} />
+            <Route path="/ReleaseEKYCResponse" element={<ProtectedRoute element={<ReleaseEKYCResultHandler />} />} />
             <Route path="/Info" element={<ProtectedRoute element={<BBMP_SubmittedInfo />} />} />
 
 

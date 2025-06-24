@@ -58,37 +58,39 @@ const BBMP_Layout_Dashboard = () => {
       center: true,
     },
     {
-  name: "Created Date",
-  selector: (row) => {
-    const date = new Date(row.lkrS_CREATEDDATE);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
-    const year = date.getFullYear();
-    return `${day}-${month}-${year}`;
-  },
-  center: true,
-},  {
-  name: "Detailed Status",
-  selector: (row) => row.lkrS_APPDETAILEDSTATUS,
-  center: true,
-  cell: (row) => {
-    const isSubmitted =
-      row.lkrS_APPSTATUS === "8" && row.lkrS_APPDETAILEDSTATUS === "Application Submitted";
+      name: "Created Date",
+      selector: (row) => {
+        const date = new Date(row.lkrS_CREATEDDATE);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+        const year = date.getFullYear();
+        return `${day}-${month}-${year}`;
+      },
+      center: true,
+    }, {
+      name: "Detailed Status",
+      selector: (row) => row.lkrS_APPDETAILEDSTATUS,
+      center: true,
+      cell: (row) => {
 
-    return (
-      <div
-        style={{
-          backgroundColor: isSubmitted ? 'green' : 'transparent',
-          color: isSubmitted ? 'white' : 'inherit',
-          padding: '4px 8px',
-          borderRadius: '4px',
-        }}
-      >
-        {row.lkrS_APPDETAILEDSTATUS}
-      </div>
-    );
-  },
-},
+        const isReleased = row.lkrS_APPSTATUS === "9" && row.lkrS_APPDETAILEDSTATUS === "Site Released";
+        const isSubmitted = row.lkrS_APPSTATUS === "8" && row.lkrS_APPDETAILEDSTATUS === "Application Submitted";
+
+        return (
+          <div
+            style={{
+              backgroundColor: isReleased ? 'green' : (isSubmitted ? 'orange' : 'transparent'),
+              color: isReleased || isSubmitted ? 'white' : 'inherit',
+              padding: '4px 8px',
+              borderRadius: '4px',
+            }}
+          >
+            {row.lkrS_APPDETAILEDSTATUS}
+          </div>
+        );
+
+      },
+    },
   ];
   const customStyles = {
     headCells: {
@@ -200,14 +202,14 @@ const BBMP_Layout_Dashboard = () => {
   };
 
   const handleClick = async () => {
-    const success = await generate_Token();
-    if (success) {
+    // const success = await generate_Token();
+    // if (success) {
 
-      navigate('/LayoutForm');
-    } else {
-      // Optionally show an error alert here
-      alert("Token generation failed. Please try again.");
-    }
+    navigate('/LayoutForm');
+    // } else {
+    //   // Optionally show an error alert here
+    //   alert("Token generation failed. Please try again.");
+    // }
   };
 
 
@@ -254,100 +256,100 @@ const BBMP_Layout_Dashboard = () => {
             </div>
           </div>
         </div>
-        <br/>
-            {/* Data Table */}
-            <DataTable
-              title={
-                <div className="text-center">
-                 <div className="row">
-  <div className="col-3">
-    <div className="form-check">
-      <label className="form-check-label fs-6">
-        <input
-          className="form-check-input"
-          type="radio"
-          name="levelOptions"
-          value="1"
-          checked={selectedLevel === 1}
-          onChange={() => handleLevelChange(1)}
-        />
-        All ({dashboardData.allCount})
-      </label>
-    </div>
-  </div>
-
-  <div className="col-3">
-    <div className="form-check">
-      <label className="form-check-label fs-6">
-        <input
-          className="form-check-input"
-          type="radio"
-          name="levelOptions"
-          value="2"
-          checked={selectedLevel === 2}
-          onChange={() => handleLevelChange(2)}
-        />
-        Incomplete ({dashboardData.incompletedCount})
-      </label>
-    </div>
-  </div>
-
-  <div className="col-3">
-    <div className="form-check">
-      <label className="form-check-label fs-6">
-        <input
-          className="form-check-input"
-          type="radio"
-          name="levelOptions"
-          value="3"
-          checked={selectedLevel === 3}
-          onChange={() => handleLevelChange(3)}
-        />
-        Submitted ({dashboardData.submittedCount})
-      </label>
-    </div>
-  </div>
-
-  <div className="col-3">
-    <div className="form-check">
-      <label className="form-check-label fs-6">
-        <input
-          className="form-check-input"
-          type="radio"
-          name="levelOptions"
-          value="4"
-          checked={selectedLevel === 4}
-          onChange={() => handleLevelChange(4)}
-        />
-        Completed ({dashboardData.completedCount})
-      </label>
-    </div>
-  </div>
-</div>
-
+        <br />
+        {/* Data Table */}
+        <DataTable
+          title={
+            <div className="text-center">
+              <div className="row">
+                <div className="col-3">
+                  <div className="form-check">
+                    <label className="form-check-label fs-6">
+                      <input
+                        className="form-check-input"
+                        type="radio"
+                        name="levelOptions"
+                        value="1"
+                        checked={selectedLevel === 1}
+                        onChange={() => handleLevelChange(1)}
+                      />
+                      All ({dashboardData.allCount})
+                    </label>
+                  </div>
                 </div>
-              }
-              columns={columns}
-              data={records}
-              pagination
-              customStyles={customStyles}
-              paginationServer={false}
-              paginationDefaultPage={currentPage}
-              paginationPerPage={rowsPerPage}
-              onChangePage={(page) => setCurrentPage(page)}
-              onChangeRowsPerPage={(newPerPage, page) => {
-                setRowsPerPage(newPerPage);
-                setCurrentPage(page);
-              }}
-              highlightOnHover
-              striped
-              
-            />
+
+                <div className="col-3">
+                  <div className="form-check">
+                    <label className="form-check-label fs-6">
+                      <input
+                        className="form-check-input"
+                        type="radio"
+                        name="levelOptions"
+                        value="2"
+                        checked={selectedLevel === 2}
+                        onChange={() => handleLevelChange(2)}
+                      />
+                      Incomplete ({dashboardData.incompletedCount})
+                    </label>
+                  </div>
+                </div>
+
+                <div className="col-3">
+                  <div className="form-check">
+                    <label className="form-check-label fs-6">
+                      <input
+                        className="form-check-input"
+                        type="radio"
+                        name="levelOptions"
+                        value="3"
+                        checked={selectedLevel === 3}
+                        onChange={() => handleLevelChange(3)}
+                      />
+                      Submitted ({dashboardData.submittedCount})
+                    </label>
+                  </div>
+                </div>
+
+                <div className="col-3">
+                  <div className="form-check">
+                    <label className="form-check-label fs-6">
+                      <input
+                        className="form-check-input"
+                        type="radio"
+                        name="levelOptions"
+                        value="4"
+                        checked={selectedLevel === 4}
+                        onChange={() => handleLevelChange(4)}
+                      />
+                      Completed ({dashboardData.completedCount})
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          }
+          columns={columns}
+          data={records}
+          pagination
+          customStyles={customStyles}
+          paginationServer={false}
+          paginationDefaultPage={currentPage}
+          paginationPerPage={rowsPerPage}
+          onChangePage={(page) => setCurrentPage(page)}
+          onChangeRowsPerPage={(newPerPage, page) => {
+            setRowsPerPage(newPerPage);
+            setCurrentPage(page);
+          }}
+          highlightOnHover
+          striped
+
+        />
 
 
 
 
-        
+
 
       </div>
     </DashboardLayout>

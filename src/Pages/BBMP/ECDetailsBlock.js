@@ -39,7 +39,7 @@ export const useLoader = () => {
     return { loading, start_loader, stop_loader };
 };
 
-const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsECSectionSaved, ownerName }) => {
+const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsECSectionSaved, ownerName, setIsJDAEKYCSectionSaved }) => {
     const [ecNumber, setECNumber] = useState("");
     const [ecNumberError, setEcNumberError] = useState('');
     const [hasJDA, setHasJDA] = useState(false);
@@ -714,7 +714,6 @@ const buttonRef = useRef(null);
             stop_loader();
         }
     };
-
     const handleJdaDocumentIdChange = (e) => {
         const value = e.target.value;
 
@@ -728,8 +727,6 @@ const buttonRef = useRef(null);
             setJdaDocumentIdError('Special characters are not allowed.');
         }
     };
-
-
     const handleJdaDocumentDateChange = (e) => {
         const value = e.target.value;
         const today = new Date().toISOString().split('T')[0];
@@ -1072,7 +1069,7 @@ const buttonRef = useRef(null);
             <>
                 <Owner_EKYCBlock LKRS_ID={LKRS_ID} ownerName={ownerName} />
 
-                {hasJDA && <JDA_EKYCBlock LKRS_ID={LKRS_ID} jdaID={jdaID} />}
+                {hasJDA && <JDA_EKYCBlock LKRS_ID={LKRS_ID} jdaID={jdaID} setIsJDAEKYCSectionSaved={setIsJDAEKYCSectionSaved}/>}
             </>
         </div>
     );

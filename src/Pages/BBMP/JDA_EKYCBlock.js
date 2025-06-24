@@ -39,7 +39,7 @@ export const useLoader = () => {
     return { loading, start_loader, stop_loader };
 };
 
-const JDA_EKYCBlock = ({ LKRS_ID, jdaID }) => {
+const JDA_EKYCBlock = ({ LKRS_ID, jdaID, setIsJDAEKYCSectionSaved }) => {
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
 
     const [selectedOption, setSelectedOption] = useState('JDArepresentative');
@@ -298,9 +298,11 @@ const JDA_EKYCBlock = ({ LKRS_ID, jdaID }) => {
                 console.table(owners);
                 setownerEKYCDataList(owners);
                 setIsEKYCCompleted(true);
+                setIsJDAEKYCSectionSaved(true);
             } else {
                 setownerEKYCDataList([]);
                 setIsEKYCCompleted(false);
+                setIsJDAEKYCSectionSaved(false);
             }
         } catch (error) {
             console.error("Error fetching owner data:", error);
@@ -504,7 +506,7 @@ const JDA_EKYCBlock = ({ LKRS_ID, jdaID }) => {
             const response = await ekyc_insertJDADetails(payloadJDAOwner);
 
             if (response.responseStatus === true) {
-
+                
                 Swal.fire({
                     text: response.responseMessage,
                     icon: "success",
