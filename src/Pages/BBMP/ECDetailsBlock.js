@@ -39,7 +39,7 @@ export const useLoader = () => {
     return { loading, start_loader, stop_loader };
 };
 
-const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsECSectionSaved, ownerName, setIsJDAEKYCSectionSaved }) => {
+const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsECSectionSaved, ownerName, setIsJDAEKYCSectionSaved, setIsOwnerEKYCSectionSaved }) => {
     const [ecNumber, setECNumber] = useState("");
     const [ecNumberError, setEcNumberError] = useState('');
     const [hasJDA, setHasJDA] = useState(false);
@@ -752,7 +752,7 @@ const buttonRef = useRef(null);
                 </div>
                 <div className="card-body">
                     <div className='row'>
-                        <h6 className='note_color'>Note : EC should be atleast 1 day before registered deed of property until 31-10-2024 or later. If sale / registered deed date is before 01-04-2004 then EC should be from 01-04-2004 to 31-10-2024 after</h6>
+                        <div className="alert alert-info">Note : EC should be atleast 1 day before registered deed of property until 31-10-2024 or later. If sale / registered deed date is before 01-04-2004 then EC should be from 01-04-2004 to 31-10-2024 after</div>
                         <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mt-3">
                             <div className="form-group mt-2">
                                 <label className='form-label'>Enter EC Number of Mother Property <span className='mandatory_color'>*</span></label>
@@ -1067,7 +1067,7 @@ const buttonRef = useRef(null);
                 </div>
             </div>
             <>
-                <Owner_EKYCBlock LKRS_ID={LKRS_ID} ownerName={ownerName} />
+                <Owner_EKYCBlock LKRS_ID={LKRS_ID} ownerName={ownerName} setIsOwnerEKYCSectionSaved={setIsOwnerEKYCSectionSaved}/>
 
                 {hasJDA && <JDA_EKYCBlock LKRS_ID={LKRS_ID} jdaID={jdaID} setIsJDAEKYCSectionSaved={setIsJDAEKYCSectionSaved}/>}
             </>

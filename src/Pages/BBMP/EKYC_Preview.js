@@ -1,4 +1,4 @@
-// EKYCResultHandler.js
+// EKYC_Preview.js
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import config from '../../Config/config';
@@ -28,7 +28,7 @@ const EKYCResultHandler = () => {
           ekycStatus: status,
           ekycVaultRefNo: vaultrefno
         },
-          `${config.redirectBaseURL}/layoutForm`
+          `${config.redirectBaseURL}/LayoutForm`
       );
     }
 

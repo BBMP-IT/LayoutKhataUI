@@ -310,7 +310,17 @@ const JDA_EKYCBlock = ({ LKRS_ID, jdaID, setIsJDAEKYCSectionSaved }) => {
             setIsEKYCCompleted(false);
         }
     };
-
+    useEffect(() => {
+        const handleMessage = (event) => {
+            // Ensure the message is coming from your domain
+            if (event.origin !== `${config.redirectBaseURL}`) return;
+            const data = event.data;
+            // You can store this in state or use it directly
+            setEkyc_Data(data);
+        };
+        window.addEventListener("message", handleMessage);
+        return () => window.removeEventListener("message", handleMessage);
+    }, []);
     // useEffect(() => {
     //     const handleMessage = (event) => {
     //         // Ensure the message is coming from your domain
@@ -361,32 +371,59 @@ const JDA_EKYCBlock = ({ LKRS_ID, jdaID, setIsJDAEKYCSectionSaved }) => {
     const [isEKYCCompleted, setIsEKYCCompleted] = useState(false);
 
     useEffect(() => {
+        // const handleMessage = (event) => {
+        //     if (event.origin !== `${config.redirectBaseURL}`) return;
+
+        //     const data = event.data;
+        //     setEkyc_Data(data);
+
+        //     if (window.location.pathname !== "/LayoutForm") return;
+
+        //     if (data.ekycStatus === "Success") {
+        //         Swal.fire({
+        //             title: 'eKYC Result',
+        //             text: `Status: ${data.ekycStatus}`,
+        //             icon: 'success',
+        //             allowOutsideClick: false,
+        //             allowEscapeKey: false,
+        //             confirmButtonText: 'OK'
+        //         }).then((result) => {
+        //             if (result.isConfirmed) {
+        //                 fetchEKYC_ResponseDetails(jdaRepName, data.ekycTxnNo);
+        //             }
+        //         });
+        //     } else if (data.ekycStatus === "Failure") {
+        //         Swal.fire('eKYC Result', `Status: ${data.ekycStatus}`, 'error');
+        //     }
+        // };
+
         const handleMessage = (event) => {
             if (event.origin !== `${config.redirectBaseURL}`) return;
-
+            if (!window.location.pathname.includes("LayoutForm")) return;
+            if (event.origin !== `${config.redirectBaseURL}`) return;
             const data = event.data;
+            // You can store this in state or use it directly
             setEkyc_Data(data);
 
-            if (window.location.pathname !== "/LayoutForm") return;
+            if (event.data.ekycStatus === "Success") {
 
-            if (data.ekycStatus === "Success") {
+
                 Swal.fire({
                     title: 'eKYC Result',
-                    text: `Status: ${data.ekycStatus}`,
+                    text: `Status: ${event.data.ekycStatus}`,
                     icon: 'success',
                     allowOutsideClick: false,
                     allowEscapeKey: false,
                     confirmButtonText: 'OK'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        fetchEKYC_ResponseDetails(jdaRepName, data.ekycTxnNo);
+                        fetchEKYC_ResponseDetails(jdaRepName, event.data.ekycTxnNo);
                     }
-                });
-            } else if (data.ekycStatus === "Failure") {
-                Swal.fire('eKYC Result', `Status: ${data.ekycStatus}`, 'error');
+                })
+            } else if (event.data.ekycStatus === "Failure") {
+                Swal.fire('eKYC Result', `Status: ${event.data.ekycStatus}`, 'error');
             }
         };
-
         window.addEventListener("message", handleMessage);
         return () => window.removeEventListener("message", handleMessage);
     }, [jdaRepName]);
@@ -478,7 +515,7 @@ const JDA_EKYCBlock = ({ LKRS_ID, jdaID, setIsJDAEKYCSectionSaved }) => {
             });
             return
         }
-        if(jda_ID === null){
+        if (jda_ID === null) {
             Swal.fire({
                 text: "Please save the EC or JDA Registration block before proceeding with JDA eKYC.",
                 icon: "error",
@@ -516,7 +553,7 @@ const JDA_EKYCBlock = ({ LKRS_ID, jdaID, setIsJDAEKYCSectionSaved }) => {
             const response = await ekyc_insertJDADetails(payloadJDAOwner);
 
             if (response.responseStatus === true) {
-                
+
                 Swal.fire({
                     text: response.responseMessage,
                     icon: "success",
@@ -711,8 +748,8 @@ const JDA_EKYCBlock = ({ LKRS_ID, jdaID, setIsJDAEKYCSectionSaved }) => {
                                 <thead className="table-light">
                                     <tr>
                                         <th>ಫೋಟೋ / Photo</th>
-                                        <th>ಜೆಡಿಎ ಹೆಸರು / JDA Name</th> 
-                                         <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>  
+                                        <th>ಜೆಡಿಎ ಹೆಸರು / JDA Name</th>
+                                        <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>
                                         <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhar Number</th>
                                         <th>ಲಿಂಗ / Gender</th> {/* New column */}
                                         <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th> {/* New column */}
@@ -735,22 +772,22 @@ const JDA_EKYCBlock = ({ LKRS_ID, jdaID, setIsJDAEKYCSectionSaved }) => {
 
                                         return (
                                             <tr key={index}>
-                                                <td style={{ textAlign: 'center'}}><img src={usericon} alt="Owner" width="50" height="50" /></td>
-                                                
+                                                <td style={{ textAlign: 'center' }}><img src={usericon} alt="Owner" width="50" height="50" /></td>
+
                                                 <td style={{ textAlign: 'center' }}>{owner.jdAekyc_JDA_Name || 'N/A'}</td>
                                                 <td style={{ textAlign: 'center' }}>{aadhaarResponse.ownerNameEng || 'N/A'}</td>
                                                 <td style={{ textAlign: 'center' }}>{owner.jdAekyc_AadhaarNumber || 'N/A'}</td>
                                                 <td style={{ textAlign: 'center' }}>{aadhaarResponse.gender || 'N/A'}</td>
                                                 <td style={{ textAlign: 'center' }}>{aadhaarResponse.dateOfBirth || 'N/A'}</td>
                                                 <td style={{ textAlign: 'center' }}>{aadhaarResponse.addressEng || 'N/A'}</td>
-                                                
-{/*                                                
+
+                                                {/*                                                
                                                 <td style={{ textAlign: 'center' }}>
                                                     {aadhaarResponse.photoContent ? <img src={`data:image/jpeg;base64,${aadhaarResponse.photoContent}`} alt="Aadhaar Photo" style={{ width: '50px', height: '50px' }} /> : 'No Photo'}
                                                 </td> */}
-                                                
-                                                
-                                                
+
+
+
                                                 <td style={{ textAlign: 'center' }}>{ekycStatus}</td>
                                                 <td style={{ textAlign: 'center' }}>{nameMatchStatus}</td>
                                             </tr>

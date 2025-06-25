@@ -1197,7 +1197,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                             <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
                                 <div className="form-group">
                                     <label className="form-label">
-                                        {t("translation.BDA.Subdivision.scanUploadapproval")}{" "}
+                                        Scan & Upload Layout Approval Order
                                         <span className="mandatory_color">*</span>
                                     </label>
                                     <input
@@ -1333,7 +1333,8 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                                     >
                                         <option value="">Select Layout Approval Authority</option>
                                         <option value="1">BDA</option>
-                                        <option value="2">BIAAPA </option>
+                                        <option value="2">BMICAPA </option>
+                                        <option value="3">KIADB </option>
                                     </select>
 
                                 </div>
@@ -1366,7 +1367,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                             <div className='col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6'>
                                 <div className="form-group">
                                     <label className='form-label'>
-                                        Total number of sites <span className='mandatory_color'>*</span>
+                                        Total Number of Sites <span className='mandatory_color'>*</span>
                                     </label>
                                     <input
                                         type="number"
@@ -1404,7 +1405,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                                                             setFormData({ ...formData, releaseType: e.target.value })
                                                         } disabled={!isEditing}
                                                     />
-                                                    100</label>
+                                                    100%</label>
                                             </div>
                                         </div>
                                         <div className='col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4'>
@@ -1420,7 +1421,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                                                             setFormData({ ...formData, releaseType: e.target.value })
                                                         } disabled={!isEditing}
                                                     />
-                                                    60 * 40</label>
+                                                    60% * 40%</label>
                                             </div>
                                         </div>
                                         <div className='col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4'>
@@ -1436,7 +1437,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                                                             setFormData({ ...formData, releaseType: e.target.value })
                                                         } disabled={!isEditing}
                                                     />
-                                                    40 * 30 * 30</label>
+                                                    40% * 30% * 30%</label>
                                             </div>
                                         </div>
                                         {errors.releaseType && (

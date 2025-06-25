@@ -59,7 +59,7 @@ import ReleaseEKYCResultHandler from './Pages/BBMP/Release_EKYC_Preview';
 import Error_Page from './Pages/BBMP/ErrorPage';
 
 const AppRoutes = () => {
-  
+
   return (
     <AuthProvider>
       <Router basename="/">
@@ -69,15 +69,7 @@ const AppRoutes = () => {
         <div className="App">
           {/* <Breadcrumbs /> */}
           <Routes>
-            {/* <Route path="/" element={<BBMPLogin />} />
-            <Route path="/homePage" element={<BBMP_Homepage />} />
-            <Route path="/LayoutForm" element={<BBMP_LayoutForm />} />
-            <Route path="/LayoutDashboard" element={<BBMP_Layout_Dashboard />} />
-            <Route path="/Release" element={<ReleaseSelection />} />
-            <Route path='/EKYCResponse' element={<EKYCResultHandler />} />
-            <Route path='/Info' element={<BBMP_SubmittedInfo />} />
-            <Route path='/layoutKhata' element={<LayoutForm />} /> */}
-
+      
             <Route path="/" element={<BBMPLogin />} />
 
             {/* Protected Routes */}
@@ -88,7 +80,6 @@ const AppRoutes = () => {
             <Route path="/EKYCResponse" element={<ProtectedRoute element={<EKYCResultHandler />} />} />
             <Route path="/ReleaseEKYCResponse" element={<ProtectedRoute element={<ReleaseEKYCResultHandler />} />} />
             <Route path="/Info" element={<ProtectedRoute element={<BBMP_SubmittedInfo />} />} />
-            <Route path="*" element={<Error_Page />} />
 
 
             <Route path="/tax_Details" element={<BBMP_TaxDetails />} />

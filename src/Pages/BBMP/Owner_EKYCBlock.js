@@ -39,7 +39,7 @@ export const useLoader = () => {
 };
 
 
-const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
+const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved }) => {
 
 
     const [phone, setPhone] = useState('');
@@ -320,10 +320,14 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
             const ownerNameList = owners.map(o => o.name).join(', ');
             setOwnerNames(ownerNameList); //  Set comma-separated owner names
             setOwnerDataList(apiResponse);
+            setIsOwnerEKYCSectionSaved(true);
         } catch (error) {
             setOwnerList([]);
             setOwnerNames(''); // fallback if API fails
+            setIsOwnerEKYCSectionSaved(false);
         }
+
+        
     };
     const handleRadioChange = (e) => {
         setSelectedOption(e.target.value);
@@ -333,7 +337,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
     useEffect(() => {
         const handleMessage = (event) => {
             if (event.origin !== `${config.redirectBaseURL}`) return;
-            if (window.location.pathname !== "/LayoutForm") return;
+           if (!window.location.pathname.includes("LayoutForm")) return;
 
             if (event.data.ekycStatus === "Success") {
                 if (selectedOwner?.name) {
@@ -658,7 +662,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
                 <div className="card-body">
                     <div className='row'>
                         <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4 mb-3">
-                            <label className="form-label">Select Owner / Owner representative : </label>
+                            <label className="form-label">Select Owner / Owner Representative : </label>
                         </div>
                         <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4" >
                             <div className="form-check">
@@ -692,7 +696,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
 
                         <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 mt-3">
                             <div className='row'>
-                                <div className="alert alert-info">[Note: Click on eKYC Status button once the ekyc is done to check verification status]</div>
+                                {/* <div className="alert alert-info">Note: Click on eKYC Status button once the ekyc is done to check verification status</div> */}
 
                                 <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mt-2" >
                                     <label className="form-label">Select Owner <span className='mandatory_color'>*</span></label>
@@ -900,6 +904,8 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
                                     <button className='btn btn-info btn-block' ref={EKYC_Save} onClick={insertEKYCDetails} >Save</button>
                                 </div>
                             </div>
+                            <br/>
+                            <div className="alert alert-info">Note: Please do EKYC of JDA / JDA Representative.</div>
                             {ekycUrl && (
                                 <iframe
                                     src={ekycUrl}

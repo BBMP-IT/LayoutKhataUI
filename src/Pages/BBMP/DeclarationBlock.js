@@ -41,7 +41,7 @@ export const useLoader = () => {
 };
 
 const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, isApprovalSectionSaved, 
-    isReleaseSectionSaved, isSitesSectionSaved, isECSectionSaved, isJDAEKYCSectionSaved }) => {
+    isReleaseSectionSaved, isSitesSectionSaved, isECSectionSaved, isJDAEKYCSectionSaved, isOwnerEKYCSectionSaved }) => {
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
@@ -161,6 +161,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
         if (LKRS_ID) {
             delay(1000);
             fetch_ownerDetails(LKRS_ID);
+            handleGetLKRSID(LKRS_ID);
         }
     }, [LKRS_ID]);
     // =============================================OwnerEKYC details starts=====================================
@@ -190,7 +191,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
             stop_loader(); // Stop loader
         }
     };
-
+    const [jdaSection, setJDASection] = useState(false);
     //final Save API integration
     const final_Save = async () => {
         if (isRTCSectionSaved === false && isEPIDSectionSaved === false) {
@@ -242,6 +243,26 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                 confirmButtonText: 'Ok'
             });
             return;
+        }
+        if(isOwnerEKYCSectionSaved === false){
+             Swal.fire({
+                icon: 'warning',
+                title: 'Important!',
+                text: 'Please save the Owner EKYC details before proceeding.',
+                confirmButtonText: 'Ok'
+            });
+            return;
+        }
+        if(jdaSection === true){
+             if(isJDAEKYCSectionSaved === false){
+             Swal.fire({
+                icon: 'warning',
+                title: 'Important!',
+                text: 'Please save the JDA EKYC details before proceeding.',
+                confirmButtonText: 'Ok'
+            });
+            return;
+        }
         }
         // if (ownerList.some(owner => owner.owN_AADHAARVERISTATUS !== "Success")) {
         //     Swal.fire({
@@ -341,6 +362,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
         //     return;
         // }
 
+
         if (isSitesSectionSaved === false) {
             Swal.fire({
                 icon: 'warning',
@@ -360,6 +382,26 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                 confirmButtonText: 'Ok'
             });
             return;
+        }
+         if(isOwnerEKYCSectionSaved === false){
+             Swal.fire({
+                icon: 'warning',
+                title: 'Important!',
+                text: 'Please save the Owner EKYC details before proceeding.',
+                confirmButtonText: 'Ok'
+            });
+            return;
+        }
+        if(jdaSection === true){
+             if(isJDAEKYCSectionSaved === false){
+             Swal.fire({
+                icon: 'warning',
+                title: 'Important!',
+                text: 'Please save the JDA EKYC details before proceeding.',
+                confirmButtonText: 'Ok'
+            });
+            return;
+        }
         }
         // if (ownerList.some(owner => owner.owN_AADHAARVERISTATUS !== "Success")) {
         //     Swal.fire({
@@ -596,12 +638,13 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
             if (response && response.surveyNumberDetails && response.surveyNumberDetails.length > 0) {
 
                 setSelectedLandType(response.lkrS_LANDTYPE); //  Store the land type
-                setECNumber(response.lkrS_ECNUMBER);         // Set EC Number
-                // if (response.lkrS_ISJDA === "1") {
-                //     setHasJDA(true);
-                // } else {
-                //     setHasJDA(false);
-                // }
+                setECNumber(response.lkrS_ECNUMBER);      
+                // Set EC Number
+                if (response.lkrS_ISJDA === "1") {
+                    setJDASection(true);
+                } else {
+                    setJDASection(false);
+                }
 
 
                 const parsedSurveyDetails = mapSurveyDetails(response.surveyNumberDetails);
@@ -1277,10 +1320,10 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                         <button onClick={handlePreviewClick} className='btn btn-warning btn-block'>Preview</button>
                     </div>
                     <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-3'>
-                        <button className='btn btn-info btn-block' onClick={final_Save}>Save & View information</button>
+                        <button className='btn btn-info btn-block' onClick={final_Save}>Save & View Information</button>
                     </div>
                     <div className='col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mt-3'>
-                        <button className='btn btn-primary btn-block' onClick={final_Save_Release}>Save & proceed to release</button>
+                        <button className='btn btn-primary btn-block' onClick={final_Save_Release}>Save & Proceed to Release</button>
                     </div>
                 </div>
 
@@ -1297,7 +1340,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                                         <div className="col-12">
                                             <div className="">
                                                 <div className="d-flex justify-content-between align-items-center mb-3">
-                                                    <h4 className=" m-0">Added Survey No Details</h4>
+                                                    <h4 className=" m-0">Added Survey Number Details</h4>
                                                     <div className="d-flex align-items-center">
                                                         <label className="me-2 mb-0">Rows per page:</label>
                                                         <select
@@ -1323,7 +1366,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                                                                 <th>Hobli</th>
                                                                 <th>Village</th>
                                                                 <th>Owner Name</th>
-                                                                <th>Survey No / Surnoc / Hissa No</th>
+                                                                <th>Survey Number / Surnoc / Hissa Number</th>
                                                                 <th>Extent (Acre.Gunta.Fgunta)</th>
                                                                 <th>SqFt</th>
                                                                 <th>SqM</th>
@@ -1437,7 +1480,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
 
                             {records.length > 0 && (
                                 <div className="mt-4">
-                                    <h4>Layout Approval order</h4>
+                                    <h4>Layout Approval Order</h4>
                                     <DataTable
                                         columns={approval_columns}
                                         data={records}

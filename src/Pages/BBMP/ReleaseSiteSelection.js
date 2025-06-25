@@ -4,7 +4,7 @@ import Loader from "../../Layout/Loader";
 import DataTable from 'react-data-table-component';
 import '../../Styles/CSS/ReleaseSiteSelection.css';
 import Swal from "sweetalert2";
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from "react-i18next";
 import config from '../../Config/config';
 
@@ -25,6 +25,7 @@ export const useLoader = () => {
 };
 
 const ReleaseSelection = () => {
+   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
   const [selectedValue, setSelectedValue] = useState('');
@@ -1489,10 +1490,14 @@ const ReleaseSelection = () => {
     }
   };
   const fetchReleaseOrder = async (localLKRSID) => {
+     let trimmedLKRSID = localLKRSID;
+    if (/^L\d+$/i.test(localLKRSID)) {
+      trimmedLKRSID = localLKRSID.substring(1);
+    }
     try {
       const listPayload = {
         level: 1,
-        LkrsId: localLKRSID,
+        LkrsId: trimmedLKRSID,
         SiteID: 0,
       };
       start_loader();
@@ -1545,8 +1550,7 @@ const ReleaseSelection = () => {
       setSelectedRows([]);
 
 
-      fetchReleaseOrder(localLKRSID);  // To refresh `releaseData`
-      fetchFinalReleasedSites(localLKRSID);  // Separate function for `sitE_IS_SITE_RELEASED === true`
+      fetchReleaseOrder(localLKRSID);    // Separate function for `sitE_IS_SITE_RELEASED === true`
 
     } catch (error) {
       console.error("Release API Error:", error);
@@ -1560,10 +1564,14 @@ const ReleaseSelection = () => {
     }
   };
   const fetchFinalReleasedSites = async (localLKRSID) => {
+     let trimmedLKRSID = localLKRSID;
+    if (/^L\d+$/i.test(localLKRSID)) {
+      trimmedLKRSID = localLKRSID.substring(1);
+    }
     try {
       const listPayload = {
         level: 1,
-        LkrsId: localLKRSID,
+        LkrsId: trimmedLKRSID,
         SiteID: 0,
       };
       const response = await individualSiteListAPI(listPayload);
@@ -2304,7 +2312,10 @@ const ReleaseSelection = () => {
 
     }
   };
-
+const handleBackToDashboard = (e) => {
+        e.preventDefault(); // Prevents the default anchor tag behavior
+        navigate("/LayoutDashboard");
+    };
   return (
     <DashboardLayout>
       <div className={`layout-form-container ${loading ? 'no-interaction' : ''}`}>
@@ -2315,9 +2326,16 @@ const ReleaseSelection = () => {
             {/* Release Table */}
             <div className="card">
               <div className="card-header layout_btn_color">
-                <h5 className="card-title" style={{ textAlign: 'center' }}>Release dashboard</h5>
+                <h5 className="card-title" style={{ textAlign: 'center' }}>Release Dashboard</h5>
               </div>
               <div className="card-body">
+ <Link
+                                        onClick={handleBackToDashboard}
+                                        style={{ textDecoration: 'none', color: '#006879', display: 'flex', alignItems: 'center' }}
+                                    >
+                                        <i className='fa fa-arrow-left' style={{ marginRight: '8px' }}></i>
+                                        Back to Dashboard
+                                    </Link>
                 <div className="row">
                   <div className='col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mt-2'>
                     <div className="form-group">
@@ -2363,7 +2381,7 @@ const ReleaseSelection = () => {
                           <td style={tdStyle}>{lkrsTableData.lkrS_EPID}</td>
                         </tr>
                         <tr>
-                          <th style={thStyle}>Total No of Sites</th>
+                          <th style={thStyle}>Total Number of Sites</th>
                           <td style={tdStyle}> {approvalTableData.totalNoOfSites}</td>
                           <th style={thStyle}>Total Extent</th>
                           <td style={tdStyle}>{lkrsTableData.lkrS_SITEAREA_SQFT} [SQFT] , {lkrsTableData.lkrS_SITEAREA_SQMT} [SQM]</td>
@@ -2371,7 +2389,7 @@ const ReleaseSelection = () => {
                         <tr>
                           <th style={thStyle}>DC Conversion</th>
                           <td style={tdStyle}>N/A</td>
-                          <th style={thStyle}>Approval Order No</th>
+                          <th style={thStyle}>Approval Order Number</th>
                           <td style={tdStyle}>{approvalTableData.approvalOrderNo || 'N/A'}</td>
                         </tr>
                         <tr>
@@ -2392,7 +2410,7 @@ const ReleaseSelection = () => {
                       <div className="col-12">
                         <div className="">
                           <div className="d-flex justify-content-between align-items-center mb-3">
-                            <h4 className=" m-0">Survey No Details</h4>
+                            <h4 className=" m-0">Survey Number Details</h4>
                             <div className="d-flex align-items-center">
                               <label className="me-2 mb-0">Rows per page:</label>
                               <select
@@ -2418,7 +2436,7 @@ const ReleaseSelection = () => {
                                   <th>Hobli</th>
                                   <th>Village</th>
                                   <th>Owner Name</th>
-                                  <th>SNo / Surnoc / Hissa</th>
+                                  <th>Survey Number / Surnoc / Hissa</th>
                                   <th>Extent (Acre.Gunta.Fgunta)</th>
                                   <th>SqFt</th>
                                   <th>SqM</th>

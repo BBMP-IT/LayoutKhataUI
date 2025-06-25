@@ -1678,7 +1678,7 @@ const buttonRef = useRef(null);
                             <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4 mb-3">
                                 <div className="form-group">
                                     <label htmlFor="totalArea" className="col-form-label fw-semibold">
-                                        Total Area of the layout  <span className='mandatory_color'>*</span>
+                                        Total Area of the Layout  <span className='mandatory_color'>*</span>
                                     </label>
                                     <div className="input-group">
                                         <input
@@ -1712,7 +1712,7 @@ const buttonRef = useRef(null);
                             <div className='col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4 mb-3'>
                                 <div className="form-group mt-2">
                                     <label className='form-label'>
-                                        Total number of sites <span className='mandatory_color'>*</span>
+                                        Total Number of Sites <span className='mandatory_color'>*</span>
                                     </label>
                                     <input
                                         type="text"
@@ -1746,8 +1746,9 @@ const buttonRef = useRef(null);
 
 
                         <hr className='mt-1' style={{ border: '1px dashed #0077b6' }} />
-                        <h4 className='fw-bold fs-7'>Site / Plot wise Details &nbsp;&nbsp;<label className='text-danger' style={{ fontSize: '14px' }}>[ Note: Please enter Correctly as eKhata will be issued as per this ]</label></h4>
-
+                        <h4 className='fw-bold fs-7'>Site / Plot wise Details </h4>
+                             <div className="alert alert-info">Note: Please enter Correctly as eKhata will be issued as per this</div>
+                           
 
                         <div className="row mt-4">
                             <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 mb-3">
@@ -2588,8 +2589,8 @@ const buttonRef = useRef(null);
                     <div className="row" >
                         <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
                             <b>Search using nearest landmark near your layout - once you zoom there then locate your individual layout & tap on top middle of your layout</b>
-                            <br /><span>Note : Search nearest landmark & then find layout & site near the landmark</span>
-                            <br />
+                             <br/><div className="alert alert-info">Note : Search nearest landmark & then find layout & site near the landmark</div>
+                            
                         </div>
                         <div className="col-md-12 col-lg-12 col-sm-12 mb-4 position-relative mt-2">
                             <div className='row'>

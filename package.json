@@ -43,8 +43,8 @@
   "scripts": {
     "start": "react-scripts start",
     "start:local": "cross-env PORT=3001 HOST=0.0.0.0 DANGEROUSLY_DISABLE_HOST_CHECK=true REACT_APP_ENV=local npm start",
-    "start:test": "cross-env REACT_APP_ENV=test npm start",
-    "start:prod": "cross-env REACT_APP_ENV=prod npm start",
+    "start:test": "cross-env PORT=3001 HOST=0.0.0.0 DANGEROUSLY_DISABLE_HOST_CHECK=true REACT_APP_ENV=local npm start",
+    "start:prod": "cross-env PORT=3001 HOST=0.0.0.0 DANGEROUSLY_DISABLE_HOST_CHECK=true REACT_APP_ENV=local npm start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

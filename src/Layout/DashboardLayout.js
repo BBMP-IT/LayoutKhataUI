@@ -14,7 +14,7 @@ import BBMP_LayoutForm from '../Pages/BBMP/BBMP_Layout';
 import { toast, Toaster } from 'react-hot-toast';
 import { LocalLaundryService } from '@mui/icons-material';
 import Swal from "sweetalert2";
-
+import { useAuth } from "../AuthContext";
 
 
 const DashboardLayout = ({ children }) => {
@@ -22,6 +22,7 @@ const DashboardLayout = ({ children }) => {
   const { t, i18n } = useTranslation();
   const isEnglish = i18n.language === 'kn';
   const [language, setLanguage] = useState('kn');
+  const { UseLogout } = useAuth();
 
   const handleLanguageChange = (event) => {
     const newLang = event.target.value;
@@ -115,35 +116,6 @@ const DashboardLayout = ({ children }) => {
   };
 
 
-  // restricting right click and developer option and F12 btn also
-
-  // useEffect(() => {
-  //   // Disable right-click on the entire document
-  //   const handleContextMenu = (event) => {
-  //     event.preventDefault();
-  //   };
-
-  //   // Disable "Ctrl + U" and "F12" (DevTools shortcut)
-  //   const handleKeyDown = (event) => {
-  //     // Check if Ctrl (or Cmd on Mac) + U is pressed
-  //     if ((event.ctrlKey || event.metaKey) && event.key === 'u') {
-  //       event.preventDefault();
-  //     }
-  //     // Check if F12 key (DevTools) is pressed
-  //     if (event.key === 'F12') {
-  //       event.preventDefault();
-  //     }
-  //   };
-
-  //   document.addEventListener('contextmenu', handleContextMenu); // Disable right-click
-  //   document.addEventListener('keydown', handleKeyDown); // Disable Ctrl+U and F12
-
-  //   // Cleanup event listeners when the component is unmounted
-  //   return () => {
-  //     document.removeEventListener('contextmenu', handleContextMenu);
-  //     document.removeEventListener('keydown', handleKeyDown);
-  //   };
-  // }, []);
 
 
   const handleLogout = () => {
@@ -158,19 +130,18 @@ const DashboardLayout = ({ children }) => {
       cancelButtonText: 'Cancel'
     }).then((result) => {
       if (result.isConfirmed) {
-        // Clear session values
         localStorage.clear();
-        // Redirect to login page
-        navigate('/');
+        UseLogout();
+        navigate("/", { replace: true });
       }
       // If cancelled, do nothing
     });
   };
 
-  
+
   return (
     <div className="App">
-  <Toaster toastOptions={{duration: 4000, style: {fontSize: '14px', padding: '16px 24px', minWidth: '300px',textAlign: 'center', }, }} position="bottom-right"/>
+      <Toaster toastOptions={{ duration: 4000, style: { fontSize: '14px', padding: '16px 24px', minWidth: '300px', textAlign: 'center', }, }} position="bottom-right" />
       <div className="page">
         <div className="page-main">
 
@@ -362,7 +333,7 @@ const DashboardLayout = ({ children }) => {
                     </a>
                   </li>
 
-                  <li className="nav-item dropdown">
+                  {/* <li className="nav-item dropdown">
                     <a
                       href="#"
                       className={`nav-link dropdown-toggle ${isDropdownOpen ? "show" : ""}`}
@@ -403,24 +374,49 @@ const DashboardLayout = ({ children }) => {
                         </a>
                       </li>
                     </ul>
-                  </li>
+                  </li> */}
                   <li className="nav-item dropdown">
-                    <a href="/LayoutDashboard" className="nav-link" >
-                      <i className="fa fa-file"></i>&nbsp; Layout Khata
+                    <a
+                      href="#"
+                      className={`nav-link dropdown-toggle ${isDropdownOpen ? "show" : ""}`}
+                      role="button"
+                      onClick={toggleDropdown} // Toggle on click
+                      aria-expanded={isDropdownOpen}
+                    >
+                      <i className="fa fa-box"></i>&nbsp; Layout Khata
                     </a>
+                    <ul className={`dropdown-menu ${isDropdownOpen ? "show" : ""}`}>
+                      <li>
+                        <a className="dropdown-item" href="/LayoutDashboard">
+                          Dashboard
+                        </a>
+                      </li>
+                      <li>
+                        <a className="dropdown-item" href="/LayoutForm">
+                          Khata Registration
+                        </a>
+                      </li>
+                       <li>
+                        <a className="dropdown-item" href="/Release">
+                          Release Dashboard
+                        </a>
+                      </li>
+                       
+                    </ul>
                   </li>
+                
 
 
                 </ul>
 
                 {/* logout */}
-                 <div className="d-flex align-items-center">
+                <div className="d-flex align-items-center">
                   <button
                     className="btn btn-sm"
                     style={{ backgroundColor: "#fff", color: "#023e8a" }}
                     onClick={handleLogout}
                   >
-                     <i className="fa fa-sign-out"></i>
+                    <i className="fa fa-sign-out"></i>
                   </button>
 
                 </div> &nbsp;
@@ -461,7 +457,7 @@ const DashboardLayout = ({ children }) => {
 
           <main>{children}</main>
 
-          <FloatingButton onClick={handleClick} />
+          {/* <FloatingButton onClick={handleClick} /> */}
           <section id="contact">
             <div className="container">
               <div className="row" data-aos="fade-up">

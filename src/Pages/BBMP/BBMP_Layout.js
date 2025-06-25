@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import ReactDOM from 'react-dom';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import DashboardLayout from '../../Layout/DashboardLayout';
 import { useTranslation } from "react-i18next";
 import i18n from "../../localization/i18n";
@@ -48,7 +48,7 @@ export const useLoader = () => {
 
 
 const BBMP_LayoutForm = () => {
-
+ const navigate = useNavigate();
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
     const [zoomLevel] = useState(0.9);
     const [newLanguage, setNewLanguage] = useState(localStorage.getItem('selectedLanguage'));
@@ -168,7 +168,10 @@ const BBMP_LayoutForm = () => {
             console.error("Failed to fetch LKRSID data:", error);
         }
     };
-
+const handleBackToDashboard = (e) => {
+        e.preventDefault(); // Prevents the default anchor tag behavior
+        navigate("/LayoutDashboard");
+    };
     return (
         <>
             {loading && <Loader />}
@@ -180,11 +183,18 @@ const BBMP_LayoutForm = () => {
                         <div className="container mt-6">
                             <div className="card">
                                 <div className="card-header layout_btn_color" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <h5 className="card-title" style={{ margin: 0 }}>Bulk eKhata for layout to owner / developer</h5>
+                                    <h5 className="card-title" style={{ margin: 0 }}>Bulk eKhata for layout to Owner / Developer</h5>
                                     <h5 style={{ color: '#fff' }}>KRSID : {display_LKRS_ID}</h5>
                                 </div>
 
                                 <div className="card-body">
+                                     <Link
+                                        onClick={handleBackToDashboard}
+                                        style={{ textDecoration: 'none', color: '#006879', display: 'flex', alignItems: 'center' }}
+                                    >
+                                        <i className='fa fa-arrow-left' style={{ marginRight: '8px' }}></i>
+                                        Back to Dashboard
+                                    </Link>
                                     <div className="row">
                                         <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
                                             <h6>What is the type of Land on which layout is formed</h6>
@@ -203,7 +213,7 @@ const BBMP_LayoutForm = () => {
                                                         checked={selectedLandType === "convertedRevenue"}
                                                         disabled={isEPIDSectionDisabled || isSurveyNoSectionDisabled}
                                                     />
-                                                    Converted Revenue Survey No (No BBMP Khata)
+                                                    Converted Revenue Survey Number (No BBMP Khata)
                                                 </label>
                                             </div>
                                         </div>
@@ -251,11 +261,11 @@ const BBMP_LayoutForm = () => {
                             <IndividualGPSBlock areaSqft={areaSqft} LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID} totalNoofsites={totalNoofsites}
                                 isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsSitesSectionSaved={setIsSitesSectionSaved} ownerName={ownerName} />
 
-                            <ECDetailsBlock LKRS_ID={LKRS_ID} isRTCSectionSaved={isRTCSectionSaved} ownerName={ownerName} isEPIDSectionSaved={isEPIDSectionSaved} setIsECSectionSaved={setIsECSectionSaved} setIsJDAEKYCSectionSaved={setIsJDAEKYCSectionSaved} />
+                            <ECDetailsBlock LKRS_ID={LKRS_ID} isRTCSectionSaved={isRTCSectionSaved} ownerName={ownerName} isEPIDSectionSaved={isEPIDSectionSaved} setIsECSectionSaved={setIsECSectionSaved} setIsOwnerEKYCSectionSaved={setIsOwnerEKYCSectionSaved} setIsJDAEKYCSectionSaved={setIsJDAEKYCSectionSaved} />
 
                             <DeclarationBlock LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID} display_LKRS_ID={display_LKRS_ID} isRTCSectionSaved={isRTCSectionSaved}
                                 isEPIDSectionSaved={isEPIDSectionSaved} isApprovalSectionSaved={isApprovalSectionSaved} isReleaseSectionSaved={isReleaseSectionSaved}
-                                isSitesSectionSaved={isSitesSectionSaved} isECSectionSaved={isECSectionSaved} isJDAEKYCSectionSaved={isJDAEKYCSectionSaved} />
+                                isSitesSectionSaved={isSitesSectionSaved} isECSectionSaved={isECSectionSaved} isJDAEKYCSectionSaved={isJDAEKYCSectionSaved} isOwnerEKYCSectionSaved={isOwnerEKYCSectionSaved}/>
                         </div>
 
                     </div>
@@ -1025,6 +1035,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
         <div className={`layout-form-container ${loading ? 'no-interaction' : ''}`}>
             {loading && <Loader />}
             <div className='row mt-5'>
+
                 <button className='btn btn-block' onClick={fetch_details} ref={buttonRef} hidden>Click me</button>
                 {/* District */}
                 <div className="col-12 col-sm-12 col-md-6 col-lg-2 col-xl-2  mb-3" >
@@ -1125,7 +1136,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                 </div>
                 {/* Hissa No */}
                 <div className="col-12 col-sm-12 col-md-6 col-lg-3 col-xl-3 mb-3">
-                    <label className="form-label">Hissa No</label>
+                    <label className="form-label">Hissa Number</label>
                     <select
                         className="form-select"
                         value={selectedHissaNo}
@@ -1159,12 +1170,12 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                 {showTable && (
                     <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12" style={{ display: 'block' }}>
                         <hr />
-                        <h4>Revenue Survey No Details</h4>
+                        <h4>Revenue Survey Number Details</h4>
                         <div className="table-responsive">
                             <table className="table table-bordered table-striped">
                                 <thead>
                                     <tr>
-                                        <th>Survey No/Surnoc/Hissa No</th>
+                                        <th>Survey Number / Surnoc / Hissa Number</th>
                                         <th>Owner Name</th>
                                         <th>Father Name</th>
                                         <th>Extent (Acre)</th>
@@ -1179,7 +1190,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                                     ) : (
                                         data.map((item, index) => (
                                             <tr key={index}>
-                                                <td>{item.survey_no}/{item.surnoc}/{item.hissa_no}</td>
+                                                <td>{item.survey_no} / {item.surnoc} / {item.hissa_no}</td>
                                                 <td>{item.owner}</td>
                                                 <td>{item.father}</td>
                                                 <td>{item.ext_acre}</td>
@@ -1202,7 +1213,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                 {combinedData.length > 0 && (
                     <div className="col-12" ref={tableRTCRef}>
                         <div className="d-flex justify-content-between align-items-center mb-3">
-                            <h4 className=" m-0">Added Survey No Details</h4>
+                            <h4 className=" m-0">Added Survey Number Details</h4>
                             <div className="d-flex align-items-center">
                                 <label className="me-2 mb-0">Rows per page:</label>
                                 <select
@@ -1228,7 +1239,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                                         <th>Hobli</th>
                                         <th>Village</th>
                                         <th>Owner Name</th>
-                                        <th>Survey No / Surnoc / Hissa No</th>
+                                        <th>Survey Number / Surnoc / Hissa Number</th>
                                         <th>Extent (Acre.Gunta.Fgunta)</th>
                                         <th>SqFt</th>
                                         <th>SqM</th>
@@ -1319,12 +1330,12 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                             <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
                                 <div className="form-group">
                                     <label className="form-label">
-                                        Enter DC Conversion Order No <span className="mandatory_color">*</span>
+                                        Enter DC Conversion Order Number <span className="mandatory_color">*</span>
                                     </label>
                                     <input
                                         type="tel"
                                         className="form-control"
-                                        placeholder="Enter DC Conversion Order No"
+                                        placeholder="Enter DC Conversion Order Number"
                                         name="layoutApprovalNumber"
                                         value={dcNumber}
                                         onChange={handleDCNumberChange}

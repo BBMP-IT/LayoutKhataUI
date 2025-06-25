@@ -1,20 +1,24 @@
-
+//AuthContext.js
 import React, { createContext, useContext, useState } from 'react';
 
 const AuthContext = createContext(undefined);
 
 export const AuthProvider = ({ children }) => {
-    const [isAuthenticated, setIsAuthenticated] = useState(!!sessionStorage.getItem('token'));
+    const [isAuthenticated, setIsAuthenticated] = useState(!!sessionStorage.getItem('access_token'));
+
+    // console.log(isAuthenticated,"AuthMy")
+
     const UseLogin = (token) => {
         if (token) {
             setIsAuthenticated(true);
-            sessionStorage.setItem('token', token);
+            sessionStorage.setItem('access_token', token);
         }
     };
 
     const UseLogout = () => {
-        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('access_token');
         setIsAuthenticated(false);
+       
     };
 
     return (
@@ -31,4 +35,3 @@ export const useAuth = () => {
     }
     return context;
 };
-

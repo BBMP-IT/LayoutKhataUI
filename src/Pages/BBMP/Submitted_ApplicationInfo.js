@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import ReactDOM from 'react-dom';
 import DashboardLayout from '../../Layout/DashboardLayout';
 import { useTranslation } from "react-i18next";
@@ -878,11 +878,15 @@ const BBMP_SubmittedInfo = () => {
             }
         });
     }
-
+const handleBackToDashboard = (e) => {
+        e.preventDefault(); // Prevents the default anchor tag behavior
+        navigate("/LayoutDashboard");
+    };
     return (
         <>
             {loading && <Loader />}
             <DashboardLayout>
+
                 <button className='btn btn-block' onClick={fetch_details} ref={buttonRef} hidden>Click me</button>
                 <div className={`layout-form-container ${loading ? 'no-interaction' : ''}`}>
                     <div className="my-3 my-md-5">
@@ -894,6 +898,13 @@ const BBMP_SubmittedInfo = () => {
                                 </div>
 
                                 <div className="card-body">
+                                    <Link
+                                        onClick={handleBackToDashboard}
+                                        style={{ textDecoration: 'none', color: '#006879', display: 'flex', alignItems: 'center' }}
+                                    >
+                                        <i className='fa fa-arrow-left' style={{ marginRight: '8px' }}></i>
+                                        Back to Dashboard
+                                    </Link>
                                     <div className='row'>
                                         <div className='col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10 mt-3'></div>
                                         <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-3'>

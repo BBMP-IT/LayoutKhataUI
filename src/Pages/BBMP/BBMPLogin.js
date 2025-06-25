@@ -20,9 +20,13 @@ import gokLogo from '../../assets/gok.png';
 import bbmplogo from '../../assets/bbmp.png';
 
 import { getAccessToken } from '../../API/authService';
+import { ImageOutlined } from '@mui/icons-material';
+import { useAuth } from "../../AuthContext";
+
 
 const BBMPLogin = () => {
     const navigate = useNavigate();
+const { UseLogin } = useAuth();
 
     const [menuOpen, setMenuOpen] = useState(false);
     const { t, i18n } = useTranslation();
@@ -81,7 +85,7 @@ const BBMPLogin = () => {
     };
     //generate Captcha
     const generateCaptcha = () => {
-        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghjklmnopqrstuvwxyz";
         let result = "";
         for (let i = 0; i < 6; i++) {
             result += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -191,17 +195,18 @@ const BBMPLogin = () => {
 
             if (data.responseCode === "200" && data.responseStatus === true) {
                 console.log("OTP verified, calling generate_Token");
-                 
+                generate_Token();
                 console.log("Token generated, showing Swal");
+                navigate('/LayoutDashboard');
                 Swal.fire({
                     title: "OTP Verified!",
                     text: "Your OTP has been successfully verified.",
                     icon: "success",
                     confirmButtonText: "OK"
                 }).then(() => {
-                    console.log("Swal confirmed, navigating");
-                    navigate('/LayoutDashboard');
-                });
+        // Navigate *after* user clicks OK
+        navigate('/LayoutDashboard');
+    });
             }
             else {
                 setOtp('');
@@ -215,7 +220,23 @@ const BBMPLogin = () => {
             stop_loader();
         }
     };
-   
+  const generate_Token = async () => {
+    try {
+      const response = await getAccessToken();
+      if (response?.access_token) {
+        localStorage.clear();
+        localStorage.setItem('access_token', response.access_token);
+        UseLogin(response.access_token);
+        return true;  // Indicate success
+      } else {
+        console.error("No access token received");
+        return false;
+      }
+    } catch (err) {
+      console.error("Error generating token", err);
+      return false;
+    }
+  };
 
 
     //resend OTP btn
@@ -227,14 +248,13 @@ const BBMPLogin = () => {
                 `${config.apiLoginBaseUrl}${config.endpoints.sendOTP}`,
                 {
                     mobileNumber: phoneNumber,
-                    OTP: otp,
-                    source: "e-Aasthi",
-                    UserType: "",
-                    ipaddress: "10.10.010.10"
+                    source: "e-Aasthi"
                 },
                 {
                     headers: {
                         "Content-Type": "application/json",
+                        'username': config.credentials.username,
+                        'password': config.credentials.password
                     }
                 }
             );
@@ -243,27 +263,39 @@ const BBMPLogin = () => {
 
             if (data.responseCode === "200" && data.responseStatus === true) {
                 Swal.fire({
-                    title: "OTP Verified!",
-                    text: "Your OTP has been successfully verified.",
+                    title: "OTP Sent!",
+                    text: data.responseMessage || "A new OTP has been sent to your mobile number.",
                     icon: "success",
                     confirmButtonText: "OK"
                 }).then(() => {
-                    setTimer(60);
+                    setOtp("");  // Clear previous OTP
+                    setTimer(60);  // Reset timer (or whatever value you want)
                     setIsResendEnabled(false);
+                    setTimeout(() => {
+                        otpRef.current?.focus();
+                    }, 100);
                 });
             } else {
-                setOtp('');
-                otpRef.current?.focus();
-                setOtpError("Invalid OTP. Please try again.");
+                Swal.fire({
+                    title: "Resend Failed!",
+                    text: "Failed to resend OTP. Please try again.",
+                    icon: "error",
+                    confirmButtonText: "OK"
+                });
             }
         } catch (error) {
-            console.error("Error verifying OTP:", error);
-            setOtpError("An error occurred while verifying OTP. Please try again.");
+            console.error("Error resending OTP:", error);
+            Swal.fire({
+                title: "Error!",
+                text: "An error occurred while resending OTP. Please try again.",
+                icon: "error",
+                confirmButtonText: "OK"
+            });
         } finally {
             stop_loader();
         }
-
     };
+
     //change phone number link function
     const handleChangePhoneNumber = () => {
         setShowOTPFields(false);
@@ -515,7 +547,7 @@ const BBMPLogin = () => {
                                                 {otpError && <p style={{ color: "red" }}>{otpError}</p>}
 
 
-                                                {isResendEnabled ? (
+                                                {isResendEnabled && (
                                                     <div className="input-group mb-3">
                                                         <button
                                                             type="button"
@@ -525,20 +557,26 @@ const BBMPLogin = () => {
                                                         >
                                                             {t('translation.buttons.resendOTP')}
                                                         </button></div>
-                                                ) : (
-                                                    <div className="input-group mb-3">
-                                                        <span>
-                                                            {t('translation.LoginForm.otp.otpTimer')} {timer} {t('translation.LoginForm.otp.seconds')}
-                                                        </span>
-                                                        <button
-                                                            type="button"
-                                                            className="btn w-100"
-                                                            style={{ background: "linear-gradient(45deg,#0077b6,#023e8a)", color: "#fff" }}
-                                                            onClick={() => handleVerifyOTP(phoneNumber)}
-                                                        >
-                                                            {t('translation.buttons.verifyOTP')}
-                                                        </button></div>
+
+
                                                 )}
+                                                {timer > 0 && (
+                                                    <span>
+                                                        {t('translation.LoginForm.otp.otpTimer')} {timer} {t('translation.LoginForm.otp.seconds')}
+                                                    </span>
+                                                )}
+                                                <div className="input-group mb-3">
+                                                    {/* <span>
+                                                            {t('translation.LoginForm.otp.otpTimer')} {timer} {t('translation.LoginForm.otp.seconds')}
+                                                        </span> */}
+                                                    <button
+                                                        type="button"
+                                                        className="btn w-100"
+                                                        style={{ background: "linear-gradient(45deg,#0077b6,#023e8a)", color: "#fff" }}
+                                                        onClick={() => handleVerifyOTP(phoneNumber)}
+                                                    >
+                                                        {t('translation.buttons.verifyOTP')}
+                                                    </button></div>
                                             </>
                                         )}
                                         <br />

@@ -28,7 +28,7 @@ const ReleaseEKYCResultHandler = () => {
           ekycStatus: status,
           ekycVaultRefNo: vaultrefno
         },
-          `${config.redirectBaseURL}/Release`
+          `${config.redirectBaseURL}`
       );
     }
 
@@ -39,7 +39,8 @@ const ReleaseEKYCResultHandler = () => {
 
   // Handler for the "Go Back" button
   const handleGoBack = () => {
-    navigate('/Release');
+   
+    window.location.href = `${config.redirectBaseURL}/Release`;
   };
 
   return (

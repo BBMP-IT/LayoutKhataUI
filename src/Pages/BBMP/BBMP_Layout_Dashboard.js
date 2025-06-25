@@ -157,9 +157,10 @@ const BBMP_Layout_Dashboard = () => {
     const initDashboard = async () => {
       try {
         start_loader();
-        const tokenGenerated = await generate_Token();
+        let token = localStorage.getItem('access_token');
+        // const tokenGenerated = await generate_Token();
 
-        if (!tokenGenerated) {
+        if (!token) {
           console.error("Token generation failed. Dashboard data not fetched.");
           return;
         }
@@ -203,7 +204,7 @@ const BBMP_Layout_Dashboard = () => {
   const handleClick = async () => {
     // const success = await generate_Token();
     // if (success) {
-
+localStorage.removeItem('LKRSID');
     navigate('/LayoutForm');
     // } else {
     //   // Optionally show an error alert here
@@ -216,143 +217,144 @@ const BBMP_Layout_Dashboard = () => {
     <DashboardLayout>
       <div className={`layout-form-container ${loading ? 'no-interaction' : ''}`}>
         {loading && <Loader />}
-      <div className="container pt-4 pb-4">
+        <div className="container pt-4 pb-4">
 
-        {/* Dashboard Cards */}
-        <div className="row">
-          <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
-            <div className="bg-white shadow-md rounded-lg p-4 border border-transparent hover:border-blue-500 transition-all duration-300" style={{ borderRadius: '0.8rem' }}>
-              <center>
-                <h3 className="mb-2 text-black">Create New</h3>
-                <button
-                  className="mt-4 px-4 py-2 bg-blue-600 text-primary rounded hover:bg-blue-600" onClick={handleClick}
-                >
-                  <i className="fa fa-plus"></i>
-                </button>
-              </center>
-            </div>
-          </div>
-          <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
-            <div className="bg-white shadow-md rounded-lg p-4 border border-transparent hover:border-blue-500 transition-all duration-300" style={{ borderRadius: '0.8rem' }}>
-              <center>
-                <h3 className="mb-2 text-black">Completed ({dashboardData.completedCount}) </h3>
-                <i className="fa fa-check-circle mt-4 px-4 py-2 bg-blue-600 text-success rounded hover:bg-blue-600" style={{ fontSize: '30px' }}></i>
-              </center>
-            </div>
-          </div>
-          <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
-            <div className="bg-white shadow-md rounded-lg p-4 border border-transparent hover:border-blue-500 transition-all duration-300" style={{ borderRadius: '0.8rem' }}>
-              <center>
-                <h3 className="mb-2 text-black">Submitted ({dashboardData.submittedCount}) </h3>
-                <i className="fa fa-clock mt-4 px-4 py-2 bg-blue-600 text-warning rounded hover:bg-blue-600" style={{ fontSize: '30px' }}></i>
-              </center>
-            </div>
-          </div>
-          <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
-            <div className="bg-white shadow-md rounded-lg p-4 border border-transparent hover:border-blue-500 transition-all duration-300" style={{ borderRadius: '0.8rem' }}>
-              <center>
-                <h3 className="mb-2 text-black">Incomplete ({dashboardData.incompletedCount})</h3>
-                <i className="fa fa-recycle mt-4 px-4 py-2 bg-blue-600 text-danger rounded hover:bg-blue-600" style={{ fontSize: '30px' }}></i>
-              </center>
-            </div>
-          </div>
-        </div>
-        <br />
-        {/* Data Table */}
-        <DataTable
-          title={
-            <div className="text-center">
-              <div className="row">
-                <div className="col-3">
-                  <div className="form-check">
-                    <label className="form-check-label fs-6">
-                      <input
-                        className="form-check-input"
-                        type="radio"
-                        name="levelOptions"
-                        value="1"
-                        checked={selectedLevel === 1}
-                        onChange={() => handleLevelChange(1)}
-                      />
-                      All ({dashboardData.allCount})
-                    </label>
-                  </div>
-                </div>
-
-                <div className="col-3">
-                  <div className="form-check">
-                    <label className="form-check-label fs-6">
-                      <input
-                        className="form-check-input"
-                        type="radio"
-                        name="levelOptions"
-                        value="2"
-                        checked={selectedLevel === 2}
-                        onChange={() => handleLevelChange(2)}
-                      />
-                      Incomplete ({dashboardData.incompletedCount})
-                    </label>
-                  </div>
-                </div>
-
-                <div className="col-3">
-                  <div className="form-check">
-                    <label className="form-check-label fs-6">
-                      <input
-                        className="form-check-input"
-                        type="radio"
-                        name="levelOptions"
-                        value="3"
-                        checked={selectedLevel === 3}
-                        onChange={() => handleLevelChange(3)}
-                      />
-                      Submitted ({dashboardData.submittedCount})
-                    </label>
-                  </div>
-                </div>
-
-                <div className="col-3">
-                  <div className="form-check">
-                    <label className="form-check-label fs-6">
-                      <input
-                        className="form-check-input"
-                        type="radio"
-                        name="levelOptions"
-                        value="4"
-                        checked={selectedLevel === 4}
-                        onChange={() => handleLevelChange(4)}
-                      />
-                      Completed ({dashboardData.completedCount})
-                    </label>
-                  </div>
-                </div>
+          {/* Dashboard Cards */}
+          <div className="row">
+            <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
+              <div className="bg-white shadow-md rounded-lg p-4 border border-transparent hover:border-blue-500 transition-all duration-300" style={{ borderRadius: '0.8rem' }}>
+                <center>
+                  <h3 className="mb-2 text-black">Create New Request</h3>
+                  <button
+                    className="mt-4 px-4 py-2 bg-blue-600 text-primary rounded hover:bg-blue-600" onClick={handleClick}
+                  >
+                    <i className="fa fa-plus"></i>
+                  </button>
+                </center>
               </div>
-
             </div>
-          }
-          columns={columns}
-          data={records}
-          pagination
-          customStyles={customStyles}
-          paginationServer={false}
-          paginationDefaultPage={currentPage}
-          paginationPerPage={rowsPerPage}
-          onChangePage={(page) => setCurrentPage(page)}
-          onChangeRowsPerPage={(newPerPage, page) => {
-            setRowsPerPage(newPerPage);
-            setCurrentPage(page);
-          }}
-          highlightOnHover
-          striped
+            <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
+              <div className="bg-white shadow-md rounded-lg p-4 border border-transparent hover:border-blue-500 transition-all duration-300" style={{ borderRadius: '0.8rem' }}>
+                <center>
+                  <h3 className="mb-2 text-black">Completed ({dashboardData.completedCount}) </h3>
+                  <i className="fa fa-check-circle mt-4 px-4 py-2 bg-blue-600 text-success rounded hover:bg-blue-600" style={{ fontSize: '30px' }}></i>
+                </center>
+              </div>
+            </div>
+            <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
+              <div className="bg-white shadow-md rounded-lg p-4 border border-transparent hover:border-blue-500 transition-all duration-300" style={{ borderRadius: '0.8rem' }}>
+                <center>
+                  <h3 className="mb-2 text-black">Submitted ({dashboardData.submittedCount}) </h3>
+                  <i className="fa fa-clock mt-4 px-4 py-2 bg-blue-600 text-warning rounded hover:bg-blue-600" style={{ fontSize: '30px' }}></i>
+                </center>
+              </div>
+            </div>
+            <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
+              <div className="bg-white shadow-md rounded-lg p-4 border border-transparent hover:border-blue-500 transition-all duration-300" style={{ borderRadius: '0.8rem' }}>
+                <center>
+                  <h3 className="mb-2 text-black">Incomplete ({dashboardData.incompletedCount})</h3>
+                  <i className="fa fa-recycle mt-4 px-4 py-2 bg-blue-600 text-danger rounded hover:bg-blue-600" style={{ fontSize: '30px' }}></i>
+                </center>
+              </div>
+            </div>
+          </div>
+          <br />
+          {/* Data Table */}
+          <DataTable
+            title={
+              <div className="text-center">
+                <div className="row">
+                  <div className="col-3">
+                    <div className="form-check">
+                      <label className="form-check-label fs-6">
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          name="levelOptions"
+                          value="1"
+                          checked={selectedLevel === 1}
+                          onChange={() => handleLevelChange(1)}
+                        />
+                        All ({dashboardData.allCount})
+                      </label>
+                    </div>
+                  </div>
+                  <div className="col-3">
+                    <div className="form-check">
+                      <label className="form-check-label fs-6">
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          name="levelOptions"
+                          value="4"
+                          checked={selectedLevel === 4}
+                          onChange={() => handleLevelChange(4)}
+                        />
+                        Completed ({dashboardData.completedCount})
+                      </label>
+                    </div>
+                  </div>
+                  <div className="col-3">
+                    <div className="form-check">
+                      <label className="form-check-label fs-6">
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          name="levelOptions"
+                          value="3"
+                          checked={selectedLevel === 3}
+                          onChange={() => handleLevelChange(3)}
+                        />
+                        Submitted ({dashboardData.submittedCount})
+                      </label>
+                    </div>
+                  </div>
+                  <div className="col-3">
+                    <div className="form-check">
+                      <label className="form-check-label fs-6">
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          name="levelOptions"
+                          value="2"
+                          checked={selectedLevel === 2}
+                          onChange={() => handleLevelChange(2)}
+                        />
+                        Incomplete ({dashboardData.incompletedCount})
+                      </label>
+                    </div>
+                  </div>
 
-        />
+                  
+
+
+                </div>
+
+              </div>
+            }
+            columns={columns}
+            data={records}
+            pagination
+            customStyles={customStyles}
+            paginationServer={false}
+            paginationDefaultPage={currentPage}
+            paginationPerPage={rowsPerPage}
+            onChangePage={(page) => setCurrentPage(page)}
+            onChangeRowsPerPage={(newPerPage, page) => {
+              setRowsPerPage(newPerPage);
+              setCurrentPage(page);
+            }}
+            highlightOnHover
+            striped
+
+          />
 
 
 
 
 
 
-      </div>
+        </div>
       </div>
     </DashboardLayout>
   );
