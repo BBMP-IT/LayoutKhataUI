@@ -929,7 +929,7 @@ const buttonRef = useRef(null);
         const totalAddedSites = allSites.length;
 
         if (totalAddedSites == totalSitesCount) {
-            setIsAddDisabled(true);
+            // setIsAddDisabled(true);
         }
 
         if (totalAddedSites >= totalSitesCount) {
@@ -1133,7 +1133,7 @@ const buttonRef = useRef(null);
         if (totalSitesCount !== totalAddedSites) return;
 
         if (totalSitesCount === totalAddedSites) {
-            setIsAddDisabled(true);
+            // setIsAddDisabled(true);
             setIsSitesSectionSaved(true);
             Swal.fire({
                 title: "Success!",
@@ -1147,7 +1147,7 @@ const buttonRef = useRef(null);
     };
 
     const Edit_Handler = () => {
-        setIsAddDisabled(false);
+        // setIsAddDisabled(false);
     };
     //map block
     const mapRef = useRef(null);
@@ -1589,7 +1589,7 @@ const buttonRef = useRef(null);
             if (Array.isArray(response)) {
                 setAllSites(response);
                 setIsSitesSectionSaved(true);
-                setIsAddDisabled(true);
+                // setIsAddDisabled(true);
 
                 const totalSitesFromAPI = response[0]?.lkrS_NUMBEROFSITES;
                 localStorage.setItem("NUMBEROFSITES", totalSitesFromAPI);

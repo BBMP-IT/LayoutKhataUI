@@ -11,7 +11,7 @@ const apiService = {
       if (response.status === 200) {
         return response.data;
       } else {
-        alert("something went wrong!");
+        
       }
 
     } catch (error) {
@@ -27,7 +27,7 @@ const apiService = {
       if (response.status === 200) {
         return response.data;
       } else {
-        alert("something went wrong!");
+        
       }
     } catch (error) {
       console.error(`GET request to ${url} failed:`, error);

@@ -412,12 +412,14 @@ const JDA_EKYCBlock = ({ LKRS_ID, jdaID, setIsJDAEKYCSectionSaved }) => {
                 const OwnerNumber = 1;
                 const BOOK_APP_NO = 2;
                 const PROPERTY_CODE = 1;
+                const redirectSource = "";
 
                 // Pass them to your API
                 const response = await ekyc_Details({
                     OwnerNumber,
                     BOOK_APP_NO,
-                    PROPERTY_CODE
+                    PROPERTY_CODE,
+                    redirectSource
                 });
 
                 const resultUrl = response?.ekycRequestUrl;
@@ -471,6 +473,14 @@ const JDA_EKYCBlock = ({ LKRS_ID, jdaID, setIsJDAEKYCSectionSaved }) => {
         if (ekyc_Status === false && phone_Status === false) {
             Swal.fire({
                 text: "Please do a JDA / JDA Representative EKYC",
+                icon: "error",
+                confirmButtonText: "OK",
+            });
+            return
+        }
+        if(jda_ID === null){
+            Swal.fire({
+                text: "Please save the EC or JDA Registration block before proceeding with JDA eKYC.",
                 icon: "error",
                 confirmButtonText: "OK",
             });

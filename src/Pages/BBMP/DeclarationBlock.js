@@ -1570,7 +1570,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                                                         </div>
                                                     </div></div>
                                             )}
-                                            {isRegistered === true && (
+                                            {hasJDA === true && isRegistered === true && (
                                                 <>
                                                     <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6" >
                                                         <label className='form-label'>Enter JDA registered Deed Number <span className='mandatory_color'>*</span></label>
@@ -1595,7 +1595,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                                                     </div>
                                                 </>
                                             )}
-                                            {isRegistered === false && (
+                                            {hasJDA === true && isRegistered === false && (
                                                 <>
 
 
@@ -1644,7 +1644,9 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                                                     )}
                                                 </>
                                             )}
-
+{hasJDA === false && (
+                                <></>
+                            )}
                                         </div>
 
 

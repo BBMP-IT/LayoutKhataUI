@@ -59,6 +59,7 @@ const ReleaseSelection = () => {
     if (display_LKRS_ID && LKRS_ID) {
       handleSearchClick(display_LKRS_ID);  // call the method if LKRS_ID exists
     }
+    fetchFinalReleasedSites(LKRS_ID);
   }, [LKRS_ID, display_LKRS_ID]);
   useEffect(() => {
     if (originalTotalRecords === 0 && (releaseData.length > 0 || finalApiList.length > 0)) {
@@ -2163,6 +2164,7 @@ const ReleaseSelection = () => {
     if (buttonRef.current) {
       setDropdownWidth(buttonRef.current.offsetWidth + "px");
     }
+    
   }, [isDropdownOpen]); // update width when dropdown opens
   const fetchOwners = async () => {
     let trimmedLKRSID = localLKRSID;
@@ -2189,6 +2191,9 @@ const ReleaseSelection = () => {
   };
   const [isEKYCCompleted, setIsEKYCCompleted] = useState(false);
   const [ekyc_Data, setEkyc_Data] = useState(null);
+  const [isEKYCVerified, setIsEKYCVerified] = useState(false);
+
+
   useEffect(() => {
     const handleMessage = (event) => {
       if (event.origin !== `${config.redirectBaseURL}`) return;
@@ -2196,9 +2201,10 @@ const ReleaseSelection = () => {
       const data = event.data;
       setEkyc_Data(data);
 
-      if (window.location.pathname !== "/Release") return;
+      if (window.location.pathname.toLowerCase() !== "/release") return;
 
       if (data.ekycStatus === "Success") {
+        setIsEKYCVerified(true);  //  Disable button (eKYC verified)
         Swal.fire({
           title: 'eKYC Result',
           text: `Status: ${data.ekycStatus}`,
@@ -2212,6 +2218,7 @@ const ReleaseSelection = () => {
           }
         });
       } else if (data.ekycStatus === "Failure") {
+        setIsEKYCVerified(false);  //  Ensure button stays enabled for retry
         Swal.fire('eKYC Result', `Status: ${data.ekycStatus}`, 'error');
       }
     };
@@ -2241,12 +2248,14 @@ const ReleaseSelection = () => {
         const OwnerNumber = selectedOwner.id;
         const BOOK_APP_NO = 2;
         const PROPERTY_CODE = 1;
+        const redirectSource = "RLS";
 
         // Pass them to your API
         const response = await ekyc_Details({
           OwnerNumber,
           BOOK_APP_NO,
-          PROPERTY_CODE
+          PROPERTY_CODE,
+          redirectSource
         });
 
         const resultUrl = response?.ekycRequestUrl;
@@ -2302,7 +2311,7 @@ const ReleaseSelection = () => {
         {loading && <Loader />}
         <div className="my-3 my-md-5">
           <div className="container mt-5">
-            
+
             {/* Release Table */}
             <div className="card">
               <div className="card-header layout_btn_color">
@@ -2340,7 +2349,7 @@ const ReleaseSelection = () => {
                       <option value="40*30*30">40 * 30 * 30</option>
                     </select>
                   </div>
-<h1>${sixtyPercentCount}</h1>
+
                 </div>
                 {(lkrsTableData.lkrS_DISPLAYID && approvalTableData.approvalOrderNo) && (
                   <>
@@ -2611,183 +2620,191 @@ const ReleaseSelection = () => {
                       </div>
                       <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-5" >
                         <label className="form-label"></label>
-                        <button className='btn btn-info btn-block' disabled={!selectedOwner} onClick={handleDoEKYC}>Do eKYC</button>
+                        <button className='btn btn-info btn-block' disabled={!selectedOwner || isEKYCVerified} onClick={handleDoEKYC}>Do eKYC</button>
                       </div>
-                    </div>
-                  </div>
-                )}
-
-                <div className="mt-5" >
-                  <hr className='mt-1' />
-                  <h6 className='fw-normal fs-5' style={{ color: '#0077b6' }}>{t('translation.BDA.Subdivision1.heading')}</h6>
-                  <hr className='mt-1' style={{ border: '1px dashed #0077b6' }} />
-                  <div className="row">
-                    {/* release Order Number */}
-                    <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
-                      <div className="form-group">
-                        <label className="form-label">
-                          {t('translation.BDA.Subdivision1.orderNo')} <span className="mandatory_color">*</span>
-                        </label>
-                        <input
-                          type="tel"
-                          className="form-control"
-                          placeholder={t('translation.BDA.Subdivision1.orderNoPlaceholder')}
-                          name="layoutOrderNumber"  // <-- Corrected here
-                          value={release_formData.layoutOrderNumber}
-                          onChange={handleOrderChange}
-                          disabled={!isOrder_EditingArea}
-                        />
-                        {release_errors.layoutOrderNumber && (
-                          <small className="text-danger">{release_errors.layoutOrderNumber}</small>
-                        )}
-
-                      </div>
-                    </div>
-                    {/* Date of order */}
-                    <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
-                      <div className="form-group">
-                        <label className="form-label">
-                          {t('translation.BDA.Subdivision1.dateofOrder')} <span className="mandatory_color">*</span>
-                        </label>
-                        <input
-                          type="date"
-                          className="form-control"
-                          name="dateOfOrder"
-                          value={release_formData.dateOfOrder}
-                          max={new Date().toISOString().split("T")[0]}
-                          onChange={handleOrderChange}
-                          disabled={!isOrder_EditingArea} // Disable when not editing
-                        />
-                        {release_errors.dateOfOrder && (
-                          <small className="text-danger">{release_errors.dateOfOrder}</small>
-                        )}
-                      </div>
-                    </div>
-                    {/* Scan & Upload Layout release order */}
-                    <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
-                      <div className="form-group">
-                        <label className="form-label">
-                          {t('translation.BDA.Subdivision1.scanUploadOrder')}
-                          <span className="mandatory_color">*</span>
-                        </label>
-                        <input
-                          type="file"
-                          accept=".pdf"
-                          className="form-control"
-                          onChange={handleFilereleaseOrderChange}
-                          ref={fileReleaseOrderInputRef}
-                          disabled={!isOrder_EditingArea} // Disable when not editing
-                        />
-                        {release_formData.release_Order && releaseOrderURL && (
-                          <div className="mt-2">
-                            <div
-                              style={{
-                                width: "120px",
-                                height: "120px",
-                                border: "1px solid #ccc",
-                                borderRadius: "8px",
-                                overflow: "hidden",
-                              }}
-                            >
-                              <iframe
-                                src={releaseOrderURL}
-                                title="Release Order"
-                                width="100%"
-                                height="100%"
-                                style={{ cursor: "pointer", border: "none" }}
-                                onClick={() =>
-                                  window.open(releaseOrderURL, "_blank")
-                                }
-                              />
-                            </div>
-                            <p className="mt-1" style={{ fontSize: "0.875rem" }}>
-                              Current File:{" "}
-                              <a
-                                href={releaseOrderURL}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                style={{
-                                  textDecoration: "underline",
-                                  color: "#007bff",
-                                  fontSize: "0.875rem",
-                                }}
-                              >
-                                {release_formData.release_Order.name}
-                              </a>
-                            </p>
+                      <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 mt-5">
+                        {isEKYCVerified && (
+                          <div className="mb-2 text-success font-weight-bold">
+                            eKYC Verified!
                           </div>
                         )}
-                        <span className="note_color">
-                          {t('translation.BDA.Subdivision1.noteFile')}
-                        </span>
-                        <br />
-                        {release_errors.release_Order && (
-                          <small className="text-danger">{release_errors.release_Order}</small>
-                        )}
                       </div>
                     </div>
-                    {/* release Authority */}
-                    <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
-                      <div className="form-group">
-                        <label className="form-label">
-                          {t('translation.BDA.Subdivision1.designation')}
-                          <span className="mandatory_color">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          placeholder={t('translation.BDA.Subdivision1.placeholderDesignation')}
-                          name="orderAuthority"
-                          value={release_formData.orderAuthority}
-                          onChange={handleOrderChange}
-                          disabled={!isOrder_EditingArea} // Disable when not editing
-                        />
-                        {release_errors.orderAuthority && (
-                          <small className="text-danger">{release_errors.orderAuthority}</small>
-                        )}
-                      </div>
-                    </div>
+                    <div className="mt-5" >
+                      <hr className='mt-1' />
+                      <h6 className='fw-normal fs-5' style={{ color: '#0077b6' }}>{t('translation.BDA.Subdivision1.heading')}</h6>
+                      <hr className='mt-1' style={{ border: '1px dashed #0077b6' }} />
+                      <div className="row">
+                        {/* release Order Number */}
+                        <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                          <div className="form-group">
+                            <label className="form-label">
+                              {t('translation.BDA.Subdivision1.orderNo')} <span className="mandatory_color">*</span>
+                            </label>
+                            <input
+                              type="tel"
+                              className="form-control"
+                              placeholder={t('translation.BDA.Subdivision1.orderNoPlaceholder')}
+                              name="layoutOrderNumber"  // <-- Corrected here
+                              value={release_formData.layoutOrderNumber}
+                              onChange={handleOrderChange}
+                              disabled={!isOrder_EditingArea}
+                            />
+                            {release_errors.layoutOrderNumber && (
+                              <small className="text-danger">{release_errors.layoutOrderNumber}</small>
+                            )}
+
+                          </div>
+                        </div>
+                        {/* Date of order */}
+                        <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                          <div className="form-group">
+                            <label className="form-label">
+                              {t('translation.BDA.Subdivision1.dateofOrder')} <span className="mandatory_color">*</span>
+                            </label>
+                            <input
+                              type="date"
+                              className="form-control"
+                              name="dateOfOrder"
+                              value={release_formData.dateOfOrder}
+                              max={new Date().toISOString().split("T")[0]}
+                              onChange={handleOrderChange}
+                              disabled={!isOrder_EditingArea} // Disable when not editing
+                            />
+                            {release_errors.dateOfOrder && (
+                              <small className="text-danger">{release_errors.dateOfOrder}</small>
+                            )}
+                          </div>
+                        </div>
+                        {/* Scan & Upload Layout release order */}
+                        <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                          <div className="form-group">
+                            <label className="form-label">
+                              {t('translation.BDA.Subdivision1.scanUploadOrder')}
+                              <span className="mandatory_color">*</span>
+                            </label>
+                            <input
+                              type="file"
+                              accept=".pdf"
+                              className="form-control"
+                              onChange={handleFilereleaseOrderChange}
+                              ref={fileReleaseOrderInputRef}
+                              disabled={!isOrder_EditingArea} // Disable when not editing
+                            />
+                            {release_formData.release_Order && releaseOrderURL && (
+                              <div className="mt-2">
+                                <div
+                                  style={{
+                                    width: "120px",
+                                    height: "120px",
+                                    border: "1px solid #ccc",
+                                    borderRadius: "8px",
+                                    overflow: "hidden",
+                                  }}
+                                >
+                                  <iframe
+                                    src={releaseOrderURL}
+                                    title="Release Order"
+                                    width="100%"
+                                    height="100%"
+                                    style={{ cursor: "pointer", border: "none" }}
+                                    onClick={() =>
+                                      window.open(releaseOrderURL, "_blank")
+                                    }
+                                  />
+                                </div>
+                                <p className="mt-1" style={{ fontSize: "0.875rem" }}>
+                                  Current File:{" "}
+                                  <a
+                                    href={releaseOrderURL}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{
+                                      textDecoration: "underline",
+                                      color: "#007bff",
+                                      fontSize: "0.875rem",
+                                    }}
+                                  >
+                                    {release_formData.release_Order.name}
+                                  </a>
+                                </p>
+                              </div>
+                            )}
+                            <span className="note_color">
+                              {t('translation.BDA.Subdivision1.noteFile')}
+                            </span>
+                            <br />
+                            {release_errors.release_Order && (
+                              <small className="text-danger">{release_errors.release_Order}</small>
+                            )}
+                          </div>
+                        </div>
+                        {/* release Authority */}
+                        <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                          <div className="form-group">
+                            <label className="form-label">
+                              {t('translation.BDA.Subdivision1.designation')}
+                              <span className="mandatory_color">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              className="form-control"
+                              placeholder={t('translation.BDA.Subdivision1.placeholderDesignation')}
+                              name="orderAuthority"
+                              value={release_formData.orderAuthority}
+                              onChange={handleOrderChange}
+                              disabled={!isOrder_EditingArea} // Disable when not editing
+                            />
+                            {release_errors.orderAuthority && (
+                              <small className="text-danger">{release_errors.orderAuthority}</small>
+                            )}
+                          </div>
+                        </div>
 
 
-                    <div className='col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10'></div>
-                    {/* edit button */}
-                    {/* <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 ">
+                        <div className='col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10'></div>
+                        {/* edit button */}
+                        {/* <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 ">
                                 <div className="form-group">
                                     <button className="btn btn-info btn-block" disabled={!isOrderEditing} onClick={handleEditRelease}>
                                         Edit
                                     </button>
                                 </div>
                             </div> */}
-                    {/* Save Button */}
-                    <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 ">
-                      <div className="form-group">
-                        <button className="btn btn-success btn-block" onClick={handleOrderSave} disabled={!isOrder_EditingArea}>
-                          Save and continue
-                        </button>
-                      </div>
-                    </div>
-                    {/* Save Button */}
-                    <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
-                      <div className="form-group">
-                        {order_records.length > 0 && (
-                          <div className="mt-4">
-                            <h4>{t('translation.BDA.table1.heading')}</h4>
-                            <DataTable
-                              columns={order_columns}
-                              data={order_records}
-                              customStyles={customStyles}
-                              pagination
-                              highlightOnHover
-                              striped
-                            />
+                        {/* Save Button */}
+                        <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 ">
+                          <div className="form-group">
+                            <button className="btn btn-success btn-block" onClick={handleOrderSave} disabled={!isOrder_EditingArea}>
+                              Save and continue
+                            </button>
                           </div>
-                        )}
+                        </div>
+                        {/* Save Button */}
+                        <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+                          <div className="form-group">
+                            {order_records.length > 0 && (
+                              <div className="mt-4">
+                                <h4>{t('translation.BDA.table1.heading')}</h4>
+                                <DataTable
+                                  columns={order_columns}
+                                  data={order_records}
+                                  customStyles={customStyles}
+                                  pagination
+                                  highlightOnHover
+                                  striped
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        {/* Table to Display Records */}
+
                       </div>
                     </div>
-                    {/* Table to Display Records */}
-
                   </div>
-                </div>
+                )}
+
+
 
                 {showNextReleaseForm && (
                   <div className="card mt-4">

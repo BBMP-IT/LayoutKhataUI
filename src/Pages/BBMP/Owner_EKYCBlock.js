@@ -168,7 +168,8 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
     const handleResendOtp = async () => {
         start_loader();
         try {
-            const response = await sendOtpAPI(phone);
+             const phonenumber = "9999999999";
+            const response = await sendOtpAPI(phonenumber);
             if (response.responseStatus === true) {
                 Swal.fire({
                     text: response.responseMessage,
@@ -382,12 +383,14 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName }) => {
                 const OwnerNumber = selectedOwner.id;
                 const BOOK_APP_NO = 2;
                 const PROPERTY_CODE = 1;
+                const redirectSource = "";
 
                 // Pass them to your API
                 const response = await ekyc_Details({
                     OwnerNumber,
                     BOOK_APP_NO,
-                    PROPERTY_CODE
+                    PROPERTY_CODE, 
+                    redirectSource
                 });
 
                 const resultUrl = response?.ekycRequestUrl;

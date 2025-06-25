@@ -457,9 +457,9 @@ export const jdaEKYC_Details = async (level, LKRSID) => {
 };
 
 //DO EKYC API
-export const ekyc_Details = async ({ OwnerNumber, BOOK_APP_NO, PROPERTY_CODE }) => {
+export const ekyc_Details = async ({ OwnerNumber, BOOK_APP_NO, PROPERTY_CODE, redirectSource }) => {
   try {
-    const query = `?OwnerNumber=${OwnerNumber}&BOOK_APP_NO=${BOOK_APP_NO}&PROPERTY_CODE=${PROPERTY_CODE}`;
+    const query = `?OwnerNumber=${OwnerNumber}&BOOK_APP_NO=${BOOK_APP_NO}&PROPERTY_CODE=${PROPERTY_CODE}&redirectSource=${redirectSource}`;
     const url = config.endpoints.ekyc_request + query;
 
     const response = await apiService.postRequest(url); // No payload needed

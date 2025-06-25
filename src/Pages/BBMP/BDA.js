@@ -340,7 +340,8 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                     const response = await deleteApprovalInfo(deletePayload);
 
                     if (response.responseStatus === true) {
-                        Swal.fire(response.responseMessage, "success");
+                        Swal.fire(response.responseMessage,"", "success");
+                        localStorage.removeItem('totalNoOfSites');
                         setisApprovalEditing(false);
                         setIsEditing(true);
                         fetchApprovalList(localLKRSID);
@@ -1333,8 +1334,6 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                                         <option value="">Select Layout Approval Authority</option>
                                         <option value="1">BDA</option>
                                         <option value="2">BIAAPA </option>
-                                        <option value="2">BMRDA</option>
-                                        <option value="3">BBMP</option>
                                     </select>
 
                                 </div>

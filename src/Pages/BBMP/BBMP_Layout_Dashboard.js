@@ -104,7 +104,6 @@ const BBMP_Layout_Dashboard = () => {
 
 
   const dashboard_Data = async (level) => {
-    console.log("selectedLevel", selectedLevel);
     try {
       start_loader();
       const response = await fetch_DashboarddataDetails(level);
@@ -215,6 +214,8 @@ const BBMP_Layout_Dashboard = () => {
 
   return (
     <DashboardLayout>
+      <div className={`layout-form-container ${loading ? 'no-interaction' : ''}`}>
+        {loading && <Loader />}
       <div className="container pt-4 pb-4">
 
         {/* Dashboard Cards */}
@@ -351,6 +352,7 @@ const BBMP_Layout_Dashboard = () => {
 
 
 
+      </div>
       </div>
     </DashboardLayout>
   );
