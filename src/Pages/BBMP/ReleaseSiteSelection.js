@@ -11,8 +11,9 @@ import config from '../../Config/config';
 
 
 import {
-  fetch_LKRSID, fetch_releasePercentageDetails, individualSiteListAPI, final_Release_Sites, listApprovalInfo, fileUploadAPI, listReleaseInfo, fileListAPI, insertReleaseInfo,
-  deleteReleaseInfo, ownerEKYC_Details, ekyc_Details, ekyc_Response
+  fetch_LKRSID, fetch_releasePercentageDetails, individualSiteListAPI, final_Release_Sites, listApprovalInfo, fileUploadAPI, listReleaseInfo, fileListAPI,
+  insertReleaseInfo,
+  deleteReleaseInfo, ownerEKYC_Details, ekyc_Details, ekyc_Response, ekyc_insertReleaseDetails
 } from '../../API/authService';
 
 export const useLoader = () => {
@@ -25,7 +26,7 @@ export const useLoader = () => {
 };
 
 const ReleaseSelection = () => {
-   const navigate = useNavigate();
+  const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
   const [selectedValue, setSelectedValue] = useState('');
@@ -61,6 +62,10 @@ const ReleaseSelection = () => {
       handleSearchClick(display_LKRS_ID);  // call the method if LKRS_ID exists
     }
     fetchFinalReleasedSites(LKRS_ID);
+    const storedCreatedBy = localStorage.getItem('createdBy');
+    const storedCreatedName = localStorage.getItem('createdName');
+    const storedRoleID = localStorage.getItem('RoleID');
+
   }, [LKRS_ID, display_LKRS_ID]);
   useEffect(() => {
     if (originalTotalRecords === 0 && (releaseData.length > 0 || finalApiList.length > 0)) {
@@ -85,196 +90,147 @@ const ReleaseSelection = () => {
 
     return 0; // invalid state
   };
+  // const handleRowSelect = (index) => {
+  //   const isSelected = selectedRows.includes(index);
 
-  const handleRowSelect = (index) => {
-    const isSelected = selectedRows.includes(index);
+  //   if (isSelected) {
+  //     setSelectedRows(prev => prev.filter(i => i !== index));
+  //   } else {
+  //     const maxLimit = selectedValue === '2'
+  //       ? Math.round(0.6 * originalTotalRecords) - releasedData.length
+  //       : selectedValue === '3'
+  //         ? getMaxLimitForPhase3()
+  //         : undefined;
 
-    if (isSelected) {
-      setSelectedRows(prev => prev.filter(i => i !== index));
-    } else {
-      const maxLimit = selectedValue === '2'
-        ? Math.round(0.6 * originalTotalRecords) - releasedData.length
-        : selectedValue === '3'
-          ? getMaxLimitForPhase3()
-          : undefined;
+  //     if (maxLimit === undefined || selectedRows.length < maxLimit) {
+  //       setSelectedRows(prev => [...prev, index]);
+  //     } else {
+  //       Swal.fire({
+  //         icon: 'warning',
+  //         title: 'Selection Limit Reached',
+  //         text: "You can only select up to ${maxLimit} site(s).",
+  //         confirmButtonColor: '#3085d6',
+  //       });
+  //     }
+  //   }
+  // };
 
-      if (maxLimit === undefined || selectedRows.length < maxLimit) {
-        setSelectedRows(prev => [...prev, index]);
-      } else {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Selection Limit Reached',
-          text: `You can only select up to ${maxLimit} site(s).`,
-          confirmButtonColor: '#3085d6',
-        });
-      }
-    }
-  };
+  // const handleSelectAll = (e) => {
+  //   const checked = e.target.checked;
 
-  const handleSelectAll = (e) => {
-    const checked = e.target.checked;
+  //   if (selectedValue === '1') {
+  //     if (checked) {
+  //       const allIndexes = releaseData.map((_, index) => index);
+  //       setSelectedRows(allIndexes);
+  //     } else {
+  //       setSelectedRows([]);
+  //     }
+  //   }
 
-    if (selectedValue === '1') {
-      if (checked) {
-        const allIndexes = releaseData.map((_, index) => index);
-        setSelectedRows(allIndexes);
-      } else {
-        setSelectedRows([]);
-      }
-    }
+  //   if (selectedValue === '2') {
+  //     const totalCount = releaseData.length + releasedData.length;
+  //     const sixtyPercentCount = Math.round(0.6 * originalTotalRecords);
+  //     const alreadyReleased = releasedData.length;
 
-    if (selectedValue === '2') {
-      const totalCount = releaseData.length + releasedData.length;
-      const sixtyPercentCount = Math.round(0.6 * originalTotalRecords);
-      const alreadyReleased = releasedData.length;
+  //     if (checked) {
+  //       let rowsToSelect = [];
 
-      if (checked) {
-        let rowsToSelect = [];
+  //       if (alreadyReleased < sixtyPercentCount) {
+  //         const remainingSlots = sixtyPercentCount - alreadyReleased;
+  //         rowsToSelect = releaseData
+  //           .map((_, index) => index)
+  //           .slice(0, remainingSlots);
+  //       } else {
+  //         const remainingSlots = totalCount - alreadyReleased;
+  //         rowsToSelect = releaseData
+  //           .map((_, index) => index)
+  //           .slice(0, remainingSlots);
+  //       }
 
-        if (alreadyReleased < sixtyPercentCount) {
-          const remainingSlots = sixtyPercentCount - alreadyReleased;
-          rowsToSelect = releaseData
-            .map((_, index) => index)
-            .slice(0, remainingSlots);
-        } else {
-          const remainingSlots = totalCount - alreadyReleased;
-          rowsToSelect = releaseData
-            .map((_, index) => index)
-            .slice(0, remainingSlots);
-        }
+  //       setSelectedRows(rowsToSelect);
+  //     } else {
+  //       setSelectedRows([]);
+  //     }
+  //   }
 
-        setSelectedRows(rowsToSelect);
-      } else {
-        setSelectedRows([]);
-      }
-    }
+  //   if (selectedValue === '3') {
+  //     const fortyPercent = Math.round(0.4 * originalTotalRecords);
+  //     const thirtyPercent = Math.round(0.3 * originalTotalRecords);
+  //     const alreadyReleased = finalApiList.length;
 
-    if (selectedValue === '3') {
-      const fortyPercent = Math.round(0.4 * originalTotalRecords);
-      const thirtyPercent = Math.round(0.3 * originalTotalRecords);
-      const alreadyReleased = finalApiList.length;
+  //     if (checked) {
+  //       let rowsToSelect = [];
 
-      if (checked) {
-        let rowsToSelect = [];
+  //       if (alreadyReleased < fortyPercent) {
+  //         const remaining = fortyPercent - alreadyReleased;
+  //         rowsToSelect = releaseData
+  //           .map((_, index) => index)
+  //           .slice(0, remaining);
+  //       } else if (alreadyReleased === fortyPercent) {
+  //         const remaining = thirtyPercent;
+  //         rowsToSelect = releaseData
+  //           .map((_, index) => index)
+  //           .slice(0, remaining);
+  //       } else if (alreadyReleased === (fortyPercent + thirtyPercent)) {
+  //         const remaining = originalTotalRecords - alreadyReleased;
+  //         rowsToSelect = releaseData
+  //           .map((_, index) => index)
+  //           .slice(0, remaining);
+  //       } else {
+  //         Swal.fire({
+  //           icon: 'warning',
+  //           title: 'Invalid State',
+  //           text: 'You can only proceed to the next 30% phase after completing the previous one.',
+  //           confirmButtonColor: '#3085d6',
+  //         });
+  //         rowsToSelect = [];
+  //       }
 
-        if (alreadyReleased < fortyPercent) {
-          const remaining = fortyPercent - alreadyReleased;
-          rowsToSelect = releaseData
-            .map((_, index) => index)
-            .slice(0, remaining);
-        } else if (alreadyReleased === fortyPercent) {
-          const remaining = thirtyPercent;
-          rowsToSelect = releaseData
-            .map((_, index) => index)
-            .slice(0, remaining);
-        } else if (alreadyReleased === (fortyPercent + thirtyPercent)) {
-          const remaining = originalTotalRecords - alreadyReleased;
-          rowsToSelect = releaseData
-            .map((_, index) => index)
-            .slice(0, remaining);
-        } else {
-          Swal.fire({
-            icon: 'warning',
-            title: 'Invalid State',
-            text: 'You can only proceed to the next 30% phase after completing the previous one.',
-            confirmButtonColor: '#3085d6',
-          });
-          rowsToSelect = [];
-        }
+  //       if (rowsToSelect.length > 0) {
+  //         setSelectedRows(rowsToSelect);
+  //       }
+  //     } else {
+  //       setSelectedRows([]);
+  //     }
+  //   }
 
-        if (rowsToSelect.length > 0) {
-          setSelectedRows(rowsToSelect);
-        }
-      } else {
-        setSelectedRows([]);
-      }
-    }
-
-    setSelectAllChecked(checked);
-  };
-  const handleDimensionChange = (value) => {
-    setSelectedValue(value);
-    setSelectAllChecked(false);
-    setSelectedRows([]);
-
-    const total = releaseData.length + releasedData.length;
-    const sixtyPercentCount = Math.round(0.6 * originalTotalRecords);
-    const fortyPercentCount = originalTotalRecords - sixtyPercentCount;
-
-    if (value === '2') {
-      if (releasedData.length === 0) {
-        // First phase - allow 60% selection
-        setSelectionLimit(sixtyPercentCount);
-      } else if (releasedData.length === sixtyPercentCount) {
-        // Second phase - allow 40% selection
-        setSelectionLimit(fortyPercentCount);
-      } else if (releasedData.length === total) {
-        // All released - no more selection
-        Swal.fire({
-          icon: 'info',
-          title: '100% Already Released',
-          text: 'All records have been released. No further action is allowed.',
-          confirmButtonColor: '#3085d6',
-        });
-        setSelectionLimit(0);
-      } else {
-        // Invalid state (e.g., partial release) — disable
-        Swal.fire({
-          icon: 'warning',
-          title: 'Invalid Release State',
-          text: 'You can only release 40% after 60% has been completed.',
-          confirmButtonColor: '#3085d6',
-        });
-        setSelectionLimit(0);
-      }
-    } else if (value === '3') {
-      const fortyPercent = Math.round(0.4 * originalTotalRecords);
-      const thirtyPercent = Math.round(0.3 * originalTotalRecords);
-      const total = releaseData.length + releasedData.length;
-
-      if (releasedData.length === 0) {
-        // Phase 1: 40%
-        setSelectionLimit(fortyPercent);
-      } else if (releasedData.length === fortyPercent) {
-        // Phase 2: 30%
-        setSelectionLimit(thirtyPercent);
-      } else if (releasedData.length === fortyPercent + thirtyPercent) {
-        // Phase 3: final 30%
-        setSelectionLimit(originalTotalRecords - releasedData.length);
-      } else if (releasedData.length === originalTotalRecords) {
-        Swal.fire({
-          icon: 'info',
-          title: '100% Already Released',
-          text: 'All records have been released.',
-          confirmButtonColor: '#3085d6',
-        });
-        setSelectionLimit(0);
-      } else {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Invalid Release State',
-          text: 'You can only release 30% after completing the previous phase.',
-          confirmButtonColor: '#3085d6',
-        });
-        setSelectionLimit(0);
-      }
-    }
+  //   setSelectAllChecked(checked);
+  // };
+  // Row selection handler
 
 
-  };
-  const handleCheckboxToggle = (id) => {
-    setSelectedRows((prev) =>
-      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
-    );
-  };
+  // moveToReleasedTable
   const moveToReleasedTable = () => {
     const sixtyPercentCount = Math.round(0.6 * originalTotalRecords);
     const fortyPercentCount = Math.round(0.4 * originalTotalRecords);
     const thirtyPercentCount = Math.round(0.3 * originalTotalRecords);
-    const releasedCount = releasedData.length;
+    const releasedCount = finalApiList.length;
     const selectedCount = selectedRows.length;
+    const selectedRecords = releasedData.length;
 
-    if (selectedValue === '1') {
+    // if (isEKYCVerified === false) {
+    //   Swal.fire({
+    //     icon: 'warning',
+    //     title: 'Important!',
+    //     text: 'Please save the Owner EKYC details before proceeding.',
+    //     confirmButtonText: 'Ok'
+    //   });
+    //   return;
+    // }
+
+    if (orderReleaseStatus === false) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Important!',
+        text: 'Please save the Release order details before proceeding.',
+        confirmButtonText: 'Ok'
+      });
+      return;
+    }
+
+    let allowedCount = 0;
+
+    if (selectedValue === 1) {  // Assuming you are using numbers for ReleaseType
       if (releasedCount > 0) {
         Swal.fire({
           icon: 'info',
@@ -283,118 +239,73 @@ const ReleaseSelection = () => {
           confirmButtonColor: '#3085d6',
         });
         return;
-      } else if (selectedCount !== originalTotalRecords) {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Invalid Selection',
-          text: `You must select all ${originalTotalRecords} records to complete 100% release.`,
-          confirmButtonColor: '#3085d6',
-        });
-        return;
       }
+      allowedCount = originalTotalRecords;
     }
-
-    if (selectedValue === '2') {
-      if (selectedCount === 0) {
-        Swal.fire({
-          icon: 'error',
-          title: 'No Records Selected',
-          text: 'Please select a record to release.',
-          confirmButtonColor: '#3085d6',
-        });
-        return;
+    else if (selectedValue === 2) {
+      if (finalApiList.length < sixtyPercentCount) {
+        allowedCount = sixtyPercentCount - finalApiList.length;
       }
-
-      if (releasedCount < sixtyPercentCount) {
-        // Phase 1: Must select up to 60%
-        if (selectedCount > (sixtyPercentCount - releasedCount)) {
-          Swal.fire({
-            icon: 'warning',
-            title: 'Limit Exceeded',
-            text: `You can only select up to ${sixtyPercentCount - releasedCount} items in this phase.`,
-            confirmButtonColor: '#3085d6',
-          });
-          return;
-        }
-      } else if (releasedCount >= sixtyPercentCount && releasedCount < originalTotalRecords) {
-        // Phase 2: Remaining 40%
-        const allowed = originalTotalRecords - releasedCount;
-        if (selectedCount > allowed) {
-          Swal.fire({
-            icon: 'warning',
-            title: 'Limit Exceeded',
-            text: `You can only release ${allowed} more items.`,
-            confirmButtonColor: '#3085d6',
-          });
-          return;
-        }
-      } else {
+      else if (finalApiList.length === sixtyPercentCount && finalApiList.length < originalTotalRecords) {
+        allowedCount = fortyPercentCount;
+      }
+      else if (finalApiList.length === (sixtyPercentCount + fortyPercentCount)) {
+        allowedCount = originalTotalRecords - finalApiList.length; // For leftover
+      }
+      else {
         Swal.fire({
           icon: 'info',
           title: 'All Released',
-          text: '100% records already released.',
+          text: 'All records have already been released.',
           confirmButtonColor: '#3085d6',
         });
         return;
       }
     }
 
-    if (selectedValue === '3') {
-      if (selectedCount === 0) {
-        Swal.fire({
-          icon: 'error',
-          title: 'No Records Selected',
-          text: 'Please select a record to release.',
-          confirmButtonColor: '#3085d6',
-        });
-        return;
-      }
+    else if (selectedValue === 3) {
       if (releasedCount < fortyPercentCount) {
-        // Phase 1: 40%
-        if (selectedCount > (fortyPercentCount - releasedCount)) {
-          Swal.fire({
-            icon: 'warning',
-            title: 'Limit Exceeded',
-            text: `Only ${fortyPercentCount - releasedCount} records can be released in this phase.`,
-            confirmButtonColor: '#3085d6',
-          });
-          return;
-        }
-      } else if (releasedCount === fortyPercentCount) {
-        // Phase 2: 30%
-        if (selectedCount > thirtyPercentCount) {
-          Swal.fire({
-            icon: 'warning',
-            title: 'Limit Exceeded',
-            text: `Only ${thirtyPercentCount} records can be released in this phase.`,
-            confirmButtonColor: '#3085d6',
-          });
-          return;
-        }
-      } else if (releasedCount === (fortyPercentCount + thirtyPercentCount)) {
-        // Phase 3: Final 30%
-        const remaining = originalTotalRecords - releasedCount;
-        if (selectedCount > remaining) {
-          Swal.fire({
-            icon: 'warning',
-            title: 'Limit Exceeded',
-            text: `Only ${remaining} records can be released in this final phase.`,
-            confirmButtonColor: '#3085d6',
-          });
-          return;
-        }
-      } else {
+        allowedCount = fortyPercentCount - releasedCount;   // phase 1: 40% 
+      }
+      else if (releasedCount === fortyPercentCount) {
+        allowedCount = thirtyPercentCount;                 // phase 2: first 30%
+      }
+      else if (releasedCount === (fortyPercentCount + thirtyPercentCount)) {
+        allowedCount = originalTotalRecords - releasedCount;  // phase 3: last 30% 
+      }
+      else {
         Swal.fire({
           icon: 'warning',
           title: 'Invalid Phase',
-          text: 'You can only proceed to the next 30% phase after completing the previous one.',
+          text: 'You can only proceed to the next phase after completing the previous one.',
           confirmButtonColor: '#3085d6',
         });
         return;
       }
     }
 
-    // Move selected records to releasedData
+    const remainingRequired = allowedCount - selectedRecords;
+
+    if (selectedCount === 0) {
+      Swal.fire({
+        icon: 'error',
+        title: 'No Records Selected',
+        text: 'Please select record(s) to release.',
+        confirmButtonColor: '#3085d6',
+      });
+      return;
+    }
+    if (selectedCount !== remainingRequired) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Invalid Selection',
+        text: `You must select exactly ${remainingRequired} record(s) to proceed.`,
+        confirmButtonColor: '#3085d6',
+      });
+      return;
+    }
+
+    // Proceed to move records
     const selectedRowsData = releaseData.filter((_, index) => selectedRows.includes(index));
     const remainingData = releaseData.filter((_, index) => !selectedRows.includes(index));
 
@@ -403,6 +314,543 @@ const ReleaseSelection = () => {
     setSelectedRows([]);
     setSelectAllChecked(false);
   };
+
+  // handleRowSelect
+  const handleRowSelect = (index) => {
+    const isSelected = selectedRows.includes(index);
+
+    if (isSelected) {
+      setSelectedRows(prev => prev.filter(i => i !== index));
+    } else {
+      const allowedCount = Math.round((releasePercentage / 100) * originalTotalRecords);
+      const remaining = allowedCount - releasedData.length;
+
+      if (selectedRows.length < remaining) {
+        setSelectedRows(prev => [...prev, index]);
+      } else {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Selection Limit Reached',
+          text: `You can only select up to ${remaining} site(s).`,
+          confirmButtonColor: '#3085d6',
+        });
+      }
+    }
+  };
+
+  // handleSelectAll
+  const handleSelectAll = (e) => {
+    const checked = e.target.checked;
+    let rowsToSelect = [];
+
+    if (checked) {
+      const allIndexes = releaseData.map((_, index) => index);
+
+      if (selectedValue === 1) {
+        rowsToSelect = allIndexes;
+      } else {
+        const allowedCount = Math.round((releasePercentage / 100) * originalTotalRecords);
+        const remaining = allowedCount - releasedData.length;
+        rowsToSelect = allIndexes.slice(0, remaining);
+      }
+    }
+
+    setSelectedRows(rowsToSelect);
+    setSelectAllChecked(checked);
+  };
+
+  // Sync Select All
+  useEffect(() => {
+    if (releaseData.length > 0) {
+      setSelectAllChecked(selectedRows.length === releaseData.length);
+    } else {
+      setSelectAllChecked(false);
+    }
+  }, [selectedRows, releaseData]);
+
+  // handleDimensionChange
+  const handleDimensionChange = (ReleaseType, originalTotalRecords, unreleasedSites, releasedSites, lengthRO, percentage) => {
+    setSelectedValue(ReleaseType);
+    setReleasePercentage(percentage);
+    setSelectAllChecked(false);
+    setSelectedRows([]);
+
+    const allowedCount = Math.round((percentage / 100) * originalTotalRecords);
+    // Handle 100% release custom conditions
+    if (ReleaseType === 1) {
+
+      if (lengthRO === 1) {
+        if (releasedSites.length === 0 && unreleasedSites.length === originalTotalRecords) {
+          // 👉 All sites unreleased, allow release
+          setSelectionLimit(originalTotalRecords);
+        }
+        else if (releasedSites.length === originalTotalRecords && unreleasedSites.length === 0) {
+          // 👉 All sites already released
+          Swal.fire({
+            icon: 'info',
+            title: 'All sites are Released',
+            text: 'All records have already been released.',
+            confirmButtonColor: '#3085d6',
+          });
+          setSelectionLimit(0);
+        }
+      }
+    }
+    //60% * 40% release
+    else if (ReleaseType === 2) {
+      //60% release  
+      if (lengthRO === 1) {
+        if (releasedSites.length === 0 && unreleasedSites.length === originalTotalRecords) {
+          // Allow 60% release
+          setSelectionLimit(Math.round(0.6 * originalTotalRecords));
+
+        } else if (releasedSites.length !== 0 && unreleasedSites.length !== 0) {
+          Swal.fire({
+            icon: 'info',
+            title: '60% Already Released',
+            text: '60% of records have already been released.',
+            confirmButtonColor: '#3085d6',
+            allowOutsideClick: false,
+            allowEscapeKey: false
+          });
+          setSelectionLimit(0);
+          setIsOrder_EditingArea(true); // allow to proceed if that’s your intention
+        }
+        else {
+          setIsOrder_EditingArea(false); // block save in other cases
+        }
+      }
+      //40% release
+      else if (lengthRO === 2) {
+        if (releasedSites.length !== 0 && unreleasedSites.length !== 0) {
+          // Allow 40% release
+
+          setSelectionLimit(Math.round(0.4 * originalTotalRecords));
+        } else if (releasedSites.length === originalTotalRecords && unreleasedSites.length === 0) {
+          Swal.fire({
+            icon: 'info',
+            title: 'All Sites are Released',
+            text: 'All records have already been released.',
+            confirmButtonColor: '#3085d6',
+            allowOutsideClick: false,
+            allowEscapeKey: false
+          });
+          setSelectionLimit(0);
+        }
+      }
+    }
+    //40% * 30% * 30%
+    else if (ReleaseType == 3) {
+      const fortyPercentCount = Math.round(0.4 * originalTotalRecords);
+      const thirtyPercentCount = Math.round(0.3 * originalTotalRecords);
+
+      if (lengthRO == 1) {
+        if (releasedSites.length == 0 && unreleasedSites.length == originalTotalRecords) {
+          // Allow 40 Release
+          setSelectionLimit(fortyPercentCount);
+        } else if (releasedSites.length != 0 && unreleasedSites.length != 0) {
+          // Already Released
+          Swal.fire({
+            icon: 'info',
+            title: '40% phase already started',
+            text: 'You have already started the 40% release phase.',
+            confirmButtonColor: '#3085d6',
+          });
+          setIsOrder_EditingArea(true);
+          setSelectionLimit(0);
+        }
+      }
+      else if (lengthRO == 2) {
+        if (releasedSites.length != 0 && unreleasedSites.length != 0) {
+          const ReleasedPercentage = (releasedSites.length / originalTotalRecords) * 100;
+          const YetToBeReleasedPercentage = (unreleasedSites.length / originalTotalRecords) * 100;
+
+          if (ReleasedPercentage < YetToBeReleasedPercentage) {
+            // Allow 30 Release
+            setSelectionLimit(thirtyPercentCount);
+          } else {
+            // Already Released
+            Swal.fire({
+              icon: 'info',
+              title: '30% phase already completed or invalid',
+              text: 'Either you have already completed the 30% phase or the selection is invalid.',
+              confirmButtonColor: '#3085d6',
+            });
+            setIsOrder_EditingArea(true);
+            setSelectionLimit(0);
+          }
+        } else if (releasedSites.length == originalTotalRecords && unreleasedSites.length == 0) {
+          // Already Released
+          Swal.fire({
+            icon: 'info',
+            title: 'All Sites Released',
+            text: 'All records have already been released.',
+            confirmButtonColor: '#3085d6',
+          });
+          setSelectionLimit(0);
+        }
+      }
+      else if (lengthRO == 3) {
+        if (releasedSites.length != 0 && unreleasedSites.length != 0) {
+          const ReleasedPercentage = (releasedSites.length / originalTotalRecords) * 100;
+          const YetToBeReleasedPercentage = (unreleasedSites.length / originalTotalRecords) * 100;
+
+          if (ReleasedPercentage < YetToBeReleasedPercentage) {
+            // Allow 30 Release
+            setSelectionLimit(thirtyPercentCount);
+          } else {
+            // Already Released
+            Swal.fire({
+              icon: 'info',
+              title: 'Final 30% phase already completed or invalid',
+              text: 'Either you have already completed the final 30% phase or the selection is invalid.',
+              confirmButtonColor: '#3085d6',
+            });
+            setSelectionLimit(0);
+          }
+        } else if (releasedSites.length == originalTotalRecords && unreleasedSites.length == 0) {
+          // Already Released
+          Swal.fire({
+            icon: 'info',
+            title: 'All Sites Released',
+            text: 'All records have already been released.',
+            confirmButtonColor: '#3085d6',
+          });
+          setSelectionLimit(0);
+        }
+      }
+    }
+  };
+
+  // const handleRowSelect = (index) => {
+  //   const isSelected = selectedRows.includes(index);
+
+  //   if (isSelected) {
+  //     setSelectedRows(prev => prev.filter(i => i !== index));
+  //   } else {
+  //     // Calculate allowed limit based on percentage
+  //     const allowedCount = Math.round((releasePercentage / 100) * originalTotalRecords);
+  //     const remaining = allowedCount - releasedData.length;
+
+  //     if (selectedRows.length < remaining) {
+  //       setSelectedRows(prev => [...prev, index]);
+  //     } else {
+  //       Swal.fire({
+  //         icon: 'warning',
+  //         title: 'Selection Limit Reached',
+  //         text: `You can only select up to ${remaining} site(s).`,
+  //         confirmButtonColor: '#3085d6',
+  //       });
+  //     }
+  //   }
+  // };
+
+
+  // // Select All handler
+  // const handleSelectAll = (e) => {
+  //   const checked = e.target.checked;
+  //   let rowsToSelect = [];
+
+  //   if (checked) {
+  //     const allIndexes = releaseData.map((_, index) => index);
+
+  //     if (selectedValue === '1') {
+  //       rowsToSelect = allIndexes;
+  //     } else {
+  //       const allowedCount = Math.round((releasePercentage / 100) * originalTotalRecords);
+  //       const remaining = allowedCount - releasedData.length;
+  //       rowsToSelect = allIndexes.slice(0, remaining);
+  //     }
+  //   }
+
+  //   setSelectedRows(rowsToSelect);
+  //   setSelectAllChecked(checked);
+  // };
+
+
+  // // Sync Select All checkbox state
+  // useEffect(() => {
+  //   if (releaseData.length > 0) {
+  //     setSelectAllChecked(selectedRows.length === releaseData.length);
+  //   } else {
+  //     setSelectAllChecked(false);
+  //   }
+  // }, [selectedRows, releaseData]);
+
+  // const handleDimensionChange = (ReleaseType, originalTotalRecords, unreleasedSites, releasedSites, lengthRO, releasePercentage) => {
+  //   setSelectedValue(ReleaseType);
+  //   setSelectAllChecked(false);
+  //   setSelectedRows([]);
+
+  //   const total = unreleasedSites.length + releasedSites.length;
+  //   const sixtyPercentCount = Math.round(0.6 * originalTotalRecords);
+  //   const fortyPercentCount = originalTotalRecords - sixtyPercentCount;
+
+  //   //100% release 
+  //   if (ReleaseType == 1) {
+  //     if (lengthRO == 1) {
+  //       if (unreleasedSites == 0 && releasedSites == originalTotalRecords) {
+  //         alert("Allow Release");
+  //       }
+  //       else if(releasedSites == originalTotalRecords && unreleasedSites == 0){
+  //         alert("alerady releasee");
+  //       }
+  //     }
+  //   }
+
+
+  //   // if (value === '2') {
+  //   //   if (releasedData.length === 0) {
+  //   //     // First phase - allow 60% selection
+  //   //     setSelectionLimit(sixtyPercentCount);
+  //   //   } else if (releasedData.length === sixtyPercentCount) {
+  //   //     // Second phase - allow 40% selection
+  //   //     setSelectionLimit(fortyPercentCount);
+  //   //   } else if (releasedData.length === total) {
+  //   //     // All released - no more selection
+  //   //     Swal.fire({
+  //   //       icon: 'info',
+  //   //       title: '100% Already Released',
+  //   //       text: 'All records have been released. No further action is allowed.',
+  //   //       confirmButtonColor: '#3085d6',
+  //   //     });
+  //   //     setSelectionLimit(0);
+  //   //   } else {
+  //   //     // Invalid state (e.g., partial release) — disable
+  //   //     Swal.fire({
+  //   //       icon: 'warning',
+  //   //       title: 'Invalid Release State',
+  //   //       text: 'You can only release 40% after 60% has been completed.',
+  //   //       confirmButtonColor: '#3085d6',
+  //   //     });
+  //   //     setSelectionLimit(0);
+  //   //   }
+  //   // } else if (value === '3') {
+  //   //   const fortyPercent = Math.round(0.4 * originalTotalRecords);
+  //   //   const thirtyPercent = Math.round(0.3 * originalTotalRecords);
+  //   //   const total = releaseData.length + releasedData.length;
+
+  //   //   if (releasedData.length === 0) {
+  //   //     // Phase 1: 40%
+  //   //     setSelectionLimit(fortyPercent);
+  //   //   } else if (releasedData.length === fortyPercent) {
+  //   //     // Phase 2: 30%
+  //   //     setSelectionLimit(thirtyPercent);
+  //   //   } else if (releasedData.length === fortyPercent + thirtyPercent) {
+  //   //     // Phase 3: final 30%
+  //   //     setSelectionLimit(originalTotalRecords - releasedData.length);
+  //   //   } else if (releasedData.length === originalTotalRecords) {
+  //   //     Swal.fire({
+  //   //       icon: 'info',
+  //   //       title: '100% Already Released',
+  //   //       text: 'All records have been released.',
+  //   //       confirmButtonColor: '#3085d6',
+  //   //     });
+  //   //     setSelectionLimit(0);
+  //   //   } else {
+  //   //     Swal.fire({
+  //   //       icon: 'warning',
+  //   //       title: 'Invalid Release State',
+  //   //       text: 'You can only release 30% after completing the previous phase.',
+  //   //       confirmButtonColor: '#3085d6',
+  //   //     });
+  //   //     setSelectionLimit(0);
+  //   //   }
+  //   // }
+
+
+  // };
+
+  const [releasePercentage, setReleasePercentage] = useState(0);
+
+  // const handleDimensionChange = (ReleaseType, originalTotalRecords, unreleasedSites, releasedSites, lengthRO, percentage) => {
+  //   setSelectedValue(ReleaseType);
+  //   setReleasePercentage(percentage);
+  //   setSelectAllChecked(false);
+  //   setSelectedRows([]); // 🟢 Update the releasePercentage for other handlers
+
+  //   const allowedCount = Math.round((percentage / 100) * originalTotalRecords);
+
+  //   if (ReleaseType == 1) {
+  //     // your logic
+  //   } else {
+  //     if (releasedSites.length >= allowedCount) {
+  //       Swal.fire({
+  //         icon: 'info',
+  //         title: `${percentage}% Already Released`,
+  //         text: `You have already released ${allowedCount} site(s).`,
+  //         confirmButtonColor: '#3085d6',
+  //       });
+  //       setSelectionLimit(0);
+  //     } else {
+  //       const remaining = allowedCount - releasedSites.length;
+  //       setSelectionLimit(remaining);
+  //     }
+  //   }
+  // };
+
+
+  const handleCheckboxToggle = (id) => {
+    setSelectedRows((prev) =>
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
+    );
+  };
+  // const moveToReleasedTable = () => {
+  //   const sixtyPercentCount = Math.round(0.6 * originalTotalRecords);
+  //   const fortyPercentCount = Math.round(0.4 * originalTotalRecords);
+  //   const thirtyPercentCount = Math.round(0.3 * originalTotalRecords);
+  //   const releasedCount = releasedData.length;
+  //   const selectedCount = selectedRows.length;
+
+
+  //   if (isEKYCVerified === false) {
+  //     Swal.fire({
+  //       icon: 'warning',
+  //       title: 'Important!',
+  //       text: 'Please save the Owner EKYC details before proceeding.',
+  //       confirmButtonText: 'Ok'
+  //     });
+  //     return
+  //   }
+  //   if (orderReleaseStatus === false) {
+  //     Swal.fire({
+  //       icon: 'warning',
+  //       title: 'Important!',
+  //       text: 'Please save the Release order details before proceeding.',
+  //       confirmButtonText: 'Ok'
+  //     });
+  //     return
+  //   }
+
+  //   if (selectedValue === '1') {
+  //     if (releasedCount > 0) {
+  //       Swal.fire({
+  //         icon: 'info',
+  //         title: 'Cannot perform 100% release',
+  //         text: 'Some records have already been released. 100% release must be done in one go.',
+  //         confirmButtonColor: '#3085d6',
+  //       });
+  //       return;
+  //     } else if (selectedCount !== originalTotalRecords) {
+  //       Swal.fire({
+  //         icon: 'warning',
+  //         title: 'Invalid Selection',
+  //         text: `You must select all ${originalTotalRecords} records to complete 100% release.`,
+  //         confirmButtonColor: '#3085d6',
+  //       });
+  //       return;
+  //     }
+  //   }
+
+  //   if (selectedValue === '2') {
+  //     if (selectedCount === 0) {
+  //       Swal.fire({
+  //         icon: 'error',
+  //         title: 'No Records Selected',
+  //         text: 'Please select a record to release.',
+  //         confirmButtonColor: '#3085d6',
+  //       });
+  //       return;
+  //     }
+
+  //     if (releasedCount < sixtyPercentCount) {
+  //       // Phase 1: Must select up to 60%
+  //       if (selectedCount > (sixtyPercentCount - releasedCount)) {
+  //         Swal.fire({
+  //           icon: 'warning',
+  //           title: 'Limit Exceeded',
+  //           text: `You can only select up to ${sixtyPercentCount - releasedCount} items in this phase.`,
+  //           confirmButtonColor: '#3085d6',
+  //         });
+  //         return;
+  //       }
+  //     } else if (releasedCount >= sixtyPercentCount && releasedCount < originalTotalRecords) {
+  //       // Phase 2: Remaining 40%
+  //       const allowed = originalTotalRecords - releasedCount;
+  //       if (selectedCount > allowed) {
+  //         Swal.fire({
+  //           icon: 'warning',
+  //           title: 'Limit Exceeded',
+  //           text: `You can only release ${allowed} more items.`,
+  //           confirmButtonColor: '#3085d6',
+  //         });
+  //         return;
+  //       }
+  //     } else {
+  //       Swal.fire({
+  //         icon: 'info',
+  //         title: 'All Released',
+  //         text: '100% records already released.',
+  //         confirmButtonColor: '#3085d6',
+  //       });
+  //       return;
+  //     }
+  //   }
+
+  //   if (selectedValue === '3') {
+  //     if (selectedCount === 0) {
+  //       Swal.fire({
+  //         icon: 'error',
+  //         title: 'No Records Selected',
+  //         text: 'Please select a record to release.',
+  //         confirmButtonColor: '#3085d6',
+  //       });
+  //       return;
+  //     }
+  //     if (releasedCount < fortyPercentCount) {
+  //       // Phase 1: 40%
+  //       if (selectedCount > (fortyPercentCount - releasedCount)) {
+  //         Swal.fire({
+  //           icon: 'warning',
+  //           title: 'Limit Exceeded',
+  //           text: `Only ${fortyPercentCount - releasedCount} records can be released in this phase.`,
+  //           confirmButtonColor: '#3085d6',
+  //         });
+  //         return;
+  //       }
+  //     } else if (releasedCount === fortyPercentCount) {
+  //       // Phase 2: 30%
+  //       if (selectedCount > thirtyPercentCount) {
+  //         Swal.fire({
+  //           icon: 'warning',
+  //           title: 'Limit Exceeded',
+  //           text: `Only ${thirtyPercentCount} records can be released in this phase.`,
+  //           confirmButtonColor: '#3085d6',
+  //         });
+  //         return;
+  //       }
+  //     } else if (releasedCount === (fortyPercentCount + thirtyPercentCount)) {
+  //       // Phase 3: Final 30%
+  //       const remaining = originalTotalRecords - releasedCount;
+  //       if (selectedCount > remaining) {
+  //         Swal.fire({
+  //           icon: 'warning',
+  //           title: 'Limit Exceeded',
+  //           text: `Only ${remaining} records can be released in this final phase.`,
+  //           confirmButtonColor: '#3085d6',
+  //         });
+  //         return;
+  //       }
+  //     } else {
+  //       Swal.fire({
+  //         icon: 'warning',
+  //         title: 'Invalid Phase',
+  //         text: 'You can only proceed to the next 30% phase after completing the previous one.',
+  //         confirmButtonColor: '#3085d6',
+  //       });
+  //       return;
+  //     }
+  //   }
+
+  //   // Move selected records to releasedData
+  //   const selectedRowsData = releaseData.filter((_, index) => selectedRows.includes(index));
+  //   const remainingData = releaseData.filter((_, index) => !selectedRows.includes(index));
+
+  //   setReleasedData(prev => [...prev, ...selectedRowsData]);
+  //   setReleaseData(remainingData);
+  //   setSelectedRows([]);
+  //   setSelectAllChecked(false);
+  // };
   const performRelease = (sixtyPercentCount, fortyPercentCount) => {
     const movingData = releaseData.filter(item => selectedRows.includes(item.id));
 
@@ -469,6 +917,7 @@ const ReleaseSelection = () => {
   };
   // Columns for the DataTable
   const releaseTableColumns = [
+
     // {
     //   name: ['1', '2', '3'].includes(selectedValue) ? (
     //     <div>
@@ -481,30 +930,24 @@ const ReleaseSelection = () => {
     //     </div>
     //   ) : '',
 
-    //   selector: row => row.id,
+    //   selector: row => row.id, // keep as is; used only by DataTable internally
     //   width: '50px',
     //   sortable: false,
-    //   cell: row => {
-    //     const isSelected = selectedRows.includes(row.id);
+    //   cell: (row, index) => {
+    //     const isSelected = selectedRows.includes(index);
 
     //     const totalCount = releaseData.length + releasedData.length;
     //     const maxSelectable = Math.round(0.6 * originalTotalRecords); // 60%
     //     const alreadyReleased = releasedData.length;
     //     const remainingSlots = maxSelectable - alreadyReleased;
-
-    //     // In first phase (before reaching 60%)
     //     const isInFirstPhase = alreadyReleased < maxSelectable;
-
-    //     // Whether selecting more is blocked (limit reached)
     //     const limitReached = selectedValue === '2' &&
     //       isInFirstPhase &&
     //       !isSelected &&
     //       selectedRows.length >= remainingSlots;
 
-    //     const checkboxId = `checkbox-${row.id}`;
-
     //     const handleCheckboxClick = (e) => {
-    //       if (limitReached && !isSelected) {  // block only new checks when limit reached
+    //       if (limitReached && !isSelected) {
     //         e.preventDefault();
     //         Swal.fire({
     //           icon: 'warning',
@@ -514,24 +957,18 @@ const ReleaseSelection = () => {
     //         });
     //       }
     //     };
+
     //     return (
     //       <div>
     //         <input
-    //           id={checkboxId}
     //           type="checkbox"
     //           checked={isSelected}
-    //           // **Always enabled**
-    //           disabled={false}
     //           onClick={handleCheckboxClick}
     //           onChange={() => {
     //             if (isSelected) {
-    //               // Always allow unchecking
-    //               handleRowSelect(row);
-    //             } else {
-    //               // Allow checking only if limit not reached or not in first phase
-    //               if (!limitReached || !isInFirstPhase) {
-    //                 handleRowSelect(row);
-    //               }
+    //               handleRowSelect(index);
+    //             } else if (!limitReached || !isInFirstPhase) {
+    //               handleRowSelect(index);
     //             }
     //           }}
     //           style={{ cursor: limitReached && !isSelected ? 'not-allowed' : 'pointer' }}
@@ -543,60 +980,29 @@ const ReleaseSelection = () => {
     //   allowOverflow: true,
     //   button: true,
     // },
+
     {
-      name: ['1', '2', '3'].includes(selectedValue) ? (
+      name: (
         <div>
           <input
             type="checkbox"
             checked={selectAllChecked}
-            onChange={handleSelectAll}
+            onChange={(e) => handleSelectAll(e, selectedValue)}
             disabled={isSelectAllDisabled()}
           />
         </div>
-      ) : '',
-
-      selector: row => row.id, // keep as is; used only by DataTable internally
+      ),
+      selector: row => row.id,
       width: '50px',
       sortable: false,
       cell: (row, index) => {
         const isSelected = selectedRows.includes(index);
-
-        const totalCount = releaseData.length + releasedData.length;
-        const maxSelectable = Math.round(0.6 * originalTotalRecords); // 60%
-        const alreadyReleased = releasedData.length;
-        const remainingSlots = maxSelectable - alreadyReleased;
-        const isInFirstPhase = alreadyReleased < maxSelectable;
-        const limitReached = selectedValue === '2' &&
-          isInFirstPhase &&
-          !isSelected &&
-          selectedRows.length >= remainingSlots;
-
-        const handleCheckboxClick = (e) => {
-          if (limitReached && !isSelected) {
-            e.preventDefault();
-            Swal.fire({
-              icon: 'warning',
-              title: 'Selection Limit Reached',
-              text: `Only ${remainingSlots} more site(s) can be selected for 60% release.`,
-              confirmButtonColor: '#3085d6',
-            });
-          }
-        };
-
         return (
           <div>
             <input
               type="checkbox"
               checked={isSelected}
-              onClick={handleCheckboxClick}
-              onChange={() => {
-                if (isSelected) {
-                  handleRowSelect(index);
-                } else if (!limitReached || !isInFirstPhase) {
-                  handleRowSelect(index);
-                }
-              }}
-              style={{ cursor: limitReached && !isSelected ? 'not-allowed' : 'pointer' }}
+              onChange={() => handleRowSelect(index)}
             />
           </div>
         );
@@ -605,7 +1011,6 @@ const ReleaseSelection = () => {
       allowOverflow: true,
       button: true,
     },
-
     // {
     //   name: "Site ID",
     //   selector: row => row.sitE_ID || '',
@@ -930,98 +1335,98 @@ const ReleaseSelection = () => {
     }
   };
   const [current30Step, setCurrent30Step] = useState(1);
-  const handleFinal40PercentSave = () => {
-    const expectedCount40 = Math.round(0.4 * originalTotalRecords);
-    const expectedCount30 = Math.round(0.3 * originalTotalRecords);
+  // const handleFinal40PercentSave = () => {
+  //   const expectedCount40 = Math.round(0.4 * originalTotalRecords);
+  //   const expectedCount30 = Math.round(0.3 * originalTotalRecords);
 
-    if (selectedValue === '2') {
-      if (releasedData.length !== expectedCount40) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Invalid Selection',
-          text: `You must move exactly ${expectedCount40} sites for the remaining 40%. You selected ${releasedData.length}.`,
-          confirmButtonColor: '#d33',
-        });
-        return;
-      }
+  //   if (selectedValue === '2') {
+  //     if (releasedData.length !== expectedCount40) {
+  //       Swal.fire({
+  //         icon: 'error',
+  //         title: 'Invalid Selection',
+  //         text: `You must move exactly ${expectedCount40} sites for the remaining 40%. You selected ${releasedData.length}.`,
+  //         confirmButtonColor: '#d33',
+  //       });
+  //       return;
+  //     }
 
-      setFinalApiList(prev => {
-        const updated = [...prev, ...releasedData];
-        console.log("finalApiList after update (Final Save - 60*40):", updated);
-        return updated;
-      });
+  //     setFinalApiList(prev => {
+  //       const updated = [...prev, ...releasedData];
+  //       console.log("finalApiList after update (Final Save - 60*40):", updated);
+  //       return updated;
+  //     });
 
-      setReleasedData([]);
-      setShowNextReleaseForm(false);
-      Swal.fire({
-        icon: 'success',
-        title: 'All Sites Released Successfully',
-        text: 'You have completed all release phases successfully.',
-        confirmButtonColor: '#3085d6',
-      });
+  //     setReleasedData([]);
+  //     setShowNextReleaseForm(false);
+  //     Swal.fire({
+  //       icon: 'success',
+  //       title: 'All Sites Released Successfully',
+  //       text: 'You have completed all release phases successfully.',
+  //       confirmButtonColor: '#3085d6',
+  //     });
 
-      return; // Exit early
-    }
+  //     return; // Exit early
+  //   }
 
-    if (selectedValue === '3') {
-      const releasedSoFar = finalApiList.length;
-      const nextExpected = expectedCount30;
+  //   if (selectedValue === '3') {
+  //     const releasedSoFar = finalApiList.length;
+  //     const nextExpected = expectedCount30;
 
-      if (releasedData.length !== nextExpected) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Invalid Selection',
-          text: `You must select exactly ${nextExpected} sites for this phase.`,
-          confirmButtonColor: '#d33',
-        });
-        return;
-      }
+  //     if (releasedData.length !== nextExpected) {
+  //       Swal.fire({
+  //         icon: 'error',
+  //         title: 'Invalid Selection',
+  //         text: `You must select exactly ${nextExpected} sites for this phase.`,
+  //         confirmButtonColor: '#d33',
+  //       });
+  //       return;
+  //     }
 
-      setFinalApiList(prev => {
-        const updated = [...prev, ...releasedData];
-        console.log("finalApiList after update (Final Save - 40*30*30):", updated);
-        return updated;
-      });
+  //     setFinalApiList(prev => {
+  //       const updated = [...prev, ...releasedData];
+  //       console.log("finalApiList after update (Final Save - 40*30*30):", updated);
+  //       return updated;
+  //     });
 
-      setReleasedData([]);
+  //     setReleasedData([]);
 
-      if (current30Step === 1) {
-        Swal.fire({
-          icon: 'success',
-          title: ' 30% Released',
-          text: 'You have successfully released the 30% of the sites.',
-          showCancelButton: true,
-          confirmButtonText: 'Another release',
-          cancelButtonText: 'Back to Dashboard',
-          confirmButtonColor: '#3085d6',
-          cancelButtonColor: '#d33',
-        }).then((result) => {
-          if (result.isConfirmed) {
-            setCurrent30Step(2); // Move to second 30%
-            setShowNextReleaseForm(true);
-            const alreadyReleasedIds = finalApiList.map(item => item.id);
-            const next30Rows = releaseData
-              .filter(row => !alreadyReleasedIds.includes(row.id))
-              .slice(0, expectedCount30)
-              .map(row => row.id);
+  //     if (current30Step === 1) {
+  //       Swal.fire({
+  //         icon: 'success',
+  //         title: ' 30% Released',
+  //         text: 'You have successfully released the 30% of the sites.',
+  //         showCancelButton: true,
+  //         confirmButtonText: 'Another release',
+  //         cancelButtonText: 'Back to Dashboard',
+  //         confirmButtonColor: '#3085d6',
+  //         cancelButtonColor: '#d33',
+  //       }).then((result) => {
+  //         if (result.isConfirmed) {
+  //           setCurrent30Step(2); // Move to second 30%
+  //           setShowNextReleaseForm(true);
+  //           const alreadyReleasedIds = finalApiList.map(item => item.id);
+  //           const next30Rows = releaseData
+  //             .filter(row => !alreadyReleasedIds.includes(row.id))
+  //             .slice(0, expectedCount30)
+  //             .map(row => row.id);
 
-            setSelectedRows([]);
-            setSelectedRows(next30Rows);
-          } else {
-            window.location.href = '/dashboard';
-          }
-        });
-      } else {
-        setShowNextReleaseForm(false);
-        Swal.fire({
-          icon: 'success',
-          title: 'All Sites Released',
-          text: 'You have completed all release phases successfully.',
-          confirmButtonColor: '#3085d6',
-        });
-      }
-    }
-  };
+  //           setSelectedRows([]);
+  //           setSelectedRows(next30Rows);
+  //         } else {
+  //           window.location.href = '/dashboard';
+  //         }
+  //       });
+  //     } else {
+  //       setShowNextReleaseForm(false);
+  //       Swal.fire({
+  //         icon: 'success',
+  //         title: 'All Sites Released',
+  //         text: 'You have completed all release phases successfully.',
+  //         confirmButtonColor: '#3085d6',
+  //       });
+  //     }
+  //   }
+  // };
   const handleSiteReleaseOrderNumberChange = (e) => {
     const value = e.target.value;
 
@@ -1144,7 +1549,7 @@ const ReleaseSelection = () => {
     }
   };
 
-  const handleSearchClick = (localLKRSID) => {
+  const handleSearchClick = async (localLKRSID) => {
     if (!localLKRSID) {
       alert('Please enter EPID or KRSID');
       return;
@@ -1157,8 +1562,10 @@ const ReleaseSelection = () => {
     }
 
 
-    handleGetLKRSID(trimmedLKRSID);
-    fetchFinalReleasedSites(trimmedLKRSID);
+    await handleGetLKRSID(trimmedLKRSID);
+    await fetchReleaseList(trimmedLKRSID);
+
+    await fetchFinalReleasedSites(trimmedLKRSID);
   };
 
   const [selectedLandType, setSelectedLandType] = useState("");
@@ -1218,6 +1625,7 @@ const ReleaseSelection = () => {
         await Fetch_Approval_percentage(response.lkrS_ID);
         setSelectedLandType(response.lkrS_LANDTYPE); //  Store the land type
         await fetchApprovalListAndSetTable(localLKRSID);
+
         setEPIDShowTable(true);
         let khataDetailsJson = {};
         if (response.khataDetails?.khatA_JSON) {
@@ -1474,12 +1882,12 @@ const ReleaseSelection = () => {
         setReleaseDetails(response);
 
         // Extract and use `sitE_RELS_SITE_RELSTYPE_ID`
-        const releaseTypeId = response[0]?.apR_SITE_RELSTYPE_ID?.toString();
+        // const releaseTypeId = response[0]?.apR_SITE_RELSTYPE_ID?.toString();
 
-        if (releaseTypeId) {
-          handleDimensionChange(releaseTypeId);
-        }
-        fetchReleaseOrder(localLKRSID);
+        // if (releaseTypeId) {
+        //   handleDimensionChange(releaseTypeId);
+        // }
+
         stop_loader();
       } else {
         stop_loader();
@@ -1489,11 +1897,8 @@ const ReleaseSelection = () => {
       console.error("Failed to fetch LKRSID data:", error);
     }
   };
-  const fetchReleaseOrder = async (localLKRSID) => {
-     let trimmedLKRSID = localLKRSID;
-    if (/^L\d+$/i.test(localLKRSID)) {
-      trimmedLKRSID = localLKRSID.substring(1);
-    }
+
+  const fetchReleaseOrder = async (trimmedLKRSID, lengthRO) => {
     try {
       const listPayload = {
         level: 1,
@@ -1504,28 +1909,50 @@ const ReleaseSelection = () => {
       const response = await individualSiteListAPI(listPayload);
 
       if (Array.isArray(response)) {
-        // Filter only unreleased sites
         const unreleasedSites = response.filter(site => site.sitE_IS_SITE_RELEASED === false);
-        setReleaseData(unreleasedSites); // Only set unreleased records
         const releasedSites = response.filter(site => site.sitE_IS_SITE_RELEASED === true);
+
+        // Set both first, then proceed
+        setReleaseData(unreleasedSites);
         setFinalApiList(releasedSites);
+
+        // Compute total records
+        const totalRecords = unreleasedSites.length + releasedSites.length;
+        setOriginalTotalRecords(totalRecords); // make sure you have this in state!
+
+        // Now safe to call dimension change
+        await fetch_releasePercentage(trimmedLKRSID, totalRecords, unreleasedSites, releasedSites, lengthRO);
       }
     } catch (error) {
       console.error("Fetch Site Details Error:", error);
-      if (error.response) {
-        console.error("API responded with error data:", error.response.data);
-      } else if (error.request) {
-        console.error("No response received from API. Request was:", error.request);
-      }
     } finally {
       stop_loader();
     }
   };
 
+
   const releaseSites = async () => {
+    const allowedCount = Math.round((releasePercentage / 100) * originalTotalRecords);
+
+    if (releasedData.length !== allowedCount) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Release count mismatch',
+        text: `You must select exactly ${allowedCount} site(s) for ${releasePercentage}% release. Currently selected: ${releasedData.length}.`,
+        confirmButtonColor: '#3085d6',
+        allowOutsideClick: false,
+        allowEscapeKey: false
+      });
+      return; // Stop API call
+    }
+    let trimmedLKRSID = localLKRSID;
+    if (/^L\d+$/i.test(localLKRSID)) {
+      trimmedLKRSID = localLKRSID.substring(1);
+    }
     try {
+      start_loader();
       const payload = {
-        sitE_LKRS_ID: LKRS_ID,
+        sitE_LKRS_ID: trimmedLKRSID,
         sitE_SITE_RELS_ID: 0,
         site_Remarks: "",
         site_AdditionalInfo: "",
@@ -1537,7 +1964,7 @@ const ReleaseSelection = () => {
         }))
       };
 
-      start_loader();
+
       const response = await final_Release_Sites(payload);
       console.log("Release response:", response);
 
@@ -1545,12 +1972,19 @@ const ReleaseSelection = () => {
         title: "Site released successfully!",
         icon: 'success',
         confirmButtonText: 'OK'
+      }).then(() => {
+        navigate('/Info', {
+          state: {
+            trimmedLKRSID,
+            localLKRSID
+          }
+        });
       });
       setReleasedData([]);             // Clear the unreleased table data
       setSelectedRows([]);
 
 
-      fetchReleaseOrder(localLKRSID);    // Separate function for `sitE_IS_SITE_RELEASED === true`
+      fetchReleaseOrder(trimmedLKRSID);    // Separate function for `sitE_IS_SITE_RELEASED === true`
 
     } catch (error) {
       console.error("Release API Error:", error);
@@ -1564,7 +1998,7 @@ const ReleaseSelection = () => {
     }
   };
   const fetchFinalReleasedSites = async (localLKRSID) => {
-     let trimmedLKRSID = localLKRSID;
+    let trimmedLKRSID = localLKRSID;
     if (/^L\d+$/i.test(localLKRSID)) {
       trimmedLKRSID = localLKRSID.substring(1);
     }
@@ -1833,6 +2267,7 @@ const ReleaseSelection = () => {
 
         if (uploadSuccess) {
           start_loader();
+
           try {
             const listPayload = {
               level: 1,
@@ -1840,26 +2275,8 @@ const ReleaseSelection = () => {
               siteRelsId: 0,
             };
 
-            const listResponse = await listReleaseInfo(listPayload);
+            const listResponse = await fetchReleaseList(trimmedLKRSID);
             console.table(listResponse);
-            const listFileResponse = await fileListAPI(3, trimmedLKRSID, 3, 0); //level, LKRSID, MdocID, docID
-
-
-
-            if (Array.isArray(listResponse)) {
-              const formattedList = listResponse.map((item, index) => ({
-                layoutReleaseNumber: item.sitE_RELS_ORDER_NO,
-                dateOfOrder: item.sitE_RELS_DATE,
-                orderReleaseFile: listFileResponse[index]?.doctrN_DOCBASE64 || null,
-                releaseAuthority: item.sitE_RELS_APPROVALDESIGNATION,
-                releaseType: item.sitE_RELS_SITE_RELSTYPE,
-                releaseOrderDocID: listFileResponse[index]?.doctrN_ID || null,
-                releaseID: item.sitE_RELS_ID || null,
-              }));
-              setOrder_Records(formattedList);
-              setIsOrderEditing(true); // Disable edit button
-              setIsOrder_EditingArea(false); // Disable editing mode
-            }
             stop_loader();
           } catch (error) {
             stop_loader();
@@ -1896,6 +2313,7 @@ const ReleaseSelection = () => {
         }
       } else {
         stop_loader();
+        setOrderReleaseStatus(false); //release order block status
         Swal.fire({
           title: "Error",
           text: "Something went wrong. Please try again later!",
@@ -2068,7 +2486,7 @@ const ReleaseSelection = () => {
           const deletePayload = {
             level: 1,
             lkrS_ID: trimmedLKRSID,
-            sitE_RELS_ID: releaseID,
+            sitE_RELS_ID: releaseID ?? 0,
             sitE_RELS_REMARKS: "",
             sitE_RELS_ADDITIONALINFO: "",
             site_Rels_UpdatedBy: createdBy,
@@ -2097,6 +2515,24 @@ const ReleaseSelection = () => {
       }
     });
   };
+
+  const fetch_releasePercentage = async (trimmedLKRSID, totalRecords, unreleasedSites, releasedSites, lengthRO) => {
+    start_loader();
+    try {
+      const listResponse = await fetch_releasePercentageDetails(trimmedLKRSID);
+      const releaseTypeId = listResponse.sitE_RELS_SITE_RELSTYPE_ID;
+      const releasePercentage = listResponse.releasePercentage;
+
+      if (releaseTypeId) {
+        handleDimensionChange(releaseTypeId, totalRecords, unreleasedSites, releasedSites, lengthRO, releasePercentage);
+      }
+    } catch (error) {
+      console.error("Error fetching approval list:", error);
+    } finally {
+      stop_loader();
+    }
+  };
+
   const fetchReleaseList = async (trimmedLKRSID) => {
     start_loader();
     try {
@@ -2120,12 +2556,19 @@ const ReleaseSelection = () => {
           releaseID: item.sitE_RELS_ID || null,
         }));
 
+        const length_RO = listResponse.length;
+
+        setOrder_Records(formattedList);
         setIsOrderEditing(true); // Disable edit button
         setIsOrder_EditingArea(false); // Disable editing mode
-        setOrder_Records(formattedList);
+        setOrderReleaseStatus(true); //release order block status
+        await fetchReleaseOrder(trimmedLKRSID, length_RO);
       } else {
         console.warn("Empty or invalid approval list");
         setOrder_Records([]); // clear any stale data
+        setOrderReleaseStatus(false);
+        setIsOrderEditing(false); // Disable edit button
+        setIsOrder_EditingArea(true);
       }
       stop_loader();
     } catch (error) {
@@ -2172,7 +2615,7 @@ const ReleaseSelection = () => {
     if (buttonRef.current) {
       setDropdownWidth(buttonRef.current.offsetWidth + "px");
     }
-    
+
   }, [isDropdownOpen]); // update width when dropdown opens
   const fetchOwners = async () => {
     let trimmedLKRSID = localLKRSID;
@@ -2200,6 +2643,7 @@ const ReleaseSelection = () => {
   const [isEKYCCompleted, setIsEKYCCompleted] = useState(false);
   const [ekyc_Data, setEkyc_Data] = useState(null);
   const [isEKYCVerified, setIsEKYCVerified] = useState(false);
+  const [orderReleaseStatus, setOrderReleaseStatus] = useState(false);
 
 
   useEffect(() => {
@@ -2212,7 +2656,7 @@ const ReleaseSelection = () => {
       if (window.location.pathname.toLowerCase() !== "/release") return;
 
       if (data.ekycStatus === "Success") {
-        setIsEKYCVerified(true);  //  Disable button (eKYC verified)
+        //  Disable button (eKYC verified)
         Swal.fire({
           title: 'eKYC Result',
           text: `Status: ${data.ekycStatus}`,
@@ -2222,11 +2666,11 @@ const ReleaseSelection = () => {
           confirmButtonText: 'OK'
         }).then((result) => {
           if (result.isConfirmed) {
-            fetchEKYC_ResponseDetails(selectedOwner?.name, data.ekycTxnNo);
+            fetchEKYC_ResponseDetails(selectedOwner?.name, data.ekycTxnNo, data.ekycStatus);
           }
         });
       } else if (data.ekycStatus === "Failure") {
-        setIsEKYCVerified(false);  //  Ensure button stays enabled for retry
+        //  Ensure button stays enabled for retry
         Swal.fire('eKYC Result', `Status: ${data.ekycStatus}`, 'error');
       }
     };
@@ -2286,7 +2730,11 @@ const ReleaseSelection = () => {
       }
     }
   };
-  const fetchEKYC_ResponseDetails = async (jdaRepName, txnno) => {
+  const fetchEKYC_ResponseDetails = async (jdaRepName, txnno, ekycStatus) => {
+    let trimmedLKRSID = localLKRSID;
+    if (/^L\d+$/i.test(localLKRSID)) {
+      trimmedLKRSID = localLKRSID.substring(1);
+    }
     const transaction_No = localStorage.getItem("tranNo");
     if (transaction_No === txnno) {
       try {
@@ -2299,10 +2747,61 @@ const ReleaseSelection = () => {
         const OwnerType = "NEWOWNER";
 
         const response = await ekyc_Response(transactionNumber, OwnerType, jdaRepName);
-        setOwnerData(response);
-        setEKYC_Status(true);
-        setIsEKYCCompleted(true);
+        if (response) {
+          setOwnerData(response);
 
+          const payloadReleaseOwner = {
+            relsekyC_ID: 0,
+            relsekyC_LKRS_ID: parseInt(trimmedLKRSID),
+            relsekyC_Own_ID: selectedOwner.id,
+            relsekyC_NAME_KN: "",
+            relsekyC_NAME_EN: selectedOwner.name,
+            relsekyC_MOBILENUMBER: "",
+            relsekyC_AADHAARNUMBER: response?.ekycResponse?.maskedAadhaar ?? null,
+            relsekyC_NAMEASINAADHAAR: response?.ekycResponse?.ownerNameEng ?? null,
+            relsekyC_AADHAARVERISTATUS: ekycStatus,
+            relsekyC_NAMEMATCHSCORE: response?.nameMatchScore,
+            relsekyC_REMARKS: "",
+            relsekyC_ADDITIONALINFO: "",
+            relsekyC_CREATEDBY: CreatedBy,
+            relsekyC_CREATEDNAME: CreatedName,
+            relsekyC_CREATEDROLE: RoleID,
+            relsekyC_TransactionNo: txnno,
+            relsEkyc_AADHAAR_RESPONSE: JSON.stringify(response) ?? null,
+          };
+          try {
+            start_loader();
+            const insert_response = await ekyc_insertReleaseDetails(payloadReleaseOwner);
+
+            if (insert_response.responseStatus === true) {
+              setEKYC_Status(true);
+              setIsEKYCVerified(true);
+              setIsEKYCCompleted(true);
+              Swal.fire({
+                text: insert_response.responseMessage,
+                icon: "success",
+                confirmButtonText: "OK",
+                allowOutsideClick: false, // prevents closing on outside click
+              });
+              stop_loader();
+            } else {
+              setEKYC_Status(false);
+              setIsEKYCVerified(false);
+              setIsEKYCCompleted(false);
+              Swal.fire({
+                text: insert_response.responseMessage,
+                icon: "error",
+                confirmButtonText: "OK",
+              });
+              stop_loader();
+            }
+
+          } catch (error) {
+            console.error("Failed to insert data:", error);
+          } finally {
+            stop_loader();
+          }
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -2312,10 +2811,10 @@ const ReleaseSelection = () => {
 
     }
   };
-const handleBackToDashboard = (e) => {
-        e.preventDefault(); // Prevents the default anchor tag behavior
-        navigate("/LayoutDashboard");
-    };
+  const handleBackToDashboard = (e) => {
+    e.preventDefault(); // Prevents the default anchor tag behavior
+    navigate("/LayoutDashboard");
+  };
   return (
     <DashboardLayout>
       <div className={`layout-form-container ${loading ? 'no-interaction' : ''}`}>
@@ -2329,13 +2828,13 @@ const handleBackToDashboard = (e) => {
                 <h5 className="card-title" style={{ textAlign: 'center' }}>Release Dashboard</h5>
               </div>
               <div className="card-body">
- <Link
-                                        onClick={handleBackToDashboard}
-                                        style={{ textDecoration: 'none', color: '#006879', display: 'flex', alignItems: 'center' }}
-                                    >
-                                        <i className='fa fa-arrow-left' style={{ marginRight: '8px' }}></i>
-                                        Back to Dashboard
-                                    </Link>
+                <Link
+                  onClick={handleBackToDashboard}
+                  style={{ textDecoration: 'none', color: '#006879', display: 'flex', alignItems: 'center' }}
+                >
+                  <i className='fa fa-arrow-left' style={{ marginRight: '8px' }}></i>
+                  Back to Dashboard
+                </Link>
                 <div className="row">
                   <div className='col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mt-2'>
                     <div className="form-group">
@@ -2369,6 +2868,7 @@ const handleBackToDashboard = (e) => {
                   </div>
 
                 </div>
+                {/* property details table */}
                 {(lkrsTableData.lkrS_DISPLAYID && approvalTableData.approvalOrderNo) && (
                   <>
                     <h5>Property Details</h5>
@@ -2547,7 +3047,7 @@ const handleBackToDashboard = (e) => {
                   </>
                 )}
                 <hr />
-
+                {/* Approval details table  */}
                 {releaseDetails.length > 0 && (
                   <div style={{ marginTop: '20px' }}>
                     <h5 style={{ marginBottom: '15px', fontSize: '20px', fontWeight: 'bold', color: '#333' }}>
@@ -2781,15 +3281,6 @@ const handleBackToDashboard = (e) => {
 
 
                         <div className='col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10'></div>
-                        {/* edit button */}
-                        {/* <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 ">
-                                <div className="form-group">
-                                    <button className="btn btn-info btn-block" disabled={!isOrderEditing} onClick={handleEditRelease}>
-                                        Edit
-                                    </button>
-                                </div>
-                            </div> */}
-                        {/* Save Button */}
                         <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 ">
                           <div className="form-group">
                             <button className="btn btn-success btn-block" onClick={handleOrderSave} disabled={!isOrder_EditingArea}>
@@ -2927,7 +3418,7 @@ const handleBackToDashboard = (e) => {
               <div className="card-body">
                 <div className='row'>
                   <div className='col-md-12 my-3'>
-                    {((selectedValue === '2' && releasedData.length === 0) || selectedValue === '3' || selectedValue === '1') && (
+                    {selectedRows.length > 0 && (
                       <p style={{
                         backgroundColor: '#e8f4ff',
                         border: '1px solid #b3d8ff',
@@ -2937,10 +3428,9 @@ const handleBackToDashboard = (e) => {
                         fontWeight: '500',
                         marginTop: '10px'
                       }}>
-                        {selectedRows.length} record selected
+                        {selectedRows.length} record{selectedRows.length > 1 ? 's' : ''} selected
                       </p>
                     )}
-
                     {releaseData.length > 0 ? (
                       <>
                         <DataTable
@@ -2997,19 +3487,17 @@ const handleBackToDashboard = (e) => {
 
                     </div>
                     <div className='col-md-9'></div>
-                    {finalApiList.length === 0 && (
-                      <div className='col-md-3'>
-                        <button
-                          className="btn btn-primary btn-block mt-3"
-                          // onClick={handleInitial60PercentSave}
-                          onClick={releaseSites}
-                        >
-                          Save
-                        </button>
-                      </div>
-                    )}
+                    <div className='col-md-3'>
+                      <button
+                        className="btn btn-primary btn-block mt-3"
+                        // onClick={handleInitial60PercentSave}
+                        onClick={releaseSites}
+                      >
+                        Save
+                      </button>
+                    </div>
 
-                    {finalApiList.length !== 0 && (
+                    {/* {finalApiList.length !== 0 && (
                       <div className='col-md-3'>
                         <button
                           className="btn btn-primary btn-block mt-3"
@@ -3018,7 +3506,7 @@ const handleBackToDashboard = (e) => {
                           Final Save
                         </button>
                       </div>
-                    )}
+                    )} */}
 
 
                   </div>

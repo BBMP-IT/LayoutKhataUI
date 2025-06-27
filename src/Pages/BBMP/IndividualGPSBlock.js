@@ -165,12 +165,12 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         }
     }, [LKRS_ID, ownerName, totalNoofsites]);
 
-const buttonRef = useRef(null);
+    const buttonRef = useRef(null);
     useEffect(() => {
-       
+
         if (buttonRef.current) {
-                buttonRef.current.click();
-            }
+            buttonRef.current.click();
+        }
     }, [localLKRSID, isRTCSectionSaved, isEPIDSectionSaved]);
 
     const loadData = () => {
@@ -180,7 +180,7 @@ const buttonRef = useRef(null);
             fetchSiteDetails(localLKRSID);
             delay(1000); // 1 second delay
             fetchOwners(localLKRSID);
-           
+
         }
     }
     const sqftToSqm = (sqft) => (sqft ? (parseFloat(sqft) * 0.092903).toFixed(2) : '');
@@ -432,7 +432,7 @@ const buttonRef = useRef(null);
         } else if (enteredArea > totalArea) {
             Swal.fire({
                 title: "Area Exceeds Limit",
-                text: `Area cannot exceed Total Area (${totalArea} SqFt) of the layout`, 
+                text: `Area cannot exceed Total Area (${totalArea} SqFt) of the layout`,
                 icon: "error",
                 confirmButtonText: "OK",
             })
@@ -1124,6 +1124,7 @@ const buttonRef = useRef(null);
             });
         }
     };
+    const [isSitesSaved, setIsSitesSaved] = useState(false);
     const Save_Handler = () => {
         if (!layoutSiteCount) {
             setLayoutSiteCountError("Total number of sites is required");
@@ -1134,6 +1135,7 @@ const buttonRef = useRef(null);
 
         if (totalSitesCount === totalAddedSites) {
             // setIsAddDisabled(true);
+            setIsSitesSaved(true);  // ✅ Mark as saved
             setIsSitesSectionSaved(true);
             Swal.fire({
                 title: "Success!",
@@ -1564,7 +1566,7 @@ const buttonRef = useRef(null);
     };
 
     const fetchSiteDetails = async (LKRS_ID) => {
-       
+
         const storedSiteCount = localStorage.getItem("NUMBEROFSITES");
         if (storedSiteCount) {
             setLayoutSiteCount(storedSiteCount);
@@ -1747,8 +1749,8 @@ const buttonRef = useRef(null);
 
                         <hr className='mt-1' style={{ border: '1px dashed #0077b6' }} />
                         <h4 className='fw-bold fs-7'>Site / Plot wise Details </h4>
-                             <div className="alert alert-info">Note: Please enter Correctly as eKhata will be issued as per this</div>
-                           
+                        <div className="alert alert-info">Note: Please enter Correctly as eKhata will be issued as per this</div>
+
 
                         <div className="row mt-4">
                             <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 mb-3">
@@ -2589,8 +2591,8 @@ const buttonRef = useRef(null);
                     <div className="row" >
                         <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
                             <b>Search using nearest landmark near your layout - once you zoom there then locate your individual layout & tap on top middle of your layout</b>
-                             <br/><div className="alert alert-info">Note : Search nearest landmark & then find layout & site near the landmark</div>
-                            
+                            <br /><div className="alert alert-info">Note : Search nearest landmark & then find layout & site near the landmark</div>
+
                         </div>
                         <div className="col-md-12 col-lg-12 col-sm-12 mb-4 position-relative mt-2">
                             <div className='row'>
@@ -2679,7 +2681,7 @@ const buttonRef = useRef(null);
                             createdName={createdName}
                             roleID={roleID}
                             setIsSitesSectionSaved={setIsSitesSectionSaved}
-                            isSaveDisabled={isAddDisabled}
+                            isSaveDisabled={isSitesSaved}  // ✅ Pass isSitesSaved as the disable flag
                             setIsAddDisabled={setIsAddDisabled}
                         />
                     )}

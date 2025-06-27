@@ -1330,7 +1330,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
 
 
                 <div id="modal-content">
-                    <Modal isOpen={isModalOpen} onClose={closeModal} lkrSid={LKRS_ID}>
+                    <Modal isOpen={isModalOpen} onClose={closeModal} lkrSid={display_LKRS_ID}>
                         {loading && <Loader />}
                         <div style={{ padding: '20px' }}>
                             {/* survey number preview block */}

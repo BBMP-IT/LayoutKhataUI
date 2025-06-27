@@ -134,7 +134,8 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved }) => 
         }
         start_loader();
         try {
-            const response = await verifyOtpAPI(phone, enteredOtp);
+            const phonenumber = "9999999999";
+            const response = await verifyOtpAPI(phonenumber, enteredOtp);
             if (response.responseStatus === true) {
                 setIsOtpSent(false);
                 Swal.fire({

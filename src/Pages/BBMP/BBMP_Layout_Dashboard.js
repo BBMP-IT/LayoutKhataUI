@@ -205,6 +205,9 @@ const BBMP_Layout_Dashboard = () => {
     // const success = await generate_Token();
     // if (success) {
 localStorage.removeItem('LKRSID');
+localStorage.removeItem('display_LKRSID');
+localStorage.removeItem('totalNoOfSites');
+localStorage.removeItem('ownerName');
     navigate('/LayoutForm');
     // } else {
     //   // Optionally show an error alert here

@@ -195,7 +195,7 @@ const handleBackToDashboard = (e) => {
                                         <i className='fa fa-arrow-left' style={{ marginRight: '8px' }}></i>
                                         Back to Dashboard
                                     </Link>
-                                    <div className="row">
+                                    <div className="row mt-3">
                                         <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
                                             <h6>What is the type of Land on which layout is formed</h6>
                                         </div>
@@ -525,7 +525,8 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
     };
 
     const viewRTC = async () => {
-        const url = `https://landrecords.karnataka.gov.in/rtconline/About.aspx?dist_code=${selectedDistrict}&taluk_code=${selectedTaluk}&hobli_code=${selectedHobli}&village_code=${selectedVillage}&surveyno=${surveyNumber}&surnoc=${selectedSurnoc}&hissa=${selectedHissaNo}`;
+        // const url = `https://landrecords.karnataka.gov.in/rtconline/About.aspx?dist_code=${selectedDistrict}&taluk_code=${selectedTaluk}&hobli_code=${selectedHobli}&village_code=${selectedVillage}&surveyno=${surveyNumber}&surnoc=${selectedSurnoc}&hissa=${selectedHissaNo}`;
+        const url = `https://landrecords.karnataka.gov.in/service2/`;
         window.open(url, '_blank');
     };
     const fetchRTCDetails = async () => {
@@ -572,75 +573,122 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
     };
     //final RTC details table
     const tableRTCRef = useRef(null);
-    const handleViewRTC = (item) => {
-        const exists = rtcAddedData.some(
+//     const handleViewRTC = (item) => {
+//     // Check if the clicked owner is main owner
+//     const isMainOwner = item.ext_acre !== 0 || item.ext_gunta !== 0 || item.ext_fgunta !== 0;
+
+//     // Filter all owners that belong to the same main_owner_no
+//     const ownersToAdd = isMainOwner
+//         ? data.filter(o => o.main_owner_no === item.main_owner_no)
+//         : [item];  // If joint owner clicked, just add that owner
+
+//     // Remove duplicates
+//     const newOwners = ownersToAdd.filter((ownerItem) => {
+//         return !rtcAddedData.some(
+//             (data) =>
+//                 data.survey_no === ownerItem.survey_no &&
+//                 data.surnoc === ownerItem.surnoc &&
+//                 data.hissa_no === ownerItem.hissa_no &&
+//                 data.owner === ownerItem.owner &&
+//                 data.father === ownerItem.father
+//         );
+//     });
+
+//     if (newOwners.length === 0) {
+//         Swal.fire("Duplicate!", "All selected records already exist in the table.", "warning");
+//         return;
+//     }
+
+//     // Prepare location data
+//     const selectedDistrictObj = districts.find(d => String(d.districT_CODE) === String(selectedDistrict)) || {};
+//     const selectedTalukObj = taluks.find(t => String(t.talukA_CODE) === String(selectedTaluk)) || {};
+//     const selectedHobliObj = hoblis.find(h => String(h.hoblI_CODE) === String(selectedHobli)) || {};
+//     const selectedVillageObj = villages.find(v => String(v.villagE_CODE) === String(selectedVillage)) || {};
+
+//     const locationData = {
+//         district: selectedDistrictObj.districT_NAME || '',
+//         districtCode: selectedDistrictObj.districT_CODE || '',
+//         taluk: selectedTalukObj.displayName || '',
+//         talukCode: selectedTalukObj.talukA_CODE || '',
+//         hobli: selectedHobliObj.displayName || '',
+//         hobliCode: selectedHobliObj.hoblI_CODE || '',
+//         village: selectedVillageObj.displayName || '',
+//         villageCode: selectedVillageObj.villagE_CODE || ''
+//     };
+
+//     // Add new owners
+//     const ownersWithLocation = newOwners.map(o => ({
+//         ...o,
+//         ...locationData
+//     }));
+
+//     setRtcAddedData(prev => [...prev, ...ownersWithLocation]);
+
+//     toast.success(`${ownersWithLocation.length} record(s) added!`);
+
+//     setTimeout(() => {
+//         tableRTCRef.current?.scrollIntoView({
+//             behavior: 'smooth',
+//             block: 'nearest',
+//         });
+//     }, 300);
+// };
+const handleViewRTC = (item) => {
+    // Always get all owners related to the same main_owner_no
+    const ownersToAdd = data.filter(o => o.main_owner_no === item.main_owner_no);
+
+    // Remove duplicates
+    const newOwners = ownersToAdd.filter((ownerItem) => {
+        return !rtcAddedData.some(
             (data) =>
-                data.survey_no === item.survey_no &&
-                data.surnoc === item.surnoc &&
-                data.hissa_no === item.hissa_no &&
-                data.owner === item.owner &&
-                data.father === item.father
+                data.survey_no === ownerItem.survey_no &&
+                data.surnoc === ownerItem.surnoc &&
+                data.hissa_no === ownerItem.hissa_no &&
+                data.owner === ownerItem.owner &&
+                data.father === ownerItem.father
         );
+    });
 
-        if (exists) {
-            Swal.fire("Duplicate!", "This record already exists in the table.", "warning");
-        } else {
-            const selectedDistrictObj = districts.find(
-                d => String(d.districT_CODE) === String(selectedDistrict)
-            ) || {};
+    if (newOwners.length === 0) {
+        Swal.fire("Duplicate!", "All selected records already exist in the table.", "warning");
+        return;
+    }
 
-            const districtName = selectedDistrictObj.districT_NAME || '';
-            const districtCode = selectedDistrictObj.districT_CODE || '';
+    // Prepare location data
+    const selectedDistrictObj = districts.find(d => String(d.districT_CODE) === String(selectedDistrict)) || {};
+    const selectedTalukObj = taluks.find(t => String(t.talukA_CODE) === String(selectedTaluk)) || {};
+    const selectedHobliObj = hoblis.find(h => String(h.hoblI_CODE) === String(selectedHobli)) || {};
+    const selectedVillageObj = villages.find(v => String(v.villagE_CODE) === String(selectedVillage)) || {};
 
-            const selectedTalukObj = taluks.find(
-                t => String(t.talukA_CODE) === String(selectedTaluk)
-            ) || {};
-
-            const talukName = selectedTalukObj.displayName || '';
-            const talukCode = selectedTalukObj.talukA_CODE || '';
-
-            const selectedHobliObj = hoblis.find(
-                h => String(h.hoblI_CODE) === String(selectedHobli)
-            ) || {};
-
-            const hobliName = selectedHobliObj.displayName || '';
-            const hobliCode = selectedHobliObj.hoblI_CODE || '';
-
-            const selectedVillageObj = villages.find(
-                v => String(v.villagE_CODE) === String(selectedVillage)
-            ) || {};
-
-            const villageName = selectedVillageObj.displayName || '';
-            const villageCode = selectedVillageObj.villagE_CODE || '';
-
-            const itemWithLocation = {
-                ...item,
-                district: districtName,
-                districtCode: districtCode,
-                taluk: talukName,
-                talukCode: talukCode,
-                hobli: hobliName,
-                hobliCode: hobliCode,
-                village: villageName,
-                villageCode: villageCode
-            };
-
-            setRtcAddedData((prev) => [...prev, itemWithLocation]);
-
-            // Show success toast
-            toast.success("Record Added!");
-
-
-            // Scroll to the added table
-            setTimeout(() => {
-                tableRTCRef.current?.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'nearest',
-                });
-
-            }, 300);
-        }
+    const locationData = {
+        district: selectedDistrictObj.districT_NAME || '',
+        districtCode: selectedDistrictObj.districT_CODE || '',
+        taluk: selectedTalukObj.displayName || '',
+        talukCode: selectedTalukObj.talukA_CODE || '',
+        hobli: selectedHobliObj.displayName || '',
+        hobliCode: selectedHobliObj.hoblI_CODE || '',
+        village: selectedVillageObj.displayName || '',
+        villageCode: selectedVillageObj.villagE_CODE || ''
     };
+
+    // Add new owners with location
+    const ownersWithLocation = newOwners.map(o => ({
+        ...o,
+        ...locationData
+    }));
+
+    setRtcAddedData(prev => [...prev, ...ownersWithLocation]);
+
+    toast.success(`${ownersWithLocation.length} record(s) added!`);
+
+    setTimeout(() => {
+        tableRTCRef.current?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest',
+        });
+    }, 300);
+};
+
 
     //First block save API
     const handleSaveRTC = async () => {
@@ -940,9 +988,26 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
         }
     };
     //Remove RTC details
-    const handleRemoveRTC = (indexToRemove) => {
-        setRtcAddedData(prev => prev.filter((_, index) => index !== indexToRemove));
-    };
+    // const handleRemoveRTC = (indexToRemove) => {
+    //     setRtcAddedData(prev => prev.filter((_, index) => index !== indexToRemove));
+    // };
+    const handleRemoveRTC = (rowToRemove) => {
+    Swal.fire({
+        title: "Are you sure?",
+        text: "This will remove the owner and all related owners for this main owner!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, delete",
+        cancelButtonText: "Cancel",
+        confirmButtonColor: "#d33"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            setRtcAddedData(prev => prev.filter(item => item.main_owner_no !== rowToRemove.main_owner_no));
+            toast.success("Main owner and all related sub-owners removed!");
+        }
+    });
+};
+
     const handleView = () => {
         Swal.fire({
             icon: 'info',
@@ -1232,7 +1297,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                             <table className="table table-striped table-hover table-bordered rounded-table">
                                 <thead className="table-primary sticky-header">
                                     <tr>
-                                        <th hidden>Action</th>
+                                        <th >Action</th>
                                         <th>S.No</th>
                                         <th>District</th>
                                         <th>Taluk</th>
@@ -1248,8 +1313,8 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                                 <tbody>
                                     {paginatedData.map((row, index) => (
                                         <tr key={index}>
-                                            <td hidden>
-                                                <button className="btn btn-sm btn-outline-danger" onClick={() => handleRemoveRTC(index + (currentPage - 1) * rowsPerPage)}>
+                                            <td >
+                                                <button className="btn btn-sm btn-outline-danger" onClick={() => handleRemoveRTC(row)}>
                                                     <i className="fa fa-trash" />
                                                 </button>
                                             </td>

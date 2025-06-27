@@ -55,6 +55,7 @@ const config = {
         jdaEKYCInsert: '/api/JDA/fnInsertJDAEkycinfo',
         dashboardcount: '/api/LKRS/fnGetDashCount',
         dashboardData: '/api/LKRS/fnGetDashData',
+        releaseEKYCInsert: '/api/Release/fnInsertReleaseEkycinfo',
 
     }
 };

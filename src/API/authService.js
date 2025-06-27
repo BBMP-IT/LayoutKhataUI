@@ -638,3 +638,13 @@ export const fetch_DashboarddataDetails = async (level) => {
     throw error;
   }
 };
+//EKYC Release Insert API
+export const ekyc_insertReleaseDetails = async (payload) => {
+  try {
+    const response = await apiService.postRequest(config.endpoints.releaseEKYCInsert, payload);
+    return response;
+  } catch (error) {
+    console.error("EKYC insert owner details Error:", error);
+    throw error;
+  }
+};
