@@ -59,7 +59,7 @@ import ReleaseEKYCResultHandler from './Pages/BBMP/Release_EKYC_Preview';
 import Error_Page from './Pages/BBMP/ErrorPage';
 
 import ReleaseDashboard from './Pages/BBMP/ReleaseDashboard';
-
+import Endorsement from './Pages/BBMP/Endorsement';
 
 
 const AppRoutes = () => {
@@ -84,7 +84,9 @@ const AppRoutes = () => {
             <Route path="/EKYCResponse" element={<ProtectedRoute element={<EKYCResultHandler />} />} />
             <Route path="/ReleaseEKYCResponse" element={<ProtectedRoute element={<ReleaseEKYCResultHandler />} />} />
             <Route path="/Info" element={<ProtectedRoute element={<BBMP_SubmittedInfo />} />} />
-            /<Route path='/ReleaseDashboard' element={<ProtectedRoute element={<ReleaseDashboard/>}/>}/>
+            <Route path='/ReleaseDashboard' element={<ProtectedRoute element={<ReleaseDashboard/>}/>}/>
+            <Route path='/Endorsement' element={<ProtectedRoute element={<Endorsement/>}/>}/>
+
 
             <Route path="/tax_Details" element={<BBMP_TaxDetails />} />
             <Route path="/login" element={<Login />} />

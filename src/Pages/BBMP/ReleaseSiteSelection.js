@@ -1949,11 +1949,12 @@ const ReleaseSelection = () => {
     if (/^L\d+$/i.test(localLKRSID)) {
       trimmedLKRSID = localLKRSID.substring(1);
     }
+    const siteRelID = localStorage.getItem("sitE_RELS_Latest_SITE_RELS_ID");
     try {
       start_loader();
       const payload = {
         sitE_LKRS_ID: trimmedLKRSID,
-        sitE_SITE_RELS_ID: 0,
+        sitE_SITE_RELS_ID: siteRelID,
         site_Remarks: "",
         site_AdditionalInfo: "",
         site_UpdatedBy: 0,
@@ -1964,7 +1965,6 @@ const ReleaseSelection = () => {
         }))
       };
 
-
       const response = await final_Release_Sites(payload);
       console.log("Release response:", response);
 
@@ -1974,9 +1974,13 @@ const ReleaseSelection = () => {
         confirmButtonText: 'OK'
       }).then(() => {
         navigate('/Info', {
+
           state: {
-            trimmedLKRSID,
-            localLKRSID
+            LKRS_ID,
+            createdBy,
+            createdName,
+            roleID,
+            display_LKRS_ID
           }
         });
       });
@@ -2521,7 +2525,7 @@ const ReleaseSelection = () => {
     try {
       const listResponse = await fetch_releasePercentageDetails(trimmedLKRSID);
       const releaseTypeId = listResponse.sitE_RELS_SITE_RELSTYPE_ID;
-      localStorage.setItem("releaseTypeId",releaseTypeId);
+      localStorage.setItem('sitE_RELS_Latest_SITE_RELS_ID', listResponse.sitE_RELS_Latest_SITE_RELS_ID);
       const releasePercentage = listResponse.releasePercentage;
 
       if (releaseTypeId) {
@@ -2703,7 +2707,7 @@ const ReleaseSelection = () => {
         const PROPERTY_CODE = 1;
         const redirectSource = "RLS";
         const EkycResponseUrl = `${config.redirectionTypeURL}`;
-        
+
         // Pass them to your API
         const response = await ekyc_Details({
           OwnerNumber,

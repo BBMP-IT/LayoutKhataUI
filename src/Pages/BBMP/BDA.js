@@ -275,6 +275,8 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
         let newErrors = {};
         if (!formData.layoutApprovalNumber.trim()) {
             newErrors.layoutApprovalNumber = "Layout Approval Number is required.";
+        } else if (/\s/.test(formData.layoutApprovalNumber)) {
+            newErrors.layoutApprovalNumber = "Spaces are not allowed in the Layout Approval Number.";
         }
         if (!formData.approvalOrder) {
             newErrors.approvalOrder = "Please upload a valid PDF (max 5MB).";
@@ -340,10 +342,10 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                     const response = await deleteApprovalInfo(deletePayload);
 
                     if (response.responseStatus === true) {
-                        Swal.fire(response.responseMessage,"", "success");
+                        Swal.fire(response.responseMessage, "", "success");
                         setTotalNoofsites(0);
                         localStorage.removeItem('totalNoOfSites');
-                        
+
                         setisApprovalEditing(false);
                         setIsEditing(true);
                         fetchApprovalList(localLKRSID);
@@ -507,9 +509,9 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             } else {
                 stop_loader();
                 Swal.fire({
-                    title: "Error",
-                    text: "Something went wrong. Please try again later!",
-                    icon: "error",
+
+                    text: response.responseMessage,
+                    icon: "info",
                     confirmButtonText: "OK",
                 });
             }

@@ -66,6 +66,7 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
     const [records, setRecords] = useState([]);
     const [isDCSectionDisabled, setIsDCSectionDisabled] = useState(false);
     const fileDCInputRef = useRef(null);
+    const fileDCFileRef = useRef(null);
     const handleDCNumberChange = (e) => {
         setDcNumber(e.target.value);
         setErrors(prev => ({ ...prev, dcNumber: '' }));
@@ -241,7 +242,7 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
                     if (fileDCInputRef.current) {
                         fileDCInputRef.current.value = ""; // clear file input field
                     }
-
+                    if (fileDCFileRef.current) fileDCFileRef.current.value = "";
                     setDcNumber("");                   // clear order number
                     setDCdate("");                     // clear date
                     setUploadDCFile(null);            // clear file
@@ -250,7 +251,7 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
                         ...prev,
                         dcNumber: '',
                         dcDate: '',
-                        file: ''
+                        dcFile: ''
                     }));
                 }
             } else {
@@ -534,6 +535,7 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
                                     className="form-control"
                                     onChange={handleFileChange}
                                     disabled={isDCSectionDisabled}
+                                    ref={fileDCFileRef}
                                 />
                                 {errors.file && (
                                     <span className="text-danger" style={{ fontSize: '0.875rem' }}>{errors.file}</span>

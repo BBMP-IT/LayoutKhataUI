@@ -422,6 +422,8 @@ const JDA_EKYCBlock = ({ LKRS_ID, jdaID, setIsJDAEKYCSectionSaved }) => {
                 })
             } else if (event.data.ekycStatus === "Failure") {
                 Swal.fire('eKYC Result', `Status: ${event.data.ekycStatus}`, 'error');
+            }else{
+                Swal.fire('eKYC Result', `Status: EKYC Failed`, 'error');
             }
         };
         window.addEventListener("message", handleMessage);

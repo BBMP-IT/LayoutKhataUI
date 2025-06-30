@@ -21,7 +21,7 @@ import {
     handleFetchDistricts, handleFetchTalukOptions, handleFetchHobliOptions, handleFetchVillageOptions,
     handleFetchHissaOptions, fetchRTCDetailsAPI, handleFetchEPIDDetails, getAccessToken, sendOtpAPI, verifyOtpAPI, submitEPIDDetails, submitsurveyNoDetails,
     insertApprovalInfo, listApprovalInfo, deleteApprovalInfo, insertReleaseInfo, deleteReleaseInfo, listReleaseInfo, fileUploadAPI, fileListAPI, insertJDA_details, ownerEKYC_Details,
-    ekyc_Details, ekyc_Response, ekyc_insertOwnerDetails, jdaEKYC_Details,
+    ekyc_Details, ekyc_Response, ekyc_insertOwnerDetails, jdaEKYC_Details, dcConversionListAPI,
     individualSiteAPI, individualSiteListAPI, fetchECDetails, fetchDeedDocDetails, fetchDeedDetails, fetchJDA_details, deleteSiteInfo, fetch_LKRSID, update_Final_SaveAPI
 } from '../../API/authService';
 
@@ -566,6 +566,39 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
             ext_fgunta: item.suR_EXTFGUNTA || 0,
         }));
     };
+
+     //fetch DC conversion values
+        const fetch_DCConversion = async (localLKRSID) => {
+            try {
+                start_loader();
+    
+                let dC_id = 0;
+                const listResponse = await dcConversionListAPI(localLKRSID, dC_id);
+                console.table(listResponse);
+                const listFileResponse = await fileListAPI(3, localLKRSID, 5, 0); //level, LKRSID, MdocID, docID
+    
+    
+    
+                if (Array.isArray(listResponse)) {
+                    const formattedList = listResponse.map((item, index) => ({
+                        layoutDCNumber: item.dC_Conversion_No,
+                        dateOfOrder: item.dC_Conversion_Date,
+                        DCFile: listFileResponse[index]?.doctrN_DOCBASE64 || null,
+                        dc_id: item.dC_id,
+                        DCconversionDocID: listFileResponse[index]?.doctrN_ID || null,
+    
+                    }));
+                    setRecords(formattedList);
+                }
+                stop_loader();
+            } catch (error) {
+                stop_loader();
+                console.error("Error fetching DC conversion list:", error);
+            } finally {
+                stop_loader();
+            }
+        }
+
     // =======================================================Khata details starts=========================================
     const [epidshowTable, setEPIDShowTable] = useState(false);
     const [epid_fetchedData, setEPID_FetchedData] = useState(null);
@@ -1135,6 +1168,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
     const handlePreviewClick = async () => {
         if (!localLKRSID) return;
         await handleGetLKRSID(localLKRSID);
+        await fetch_DCConversion(localLKRSID);
         await fetchApprovalList(localLKRSID);
         await fetchReleaseList(localLKRSID);
         await fetchSiteDetails(localLKRSID);
