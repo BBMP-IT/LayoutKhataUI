@@ -450,13 +450,15 @@ const JDA_EKYCBlock = ({ LKRS_ID, jdaID, setIsJDAEKYCSectionSaved }) => {
                 const BOOK_APP_NO = 2;
                 const PROPERTY_CODE = 1;
                 const redirectSource = "";
+                const EkycResponseUrl = `${config.redirectionTypeURL}`;
 
                 // Pass them to your API
                 const response = await ekyc_Details({
                     OwnerNumber,
                     BOOK_APP_NO,
                     PROPERTY_CODE,
-                    redirectSource
+                    redirectSource, 
+                    EkycResponseUrl
                 });
 
                 const resultUrl = response?.ekycRequestUrl;

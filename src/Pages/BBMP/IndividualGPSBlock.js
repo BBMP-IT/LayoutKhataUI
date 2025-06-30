@@ -38,7 +38,8 @@ export const useLoader = () => {
     return { loading, start_loader, stop_loader };
 };
 
-const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID, totalNoofsites, ownerName, isRTCSectionSaved, isEPIDSectionSaved, setIsSitesSectionSaved, }) => {
+const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID, totalNoofsites, ownerName, isRTCSectionSaved, isEPIDSectionSaved, 
+    setIsSitesSectionSaved, }) => {
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
     const [shape, setShape] = useState("regular"); // Track selected shape
 
@@ -1361,6 +1362,17 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             });
             return;
         }
+         const existingSiteNumbers = allSites.map(site => site.sitE_NO);
+            const siteNumberToCheck = shape === "regular" ? regular_siteNumber : irregular_siteNumber;
+
+            if (existingSiteNumbers.includes(siteNumberToCheck)) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Duplicate Site Number",
+                    text: `Site number "${siteNumberToCheck}" already exists. Please enter a new site number.`,
+                });
+                return; // Stop further execution
+            }
 
         if (isChecked) {
             const existingSiteNumbers = allSites.map(site => site.sitE_NO);

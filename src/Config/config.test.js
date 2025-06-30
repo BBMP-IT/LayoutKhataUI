@@ -9,6 +9,7 @@ const ApiCredentials = {
         username: "BBMPOTP",
         password: "10750b6bdc29495297efd2fb29047a94",
         layoutForm: "https://testlayoutkhata.bbmpgov.in",
+        ekycRequestURL: 0,
     }
 };
 
@@ -16,6 +17,7 @@ const config = {
     apiBaseUrl: ApiCredentials.credentials.apiUrl,
     apiLoginBaseUrl: ApiCredentials.credentials.loginUrl,
     redirectBaseURL: ApiCredentials.credentials.layoutForm,
+    redirectionTypeURL: ApiCredentials.credentials.ekycRequestURL,
 
     credentials: ApiCredentials.credentials,
     endpoints: {

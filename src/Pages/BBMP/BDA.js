@@ -341,7 +341,9 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
 
                     if (response.responseStatus === true) {
                         Swal.fire(response.responseMessage,"", "success");
+                        setTotalNoofsites(0);
                         localStorage.removeItem('totalNoOfSites');
+                        
                         setisApprovalEditing(false);
                         setIsEditing(true);
                         fetchApprovalList(localLKRSID);

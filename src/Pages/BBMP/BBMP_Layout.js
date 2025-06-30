@@ -24,7 +24,7 @@ import {
     ekyc_Details, ekyc_Response, ekyc_insertOwnerDetails, jdaEKYC_Details,
     individualSiteAPI, individualSiteListAPI, fetchECDetails, fetchDeedDocDetails, fetchDeedDetails, fetchJDA_details, deleteSiteInfo, fetch_LKRSID, update_Final_SaveAPI
 } from '../../API/authService';
-
+import DCConversion from './DC_Conversion';
 import BDA from './BDA';
 import DeclarationBlock from './DeclarationBlock';
 import JDA_EKYCBlock from './JDA_EKYCBlock';
@@ -48,7 +48,7 @@ export const useLoader = () => {
 
 
 const BBMP_LayoutForm = () => {
- const navigate = useNavigate();
+    const navigate = useNavigate();
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
     const [zoomLevel] = useState(0.9);
     const [newLanguage, setNewLanguage] = useState(localStorage.getItem('selectedLanguage'));
@@ -71,7 +71,7 @@ const BBMP_LayoutForm = () => {
     // const [LKRS_ID, setLKRS_ID] = useState(() => localStorage.getItem("LKRSID") || "");
     const [LKRS_ID, setLKRS_ID] = useState(() => localStorage.getItem("LKRSID") || "");
     const [display_LKRS_ID, setDisplay_LKRS_ID] = useState(() => localStorage.getItem("display_LKRSID") || "");
-    const [totalNoofsites, setTotalNoofsites] = useState("0");
+    const [totalNoofsites, setTotalNoofsites] = useState(0);
 
 
 
@@ -87,6 +87,8 @@ const BBMP_LayoutForm = () => {
 
     //OwnerName 
     const [ownerName, setOwnerName] = useState("");
+    //fetching ownerDetails
+    const [validate_ownerDataList, setValidate_OwnerDataList] = useState([]);
 
     useEffect(() => {
         document.body.style.zoom = zoomLevel;
@@ -168,7 +170,7 @@ const BBMP_LayoutForm = () => {
             console.error("Failed to fetch LKRSID data:", error);
         }
     };
-const handleBackToDashboard = (e) => {
+    const handleBackToDashboard = (e) => {
         e.preventDefault(); // Prevents the default anchor tag behavior
         navigate("/LayoutDashboard");
     };
@@ -188,7 +190,7 @@ const handleBackToDashboard = (e) => {
                                 </div>
 
                                 <div className="card-body">
-                                     <Link
+                                    <Link
                                         onClick={handleBackToDashboard}
                                         style={{ textDecoration: 'none', color: '#006879', display: 'flex', alignItems: 'center' }}
                                     >
@@ -247,11 +249,16 @@ const handleBackToDashboard = (e) => {
                                                 setRtc_AddedData={setRtc_AddedData} setOrderDetails={setOrderDetails}
                                                 onDisableEPIDSection={() => { setIsEPIDSectionDisabled(true); setIsSurveyNoSectionDisabled(true) }} LKRS_ID={LKRS_ID}
                                                 setDisplay_LKRS_ID={setDisplay_LKRS_ID} setLKRS_ID={setLKRS_ID} setIsRTCSectionSaved={setIsRTCSectionSaved} setOwnerName={setOwnerName} />
+                                                
                                         )}
 
                                     </div>
                                 </div>
                             </div>
+                            {selectedLandType === "convertedRevenue" && (
+                                <DCConversion LKRS_ID={LKRS_ID} isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved}/>
+                            )}
+
 
                             <BDA approval_details={approval_details} setApprovalDetails={setApprovalDetails}
                                 order_details={order_details} setOrderDetails={setOrderDetails} LKRS_ID={LKRS_ID}
@@ -261,11 +268,12 @@ const handleBackToDashboard = (e) => {
                             <IndividualGPSBlock areaSqft={areaSqft} LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID} totalNoofsites={totalNoofsites}
                                 isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsSitesSectionSaved={setIsSitesSectionSaved} ownerName={ownerName} />
 
-                            <ECDetailsBlock LKRS_ID={LKRS_ID} isRTCSectionSaved={isRTCSectionSaved} ownerName={ownerName} isEPIDSectionSaved={isEPIDSectionSaved} setIsECSectionSaved={setIsECSectionSaved} setIsOwnerEKYCSectionSaved={setIsOwnerEKYCSectionSaved} setIsJDAEKYCSectionSaved={setIsJDAEKYCSectionSaved} />
+                            <ECDetailsBlock LKRS_ID={LKRS_ID} isRTCSectionSaved={isRTCSectionSaved} ownerName={ownerName} isEPIDSectionSaved={isEPIDSectionSaved} setIsECSectionSaved={setIsECSectionSaved}
+                                setValidate_OwnerDataList={setValidate_OwnerDataList} setIsOwnerEKYCSectionSaved={setIsOwnerEKYCSectionSaved} setIsJDAEKYCSectionSaved={setIsJDAEKYCSectionSaved} />
 
                             <DeclarationBlock LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID} display_LKRS_ID={display_LKRS_ID} isRTCSectionSaved={isRTCSectionSaved}
-                                isEPIDSectionSaved={isEPIDSectionSaved} isApprovalSectionSaved={isApprovalSectionSaved} isReleaseSectionSaved={isReleaseSectionSaved}
-                                isSitesSectionSaved={isSitesSectionSaved} isECSectionSaved={isECSectionSaved} isJDAEKYCSectionSaved={isJDAEKYCSectionSaved} isOwnerEKYCSectionSaved={isOwnerEKYCSectionSaved}/>
+                                isEPIDSectionSaved={isEPIDSectionSaved} isApprovalSectionSaved={isApprovalSectionSaved} isReleaseSectionSaved={isReleaseSectionSaved} validate_ownerDataList={validate_ownerDataList}
+                                isSitesSectionSaved={isSitesSectionSaved} isECSectionSaved={isECSectionSaved} isJDAEKYCSectionSaved={isJDAEKYCSectionSaved} isOwnerEKYCSectionSaved={isOwnerEKYCSectionSaved} />
                         </div>
 
                     </div>
@@ -355,50 +363,58 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
     const [isDistrictReadonly, setIsDistrictReadonly] = useState(false);
 
     const fetchDistricts = async (newLanguage) => {
-
+        start_loader();
         try {
+
             const districts = await handleFetchDistricts(newLanguage);
             setDistricts(districts);
             setSelectedDistrict(20);
             setIsDistrictReadonly(true);
-
+            stop_loader();
         } catch (err) {
             console.error("Error fetching districts", err);
-
+            stop_loader();
         } finally {
+            stop_loader();
         }
     };
     const fetchTaluks = async (districtCode, Language) => {
+        start_loader();
         try {
             const options = await handleFetchTalukOptions(districtCode, language);
+            stop_loader();
             setTaluks(options);
         } catch (err) {
             console.error('Failed to load Taluk options:', err);
-
+            stop_loader();
         } finally {
+            stop_loader();
         }
     };
     const fetchHoblis = async (districtCode, talukCode, Language) => {
-
+        start_loader();
         try {
             const hobliOptions = await handleFetchHobliOptions(districtCode, talukCode, language);
             setHoblis(hobliOptions);
-
+            stop_loader();
         } catch (err) {
             console.error('Failed to fetch hoblis:', err);
-
+            stop_loader();
         } finally {
-
+            stop_loader();
         }
     };
     const fetchVillages = async (districtCode, talukCode, hobliCode, Language) => {
+        start_loader();
         try {
             const villageOptions = await handleFetchVillageOptions(districtCode, talukCode, hobliCode, language);
             setVillages(villageOptions);
-
+            stop_loader();
         } catch (err) {
             console.error('Failed to fetch villages:', err);
+            stop_loader();
         } finally {
+            stop_loader();
         }
     };
     const [data, setData] = useState([]);
@@ -573,121 +589,121 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
     };
     //final RTC details table
     const tableRTCRef = useRef(null);
-//     const handleViewRTC = (item) => {
-//     // Check if the clicked owner is main owner
-//     const isMainOwner = item.ext_acre !== 0 || item.ext_gunta !== 0 || item.ext_fgunta !== 0;
+    //     const handleViewRTC = (item) => {
+    //     // Check if the clicked owner is main owner
+    //     const isMainOwner = item.ext_acre !== 0 || item.ext_gunta !== 0 || item.ext_fgunta !== 0;
 
-//     // Filter all owners that belong to the same main_owner_no
-//     const ownersToAdd = isMainOwner
-//         ? data.filter(o => o.main_owner_no === item.main_owner_no)
-//         : [item];  // If joint owner clicked, just add that owner
+    //     // Filter all owners that belong to the same main_owner_no
+    //     const ownersToAdd = isMainOwner
+    //         ? data.filter(o => o.main_owner_no === item.main_owner_no)
+    //         : [item];  // If joint owner clicked, just add that owner
 
-//     // Remove duplicates
-//     const newOwners = ownersToAdd.filter((ownerItem) => {
-//         return !rtcAddedData.some(
-//             (data) =>
-//                 data.survey_no === ownerItem.survey_no &&
-//                 data.surnoc === ownerItem.surnoc &&
-//                 data.hissa_no === ownerItem.hissa_no &&
-//                 data.owner === ownerItem.owner &&
-//                 data.father === ownerItem.father
-//         );
-//     });
+    //     // Remove duplicates
+    //     const newOwners = ownersToAdd.filter((ownerItem) => {
+    //         return !rtcAddedData.some(
+    //             (data) =>
+    //                 data.survey_no === ownerItem.survey_no &&
+    //                 data.surnoc === ownerItem.surnoc &&
+    //                 data.hissa_no === ownerItem.hissa_no &&
+    //                 data.owner === ownerItem.owner &&
+    //                 data.father === ownerItem.father
+    //         );
+    //     });
 
-//     if (newOwners.length === 0) {
-//         Swal.fire("Duplicate!", "All selected records already exist in the table.", "warning");
-//         return;
-//     }
+    //     if (newOwners.length === 0) {
+    //         Swal.fire("Duplicate!", "All selected records already exist in the table.", "warning");
+    //         return;
+    //     }
 
-//     // Prepare location data
-//     const selectedDistrictObj = districts.find(d => String(d.districT_CODE) === String(selectedDistrict)) || {};
-//     const selectedTalukObj = taluks.find(t => String(t.talukA_CODE) === String(selectedTaluk)) || {};
-//     const selectedHobliObj = hoblis.find(h => String(h.hoblI_CODE) === String(selectedHobli)) || {};
-//     const selectedVillageObj = villages.find(v => String(v.villagE_CODE) === String(selectedVillage)) || {};
+    //     // Prepare location data
+    //     const selectedDistrictObj = districts.find(d => String(d.districT_CODE) === String(selectedDistrict)) || {};
+    //     const selectedTalukObj = taluks.find(t => String(t.talukA_CODE) === String(selectedTaluk)) || {};
+    //     const selectedHobliObj = hoblis.find(h => String(h.hoblI_CODE) === String(selectedHobli)) || {};
+    //     const selectedVillageObj = villages.find(v => String(v.villagE_CODE) === String(selectedVillage)) || {};
 
-//     const locationData = {
-//         district: selectedDistrictObj.districT_NAME || '',
-//         districtCode: selectedDistrictObj.districT_CODE || '',
-//         taluk: selectedTalukObj.displayName || '',
-//         talukCode: selectedTalukObj.talukA_CODE || '',
-//         hobli: selectedHobliObj.displayName || '',
-//         hobliCode: selectedHobliObj.hoblI_CODE || '',
-//         village: selectedVillageObj.displayName || '',
-//         villageCode: selectedVillageObj.villagE_CODE || ''
-//     };
+    //     const locationData = {
+    //         district: selectedDistrictObj.districT_NAME || '',
+    //         districtCode: selectedDistrictObj.districT_CODE || '',
+    //         taluk: selectedTalukObj.displayName || '',
+    //         talukCode: selectedTalukObj.talukA_CODE || '',
+    //         hobli: selectedHobliObj.displayName || '',
+    //         hobliCode: selectedHobliObj.hoblI_CODE || '',
+    //         village: selectedVillageObj.displayName || '',
+    //         villageCode: selectedVillageObj.villagE_CODE || ''
+    //     };
 
-//     // Add new owners
-//     const ownersWithLocation = newOwners.map(o => ({
-//         ...o,
-//         ...locationData
-//     }));
+    //     // Add new owners
+    //     const ownersWithLocation = newOwners.map(o => ({
+    //         ...o,
+    //         ...locationData
+    //     }));
 
-//     setRtcAddedData(prev => [...prev, ...ownersWithLocation]);
+    //     setRtcAddedData(prev => [...prev, ...ownersWithLocation]);
 
-//     toast.success(`${ownersWithLocation.length} record(s) added!`);
+    //     toast.success(`${ownersWithLocation.length} record(s) added!`);
 
-//     setTimeout(() => {
-//         tableRTCRef.current?.scrollIntoView({
-//             behavior: 'smooth',
-//             block: 'nearest',
-//         });
-//     }, 300);
-// };
-const handleViewRTC = (item) => {
-    // Always get all owners related to the same main_owner_no
-    const ownersToAdd = data.filter(o => o.main_owner_no === item.main_owner_no);
+    //     setTimeout(() => {
+    //         tableRTCRef.current?.scrollIntoView({
+    //             behavior: 'smooth',
+    //             block: 'nearest',
+    //         });
+    //     }, 300);
+    // };
+    const handleViewRTC = (item) => {
+        // Always get all owners related to the same main_owner_no
+        const ownersToAdd = data.filter(o => o.main_owner_no === item.main_owner_no);
 
-    // Remove duplicates
-    const newOwners = ownersToAdd.filter((ownerItem) => {
-        return !rtcAddedData.some(
-            (data) =>
-                data.survey_no === ownerItem.survey_no &&
-                data.surnoc === ownerItem.surnoc &&
-                data.hissa_no === ownerItem.hissa_no &&
-                data.owner === ownerItem.owner &&
-                data.father === ownerItem.father
-        );
-    });
-
-    if (newOwners.length === 0) {
-        Swal.fire("Duplicate!", "All selected records already exist in the table.", "warning");
-        return;
-    }
-
-    // Prepare location data
-    const selectedDistrictObj = districts.find(d => String(d.districT_CODE) === String(selectedDistrict)) || {};
-    const selectedTalukObj = taluks.find(t => String(t.talukA_CODE) === String(selectedTaluk)) || {};
-    const selectedHobliObj = hoblis.find(h => String(h.hoblI_CODE) === String(selectedHobli)) || {};
-    const selectedVillageObj = villages.find(v => String(v.villagE_CODE) === String(selectedVillage)) || {};
-
-    const locationData = {
-        district: selectedDistrictObj.districT_NAME || '',
-        districtCode: selectedDistrictObj.districT_CODE || '',
-        taluk: selectedTalukObj.displayName || '',
-        talukCode: selectedTalukObj.talukA_CODE || '',
-        hobli: selectedHobliObj.displayName || '',
-        hobliCode: selectedHobliObj.hoblI_CODE || '',
-        village: selectedVillageObj.displayName || '',
-        villageCode: selectedVillageObj.villagE_CODE || ''
-    };
-
-    // Add new owners with location
-    const ownersWithLocation = newOwners.map(o => ({
-        ...o,
-        ...locationData
-    }));
-
-    setRtcAddedData(prev => [...prev, ...ownersWithLocation]);
-
-    toast.success(`${ownersWithLocation.length} record(s) added!`);
-
-    setTimeout(() => {
-        tableRTCRef.current?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'nearest',
+        // Remove duplicates
+        const newOwners = ownersToAdd.filter((ownerItem) => {
+            return !rtcAddedData.some(
+                (data) =>
+                    data.survey_no === ownerItem.survey_no &&
+                    data.surnoc === ownerItem.surnoc &&
+                    data.hissa_no === ownerItem.hissa_no &&
+                    data.owner === ownerItem.owner &&
+                    data.father === ownerItem.father
+            );
         });
-    }, 300);
-};
+
+        if (newOwners.length === 0) {
+            Swal.fire("Duplicate!", "All selected records already exist in the table.", "warning");
+            return;
+        }
+
+        // Prepare location data
+        const selectedDistrictObj = districts.find(d => String(d.districT_CODE) === String(selectedDistrict)) || {};
+        const selectedTalukObj = taluks.find(t => String(t.talukA_CODE) === String(selectedTaluk)) || {};
+        const selectedHobliObj = hoblis.find(h => String(h.hoblI_CODE) === String(selectedHobli)) || {};
+        const selectedVillageObj = villages.find(v => String(v.villagE_CODE) === String(selectedVillage)) || {};
+
+        const locationData = {
+            district: selectedDistrictObj.districT_NAME || '',
+            districtCode: selectedDistrictObj.districT_CODE || '',
+            taluk: selectedTalukObj.displayName || '',
+            talukCode: selectedTalukObj.talukA_CODE || '',
+            hobli: selectedHobliObj.displayName || '',
+            hobliCode: selectedHobliObj.hoblI_CODE || '',
+            village: selectedVillageObj.displayName || '',
+            villageCode: selectedVillageObj.villagE_CODE || ''
+        };
+
+        // Add new owners with location
+        const ownersWithLocation = newOwners.map(o => ({
+            ...o,
+            ...locationData
+        }));
+
+        setRtcAddedData(prev => [...prev, ...ownersWithLocation]);
+
+        toast.success(`${ownersWithLocation.length} record(s) added!`);
+
+        setTimeout(() => {
+            tableRTCRef.current?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest',
+            });
+        }, 300);
+    };
 
 
     //First block save API
@@ -701,14 +717,14 @@ const handleViewRTC = (item) => {
             return;
         }
         // ✅ Check DC Conversion No
-        if (!dcNumber.trim()) {
-            Swal.fire("Missing Field", "Please enter DC Conversion Order No.", "warning");
-            return
-        }
-        if (!uploadedFile) {
-            Swal.fire("Missing File", "Please upload DC Conversion Order file.", "warning");
-            return
-        }
+        // if (!dcNumber.trim()) {
+        //     Swal.fire("Missing Field", "Please enter DC Conversion Order No.", "warning");
+        //     return
+        // }
+        // if (!uploadedFile) {
+        //     Swal.fire("Missing File", "Please upload DC Conversion Order file.", "warning");
+        //     return
+        // }
         const payload = {
             lkrS_ID: 0,
             lkrS_LANDTYPE: "surveyNo",
@@ -738,6 +754,7 @@ const handleViewRTC = (item) => {
                 suR_OWNERNAME: item.owner,
                 suR_EXTACRE: item.ext_acre,
                 suR_EXTGUNTA: item.ext_gunta,
+                suR_EXTFGUNTA: item.ext_fgunta,
                 suR_EXTINSQFT: item.ext_in_sqft,
                 suR_EXTINSQMT: item.ext_in_sqmt,
                 suR_ISAADHAARSEEDED: 0,
@@ -943,7 +960,7 @@ const handleViewRTC = (item) => {
             hissa_no: item.suR_HISSA,
             ext_acre: item.suR_EXTACRE || 0,
             ext_gunta: item.suR_EXTGUNTA || 0,
-            ext_fgunta: item.suR_EXTFgunta || 0, // Make sure to handle this if needed
+            ext_fgunta: item.suR_EXTFGUNTA || 0, // Make sure to handle this if needed
         }));
     };
     //fetching Details from LKRSID
@@ -992,21 +1009,21 @@ const handleViewRTC = (item) => {
     //     setRtcAddedData(prev => prev.filter((_, index) => index !== indexToRemove));
     // };
     const handleRemoveRTC = (rowToRemove) => {
-    Swal.fire({
-        title: "Are you sure?",
-        text: "This will remove the owner and all related owners for this main owner!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Yes, delete",
-        cancelButtonText: "Cancel",
-        confirmButtonColor: "#d33"
-    }).then((result) => {
-        if (result.isConfirmed) {
-            setRtcAddedData(prev => prev.filter(item => item.main_owner_no !== rowToRemove.main_owner_no));
-            toast.success("Main owner and all related sub-owners removed!");
-        }
-    });
-};
+        Swal.fire({
+            title: "Are you sure?",
+            text: "This will remove the owner and all related owners for this main owner!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, delete",
+            cancelButtonText: "Cancel",
+            confirmButtonColor: "#d33"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                setRtcAddedData(prev => prev.filter(item => item.main_owner_no !== rowToRemove.main_owner_no));
+                toast.success("Main owner and all related sub-owners removed!");
+            }
+        });
+    };
 
     const handleView = () => {
         Swal.fire({
@@ -1221,7 +1238,7 @@ const handleViewRTC = (item) => {
                 {/* Fetch button  */}
                 <div className="col-12 col-sm-12 col-md-6 col-lg-2 col-xl-2  mb-3">
                     <label className="form-label">&nbsp;</label>
-                    <button className='btn btn-primary btn-block' onClick={fetchRTCDetails} disabled={isSurveyNoSectionDisabled}>Fetch</button>
+                    <button className='btn btn-primary btn-block' onClick={fetchRTCDetails}  disabled={!hissaEnabled || isSurveyNoSectionDisabled}>Fetch</button>
                 </div>
                 {/* View RTC button */}
                 <div className='col-md-2 mb-3'>
@@ -1347,7 +1364,7 @@ const handleViewRTC = (item) => {
                                 </tbody>
                                 <tfoot >
                                     <tr>
-                                        <th colSpan={5}></th>
+                                        <th colSpan={6}></th>
                                         <th colSpan={2} className="text-end fw-bold">Total Area:</th>
                                         <th className="text-left fw-bold" >{`${totalAcre}.${totalGunta}.${totalFGunta}`}</th>
                                         <th className='fw-bold'>{totalSqFt.toFixed(2)}</th>
@@ -1390,95 +1407,7 @@ const handleViewRTC = (item) => {
                             </div>
                         </div>
                         <br />
-                        {/* Layout DC Conversion order No */}
-                        <div className='row'>
-                            <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
-                                <div className="form-group">
-                                    <label className="form-label">
-                                        Enter DC Conversion Order Number <span className="mandatory_color">*</span>
-                                    </label>
-                                    <input
-                                        type="tel"
-                                        className="form-control"
-                                        placeholder="Enter DC Conversion Order Number"
-                                        name="layoutApprovalNumber"
-                                        value={dcNumber}
-                                        onChange={handleDCNumberChange}
-                                        disabled={isSurveyNoSectionDisabled}
-                                    />
-                                    {errors.dcNumber && (
-                                        <span className="text-danger" style={{ fontSize: '0.875rem' }}>{errors.dcNumber}</span>
-                                    )}
-                                </div>
-                            </div>
-                            <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 '>
-                                <div className="form-group">
-                                    <label className="form-label">&nbsp;
-                                    </label>
-                                    <button className="btn btn-primary btn-block" onClick={showImplementationAlert} disabled={isSurveyNoSectionDisabled}>Fetch</button>
-                                </div>
-                            </div>
-                            {/* Scan & Upload Layout DC Conversion order */}
-                            <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
-                                <div className="form-group">
-                                    <label className="form-label">Upload Conversion order</label>
-                                    <input
-                                        type="file"
-                                        accept=".pdf"
-                                        className="form-control"
-                                        onChange={handleFileChange}
-                                        disabled={isSurveyNoSectionDisabled}
-                                    />
-                                    {errors.file && (
-                                        <span className="text-danger" style={{ fontSize: '0.875rem' }}>{errors.file}</span>
-                                    )}
 
-                                    {uploadedFile && uploadedFileURL && (
-                                        <div className="mt-2">
-                                            <div
-                                                className="iframe-container"
-                                                style={{
-                                                    border: "1px solid #ddd",
-                                                    borderRadius: "5px",
-                                                    overflow: "hidden",
-                                                    padding: "0",
-                                                    width: "120px",
-                                                    height: "120px",
-                                                }}
-                                            >
-                                                <iframe
-                                                    src={uploadedFileURL}
-                                                    width="100%"
-                                                    height="100%"
-                                                    title="Conversion Order"
-                                                    onClick={() => window.open(uploadedFileURL, "_blank")}
-                                                    style={{ cursor: "pointer", border: "none" }}
-                                                />
-                                            </div>
-                                            <p className="mt-1" style={{ fontSize: "0.875rem" }}>
-                                                Current File:{" "}
-                                                <a
-                                                    href={uploadedFileURL}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    style={{
-                                                        textDecoration: "underline",
-                                                        color: "#007bff",
-                                                        fontSize: "0.875rem",
-                                                    }}
-                                                >
-                                                    {uploadedFile.name}
-                                                </a>
-                                            </p>
-                                        </div>
-                                    )}
-
-                                    <span className="note_color">
-                                        [ Only PDF files are allowed, file size must be less than 5MB ]
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
 
                         <div className="row mt-4">
                             <div className="col-md-10"></div>
@@ -3011,7 +2940,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
     useEffect(() => {
         if (LKRS_ID) {
             setLocalLKRSID(LKRS_ID);
-           handleGetLKRSID(LKRS_ID);
+            handleGetLKRSID(LKRS_ID);
             // if (buttonRef.current) {
             //     buttonRef.current.click();
             // }
@@ -3185,7 +3114,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                 localStorage.setItem('display_LKRSID', response.display_LKRSID);
                 setDisplay_LKRS_ID(response.display_LKRSID);
                 setLKRS_ID(response.lkrsid);
-                
+
                 const ownerDetails = epid_fetchedData?.OwnerDetails; // Use epid_fetchedData here too
                 if (Array.isArray(ownerDetails) && ownerDetails.length > 0) {
                     const ownerNames = ownerDetails
@@ -3204,7 +3133,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                     icon: "success",
                     confirmButtonText: "OK",
                 });
-                
+
                 setIsEPIDSectionDisabled(true);
                 onDisableEPIDSection();
                 setIsEPIDSectionSaved(true);

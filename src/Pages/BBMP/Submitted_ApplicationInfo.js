@@ -160,7 +160,7 @@ const BBMP_SubmittedInfo = () => {
             hissa_no: item.suR_HISSA,
             ext_acre: item.suR_EXTACRE || 0,
             ext_gunta: item.suR_EXTGUNTA || 0,
-            ext_fgunta: item.suR_EXTFgunta || 0,
+            ext_fgunta: item.suR_EXTFGUNTA || 0,
         }));
     };
 

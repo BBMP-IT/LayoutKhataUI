@@ -9,6 +9,7 @@ const ApiCredentials = {
         username: "BBMPOTP",
         password: "10750b6bdc29495297efd2fb29047a94",
         layoutForm: "http://localhost:3001",
+        ekycRequestURL: 0,
         
     }
 };
@@ -17,6 +18,7 @@ const config = {
       apiBaseUrl: ApiCredentials.credentials.apiUrl,
       apiLoginBaseUrl: ApiCredentials.credentials.loginUrl,
       redirectBaseURL: ApiCredentials.credentials.layoutForm,
+      redirectionTypeURL: ApiCredentials.credentials.ekycRequestURL,
 
   credentials: ApiCredentials.credentials, 
 
@@ -62,6 +64,9 @@ const config = {
         dashboardcount: '/api/LKRS/fnGetDashCount',
         dashboardData: '/api/LKRS/fnGetDashData',
         releaseEKYCInsert: '/api/Release/fnInsertReleaseEkycinfo',
+        insertDCconversion: '/api/DCConversion/fnInsertDCConversioninfo',
+        fetchDCconversion: '/api/DCConversion/fnGetDCConversioninfo',
+        deleteDCconversion: '/api/DCConversion/fnDeleteDCConversioninfo',
     }
 };
 

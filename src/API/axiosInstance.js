@@ -1,5 +1,7 @@
 import axios from 'axios';
 import Swal from "sweetalert2";
+import { triggerLogout } from '../AuthContext';
+
 
 const axiosInstance = axios.create({
   baseURL: 'https://testapps.bbmpgov.in/LayoutKhataAPI',
@@ -29,7 +31,7 @@ axiosInstance.interceptors.response.use(
   (error) => {
     if (error.response) {
       const status = error.response.status;
-debugger;
+      debugger;
       if (status === 401) {
         console.error('401 Unauthorized, redirecting to login...');
         localStorage.clear();
@@ -40,13 +42,14 @@ debugger;
           confirmButtonText: "Re-login",
           allowOutsideClick: false
         }).then(() => {
-          window.location.href = "/";
+         triggerLogout();
+          window.location.href = "/"; 
         });
 
       } else if (status === 403) {
         debugger;
         console.error('403 Forbidden, access denied...');
-        
+
         Swal.fire({
           title: "Access Denied",
           text: "You do not have permission to access this resource.",

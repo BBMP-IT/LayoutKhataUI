@@ -493,16 +493,18 @@ const { UseLogin } = useAuth();
 
                                                 {/* CAPTCHA Display */}
 
-                                                <div className="input-group mb-2">
-                                                    <span className="input-group-text" style={{
-                                                        background: "linear-gradient(45deg,#0077b6,#023e8a)",
-                                                        color: "#fff"
-                                                    }} onClick={generateCaptcha} title="Refresh CAPTCHA"><i className="fa fa-refresh"></i></span>
+                                                <div className="input-group mb-3">
+                                                    <span className="input-group-text"><i className="fa fa-lock"></i></span>
+                                                   
                                                     <input style={{ backgroundColor: 'lightgray', color: '#fff' }}
                                                         className="form-control captcha-box   text-dark fw-bold text-center"
                                                         value={captcha}
                                                         readOnly
                                                     />
+                                                    <span className="input-group-text" style={{
+                                                        background: "linear-gradient(45deg,#0077b6,#023e8a)",
+                                                        color: "#fff", width:"130px", cursor: "pointer" 
+                                                    }} onClick={generateCaptcha} title="Refresh CAPTCHA"><i className="fa fa-refresh"></i>&nbsp;Regenerate</span>
                                                 </div>
                                                 <br />
                                                 {/* Send OTP Button */}

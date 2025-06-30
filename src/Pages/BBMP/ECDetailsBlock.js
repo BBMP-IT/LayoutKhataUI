@@ -39,7 +39,7 @@ export const useLoader = () => {
     return { loading, start_loader, stop_loader };
 };
 
-const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsECSectionSaved, ownerName, setIsJDAEKYCSectionSaved, setIsOwnerEKYCSectionSaved }) => {
+const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsECSectionSaved, ownerName, setIsJDAEKYCSectionSaved, setIsOwnerEKYCSectionSaved, setValidate_OwnerDataList }) => {
     const [ecNumber, setECNumber] = useState("");
     const [ecNumberError, setEcNumberError] = useState('');
     const [hasJDA, setHasJDA] = useState(false);
@@ -212,6 +212,8 @@ const buttonRef = useRef(null);
     const [checkECStatus, setCheckECStatus] = useState(false);
     const [checkDeedStatus, setCheckDeedStatus] = useState(false);
 
+
+
     const handleJDAFileChange = (event) => {
         const file = event.target.files[0];
         if (file && file.type === "application/pdf") {
@@ -223,7 +225,6 @@ const buttonRef = useRef(null);
             setDeedNoURL(null);
         }
     };
-
     const handleEC_FetchDetails = async () => {
         const ecNumberPattern = /^[A-Z0-9-]+$/;
         if (!ecNumber) {
@@ -1043,9 +1044,7 @@ const buttonRef = useRef(null);
 
 
                                     <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 ">
-                                        <div className="form-group mt-4">
-                                            <h5>Note: Please do EKYC of JDA / JDA Representative</h5>
-                                        </div>
+                                        <div className="alert alert-info">Note: Please do EKYC of JDA / JDA Representative.</div>
                                     </div>
                                 </div>
                             </>
@@ -1067,7 +1066,7 @@ const buttonRef = useRef(null);
                 </div>
             </div>
             <>
-                <Owner_EKYCBlock LKRS_ID={LKRS_ID} ownerName={ownerName} setIsOwnerEKYCSectionSaved={setIsOwnerEKYCSectionSaved}/>
+                <Owner_EKYCBlock LKRS_ID={LKRS_ID} ownerName={ownerName} setIsOwnerEKYCSectionSaved={setIsOwnerEKYCSectionSaved} setValidate_OwnerDataList={setValidate_OwnerDataList}/>
 
                 {hasJDA && <JDA_EKYCBlock LKRS_ID={LKRS_ID} jdaID={jdaID} setIsJDAEKYCSectionSaved={setIsJDAEKYCSectionSaved}/>}
             </>

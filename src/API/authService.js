@@ -357,8 +357,6 @@ export const deleteApprovalInfo = async (payload) => {
     throw error;
   }
 };
-
-
 //release Order API
 export const insertReleaseInfo = async (payload) => {
   try {
@@ -457,9 +455,9 @@ export const jdaEKYC_Details = async (level, LKRSID) => {
 };
 
 //DO EKYC API
-export const ekyc_Details = async ({ OwnerNumber, BOOK_APP_NO, PROPERTY_CODE, redirectSource }) => {
+export const ekyc_Details = async ({ OwnerNumber, BOOK_APP_NO, PROPERTY_CODE, redirectSource, EkycResponseUrl }) => {
   try {
-    const query = `?OwnerNumber=${OwnerNumber}&BOOK_APP_NO=${BOOK_APP_NO}&PROPERTY_CODE=${PROPERTY_CODE}&redirectSource=${redirectSource}`;
+    const query = `?OwnerNumber=${OwnerNumber}&BOOK_APP_NO=${BOOK_APP_NO}&PROPERTY_CODE=${PROPERTY_CODE}&redirectSource=${redirectSource}&EkycResponseUrl=${EkycResponseUrl}`;
     const url = config.endpoints.ekyc_request + query;
 
     const response = await apiService.postRequest(url); // No payload needed
@@ -594,7 +592,6 @@ export const update_Final_SaveAPI = async (payload) => {
     throw error;
   }
 };
-
 //release dashoard Percentage
 export const fetch_releasePercentageDetails = async (lkrsId) => {
   try {
@@ -645,6 +642,37 @@ export const ekyc_insertReleaseDetails = async (payload) => {
     return response;
   } catch (error) {
     console.error("EKYC insert owner details Error:", error);
+    throw error;
+  }
+};
+//DC conversion Insert API
+export const dc_insertDetails = async (payload) => {
+  try {
+    const response = await apiService.postRequest(config.endpoints.insertDCconversion, payload);
+    return response;
+  } catch (error) {
+    console.error("DC conversion insert details Error:", error);
+    throw error;
+  }
+};
+//DC conversion Fetch API 
+export const dcConversionListAPI = async ( LKRSID, dcID) => {
+  try {
+    const url = `${config.endpoints.fetchDCconversion}?level=1&Dc_Id=${dcID}&lkrsId=${LKRSID}`;
+    const response = await apiService.getRequest(url);
+    return response;
+  } catch (error) {
+    console.error("DC conversion fetch Error:", error);
+    throw error;
+  }
+};
+//Delete DCconversion information
+export const deleteDCconversionInfo = async (payload) => {
+  try {
+    const response = await apiService.deleteRequest(`${config.endpoints.deleteDCconversion}`,  payload);
+     return response;
+  } catch (error) {
+    console.error("Deleting approval info Details Error:", error);
     throw error;
   }
 };

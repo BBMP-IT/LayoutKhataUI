@@ -2521,6 +2521,7 @@ const ReleaseSelection = () => {
     try {
       const listResponse = await fetch_releasePercentageDetails(trimmedLKRSID);
       const releaseTypeId = listResponse.sitE_RELS_SITE_RELSTYPE_ID;
+      localStorage.setItem("releaseTypeId",releaseTypeId);
       const releasePercentage = listResponse.releasePercentage;
 
       if (releaseTypeId) {
@@ -2701,13 +2702,14 @@ const ReleaseSelection = () => {
         const BOOK_APP_NO = 2;
         const PROPERTY_CODE = 1;
         const redirectSource = "RLS";
-
+        const EkycResponseUrl = `${config.redirectionTypeURL}`;
+        
         // Pass them to your API
         const response = await ekyc_Details({
           OwnerNumber,
           BOOK_APP_NO,
           PROPERTY_CODE,
-          redirectSource
+          redirectSource, EkycResponseUrl
         });
 
         const resultUrl = response?.ekycRequestUrl;

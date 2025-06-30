@@ -40,7 +40,7 @@ export const useLoader = () => {
     return { loading, start_loader, stop_loader };
 };
 
-const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, isApprovalSectionSaved, 
+const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, isApprovalSectionSaved, validate_ownerDataList,
     isReleaseSectionSaved, isSitesSectionSaved, isECSectionSaved, isJDAEKYCSectionSaved, isOwnerEKYCSectionSaved }) => {
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
@@ -182,6 +182,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                 .map(owner => owner.owN_NAME_EN)
                 .filter(name => !!name)  // Filter out null/undefined names
                 .join(', ');
+                
             setOwnerNames(ownerNameList);
             setOwnerDataList(apiResponse);
         } catch (error) {
@@ -244,6 +245,20 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
             });
             return;
         }
+        console.log("ownerDataList",ownerDataList);
+                  //  Block if even one owner doesn't have successful EKYC
+            const missingEKYC = ownerDataList.some(owner =>
+                owner.owN_AADHAARVERISTATUS !== "Success"
+            );
+        
+            if (missingEKYC) {
+                Swal.fire({
+                    text: "All owners must complete eKYC before saving.",
+                    icon: "error",
+                    confirmButtonText: "OK",
+                });
+                return;
+            }
         if(isOwnerEKYCSectionSaved === false){
              Swal.fire({
                 icon: 'warning',
@@ -477,7 +492,6 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
 
 
     const combinedData = [...rtcAddedData, ...rtcData];
-
     useEffect(() => {
         let calculatedTotalAcre = 0;
         let calculatedTotalGunta = 0;
@@ -517,31 +531,26 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
         localStorage.setItem('areaSqft', calculatedTotalSqFt.toFixed(2));
 
     }, [combinedData]);
-
     const totalPages = Math.ceil(combinedData.length / rowsPerPage);
     const paginatedData = combinedData.slice(
         (currentPage - 1) * rowsPerPage,
         currentPage * rowsPerPage
     );
-
     const goToPage = (page) => {
         if (page >= 1 && page <= totalPages) {
             setCurrentPage(page);
         }
     };
-
     const handlePageSizeChange = (e) => {
         setRowsPerPage(Number(e.target.value));
         setCurrentPage(1);
     };
-
     const [localLKRSID, setLocalLKRSID] = useState(LKRS_ID || "");
     useEffect(() => {
         if (LKRS_ID) {
             setLocalLKRSID(LKRS_ID);
         }
     }, [LKRS_ID]);
-
     const mapSurveyDetails = (surveyDetails) => {
         return surveyDetails.map((item) => ({
             district: item.suR_DISTRICT_Name || "—",
@@ -554,11 +563,9 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
             hissa_no: item.suR_HISSA,
             ext_acre: item.suR_EXTACRE || 0,
             ext_gunta: item.suR_EXTGUNTA || 0,
-            ext_fgunta: item.suR_EXTFgunta || 0,
+            ext_fgunta: item.suR_EXTFGUNTA || 0,
         }));
     };
-
-
     // =======================================================Khata details starts=========================================
     const [epidshowTable, setEPIDShowTable] = useState(false);
     const [epid_fetchedData, setEPID_FetchedData] = useState(null);
@@ -1319,8 +1326,8 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                     <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-3'>
                         <button onClick={handlePreviewClick} className='btn btn-warning btn-block'>Preview</button>
                     </div>
-                    <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-3'>
-                        <button className='btn btn-info btn-block' onClick={final_Save}>Save & View Information</button>
+                    <div className='col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mt-3'>
+                        <button className='btn btn-info btn-block' onClick={final_Save}>Save & View Submitted Information</button>
                     </div>
                     <div className='col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mt-3'>
                         <button className='btn btn-primary btn-block' onClick={final_Save_Release}>Save & Proceed to Release</button>
@@ -1699,39 +1706,40 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                                 </>
                             )}
                             {/* Owner EKYC */}
-                           <div className='row'>
-                                {ownerDataList.filter(owner => owner.owN_AADHAARVERISTATUS === "Success")
-                                    .map((owner, index) => {
-                                        let parsedAadhaar = {};
-                                        try {
-                                            parsedAadhaar = JSON.parse(owner.owN_AADHAAR_RESPONSE).ekycResponse || {};
-                                        } catch (err) {
-                                            console.warn("Invalid Aadhaar JSON for owner:", owner.owN_NAME_EN);
-                                        }
+                            <div className='row'>
+                                <div className='col-12'>
+                                    <h5>Owner / Owner Representative EKYC Details</h5>
+                                    <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
+                                        <thead className="table-light">
+                                            <tr>
+                                                <th>ಫೋಟೋ / Photo</th>
+                                                <th>ಮಾಲೀಕರ ಹೆಸರು / Owner Name</th>
+                                                <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>
+                                                <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhar Number</th>
+                                                <th>ಲಿಂಗ / Gender</th>
+                                                <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th>
+                                                <th>ವಿಳಾಸ / Address</th>
+                                                <th>ಇಕೆವೈಸಿ ಸ್ಥಿತಿ / EKYC Status</th>
+                                                <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {ownerDataList
+                                                .filter(owner => owner.owN_AADHAARVERISTATUS === "Success")
+                                                .map((owner, index) => {
+                                                    let parsedAadhaar = {};
+                                                    try {
+                                                        parsedAadhaar = JSON.parse(owner.owN_AADHAAR_RESPONSE).ekycResponse || {};
+                                                    } catch (err) {
+                                                        console.warn("Invalid Aadhaar JSON for owner:", owner.owN_NAME_EN);
+                                                    }
 
-                                        return (
-                                            <div className='col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12'>
-                                                <h5>Owner / Owner Representative EKYC Details</h5>
-                                                <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
-                                                    <thead className="table-light">
-                                                        <tr>
-                                                            <th>ಫೋಟೋ / Photo</th>
-                                                            <th>ಮಾಲೀಕರ ಹೆಸರು / Owner Name</th>
-                                                            <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>
-                                                            <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhar Number</th>
-                                                            <th>ಲಿಂಗ / Gender</th>
-                                                            <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th>
-                                                            <th>ವಿಳಾಸ / Address</th>
-                                                            <th>ಇಕೆವೈಸಿ ಸ್ಥಿತಿ / EKYC Status</th>
-                                                            <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th>
-                                                        </tr>
-                                                    </thead>    
-                                                    <tbody>
+                                                    return (
                                                         <tr key={index}>
                                                             <td style={{ textAlign: 'center' }}>
                                                                 <img src={usericon} alt="Owner" width="50" height="50" />
                                                             </td>
-                                                             <td style={{ textAlign: 'center' }}>{owner.owN_NAME_EN || 'N/A'}</td> 
+                                                            <td style={{ textAlign: 'center' }}>{owner.owN_NAME_EN || 'N/A'}</td>
                                                             <td style={{ textAlign: 'center' }}>{parsedAadhaar.ownerNameEng || 'N/A'}</td>
                                                             <td style={{ textAlign: 'center' }}>{parsedAadhaar.maskedAadhaar || 'N/A'}</td>
                                                             <td style={{ textAlign: 'center' }}>{parsedAadhaar.gender || 'N/A'}</td>
@@ -1742,15 +1750,11 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                                                                 {owner.owN_NAMEMATCHSCORE > 80 ? 'Matched' : 'Not Matched'}
                                                             </td>
                                                         </tr>
-                                                    </tbody>
-
-                                                </table>
-                                            </div>
-                                        );
-                                    })
-                                }
-
-
+                                                    );
+                                                })}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
 
                             {/* JDA EKYC */}

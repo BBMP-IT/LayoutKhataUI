@@ -39,7 +39,7 @@ export const useLoader = () => {
 };
 
 
-const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved }) => {
+const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setValidate_OwnerDataList }) => {
 
 
     const [phone, setPhone] = useState('');
@@ -169,7 +169,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved }) => 
     const handleResendOtp = async () => {
         start_loader();
         try {
-             const phonenumber = "9999999999";
+            const phonenumber = "9999999999";
             const response = await sendOtpAPI(phonenumber);
             if (response.responseStatus === true) {
                 Swal.fire({
@@ -310,26 +310,28 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved }) => 
     const fetchOwners = async () => {
         try {
             const apiResponse = await ownerEKYC_Details("1", LKRS_ID);
+
             const owners = (apiResponse || []).map(owner => ({
                 name: owner.owN_NAME_EN,
                 id: owner.owN_ID,
                 phoneNo: owner.owN_MOBILENUMBER,
+                ekycStatus: owner.owN_AADHAARVERISTATUS === "Success"
             }));
 
             setOwnerList(owners);
 
             const ownerNameList = owners.map(o => o.name).join(', ');
             setOwnerNames(ownerNameList); //  Set comma-separated owner names
-            setOwnerDataList(apiResponse);
+            setOwnerDataList(apiResponse); // Keep original for insertEKYCDetails
+            setValidate_OwnerDataList(apiResponse);
             setIsOwnerEKYCSectionSaved(true);
         } catch (error) {
             setOwnerList([]);
             setOwnerNames(''); // fallback if API fails
             setIsOwnerEKYCSectionSaved(false);
         }
-
-        
     };
+
     const handleRadioChange = (e) => {
         setSelectedOption(e.target.value);
     };
@@ -338,7 +340,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved }) => 
     useEffect(() => {
         const handleMessage = (event) => {
             if (event.origin !== `${config.redirectBaseURL}`) return;
-           if (!window.location.pathname.includes("LayoutForm")) return;
+            if (!window.location.pathname.includes("LayoutForm")) return;
 
             if (event.data.ekycStatus === "Success") {
                 if (selectedOwner?.name) {
@@ -389,13 +391,15 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved }) => 
                 const BOOK_APP_NO = 2;
                 const PROPERTY_CODE = 1;
                 const redirectSource = "";
+                const EkycResponseUrl = `${config.redirectionTypeURL}`;
 
                 // Pass them to your API
                 const response = await ekyc_Details({
                     OwnerNumber,
                     BOOK_APP_NO,
-                    PROPERTY_CODE, 
-                    redirectSource
+                    PROPERTY_CODE,
+                    redirectSource,
+                    EkycResponseUrl
                 });
 
                 const resultUrl = response?.ekycRequestUrl;
@@ -452,6 +456,20 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved }) => 
         let ownerName = "";
         let newOwner;
         let ownerPhoneNo;
+        // console.log("ownerDataList",ownerDataList);
+        //           //  Block if even one owner doesn't have successful EKYC
+        //     const missingEKYC = ownerDataList.some(owner =>
+        //         owner.owN_AADHAARVERISTATUS !== "Success"
+        //     );
+
+        //     if (missingEKYC) {
+        //         Swal.fire({
+        //             text: "All owners must complete eKYC before saving.",
+        //             icon: "error",
+        //             confirmButtonText: "OK",
+        //         });
+        //         return;
+        //     }
 
         if (!(ekyc_Status === true && phone_Status === true)) {
             Swal.fire({
@@ -461,32 +479,20 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved }) => 
             });
             return;
         }
-        //  Validate: All owners should have EKYC success
-        const missingEKYC = ownerDataList.some(owner => {
-            return owner.owN_AADHAARVERISTATUS !== true || owner.owN_AADHAARVERISTATUS !== "true";
-        });
 
-        // if (missingEKYC) {
-        //     Swal.fire({
-        //         text: "All owners must have successful EKYC before saving.",
-        //         icon: "error",
-        //         confirmButtonText: "OK",
-        //     });
-        //     return;
-        // }
 
 
 
         if (selectedOwner.name && selectedOwner.id) {
             ownerID = selectedOwner.id;
             ownerName = selectedOwner.name;
-            ownerPhoneNo = selectedOwner.phoneNo || "";
+            ownerPhoneNo = selectedOwner.phoneNo || phone;
             newOwner = false;
         } else { //newly owner sending parameter
             ownerID = 0;
             ownerName = selectedOwner.name;
             newOwner = true;
-            ownerPhoneNo = selectedOwner.phoneNo || "";
+            ownerPhoneNo = selectedOwner.phoneNo || phone;
         }
 
         const payloadOwner = {
@@ -653,6 +659,15 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved }) => 
             }
         }
     };
+    const resetOtpStates = () => {
+        setIsOtpSent(false);
+        setIsVerified(false);
+        setShowResend(false);
+        setTimer(0);
+        setOtp(['', '', '', '', '', '']);
+        setIsVerifyDisabled(true);
+        setIsTimerActive(false);
+    };
 
     return (
         <div>
@@ -702,7 +717,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved }) => 
                                 <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mt-2" >
                                     <label className="form-label">Select Owner <span className='mandatory_color'>*</span></label>
                                 </div>
-                                <div className="col-12 col-sm-12 col-md-7 col-lg-7 col-xl-7 mt-2">
+                                {/* <div className="col-12 col-sm-12 col-md-7 col-lg-7 col-xl-7 mt-2">
                                     <button
                                         className="form-control text-start"
                                         onClick={() => {
@@ -780,7 +795,83 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved }) => 
                                         </ul>
 
                                     )}
+                                </div> */}
+                                <div className="col-12 col-sm-12 col-md-7 col-lg-7 col-xl-7 mt-2">
+                                    <button
+                                        className="form-control text-start"
+                                        onClick={() => {
+                                            const shouldOpen = !isDropdownOpen;
+                                            setIsDropdownOpen(shouldOpen);
+                                            if (shouldOpen) {
+                                                fetchOwners(); // fetch the owners with updated eKYC status
+                                            }
+                                        }}
+                                        ref={buttonRef}
+                                    >
+                                        {selectedOwner ? selectedOwner.name : "Select an owner"}
+                                    </button>
+
+                                    {isDropdownOpen && (
+                                        <ul
+                                            className="dropdown-menu show"
+                                            style={{
+                                                overflowY: "auto",
+                                                width: dropdownWidth,
+                                                maxHeight: "250px",
+                                                marginLeft: "13px",
+                                            }}
+                                        >
+                                            {loadingOwners ? (
+                                                <li className="px-3 py-2">Loading...</li>
+                                            ) : (
+                                                ownerList.map((owner, index) => (
+                                                    <li key={owner.id || index}>
+                                                        <button
+                                                            className="dropdown-item d-flex justify-content-between align-items-center"
+                                                            onClick={() => {
+                                                                if (owner.ekycStatus) return; // prevent selection if already eKYC done
+                                                                setSelectedOwner(owner);
+                                                                setOwnerNameInput(owner.name);
+                                                                setPhone(owner.phoneNo || '');
+                                                                setIsDropdownOpen(false);
+                                                                setIsPhoneFromAPI(!!owner.phoneNo);
+                                                                resetOtpStates(); // reset OTP fields
+                                                            }}
+                                                            disabled={owner.ekycStatus}
+                                                            style={{
+                                                                backgroundColor: owner.ekycStatus ? "#d4edda" : "#fff",
+                                                                color: owner.ekycStatus ? "#6c757d" : "#000",
+                                                                cursor: owner.ekycStatus ? "not-allowed" : "pointer"
+                                                            }}
+                                                        >
+                                                            <span>{owner.name}</span>
+                                                            {owner.ekycStatus && <i className="fa fa-check-circle text-success ms-2"></i>}
+                                                        </button>
+                                                    </li>
+                                                ))
+                                            )}
+                                            {showInput && (
+                                                <li className="px-3 py-2">
+                                                    <input
+                                                        type="text"
+                                                        className="form-control"
+                                                        placeholder="Enter owner name"
+                                                        value={newOwnerName}
+                                                        onChange={(e) => setNewOwnerName(e.target.value)}
+                                                        onKeyDown={handleAddOwner}
+                                                        autoFocus
+                                                    />
+                                                </li>
+                                            )}
+                                            <li>
+                                                <button className="dropdown-item text-primary" onClick={handleAddMoreOwner}>
+                                                    ➕ Add More
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    )}
                                 </div>
+
 
                                 <div className="col-0 col-sm-0 col-md-2 col-lg-2 col-xl-2 mt-2" ></div>
 
@@ -905,8 +996,8 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved }) => 
                                     <button className='btn btn-info btn-block' ref={EKYC_Save} onClick={insertEKYCDetails} >Save</button>
                                 </div>
                             </div>
-                            <br/>
-                            <div className="alert alert-info">Note: Please do EKYC of JDA / JDA Representative.</div>
+                            <br />
+
                             {ekycUrl && (
                                 <iframe
                                     src={ekycUrl}
@@ -920,38 +1011,39 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved }) => 
 
                             <hr />
                             <div className='row'>
-                                {ownerDataList.filter(owner => owner.owN_AADHAARVERISTATUS === "Success")
-                                    .map((owner, index) => {
-                                        let parsedAadhaar = {};
-                                        try {
-                                            parsedAadhaar = JSON.parse(owner.owN_AADHAAR_RESPONSE).ekycResponse || {};
-                                        } catch (err) {
-                                            console.warn("Invalid Aadhaar JSON for owner:", owner.owN_NAME_EN);
-                                        }
+                                <div className='col-12'>
+                                    <h5>Owner / Owner Representative EKYC Details</h5>
+                                    <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
+                                        <thead className="table-light">
+                                            <tr>
+                                                <th>ಫೋಟೋ / Photo</th>
+                                                <th>ಮಾಲೀಕರ ಹೆಸರು / Owner Name</th>
+                                                <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>
+                                                <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhar Number</th>
+                                                <th>ಲಿಂಗ / Gender</th>
+                                                <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th>
+                                                <th>ವಿಳಾಸ / Address</th>
+                                                <th>ಇಕೆವೈಸಿ ಸ್ಥಿತಿ / EKYC Status</th>
+                                                <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {ownerDataList
+                                                .filter(owner => owner.owN_AADHAARVERISTATUS === "Success")
+                                                .map((owner, index) => {
+                                                    let parsedAadhaar = {};
+                                                    try {
+                                                        parsedAadhaar = JSON.parse(owner.owN_AADHAAR_RESPONSE).ekycResponse || {};
+                                                    } catch (err) {
+                                                        console.warn("Invalid Aadhaar JSON for owner:", owner.owN_NAME_EN);
+                                                    }
 
-                                        return (
-                                            <div className='col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12'>
-                                                <h5>Owner / Owner Representative EKYC Details</h5>
-                                                <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
-                                                    <thead className="table-light">
-                                                        <tr>
-                                                            <th>ಫೋಟೋ / Photo</th>
-                                                            <th>ಮಾಲೀಕರ ಹೆಸರು / Owner Name</th>
-                                                            <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>
-                                                            <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhar Number</th>
-                                                            <th>ಲಿಂಗ / Gender</th>
-                                                            <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th>
-                                                            <th>ವಿಳಾಸ / Address</th>
-                                                            <th>ಇಕೆವೈಸಿ ಸ್ಥಿತಿ / EKYC Status</th>
-                                                            <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th>
-                                                        </tr>
-                                                    </thead>    
-                                                    <tbody>
+                                                    return (
                                                         <tr key={index}>
                                                             <td style={{ textAlign: 'center' }}>
                                                                 <img src={usericon} alt="Owner" width="50" height="50" />
                                                             </td>
-                                                             <td style={{ textAlign: 'center' }}>{owner.owN_NAME_EN || 'N/A'}</td> 
+                                                            <td style={{ textAlign: 'center' }}>{owner.owN_NAME_EN || 'N/A'}</td>
                                                             <td style={{ textAlign: 'center' }}>{parsedAadhaar.ownerNameEng || 'N/A'}</td>
                                                             <td style={{ textAlign: 'center' }}>{parsedAadhaar.maskedAadhaar || 'N/A'}</td>
                                                             <td style={{ textAlign: 'center' }}>{parsedAadhaar.gender || 'N/A'}</td>
@@ -962,16 +1054,13 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved }) => 
                                                                 {owner.owN_NAMEMATCHSCORE > 80 ? 'Matched' : 'Not Matched'}
                                                             </td>
                                                         </tr>
-                                                    </tbody>
-
-                                                </table>
-                                            </div>
-                                        );
-                                    })
-                                }
-
-
+                                                    );
+                                                })}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
+
                         </div>
                     </div>
                 </div>
