@@ -27,7 +27,14 @@ const BBMP_Layout_Dashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-
+  const handleEditClick = (lkrS_ID, lkrS_DISPLAYLKRSID) => {
+    navigate("/LayoutForm", {
+      state: {
+        LKRSID: lkrS_ID,
+        DISPLAYLKRSID: lkrS_DISPLAYLKRSID,
+      },
+    });
+  };
 
   const columns = [
     {
@@ -101,10 +108,7 @@ const BBMP_Layout_Dashboard = () => {
     } else if (isOrange) {
       backgroundColor = 'orange';
       textColor = 'white';
-    } else if (isBlue) {
-      backgroundColor = 'light blue';
-      textColor = 'black';
-    } 
+    }
 
     return (
       <div
@@ -120,6 +124,26 @@ const BBMP_Layout_Dashboard = () => {
     );
   },
 },
+   {
+      name: "Action",
+      selector: (row) => {
+        if (row.lkrS_APPSTATUS === 1) {
+          return (
+            <button
+              className="btn btn-primary"
+              onClick={() => handleEditClick(row.lkrS_ID, row.lkrS_DISPLAYID)}
+            >
+              <i className="fa fa-pencil"></i>
+            </button>
+          );
+        }
+        return null;
+      },
+      center: true,
+      ignoreRowClick: true,
+      allowOverflow: true,
+      button: true,
+    },
 
   ];
   const customStyles = {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import ReactDOM from 'react-dom';
-import { useNavigate, Link } from 'react-router-dom';
+import {useLocation, useNavigate, Link } from 'react-router-dom';
 import DashboardLayout from '../../Layout/DashboardLayout';
 import { useTranslation } from "react-i18next";
 import i18n from "../../localization/i18n";
@@ -52,6 +52,8 @@ const BBMP_LayoutForm = () => {
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
     const [zoomLevel] = useState(0.9);
     const [newLanguage, setNewLanguage] = useState(localStorage.getItem('selectedLanguage'));
+     const location = useLocation();
+     const { LKRSID, DISPLAYLKRSID } = location.state || {};
 
     const [siteData, setSiteData] = useState([]);
     const [gpsData, setGpsData] = useState({});
@@ -122,9 +124,20 @@ const BBMP_LayoutForm = () => {
                 draggable: false,         // Prevents dragging
                 toastId: 'app-number',    // Use a unique ID to prevent duplicates (optional)
             });
+        }else if(DISPLAYLKRSID){
+             setDisplay_LKRS_ID(DISPLAYLKRSID);
+            toast.success(`KRSID: ${DISPLAYLKRSID}`, {
+                autoClose: false,         // Stays open until manually closed
+                closeOnClick: false,      // Prevents closing on click
+                draggable: false,         // Prevents dragging
+                toastId: 'app-number',    // Use a unique ID to prevent duplicates (optional)
+            });
         }
         if (LKRS_ID) {
             handleGetLKRSID(LKRS_ID);
+        }else if(LKRSID){
+            setLKRS_ID(LKRSID);
+            handleGetLKRSID(LKRSID);
         }
 
     }, [display_LKRS_ID]);
