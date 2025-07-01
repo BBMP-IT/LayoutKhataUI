@@ -608,7 +608,7 @@ const JDA_EKYCBlock = ({ LKRS_ID, jdaID, setIsJDAEKYCSectionSaved }) => {
                     </div>
                     <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 mt-3">
                         <div className='row'>
-                            <div className="alert alert-warning">[Note: Click on eKYC Status button once the ekyc is done to check verification status]</div>
+                            {/* <div className="alert alert-warning">[Note: Click on eKYC Status button once the ekyc is done to check verification status]</div> */}
                             <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3" >
                                 <label className="form-label">JDA Representative Name <span className='mandatory_color'>*</span></label>
                             </div>

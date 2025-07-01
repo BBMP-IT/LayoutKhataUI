@@ -59,7 +59,10 @@ const ReleaseSelection = () => {
   const [LKRSID, setLKRSID] = useState('');
   useEffect(() => {
     if (display_LKRS_ID && LKRS_ID) {
-      handleSearchClick(display_LKRS_ID);  // call the method if LKRS_ID exists
+      handleSearchClick(display_LKRS_ID);
+      setFinalApiList([]);//already released table
+      setReleasedData([]);//intermediate table
+      setReleaseData ([]);//yet to be release table
     }
     fetchFinalReleasedSites(LKRS_ID);
     const storedCreatedBy = localStorage.getItem('createdBy');
@@ -1560,7 +1563,7 @@ const ReleaseSelection = () => {
     if (/^L\d+$/i.test(localLKRSID)) {
       trimmedLKRSID = localLKRSID.substring(1);
     }
-
+    setReleasedData([]);
 
     await handleGetLKRSID(trimmedLKRSID);
     await fetchReleaseList(trimmedLKRSID);

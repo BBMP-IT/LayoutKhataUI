@@ -18,7 +18,7 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import apiService from '../../API/apiService';
 import {
-    handleFetchDistricts, handleFetchTalukOptions, handleFetchHobliOptions, handleFetchVillageOptions, jdaEKYC_Details,
+    handleFetchDistricts, handleFetchTalukOptions, handleFetchHobliOptions, handleFetchVillageOptions, jdaEKYC_Details, dcConversionListAPI,
     handleFetchHissaOptions, fetchRTCDetailsAPI, handleFetchEPIDDetails, getAccessToken, sendOtpAPI, verifyOtpAPI, submitEPIDDetails, submitsurveyNoDetails,
     insertApprovalInfo, listApprovalInfo, deleteApprovalInfo, insertReleaseInfo, listReleaseInfo, fileUploadAPI, fileListAPI, insertJDA_details, ownerEKYC_Details, ekyc_Details, ekyc_Response, ekyc_insertOwnerDetails,
     individualSiteAPI, individualSiteListAPI, fetchECDetails, fetchDeedDocDetails, fetchDeedDetails, fetchJDA_details, deleteSiteInfo, fetch_LKRSID, update_Final_SaveAPI
@@ -61,6 +61,7 @@ const BBMP_SubmittedInfo = () => {
     const fetch_details = async () => {
         if (!localLKRSID) return;
         await handleGetLKRSID(localLKRSID);
+        await fetch_DCConversion(localLKRSID);
         await fetchApprovalList(localLKRSID);
         await fetchReleaseList(localLKRSID);
         await fetchSiteDetails(localLKRSID);
@@ -164,6 +165,105 @@ const BBMP_SubmittedInfo = () => {
         }));
     };
 
+    const [dcrecords, setDCRecords] = useState([]);
+    //fetch DC conversion values
+    const fetch_DCConversion = async (localLKRSID) => {
+        try {
+            start_loader();
+
+            let dC_id = 0;
+            const listResponse = await dcConversionListAPI(localLKRSID, dC_id);
+            console.table(listResponse);
+            const listFileResponse = await fileListAPI(3, localLKRSID, 5, 0); //level, LKRSID, MdocID, docID
+
+
+
+            if (Array.isArray(listResponse)) {
+                const formattedList = listResponse.map((item, index) => ({
+                    layoutDCNumber: item.dC_Conversion_No,
+                    dateOfOrder: item.dC_Conversion_Date,
+                    DCFile: listFileResponse[index]?.doctrN_DOCBASE64 || null,
+                    dc_id: item.dC_id,
+                    DCconversionDocID: listFileResponse[index]?.doctrN_ID || null,
+
+                }));
+                setDCRecords(formattedList);
+            }
+            stop_loader();
+        } catch (error) {
+            stop_loader();
+            console.error("Error fetching DC conversion list:", error);
+        } finally {
+            stop_loader();
+        }
+    }
+    const dccolumns = [
+        {
+            name: 'S.no',
+            cell: (row, index) => index + 1,
+            width: '80px',
+            center: true,
+        },
+        {
+            name: "DC Conversion Number",
+            selector: row => row.layoutDCNumber,
+            sortable: true,
+            center: true,
+            with: '150px'
+        },
+        {
+            name: 'DC Conersion Date',
+            selector: row => {
+                const date = new Date(row.dateOfOrder);
+
+                // Ensure the date is valid
+                if (isNaN(date)) {
+                    return '';  // Handle invalid date by returning an empty string or a placeholder
+                }
+
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+                const year = date.getFullYear();
+
+                return `${day}-${month}-${year}`;
+            },
+            sortable: true,
+            center: true,
+            width: '200px',
+        },
+        {
+            name: `Uploaded DC Conversion File`,
+            cell: row => {
+                if (row.DCFile) {
+                    const blob = base64ToBlob(row.DCFile);
+
+                    if (blob) {
+                        const fileUrl = URL.createObjectURL(blob);
+                        return (
+                            <a
+                                href={fileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="stableBlueLink"
+                                onClick={() => {
+                                    setTimeout(() => URL.revokeObjectURL(fileUrl), 1000);
+                                }}
+                            >
+                                View File
+                            </a>
+                        );
+                    } else {
+                        return 'Invalid file';
+                    }
+                } else {
+                    return 'No file';
+                }
+            },
+            center: true,
+        },
+
+
+    ];
 
     // =======================================================Khata details starts=========================================
     const [epidshowTable, setEPIDShowTable] = useState(false);
@@ -878,7 +978,7 @@ const BBMP_SubmittedInfo = () => {
             }
         });
     }
-const handleBackToDashboard = (e) => {
+    const handleBackToDashboard = (e) => {
         e.preventDefault(); // Prevents the default anchor tag behavior
         navigate("/LayoutDashboard");
     };
@@ -1034,6 +1134,19 @@ const handleBackToDashboard = (e) => {
                                                     </div>
                                                 )}
                                                 <hr />
+                                                {dcrecords.length > 0 && (
+                                                    <div className="mt-4">
+                                                        <h4>DC Conversion Details</h4>
+                                                        <DataTable
+                                                            columns={dccolumns}
+                                                            data={dcrecords}
+                                                            customStyles={customStyles}
+                                                            pagination
+                                                            highlightOnHover
+                                                            striped
+                                                        />
+                                                    </div>
+                                                )}
                                             </>
                                         )}
                                         {/* EPID preview block */}
@@ -1471,6 +1584,12 @@ const Preview_siteDetailsTable = ({ data, setData, totalSitesCount, }) => {
                 },
             },
 
+            {
+                Header: "Is Released",
+                accessor: (row) => {
+                    return row.sitE_IS_SITE_RELEASED ? "YES" : "NO";
+                },
+            },
             {
                 Header: "Total Area",
                 accessor: (row) => {

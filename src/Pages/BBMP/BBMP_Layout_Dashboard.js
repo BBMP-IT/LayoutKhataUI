@@ -67,30 +67,60 @@ const BBMP_Layout_Dashboard = () => {
         return `${day}-${month}-${year}`;
       },
       center: true,
-    }, {
-      name: "Detailed Status",
-      selector: (row) => row.lkrS_APPDETAILEDSTATUS,
-      center: true,
-      cell: (row) => {
+    }, 
+  {
+  name: "Detailed Status",
+  selector: (row) => row.lkrS_APPDETAILEDSTATUS,
+  center: true,
+  cell: (row) => {
+    let backgroundColor = 'transparent';
+    let textColor = 'inherit';
 
-        const isReleased = row.lkrS_APPSTATUS === "9" && row.lkrS_APPDETAILEDSTATUS === "Site Released";
-        const isSubmitted = row.lkrS_APPSTATUS === "8" && row.lkrS_APPDETAILEDSTATUS === "Application Submitted";
+    // Conditions
+    const isGreen =
+      (row.lkrS_APPSTATUS === 10 ) ||
+      (row.lkrS_APPSTATUS === 8);
 
-        return (
-          <div
-            style={{
-              backgroundColor: isReleased ? 'green' : (isSubmitted ? 'orange' : 'transparent'),
-              color: isReleased || isSubmitted ? 'white' : 'inherit',
-              padding: '4px 8px',
-              borderRadius: '4px',
-            }}
-          >
-            {row.lkrS_APPDETAILEDSTATUS}
-          </div>
-        );
+    const isRed =
+      row.lkrS_APPSTATUS === 11;
 
-      },
-    },
+    const isOrange =
+      row.lkrS_APPSTATUS === 9;
+
+    //application created
+    const isBlue = row.lkrS_APPSTATUS === 1;
+    
+ 
+    // Set background and text color
+    if (isGreen) {
+      backgroundColor = 'green';
+      textColor = 'white';
+    } else if (isRed) {
+      backgroundColor = 'red';
+      textColor = 'white';
+    } else if (isOrange) {
+      backgroundColor = 'orange';
+      textColor = 'white';
+    } else if (isBlue) {
+      backgroundColor = 'light blue';
+      textColor = 'black';
+    } 
+
+    return (
+      <div
+        style={{
+          backgroundColor,
+          color: textColor,
+          padding: '4px 8px',
+          borderRadius: '4px',
+        }}
+      >
+        {row.lkrS_APPDETAILEDSTATUS}
+      </div>
+    );
+  },
+},
+
   ];
   const customStyles = {
     headCells: {

@@ -53,13 +53,16 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
     }, []);
     const [localLKRSID, setLocalLKRSID] = useState("");
     useEffect(() => {
+        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
         if (LKRS_ID) {
             setLocalLKRSID(LKRS_ID);
+            delay(1000);
             fetch_DCConversion(LKRS_ID);
         } else {
             // fallback to localStorage if needed
             const id = localStorage.getItem("LKRSID");
             if (id) setLocalLKRSID(id);
+            delay(1000);
             fetch_DCConversion(id);
         }
     }, [LKRS_ID]);

@@ -3247,14 +3247,14 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
         min-width: 600px; /* ensures horizontal scroll on small screens */
       }
       th, td {
-        border: 1.5px solid #666; /* distinct cell borders */
+        border: 1.5px solid lightblue; /* distinct cell borders */
         padding: 8px;
         text-align: left;
       }
       th {
         font-weight: bold;
         color: #000;
-        background-color: #e2e2e2;
+        background-color: lightblue;
       }
       tr:nth-child(even) {
         background-color: #f9f9f9;

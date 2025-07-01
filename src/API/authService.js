@@ -658,7 +658,7 @@ export const dc_insertDetails = async (payload) => {
 //DC conversion Fetch API 
 export const dcConversionListAPI = async ( LKRSID, dcID) => {
   try {
-    const url = `${config.endpoints.fetchDCconversion}?level=1&Dc_Id=${dcID}&lkrsId=${LKRSID}`;
+    const url = `${config.endpoints.fetchDCconversion}?level=1&lkrsId=${LKRSID}`;
     const response = await apiService.getRequest(url);
     return response;
   } catch (error) {
