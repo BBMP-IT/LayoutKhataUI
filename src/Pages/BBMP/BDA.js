@@ -56,7 +56,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
     //edit approval button disable
     const [isApprovalEditing, setisApprovalEditing] = useState(false);
 
-    const [createdBy, setCreatedBy] = useState(null);
+    const [createdBy, setCreatedBy] = useState(localStorage.getItem('PhoneNumber'));
     const [createdName, setCreatedName] = useState('');
     const [roleID, setRoleID] = useState('');
     const [LKRSID, setLKRSID] = useState('');
@@ -187,14 +187,45 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             stop_loader();
         }
     }
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        if (name === "totalSites") {
-            if (!/^\d*$/.test(value)) return;
-        }
-        setFormData({ ...formData, [name]: value });
-        setErrors({ ...errors, [name]: "" });
-    };
+   const handleChange = (e) => {
+  const { name, value } = e.target;
+
+  if (name === "totalSites") {
+    // Don't allow spaces
+    if (/\s/.test(value)) return;
+
+    // Prevent anything other than digits
+    if (!/^\d*$/.test(value)) return;
+
+    // Remove leading zeros
+    const trimmedValue = value.replace(/^0+/, '');
+
+    // Always update formData to prevent input freeze
+    setFormData({ ...formData, [name]: trimmedValue });
+
+    // Convert to number
+    const numberValue = Number(trimmedValue);
+
+    // Set validation errors
+    if (trimmedValue === "") {
+      setErrors((prev) => ({ ...prev, [name]: "Total Number of sites is required" }));
+    } else if (isNaN(numberValue)) {
+      setErrors((prev) => ({ ...prev, [name]: "Invalid number" }));
+    } else if (numberValue < 20 || numberValue > 5000) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: "Total number of sites must be between 20 and 5000",
+      }));
+    } else {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  } else {
+    // Default handler for other fields
+    setFormData({ ...formData, [name]: value });
+    setErrors((prev) => ({ ...prev, [name]: "" }));
+  }
+};
+
     const [approvalOrderURL, setApprovalOrderURL] = useState(null);
     const [approvalMapURL, setApprovalMapURL] = useState(null);
     const [releaseOrderURL, setReleaseOrderURL] = useState(null);
@@ -299,6 +330,10 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             newErrors.totalSites = "Total number of sites is required.";
         } else if (!/^\d+$/.test(formData.totalSites)) {
             newErrors.totalSites = "Total number of sites must be numeric.";
+        } else if (/^0+$/.test(formData.totalSites)) {
+            newErrors.totalSites = "Total number of sites cannot be all zeros.";
+        } else if (parseInt(formData.totalSites, 10) < 20 || parseInt(formData.totalSites, 10) > 5000) {
+            newErrors.totalSites = "Total number of sites must be between 20 and 5000.";
         }
         if (!formData.releaseType) {
             newErrors.releaseType = "Please select a Release Type.";
@@ -509,7 +544,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             } else {
                 stop_loader();
                 Swal.fire({
-
+                    title: "Error",
                     text: response.responseMessage,
                     icon: "info",
                     confirmButtonText: "OK",
@@ -1371,17 +1406,20 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                             <div className='col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6'>
                                 <div className="form-group">
                                     <label className='form-label'>
-                                        Total Number of Sites <span className='mandatory_color'>*</span>
+                                        Total Number of Sites <span className='mandatory_color'>*</span>&nbsp;
+                                          <span className="note_color">
+                                        (Minimum 20 sites and maximum 5000 sites allowed)
+                                    </span>
                                     </label>
                                     <input
-                                        type="number"
+                                        type="text"
                                         className="form-control"
                                         name="totalSites"
                                         placeholder="Enter Total number of sites"
                                         value={formData.totalSites}
-                                        maxLength={15}
+                                        maxLength={4}
                                         onChange={handleChange}
-                                        disabled={!isEditing}
+                                        disabled={!isEditing} 
 
                                     />
                                     {errors.totalSites && (

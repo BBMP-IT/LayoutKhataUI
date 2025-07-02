@@ -194,10 +194,11 @@ const { UseLogin } = useAuth();
             const data = response.data;
 
             if (data.responseCode === "200" && data.responseStatus === true) {
+                localStorage.setItem('PhoneNumber',phoneNumber);
                 console.log("OTP verified, calling generate_Token");
                 generate_Token();
                 console.log("Token generated, showing Swal");
-                navigate('/LayoutDashboard');
+               
                 Swal.fire({
                     title: "OTP Verified!",
                     text: "Your OTP has been successfully verified.",
@@ -224,7 +225,8 @@ const { UseLogin } = useAuth();
     try {
       const response = await getAccessToken();
       if (response?.access_token) {
-        localStorage.clear();
+        // localStorage.clear();
+        localStorage.setItem('PhoneNumber',phoneNumber);
         localStorage.setItem('access_token', response.access_token);
         UseLogin(response.access_token);
         return true;  // Indicate success

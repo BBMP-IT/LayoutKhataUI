@@ -241,7 +241,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
 
     const [selectedOption, setSelectedOption] = useState('owner');
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
-    const [createdBy, setCreatedBy] = useState(null);
+    const [createdBy, setCreatedBy] = useState(localStorage.getItem('PhoneNumber'));
     const [createdName, setCreatedName] = useState('');
     const [roleID, setRoleID] = useState('');
     const [LKRSID, setLKRSID] = useState('');
@@ -321,8 +321,9 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
             setOwnerList(owners);
 
             const ownerNameList = owners.map(o => o.name).join(', ');
-            setOwnerNames(ownerNameList); //  Set comma-separated owner names
+            
             setOwnerDataList(apiResponse); // Keep original for insertEKYCDetails
+            setOwnerNames(ownerNameList); //  Set comma-separated owner names
             setValidate_OwnerDataList(apiResponse);
             setIsOwnerEKYCSectionSaved(true);
         } catch (error) {
@@ -416,7 +417,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
                     Swal.fire('Error', 'No redirect URL returned', 'error');
                 }
             } catch (error) {
-                Swal.fire('Error', 'eKYC API call failed', 'error');
+                Swal.fire('Error', 'Something went wrong, Please try again later!', 'error');
                 console.error('eKYC API call failed:', error);
                 stop_loader();
             }
@@ -470,6 +471,14 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
         //         });
         //         return;
         //     }
+            if (!ownerNameInput.trim() || !phone.trim()) {
+        Swal.fire({
+            text: "Please select an owner and enter the phone number before saving.",
+            icon: "warning",
+            confirmButtonText: "OK",
+        });
+        return;
+    }
 
         if (!(ekyc_Status === true && phone_Status === true)) {
             Swal.fire({
@@ -531,7 +540,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
 
             if (response.responseStatus === true) {
                 const apiResponse = await ownerEKYC_Details("1", LKRS_ID);
-                setOwnerData(apiResponse);
+                setOwnerDataList(apiResponse);
                 Swal.fire({
                     text: response.responseMessage,
                     icon: "success",
@@ -542,6 +551,13 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
                         try {
                             const response = await ownerEKYC_Details("1", LKRS_ID);
                             setOwnerDataList(response || []);
+                            setSelectedOwner(null);
+                            setOwnerNameInput('');
+                            setPhone('');
+                            setIsPhoneFromAPI(false);
+                            setIsVerified(false);
+                            setOtp(['', '', '', '', '', '']); // if you're using a 6-digit OTP input
+                            resetOtpStates();
                         } catch (error) {
                             console.error("Failed to fetch EKYC owner details:", error);
                         }

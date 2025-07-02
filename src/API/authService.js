@@ -614,9 +614,9 @@ export const final_Release_Sites = async (payload) => {
   }
 };
 //Layoutkhata dashoard Counts
-export const fetch_DashboardDetails = async () => {
+export const fetch_DashboardDetails = async (CreatedBy) => {
   try {
-    const url = `${config.endpoints.dashboardcount}?level=1&LKRS_CREATEDBY=1`;
+    const url = `${config.endpoints.dashboardcount}?level=1&LKRS_CREATEDBY=${CreatedBy}`;
     const response = await apiService.getRequest(url);
     return response;
   } catch (error) {
@@ -625,9 +625,9 @@ export const fetch_DashboardDetails = async () => {
   }
 };
 //Layoutkhata dashoard Data
-export const fetch_DashboarddataDetails = async (level) => {
+export const fetch_DashboarddataDetails = async (level, CreatedBy) => {
   try {
-    const url = `${config.endpoints.dashboardData}?level=${level}&LKRS_CREATEDBY=1`;
+    const url = `${config.endpoints.dashboardData}?level=${level}&LKRS_CREATEDBY=${CreatedBy}`;
     const response = await apiService.getRequest(url);
     return response;
   } catch (error) {

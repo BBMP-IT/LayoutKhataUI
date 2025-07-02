@@ -38,7 +38,7 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
         dcDate: '',
         uploadDCFile: ''
     });
-    const [createdBy, setCreatedBy] = useState(null);
+    const [createdBy, setCreatedBy] = useState(localStorage.getItem('PhoneNumber'));
     const [createdName, setCreatedName] = useState('');
     const [roleID, setRoleID] = useState('');
     useEffect(() => {
@@ -137,26 +137,45 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
     }
     //DC conversion insert
     const handleDCSave = async (dcNumber, dcDate, dcFile) => {
-         if (!isRTCSectionSaved && !isEPIDSectionSaved) {
-                    Swal.fire("Please save the land details before proceeding with layout approval", "", "warning");
-                    return;
-                }
+        if (!isRTCSectionSaved && !isEPIDSectionSaved) {
+            Swal.fire("Please save the land details before proceeding with layout approval", "", "warning");
+            return;
+        }
 
         const newErrors = {};
 
-        // Validation for DC Number
-        if (!dcNumber.trim()) {
+        const trimmedDCNumber = dcNumber.trim();
+        const dcNumberPattern = /^[A-Za-z1-9][A-Za-z0-9/-]*$/;
+
+        //  DC Number Validation
+        if (!trimmedDCNumber) {
             newErrors.dcNumber = "DC Conversion Order Number is required.";
+        } else if (!dcNumberPattern.test(trimmedDCNumber)) {
+            newErrors.dcNumber = "Only alphanumeric characters, '/', and '-' allowed. No spaces or leading zeros.";
+        } else if (
+            records.some(
+                (item) =>
+                    item.layoutDCNumber?.toLowerCase() === trimmedDCNumber.toLowerCase()
+            )
+        ) {
+            Swal.fire({
+                title: "Duplicate Entry",
+                text: "Duplicate DC Conversion Order Number is not allowed.",
+                icon: "warning",
+                confirmButtonText: "OK",
+            });
+            return;
         }
 
-        // Validation for DC Date
+
+        //  DC Date Validation
         if (!dcDate) {
             newErrors.dcDate = "DC Conversion Order Date is required.";
         } else if (new Date(dcDate) > new Date()) {
             newErrors.dcDate = "Date cannot be in the future.";
         }
 
-        // Validation for File Upload
+        //  File Upload Validation
         if (!uploadDCFile) {
             newErrors.file = "Please upload the conversion order PDF.";
         } else if (uploadDCFile.type !== "application/pdf") {
@@ -165,15 +184,13 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
             newErrors.file = "File size must be less than 5MB.";
         }
 
-        // Set error state
         setErrors(newErrors);
 
-        // If any errors, do not proceed
         if (Object.keys(newErrors).length > 0) {
-            return; // Stop execution
+            return;
         }
 
-        // ✅ All validations passed — Now call your API
+        //  All validations passed — Now call your API
         try {
             const payload = {
                 dC_id: 0,

@@ -155,13 +155,57 @@ const BBMP_Layout_Dashboard = () => {
       },
     },
   };
+ const [dashboardData, setDashboardData] = useState({
+    allCount: 0,
+    incompletedCount: 0,
+    submittedCount: 0,
+    completedCount: 0,
+  });
+
+   const [createdBy, setCreatedBy] = useState(localStorage.getItem('PhoneNumber'));
+      const [createdName, setCreatedName] = useState('');
+      const [roleID, setRoleID] = useState('');
+
+  useEffect(() => {
+      const storedCreatedBy = localStorage.getItem('PhoneNumber');
+        const storedCreatedName = localStorage.getItem('createdName');
+        const storedRoleID = localStorage.getItem('RoleID');
+
+        setCreatedBy(storedCreatedBy);
+        setCreatedName(storedCreatedName);
+        setRoleID(storedRoleID);
+
+    const initDashboard = async () => {
+      try {
+        start_loader();
+        let token = localStorage.getItem('access_token');
+        // const tokenGenerated = await generate_Token();
+
+        if (!token) {
+          console.error("Token generation failed. Dashboard data not fetched.");
+          return;
+        }
+
+        const data = await fetch_DashboardDetails(createdBy);
+        setDashboardData(data);
+        await dashboard_Data(1);
+        setSelectedLevel(1);
+      } catch (err) {
+        console.error("Failed to initialize dashboard:", err);
+      } finally {
+        stop_loader();
+      }
+    };
+
+    initDashboard();
+  }, []);
 
 
   const dashboard_Data = async (level) => {
     try {
       start_loader();
-      const response = await fetch_DashboarddataDetails(level);
-      if (response.length > 0) {
+      const response = await fetch_DashboarddataDetails(level, createdBy);
+      if (response) {
         setRecords(response || []);
       } else {
         Swal.fire("Error!", "Failed to fetch data. Please try again.", "error");
@@ -201,38 +245,7 @@ const BBMP_Layout_Dashboard = () => {
     },
     // ➕ Add more dummy entries as needed
   ];
-  const [dashboardData, setDashboardData] = useState({
-    allCount: 0,
-    incompletedCount: 0,
-    submittedCount: 0,
-    completedCount: 0,
-  });
-  useEffect(() => {
-    const initDashboard = async () => {
-      try {
-        start_loader();
-        let token = localStorage.getItem('access_token');
-        // const tokenGenerated = await generate_Token();
-
-        if (!token) {
-          console.error("Token generation failed. Dashboard data not fetched.");
-          return;
-        }
-
-        const data = await fetch_DashboardDetails();
-        setDashboardData(data);
-        await dashboard_Data(1);
-        setSelectedLevel(1);
-      } catch (err) {
-        console.error("Failed to initialize dashboard:", err);
-      } finally {
-        stop_loader();
-      }
-    };
-
-    initDashboard();
-  }, []);
-
+ 
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);

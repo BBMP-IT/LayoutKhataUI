@@ -62,7 +62,7 @@ const ReleaseSelection = () => {
       handleSearchClick(display_LKRS_ID);
       setFinalApiList([]);//already released table
       setReleasedData([]);//intermediate table
-      setReleaseData ([]);//yet to be release table
+      setReleaseData([]);//yet to be release table
     }
     fetchFinalReleasedSites(LKRS_ID);
     const storedCreatedBy = localStorage.getItem('createdBy');
@@ -320,6 +320,16 @@ const ReleaseSelection = () => {
 
   // handleRowSelect
   const handleRowSelect = (index) => {
+    if (!isEKYCVerified) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'eKYC Not Completed',
+        text: 'Please complete the eKYC before selecting the site.',
+        confirmButtonColor: '#3085d6',
+      });
+      return;
+    }
+
     const isSelected = selectedRows.includes(index);
 
     if (isSelected) {
@@ -343,6 +353,18 @@ const ReleaseSelection = () => {
 
   // handleSelectAll
   const handleSelectAll = (e) => {
+
+    if (!isEKYCVerified) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'eKYC Not Completed',
+        text: 'Please complete the eKYC before selecting the site.',
+        confirmButtonColor: '#3085d6',
+      });
+      return;
+    }
+
+
     const checked = e.target.checked;
     let rowsToSelect = [];
 
@@ -2217,6 +2239,8 @@ const ReleaseSelection = () => {
 
     if (!release_formData.layoutOrderNumber.trim()) {
       newErrors.layoutOrderNumber = "Layout Order of site release Number is required.";
+    } else if (!/^[a-zA-Z0-9/-]+$/.test(release_formData.layoutOrderNumber.trim())) {
+      newErrors.layoutOrderNumber = "Only alphabets, numbers, slashes (/) and dashes (-) are allowed.";
     }
 
     if (!release_formData.release_Order) {
@@ -2234,7 +2258,35 @@ const ReleaseSelection = () => {
     }
 
 
-    return Object.keys(newErrors).length === 0;
+    // ✅ 1. Duplicate Order Number Check using order_records
+    const isDuplicate = order_records.some(
+      (order_records) =>
+        order_records.layoutReleaseNumber?.trim() === release_formData.layoutOrderNumber.trim()
+    );
+    if (isDuplicate) {
+      newErrors.layoutOrderNumber = "This release order number already exists.";
+    }
+
+    // ✅ 2. Date should be after all existing release dates
+    const existingDates = order_records
+      .map((r) => new Date(r.dateOfOrder))
+      .filter((d) => !isNaN(d));
+    if (existingDates.length > 0) {
+      const latestDate = new Date(Math.max(...existingDates.map((d) => d.getTime())));
+      const enteredDate = new Date(release_formData.dateOfOrder);
+      if (enteredDate <= latestDate) {
+        newErrors.dateOfOrder = `Date must be after the last release date (${latestDate.toLocaleDateString('en-GB')}).`;
+      }
+    }
+
+    // If any errors, show and return early
+    if (Object.keys(newErrors).length > 0) {
+      setRelease_Errors(newErrors);
+      Swal.fire("Validation Error", "Please fix the highlighted errors.", "warning");
+      return;
+    }
+
+
   };
   const handleOrderSave = async () => {
     if (!validateOrderForm()) return;
@@ -2756,60 +2808,75 @@ const ReleaseSelection = () => {
         const OwnerType = "NEWOWNER";
 
         const response = await ekyc_Response(transactionNumber, OwnerType, jdaRepName);
+
         if (response) {
-          setOwnerData(response);
+          const score = response.nameMatchScore;
 
-          const payloadReleaseOwner = {
-            relsekyC_ID: 0,
-            relsekyC_LKRS_ID: parseInt(trimmedLKRSID),
-            relsekyC_Own_ID: selectedOwner.id,
-            relsekyC_NAME_KN: "",
-            relsekyC_NAME_EN: selectedOwner.name,
-            relsekyC_MOBILENUMBER: "",
-            relsekyC_AADHAARNUMBER: response?.ekycResponse?.maskedAadhaar ?? null,
-            relsekyC_NAMEASINAADHAAR: response?.ekycResponse?.ownerNameEng ?? null,
-            relsekyC_AADHAARVERISTATUS: ekycStatus,
-            relsekyC_NAMEMATCHSCORE: response?.nameMatchScore,
-            relsekyC_REMARKS: "",
-            relsekyC_ADDITIONALINFO: "",
-            relsekyC_CREATEDBY: CreatedBy,
-            relsekyC_CREATEDNAME: CreatedName,
-            relsekyC_CREATEDROLE: RoleID,
-            relsekyC_TransactionNo: txnno,
-            relsEkyc_AADHAAR_RESPONSE: JSON.stringify(response) ?? null,
-          };
-          try {
-            start_loader();
-            const insert_response = await ekyc_insertReleaseDetails(payloadReleaseOwner);
+          if (score >= 60) {
+            setOwnerData(response);
 
-            if (insert_response.responseStatus === true) {
-              setEKYC_Status(true);
-              setIsEKYCVerified(true);
-              setIsEKYCCompleted(true);
-              Swal.fire({
-                text: insert_response.responseMessage,
-                icon: "success",
-                confirmButtonText: "OK",
-                allowOutsideClick: false, // prevents closing on outside click
-              });
-              stop_loader();
-            } else {
-              setEKYC_Status(false);
-              setIsEKYCVerified(false);
-              setIsEKYCCompleted(false);
-              Swal.fire({
-                text: insert_response.responseMessage,
-                icon: "error",
-                confirmButtonText: "OK",
-              });
+            const payloadReleaseOwner = {
+              relsekyC_ID: 0,
+              relsekyC_LKRS_ID: parseInt(trimmedLKRSID),
+              relsekyC_Own_ID: selectedOwner.id,
+              relsekyC_NAME_KN: "",
+              relsekyC_NAME_EN: selectedOwner.name,
+              relsekyC_MOBILENUMBER: "",
+              relsekyC_AADHAARNUMBER: response?.ekycResponse?.maskedAadhaar ?? null,
+              relsekyC_NAMEASINAADHAAR: response?.ekycResponse?.ownerNameEng ?? null,
+              relsekyC_AADHAARVERISTATUS: ekycStatus,
+              relsekyC_NAMEMATCHSCORE: response?.nameMatchScore,
+              relsekyC_REMARKS: "",
+              relsekyC_ADDITIONALINFO: "",
+              relsekyC_CREATEDBY: CreatedBy,
+              relsekyC_CREATEDNAME: CreatedName,
+              relsekyC_CREATEDROLE: RoleID,
+              relsekyC_TransactionNo: txnno,
+              relsEkyc_AADHAAR_RESPONSE: JSON.stringify(response) ?? null,
+            };
+            try {
+              start_loader();
+              const insert_response = await ekyc_insertReleaseDetails(payloadReleaseOwner);
+
+              if (insert_response.responseStatus === true) {
+                setEKYC_Status(true);
+                setIsEKYCVerified(true);
+                setIsEKYCCompleted(true);
+                Swal.fire({
+                  text: insert_response.responseMessage,
+                  icon: "success",
+                  confirmButtonText: "OK",
+                  allowOutsideClick: false, // prevents closing on outside click
+                });
+                stop_loader();
+              } else {
+                setEKYC_Status(false);
+                setIsEKYCVerified(false);
+                setIsEKYCCompleted(false);
+                Swal.fire({
+                  text: insert_response.responseMessage,
+                  icon: "error",
+                  confirmButtonText: "OK",
+                });
+                stop_loader();
+              }
+
+            } catch (error) {
+              console.error("Failed to insert data:", error);
+            } finally {
               stop_loader();
             }
-
-          } catch (error) {
-            console.error("Failed to insert data:", error);
-          } finally {
-            stop_loader();
+          } else {
+            setIsEKYCVerified(false); // Optional, but ensures clarity
+            Swal.fire({
+              icon: 'error',
+              title: 'Name Mismatch',
+              text: 'The name in the Aadhaar and the selected owner’s name do not match. Please verify the details to proceed with eKYC.',
+              confirmButtonColor: '#d33'
+            });
           }
+
+
         }
       } catch (error) {
         console.error('Error fetching data:', error);

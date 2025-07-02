@@ -60,7 +60,7 @@ const JDA_EKYCBlock = ({ LKRS_ID, jdaID, setIsJDAEKYCSectionSaved }) => {
     const [ownerData, setOwnerData] = useState(null);
     const [isVerified, setIsVerified] = useState(false);
 
-    const [createdBy, setCreatedBy] = useState(null);
+    const [createdBy, setCreatedBy] = useState(localStorage.getItem('PhoneNumber'));
     const [createdName, setCreatedName] = useState('');
     const [roleID, setRoleID] = useState('');
     const [LKRSID, setLKRSID] = useState('');
@@ -72,7 +72,7 @@ const JDA_EKYCBlock = ({ LKRS_ID, jdaID, setIsJDAEKYCSectionSaved }) => {
     const [ekyc_Data, setEkyc_Data] = useState(null);
     const [jda_ID, setJDA_ID] = useState('');
     useEffect(() => {
-        const storedCreatedBy = localStorage.getItem('createdBy');
+        const storedCreatedBy = localStorage.getItem('PhoneNumber');
         const storedCreatedName = localStorage.getItem('createdName');
         const storedRoleID = localStorage.getItem('RoleID');
 
@@ -540,7 +540,7 @@ const JDA_EKYCBlock = ({ LKRS_ID, jdaID, setIsJDAEKYCSectionSaved }) => {
             jdaekyC_NAMEMATCHSCORE: ownerData?.nameMatchScore,
             jdaekyC_REMARKS: "",
             jdaekyC_ADDITIONALINFO: "",
-            jdaekyC_CREATEDBY: parseInt(createdBy),
+            jdaekyC_CREATEDBY: createdBy,
             jdaekyC_CREATEDNAME: createdName,
             jdaekyC_CREATEDROLE: roleID,
             jdaekyC_VAULTREFID: ownerData?.ekycResponse?.vaultRefNumber ?? null,
