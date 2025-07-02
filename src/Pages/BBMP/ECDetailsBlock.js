@@ -39,7 +39,7 @@ export const useLoader = () => {
     return { loading, start_loader, stop_loader };
 };
 
-const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsECSectionSaved, ownerName, setIsJDAEKYCSectionSaved, setIsOwnerEKYCSectionSaved, setValidate_OwnerDataList }) => {
+const  ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsECSectionSaved, ownerName, setIsJDAEKYCSectionSaved, setIsOwnerEKYCSectionSaved, setValidate_OwnerDataList, landDetails }) => {
     const [ecNumber, setECNumber] = useState("");
     const [ecNumberError, setEcNumberError] = useState('');
     const [hasJDA, setHasJDA] = useState(false);
@@ -115,7 +115,8 @@ const buttonRef = useRef(null);
 
             if (response) {
                 if(response.lkrS_ECNUMBER){
-                    setECNumber(response.lkrS_ECNUMBER); //  set ecNumber from response
+                setECNumber(response.lkrS_ECNUMBER); //  set ecNumber from response
+                
                 setIsJDASectionDisabled(true);
                 setShowViewECButton(true);
                 setIsECSectionSaved(true);
@@ -1066,7 +1067,8 @@ const buttonRef = useRef(null);
                 </div>
             </div>
             <>
-                <Owner_EKYCBlock LKRS_ID={LKRS_ID} ownerName={ownerName} setIsOwnerEKYCSectionSaved={setIsOwnerEKYCSectionSaved} setValidate_OwnerDataList={setValidate_OwnerDataList}/>
+                <Owner_EKYCBlock LKRS_ID={LKRS_ID} ownerName={ownerName} setIsOwnerEKYCSectionSaved={setIsOwnerEKYCSectionSaved} 
+                setValidate_OwnerDataList={setValidate_OwnerDataList} landDetails={landDetails}/>
 
                 {hasJDA && <JDA_EKYCBlock LKRS_ID={LKRS_ID} jdaID={jdaID} setIsJDAEKYCSectionSaved={setIsJDAEKYCSectionSaved}/>}
             </>

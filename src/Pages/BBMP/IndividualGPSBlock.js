@@ -1161,6 +1161,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
     const [longitudeerror, setLongitudeError] = useState('');
     const [resultType, setResultType] = useState('Please select a property on Google Maps: *');
     const [resultTypeError, setResultTypeError] = useState('');
+    
 
     const markerRef = useRef(null);
     const mapInstance = useRef(null);
@@ -2042,7 +2043,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                                     <div className="row align-items-center mb-3">
                                         {/* Area */}
                                         <div className="col-12 col-sm-12 col-md-6 col-lg-3 col-xl-3 mb-3">
-                                            <label className="form-label">Area</label>
+                                            <label className="form-label">Area <span className='mandatory_color'>*</span></label>
                                             <div className="input-group">
                                                 <div className="input-group">
                                                     <input
@@ -2637,7 +2638,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                                         type="text"
                                         className="form-control text-center text-success"
                                         value={latitude}
-                                        ref={latitudeRef}
+                                        ref={latitudeRef} readOnly
                                         onChange={(e) => setLatitude(e.target.value)} disabled={isAddDisabled}
                                     />
                                     {latitudeerror && <div className="text-danger">{latitudeerror}</div>}
@@ -2649,7 +2650,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                                         type="text"
                                         className="form-control text-center text-success"
                                         value={longitude}
-                                        ref={longitudeRef}
+                                        ref={longitudeRef} readOnly
                                         onChange={(e) => setLongitude(e.target.value)} disabled={isAddDisabled}
                                     />
                                     {longitudeerror && <div className="text-danger">{longitudeerror}</div>}

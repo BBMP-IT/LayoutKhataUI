@@ -292,40 +292,58 @@ export const handleFetchEPIDDetails = async (epidNumber) => {
       propertyEPID: epidNumber,
     });
 
-    const parsedResponse = response.epidKhataDetails?.response;
+    const epidKhataDetails = response?.epidKhataDetails;
+    const parsedResponse = epidKhataDetails?.response;
 
+    // Check if value exists and approved details are present
     if (parsedResponse?.isValueExists === "Y") {
-      const approvedDetails = parsedResponse.approvedPropertyDetails;
+      const approvedDetails = parsedResponse?.approvedPropertyDetails;
 
       if (!approvedDetails) {
         return {
           error: "No property details found",
-          responseMessage: response.responseMessage,
+          responseMessage: response?.responseMessage || "No response message",
+          fullResponse: response
         };
       }
 
-      if (response.responseCode === 200 && response.responseStatus === true && response.responseMessage === "Success") {
+      // If response is successful
+      if (
+        response?.responseCode === 200 &&
+        response?.responseStatus === true &&
+        response?.responseMessage === "Success"
+      ) {
         return {
-          data: approvedDetails,
+          epidKhataDetails,
+          data: parsedResponse,
+          responseCode: response.responseCode,
+          responseStatus: response.responseStatus,
           responseMessage: response.responseMessage,
         };
       } else {
         return {
-          error: response.responseMessage || "Unknown error",
-          responseMessage: response.responseMessage,
+          error: response?.responseMessage || "Unknown error",
+          responseMessage: response?.responseMessage,
+          fullResponse: response
         };
       }
     } else {
       return {
         error: "EPID is invalid. Please provide a correct EPID",
-        responseMessage: response.responseMessage,
+        responseMessage: response?.responseMessage,
+        fullResponse: response
       };
     }
   } catch (err) {
     console.error("Error fetching EPID details:", err);
-    throw err;
+    return {
+      error: "Exception occurred while fetching EPID details",
+      responseMessage: err?.message,
+      exception: err
+    };
   }
 };
+
 
 
 //EPID first block Save API

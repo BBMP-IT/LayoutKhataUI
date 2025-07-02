@@ -323,9 +323,17 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
         if (!formData.layoutApprovalAuthority) {
             newErrors.layoutApprovalAuthority = "Layout approval authority is required.";
         }
-        if (!formData.approvalAuthority.trim()) {
-            newErrors.approvalAuthority = "Approval authority designation is required.";
-        }
+
+       if (!formData.approvalAuthority.trim()) {
+    newErrors.approvalAuthority   = "Layout approval authority is required.";
+} else {
+    const layoutAuthorityRegex = /^(?!.* {2,})[a-zA-Z0-9-/]+(?: [a-zA-Z0-9-/]+)*$/;
+
+    if (!layoutAuthorityRegex.test(formData.approvalAuthority )) {
+        newErrors.approvalAuthority  = "Only alphanumeric, '-', '/', and single spaces are allowed. No special characters or multiple spaces.";
+    }
+}
+
         if (!formData.totalSites.trim()) {
             newErrors.totalSites = "Total number of sites is required.";
         } else if (!/^\d+$/.test(formData.totalSites)) {

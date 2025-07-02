@@ -39,7 +39,7 @@ export const useLoader = () => {
 };
 
 
-const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setValidate_OwnerDataList }) => {
+const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setValidate_OwnerDataList, landDetails }) => {
 
 
     const [phone, setPhone] = useState('');
@@ -321,7 +321,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
             setOwnerList(owners);
 
             const ownerNameList = owners.map(o => o.name).join(', ');
-            
+
             setOwnerDataList(apiResponse); // Keep original for insertEKYCDetails
             setOwnerNames(ownerNameList); //  Set comma-separated owner names
             setValidate_OwnerDataList(apiResponse);
@@ -457,28 +457,15 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
         let ownerName = "";
         let newOwner;
         let ownerPhoneNo;
-        // console.log("ownerDataList",ownerDataList);
-        //           //  Block if even one owner doesn't have successful EKYC
-        //     const missingEKYC = ownerDataList.some(owner =>
-        //         owner.owN_AADHAARVERISTATUS !== "Success"
-        //     );
 
-        //     if (missingEKYC) {
-        //         Swal.fire({
-        //             text: "All owners must complete eKYC before saving.",
-        //             icon: "error",
-        //             confirmButtonText: "OK",
-        //         });
-        //         return;
-        //     }
-            if (!ownerNameInput.trim() || !phone.trim()) {
-        Swal.fire({
-            text: "Please select an owner and enter the phone number before saving.",
-            icon: "warning",
-            confirmButtonText: "OK",
-        });
-        return;
-    }
+        if (!ownerNameInput.trim() || !phone.trim()) {
+            Swal.fire({
+                text: "Please select an owner and enter the phone number before saving.",
+                icon: "warning",
+                confirmButtonText: "OK",
+            });
+            return;
+        }
 
         if (!(ekyc_Status === true && phone_Status === true)) {
             Swal.fire({
@@ -539,6 +526,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
             const response = await ekyc_insertOwnerDetails(payloadOwner);
 
             if (response.responseStatus === true) {
+                setDisabledEKYCOwners(prev => [...prev, ownerID]);
                 const apiResponse = await ownerEKYC_Details("1", LKRS_ID);
                 setOwnerDataList(apiResponse);
                 Swal.fire({
@@ -684,6 +672,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
         setIsVerifyDisabled(true);
         setIsTimerActive(false);
     };
+    const [disabledEKYCOwners, setDisabledEKYCOwners] = useState([]);
 
     return (
         <div>
@@ -851,7 +840,14 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
                                                                 setPhone(owner.phoneNo || '');
                                                                 setIsDropdownOpen(false);
                                                                 setIsPhoneFromAPI(!!owner.phoneNo);
-                                                                resetOtpStates(); // reset OTP fields
+
+                                                                // Reset previous owner's state
+                                                                setOwnerData(null);
+                                                                setEkyc_Data(null);
+                                                                setEKYC_Status(false);
+                                                                setPhone_Status(false);
+                                                                setIsVerified(false);
+                                                                resetOtpStates();
                                                             }}
                                                             disabled={owner.ekycStatus}
                                                             style={{
@@ -879,11 +875,14 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
                                                     />
                                                 </li>
                                             )}
-                                            <li>
+                                            {landDetails === "surveyNo" &&(
+                                                <li>
                                                 <button className="dropdown-item text-primary" onClick={handleAddMoreOwner}>
                                                     ➕ Add More
                                                 </button>
                                             </li>
+                                            )}
+                                            
                                         </ul>
                                     )}
                                 </div>
@@ -904,7 +903,18 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
                                     />
                                 </div>
                                 <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-4" >
-                                    <button className='btn btn-info btn-block' onClick={handleDoEKYC}>Do eKYC</button>
+
+                                    <button
+                                        className='btn btn-info btn-block'
+                                        onClick={handleDoEKYC}
+                                        disabled={
+                                            !selectedOwner ||
+                                            selectedOwner.ekycStatus ||
+                                            disabledEKYCOwners.includes(selectedOwner.id)
+                                        }
+                                    >
+                                        Do eKYC
+                                    </button>
                                 </div>
                                 {/* <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-4" >
                                     <button className='btn btn-info btn-block' onClick={() => fetchEKYC_ResponseDetails()}>eKYC Status</button>

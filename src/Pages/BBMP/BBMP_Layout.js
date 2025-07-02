@@ -86,7 +86,7 @@ const BBMP_LayoutForm = () => {
     const [isECSectionSaved, setIsECSectionSaved] = useState(false);
     const [isOwnerEKYCSectionSaved, setIsOwnerEKYCSectionSaved] = useState(false);
     const [isJDAEKYCSectionSaved, setIsJDAEKYCSectionSaved] = useState(false);
-
+    const [landDetails, setLandDetails] = useState("");
     //OwnerName 
     const [ownerName, setOwnerName] = useState("");
     //fetching ownerDetails
@@ -158,9 +158,11 @@ const BBMP_LayoutForm = () => {
 
                 // Check the value and update selectedLandType
                 if (response.lkrS_LANDTYPE === "surveyNo") {
+                    setLandDetails("surveyNo");
                     setSelectedLandType("convertedRevenue");
                 } else if (response.lkrS_LANDTYPE === "khata") {
                     setSelectedLandType("bbmpKhata");
+                    setLandDetails("khata");
                 }
 
                 stop_loader();
@@ -288,7 +290,7 @@ const BBMP_LayoutForm = () => {
                                 isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsSitesSectionSaved={setIsSitesSectionSaved} ownerName={ownerName} />
 
                             <ECDetailsBlock LKRS_ID={LKRS_ID} isRTCSectionSaved={isRTCSectionSaved} ownerName={ownerName} isEPIDSectionSaved={isEPIDSectionSaved} setIsECSectionSaved={setIsECSectionSaved}
-                                setValidate_OwnerDataList={setValidate_OwnerDataList} setIsOwnerEKYCSectionSaved={setIsOwnerEKYCSectionSaved} setIsJDAEKYCSectionSaved={setIsJDAEKYCSectionSaved} />
+                                 landDetails={landDetails} setValidate_OwnerDataList={setValidate_OwnerDataList} setIsOwnerEKYCSectionSaved={setIsOwnerEKYCSectionSaved} setIsJDAEKYCSectionSaved={setIsJDAEKYCSectionSaved} />
 
                             <DeclarationBlock LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID} display_LKRS_ID={display_LKRS_ID} isRTCSectionSaved={isRTCSectionSaved}
                                 isEPIDSectionSaved={isEPIDSectionSaved} isApprovalSectionSaved={isApprovalSectionSaved} isReleaseSectionSaved={isReleaseSectionSaved} validate_ownerDataList={validate_ownerDataList}
@@ -553,6 +555,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
             setSurnocEnabled(true);
             setHissaEnabled(false);
         } catch (err) {
+            
             console.error("Failed to fetch Hissa data", err);
         } finally {
             stop_loader();
@@ -567,15 +570,33 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
     const fetchRTCDetails = async () => {
 
         if (!selectedDistrict || !selectedTaluk || !selectedHobli || !selectedVillage) {
-            setError('Please select all fields (District, Taluk, Hobli, and Village).');
+            Swal.fire({
+
+                text: "Please select District, Taluk, Hobli, and Village.",
+                icon: "warning",
+                confirmButtonText: "OK",
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+            });
             setShowTable(false);
             return;
         }
-        if (!selectedHissaNo || !selectedSurnoc) {
-            setError('Please select both Hissa Number and Surnoc.');
+
+        // Check Surnoc and Hissa No
+        if (!selectedSurnoc || !selectedHissaNo) {
+            Swal.fire({
+
+                text: "Please select both Surnoc and Hissa Number.",
+                icon: "warning",
+                confirmButtonText: "OK",
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+            });
             setShowTable(false);
             return;
         }
+
+
         try {
             start_loader();
             const result = await fetchRTCDetailsAPI({
@@ -680,7 +701,8 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                     data.surnoc === ownerItem.surnoc &&
                     data.hissa_no === ownerItem.hissa_no &&
                     data.owner === ownerItem.owner &&
-                    data.father === ownerItem.father
+                    data.father === ownerItem.father &&
+                    data.owner_no === ownerItem.owner_no
             );
         });
 
@@ -1140,7 +1162,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                 <button className='btn btn-block' onClick={fetch_details} ref={buttonRef} hidden>Click me</button>
                 {/* District */}
                 <div className="col-12 col-sm-12 col-md-6 col-lg-2 col-xl-2  mb-3" >
-                    <label className="form-label">District</label>
+                    <label className="form-label">District <span className='mandatory_color'>*</span></label>
                     <select
                         value={selectedDistrict}
                         onChange={(e) => setSelectedDistrict(e.target.value)} // Add this
@@ -1160,7 +1182,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                 </div>
                 {/* Taluk Dropdown */}
                 <div className="col-12 col-sm-12 col-md-6 col-lg-2 col-xl-2  mb-3"  >
-                    <label className="form-label">Taluk</label>
+                    <label className="form-label">Taluk <span className='mandatory_color'>*</span></label>
                     <select value={selectedTaluk} onChange={handleTalukChange} className="form-select" disabled={isSurveyNoSectionDisabled}>
                         <option value="" disabled>{t('translation.dropdownValues.taluk')}</option>
                         {taluks.map((item) => (
@@ -1172,7 +1194,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                 </div>
                 {/* Hobli */}
                 <div className="col-12 col-sm-12 col-md-6 col-lg-2 col-xl-2  mb-3">
-                    <label className="form-label">Hobli</label>
+                    <label className="form-label">Hobli <span className='mandatory_color'>*</span></label>
                     <select value={selectedHobli} onChange={handleHobliChange} className="form-select" disabled={!selectedTaluk || isSurveyNoSectionDisabled}>
                         <option value="" disabled>{t('translation.dropdownValues.hobli')}</option>
                         {hoblis.map((item) => (
@@ -1184,7 +1206,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                 </div>
                 {/* Village */}
                 <div className="col-12 col-sm-12 col-md-6 col-lg-2 col-xl-2  mb-3">
-                    <label className="form-label">Village</label>
+                    <label className="form-label">Village <span className='mandatory_color'>*</span></label>
                     <select value={selectedVillage} onChange={handleVillageChange} className="form-select" disabled={!selectedHobli || isSurveyNoSectionDisabled}>
                         <option value="" disabled>{t('translation.dropdownValues.village')}</option>
                         {villages.map((item) => (
@@ -1196,13 +1218,20 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                 </div>
                 {/* Survey Number */}
                 <div className="col-12 col-sm-12 col-md-6 col-lg-2 col-xl-2  mb-3">
-                    <label className="form-label">Survey Number</label>
+                    <label className="form-label">Survey Number <span className='mandatory_color'>*</span></label>
                     <input
                         type="text"
                         className="form-control"
                         placeholder="Enter Survey Number"
                         value={surveyNumber}
-                        onChange={(e) => setSurveyNumber(e.target.value)}
+                        onChange={(e) => {
+                            const value = e.target.value;
+
+                            // Allow only digits, no leading 0
+                            if (/^[1-9][0-9]*$/.test(value) || value === "") {
+                                setSurveyNumber(value);
+                            }
+                        }}
                         disabled={!selectedVillage || isSurveyNoSectionDisabled}
                     />
                 </div>
@@ -1215,7 +1244,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                 </div>
                 {/* Surnoc */}
                 <div className="col-12 col-sm-12 col-md-6 col-lg-3 col-xl-3 mb-3">
-                    <label className="form-label">Surnoc</label>
+                    <label className="form-label">Surnoc <span className='mandatory_color'>*</span></label>
                     <select
                         className="form-select"
                         value={selectedSurnoc}
@@ -1237,11 +1266,11 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                 </div>
                 {/* Hissa No */}
                 <div className="col-12 col-sm-12 col-md-6 col-lg-3 col-xl-3 mb-3">
-                    <label className="form-label">Hissa Number</label>
+                    <label className="form-label">Hissa Number <span className='mandatory_color'>*</span></label>
                     <select
                         className="form-select"
                         value={selectedHissaNo}
-                        onChange={(e) => setSelectedHissaNo(e.target.value)}
+                        onChange={(e) => { setSelectedHissaNo(e.target.value); setHissaEnabled(true); }}
                         disabled={!hissaEnabled || isSurveyNoSectionDisabled}
                     >
                         <option value="" disabled>Select Hissa No</option>
@@ -1700,7 +1729,6 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
     };
 
     const [ownerTableData, setOwnerTableData] = useState([]);
-
     const handleFetchDetails = async () => {
         start_loader();
 
@@ -1718,163 +1746,83 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
         }
 
         try {
-            // localStorage.setItem('isTokenRequired', false);
             const fetchedData = await handleFetchEPIDDetails(epidNumber);
 
-            localStorage.setItem("epid_JSON", JSON.stringify(fetchedData));
-    //         if (fetchedData?.data && fetchedData.responseMessage === "Success") {
-    //             const {
-    //                 propertyID,
-    //                 propertyCategory,
-    //                 propertyClassification,
-    //                 wardNumber,
-    //                 wardName,
-    //                 streetName,
-    //                 streetcode,
-    //                 sasApplicationNumber,
-    //                 isMuation,
-    //                 kaveriRegistrationNumber,
-    //                 assessmentNumber,
-    //                 courtStay,
-    //                 enquiryDispute,
-    //                 checkBandi,
-    //                 siteDetails,
-    //                 ownerDetails,
-    //             } = fetchedData;
+            // ✅ Store epidKhataDetails in session/localStorage
+            localStorage.setItem("epid_JSON", JSON.stringify(fetchedData.epidKhataDetails));
 
-    //             //  Safely access and log the first owner's name
-    //             if (Array.isArray(ownerDetails) && ownerDetails.length > 0) {
+            // ✅ Destructure from approvedPropertyDetails correctly
+            const approvedDetails = fetchedData?.data?.approvedPropertyDetails;
 
-    //             } else {
-    //                 console.warn("Owner details array is empty or invalid");
-    //             }
-    //             setOwnerTableData(ownerDetails); // clear table data first
-    //             setEPID_FetchedData({
-    //                 PropertyID: propertyID,
-    //                 PropertyCategory: propertyCategory,
-    //                 PropertyClassification: propertyClassification,
-    //                 WardNumber: wardNumber,
-    //                 WardName: wardName,
-    //                 StreetName: streetName,
-    //                 Streetcode: streetcode,
-    //                 SASApplicationNumber: sasApplicationNumber,
-    //                 IsMuation: isMuation,
-    //                 KaveriRegistrationNumber: kaveriRegistrationNumber,
-    //                 AssessmentNumber: assessmentNumber,
-    //                 courtStay,
-    //                 enquiryDispute,
-    //                 CheckBandi: checkBandi,
-    //                 SiteDetails: siteDetails,
-    //                 OwnerDetails: ownerDetails,
-    //             });
-    //             setAreaSqft(0);
-    //             localStorage.removeItem('areaSqft');
-    //             setAreaSqft(siteDetails.siteArea);
-    //             setArea_Sqft(siteDetails.siteArea);
-    //             localStorage.setItem('areaSqft', siteDetails.siteArea);
-    //             setOwnerTableData(ownerDetails);
+            if (approvedDetails && fetchedData.responseMessage === "Success") {
+                const {
+                    propertyID,
+                    propertyCategory,
+                    propertyClassification,
+                    wardNumber,
+                    wardName,
+                    streetName,
+                    streetcode,
+                    sasApplicationNumber,
+                    isMuation,
+                    kaveriRegistrationNumber,
+                    assessmentNumber,
+                    courtStay,
+                    enquiryDispute,
+                    checkBandi,
+                    siteDetails,
+                    ownerDetails,
+                } = approvedDetails;
 
-    //             Swal.fire({
-    //                 title: "Success",
-    //                 text: "EPID Details fetched successfully!",
-    //                 icon: "success",
-    //                 confirmButtonText: "OK",
-    //             }).then(() => {
-    //                 setEpidNumber("");
-    //                 setEPIDShowTable(true);
-    //             });
-    //         } else {
-    //             const errorMessage = fetchedData?.error || "EPID is invalid. Please provide a correct EPID";
-    //     Swal.fire({
-    //         title: "Error",
-    //         text: errorMessage,
-    //         icon: "error",
-    //         confirmButtonText: "OK",
-    //         allowOutsideClick: false,
-    //         allowEscapeKey: false,
-    //     }).then(() => {
-    //         setEpidNumber("");
-    //         setEPIDShowTable(false);
-    //         setEPID_FetchedData(false);
-    //     });
-    // }
+                setOwnerTableData(ownerDetails);
+                setEPID_FetchedData({
+                    PropertyID: propertyID,
+                    PropertyCategory: propertyCategory,
+                    PropertyClassification: propertyClassification,
+                    WardNumber: wardNumber,
+                    WardName: wardName,
+                    StreetName: streetName,
+                    Streetcode: streetcode,
+                    SASApplicationNumber: sasApplicationNumber,
+                    IsMuation: isMuation,
+                    KaveriRegistrationNumber: kaveriRegistrationNumber,
+                    AssessmentNumber: assessmentNumber,
+                    courtStay,
+                    enquiryDispute,
+                    CheckBandi: checkBandi,
+                    SiteDetails: siteDetails,
+                    OwnerDetails: ownerDetails,
+                });
 
-    if (fetchedData?.data && fetchedData.responseMessage === "Success") {
-    const {
-        propertyID,
-        propertyCategory,
-        propertyClassification,
-        wardNumber,
-        wardName,
-        streetName,
-        streetcode,
-        sasApplicationNumber,
-        isMuation,
-        kaveriRegistrationNumber,
-        assessmentNumber,
-        courtStay,
-        enquiryDispute,
-        checkBandi,
-        siteDetails,
-        ownerDetails,
-    } = fetchedData.data;
+                const area = siteDetails?.siteArea || 0;
+                setAreaSqft(area);
+                setArea_Sqft(area);
+                localStorage.setItem("areaSqft", area);
 
-    if (Array.isArray(ownerDetails) && ownerDetails.length > 0) {
-        // valid
-    } else {
-        console.warn("Owner details array is empty or invalid");
-    }
-
-    setOwnerTableData(ownerDetails);
-    setEPID_FetchedData({
-        PropertyID: propertyID,
-        PropertyCategory: propertyCategory,
-        PropertyClassification: propertyClassification,
-        WardNumber: wardNumber,
-        WardName: wardName,
-        StreetName: streetName,
-        Streetcode: streetcode,
-        SASApplicationNumber: sasApplicationNumber,
-        IsMuation: isMuation,
-        KaveriRegistrationNumber: kaveriRegistrationNumber,
-        AssessmentNumber: assessmentNumber,
-        courtStay,
-        enquiryDispute,
-        CheckBandi: checkBandi,
-        SiteDetails: siteDetails,
-        OwnerDetails: ownerDetails,
-    });
-
-    setAreaSqft(0);
-    localStorage.removeItem('areaSqft');
-    setAreaSqft(siteDetails.siteArea);
-    setArea_Sqft(siteDetails.siteArea);
-    localStorage.setItem('areaSqft', siteDetails.siteArea);
-
-    Swal.fire({
-        title: "Success",
-        text: "EPID Details fetched successfully!",
-        icon: "success",
-        confirmButtonText: "OK",
-    }).then(() => {
-        setEpidNumber("");
-        setEPIDShowTable(true);
-    });
-} else {
-    const errorMessage = fetchedData?.error || fetchedData?.responseMessage || "EPID is invalid.";
-    Swal.fire({
-        title: "Error",
-        text: errorMessage,
-        icon: "error",
-        confirmButtonText: "OK",
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-    }).then(() => {
-        setEpidNumber("");
-        setEPIDShowTable(false);
-        setEPID_FetchedData(false);
-    });
-}
+                Swal.fire({
+                    title: "Success",
+                    text: "EPID Details fetched successfully!",
+                    icon: "success",
+                    confirmButtonText: "OK",
+                }).then(() => {
+                    setEpidNumber("");
+                    setEPIDShowTable(true);
+                });
+            } else {
+                const errorMessage = fetchedData?.error || fetchedData?.responseMessage || "EPID is invalid.";
+                Swal.fire({
+                    title: "Error",
+                    text: errorMessage,
+                    icon: "error",
+                    confirmButtonText: "OK",
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                }).then(() => {
+                    setEpidNumber("");
+                    // setEPIDShowTable(false);       // hides the table
+                    // setEPID_FetchedData([]);
+                });
+            }
         } catch (error) {
             console.error("Error fetching EPID details:", error);
             Swal.fire({
@@ -1886,8 +1834,9 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
         } finally {
             stop_loader();
         }
-
     };
+
+
 
     const customStyles = {
         headCells: {
@@ -1909,12 +1858,14 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
             name: 'Owner Name',
             center: true,
             // Access ownerName directly from the 'row' object
-            selector: (row) => row.ownerName || 'N/A'
+            selector: (row) => row.ownerName || '-'
         },
+        { name: 'Identifier Type', width: '220px', selector: () => epid_fetchedData?.OwnerDetails?.[0].relationShipType || '-', center: true },
+        { name: 'Identifier Name', width: '220px', selector: () => epid_fetchedData?.OwnerDetails?.[0].identifierName || '-', center: true },
 
-        { name: 'ID Type', width: '120px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idType || 'N/A', center: true },
+        { name: 'ID Type', width: '120px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idType || '-', center: true },
 
-        { name: 'ID Number', width: '220px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idNumber || 'N/A', center: true },
+        { name: 'ID Number', width: '220px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idNumber || '-', center: true },
         // {
         //     name: 'Validate OTP',
         //     width: '250px',
@@ -2012,22 +1963,40 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
             level: 1,
             LkrsId: localLKRSID,
         };
+
         try {
             start_loader();
             const response = await fetch_LKRSID(localLKRSID);
 
-            if (response && response.khataDetails != null && response.khataOwnerDetails != null) {
-                // The API returns data as per your example:
-                // You want to set EPID_FetchedData based on the response structure
-
-                // Parse khataDetails.khatA_JSON if needed (it's a JSON string with property details)
+            if (response && response.khataDetails?.khatA_JSON && response.khataOwnerDetails) {
                 let khataDetailsJson = {};
-                if (response.khataDetails?.khatA_JSON) {
-                    try {
-                        khataDetailsJson = JSON.parse(response.khataDetails.khatA_JSON);
-                    } catch (err) {
-                        console.warn("Failed to parse khatA_JSON", err);
-                    }
+                try {
+                    const parsedJson = JSON.parse(response.khataDetails.khatA_JSON);
+                    khataDetailsJson = parsedJson?.response?.approvedPropertyDetails || {};
+                } catch (err) {
+                    console.warn("Failed to parse khatA_JSON", err);
+                }
+
+                // Enrich ownerDetails with Aadhaar info from khataOwnerDetails
+                let enrichedOwnerDetails = [];
+
+                if (
+                    Array.isArray(khataDetailsJson.ownerDetails) &&
+                    Array.isArray(response.khataOwnerDetails)
+                ) {
+                    enrichedOwnerDetails = khataDetailsJson.ownerDetails.map((owner, idx) => {
+                        const aadhaarOwner = response.khataOwnerDetails[idx]; // index-based merge
+
+                        return {
+                            ...owner,
+                            aadhaarMasked: aadhaarOwner?.owN_AADHAARNUMBER || '',
+                            aadhaarVeriStatus: aadhaarOwner?.owN_AADHAARVERISTATUS || '',
+                            nameAsInAadhaar: aadhaarOwner?.owN_NAMEASINAADHAAR || '',
+                            nameMatchScore: aadhaarOwner?.owN_NAMEMATCHSCORE || '',
+                        };
+                    });
+                } else {
+                    enrichedOwnerDetails = khataDetailsJson.ownerDetails || [];
                 }
 
                 setEPID_FetchedData({
@@ -2046,12 +2015,10 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                     enquiryDispute: khataDetailsJson.enquiryDispute || '',
                     CheckBandi: khataDetailsJson.checkBandi || {},
                     SiteDetails: khataDetailsJson.siteDetails || {},
-                    OwnerDetails: khataDetailsJson.ownerDetails || [],
-                    // Optionally add raw API response too if needed
+                    OwnerDetails: enrichedOwnerDetails,
                     rawResponse: response,
                 });
 
-                // Optionally update area sqft if siteDetails present
                 if (khataDetailsJson.siteDetails?.siteArea) {
                     setAreaSqft(khataDetailsJson.siteDetails.siteArea);
                     localStorage.setItem('areaSqft', khataDetailsJson.siteDetails.siteArea);
@@ -2060,22 +2027,16 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                     localStorage.removeItem('areaSqft');
                 }
 
-                setOwnerTableData(khataDetailsJson.ownerDetails || []);
+                setOwnerTableData(enrichedOwnerDetails);
                 setIsEPIDSectionDisabled(true);
                 setEPIDShowTable(true);
                 onDisableEPIDSection();
                 setIsEPIDSectionSaved(true);
 
-                setOwnerTableData(khataDetailsJson.ownerDetails || []);
-
-                //  Mark all owners as OTP verified if OwnerDetails is present
-                if (Array.isArray(khataDetailsJson.ownerDetails)) {
-                    const verified = {};
-                    khataDetailsJson.ownerDetails.forEach((_, idx) => {
-                        verified[idx] = true;
-                    });
-                    setVerifiedNumbers(verified);
-                }
+                // Mark all as verified
+                const verified = {};
+                enrichedOwnerDetails.forEach((_, idx) => (verified[idx] = true));
+                setVerifiedNumbers(verified);
             } else {
                 setEPIDShowTable(false);
                 setEPID_FetchedData(null);
@@ -2085,34 +2046,19 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
             }
         } catch (error) {
             console.error("Failed to fetch LKRSID data:", error);
-
         } finally {
             stop_loader();
         }
     };
+
     const handleSaveAndProceed = async (epidNumber) => {
-        // const totalRows = fetchedEPIDData?.[0]?.OwnerDetails?.length;
-
-        // if (totalRows > 0) {
-        //     for (let i = 0; i < totalRows; i++) {
-        //         if (!verifiedNumbers[i]) {
-        //             Swal.fire({
-        //                 icon: 'error',
-        //                 title: 'OTP Not Verified',
-        //                 text: `Please verify OTP for record #${i + 1} before proceeding.`,
-        //             });
-        //             return;
-        //         }
-        //     }
-        // }
-
         const storedData = localStorage.getItem("epid_JSON");
         let parsedData = storedData ? JSON.parse(storedData) : "";
 
         const payload = {
             lkrS_ID: 0,
             lkrS_LANDTYPE: "khata",
-            lkrS_EPID: epid_fetchedData?.PropertyID, // Use epid_fetchedData
+            lkrS_EPID: epid_fetchedData?.PropertyID,
             lkrS_SITEAREA_SQFT: area_Sqft,
             lkrS_SITEAREA_SQMT: area_Sqm,
             lkrS_REMARKS: "",
@@ -2123,7 +2069,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
             khatA_DETAILS: {
                 khatA_ID: 0,
                 khatA_LKRS_ID: 0,
-                khatA_EPID: epid_fetchedData?.PropertyID, // Use epid_fetchedData
+                khatA_EPID: epid_fetchedData?.PropertyID,
                 khatA_JSON: storedData,
                 khatA_TYPE: "A-Khata",
                 khatA_REMARKS: "",
@@ -2132,7 +2078,6 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                 khatA_CREATEDNAME: createdName,
                 khatA_CREATEDROLE: roleID
             },
-            // CHANGE THIS LINE: Use epid_fetchedData.OwnerDetails
             khatA_OWNER_DETAILS: epid_fetchedData?.OwnerDetails.map(owner => ({
                 owN_ID: 0,
                 owN_LKRS_ID: 0,
@@ -2154,9 +2099,13 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                 owN_AADHAAR_RESPONSE: "",
                 own_OwnOrRep: "",
                 own_IsNewlyAddedOwner: false,
+                own_TransactionNo: "",
+                owN_COMPANYOWNPROPERTY: String(owner.iscompany).toUpperCase() === 'Y',
+                owN_COMPANYNAME: String(owner.iscompany).toUpperCase() === 'Y' ? owner.companyname || "" : ""
             })),
             surveY_NUMBER_DETAILS: null
         };
+
         try {
             start_loader();
             const response = await submitEPIDDetails(payload);
@@ -2170,7 +2119,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                 setDisplay_LKRS_ID(response.display_LKRSID);
                 setLKRS_ID(response.lkrsid);
 
-                const ownerDetails = epid_fetchedData?.OwnerDetails; // Use epid_fetchedData here too
+                const ownerDetails = epid_fetchedData?.OwnerDetails;
                 if (Array.isArray(ownerDetails) && ownerDetails.length > 0) {
                     const ownerNames = ownerDetails
                         .map(owner => owner.ownerName?.trim())
@@ -2182,31 +2131,43 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                     console.warn("Owner details array is empty or invalid");
                     setOwnerName("");
                 }
+
+                // ✅ DO NOT call handleGetLKRSID here to prevent data override
                 Swal.fire({
                     title: response.responseMessage,
-                    // text: response.display_LKRSID,
                     icon: "success",
                     confirmButtonText: "OK",
+                    allowOutsideClick: false,
+                }).then(() => {
+                    // Optional: you can scroll or navigate if needed here
+                    // navigate('/next-step') or scroll to section
                 });
 
                 setIsEPIDSectionDisabled(true);
                 onDisableEPIDSection();
                 setIsEPIDSectionSaved(true);
-
-
             } else {
                 stop_loader();
                 Swal.fire({
-                    text: response.responseMessage || "Failed to resend OTP",
+                    text: response.responseMessage || "Failed to save details",
                     icon: "error",
                     confirmButtonText: "OK",
                 });
             }
         } catch (error) {
             stop_loader();
-            console.error("Failed to insert a data:", error);
-        } finally { stop_loader(); }
+            console.error("Failed to insert data:", error);
+            Swal.fire({
+                title: "Error",
+                text: "Something went wrong while saving.",
+                icon: "error",
+                confirmButtonText: "OK"
+            });
+        } finally {
+            stop_loader();
+        }
     };
+
     const showImplementationAlert = () => {
         Swal.fire({
             title: 'Coming Soon!',
@@ -2250,39 +2211,34 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
 
 
 
-            {/* Table Section */}
             {epidshowTable && epid_fetchedData && (
                 <div>
-                    <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 mt-3">
-                        <h5>Property Owner details as per BBMP eKhata</h5>
-                        <h6>Note: Plot-wise New Khata will be issued in owner's name. Hence, if owner has changed then first get Mutation done in eKhata.</h6>
-                        {/* <h6>If there has been a change in ownership, the Mutation process in eKhata must be completed first, as the New Khata will be issued in the owner's name.</h6> */}
-                        <DataTable
-                            columns={columns}
-                            data={epid_fetchedData?.OwnerDetails || []}
-                            pagination
-                            noHeader
-                            dense={false}
-                            customStyles={customStyles}
-                        />
-                    </div>
-                    <div className='row'>
-                        <div className="col-0 col-sm-0 col-md-8 col-lg-8 col-xl-8 "></div>
-                        <div className="col-6 col-sm-6 col-md-2 col-lg-2 col-xl-2 ">
-                            <div className="form-group">
-                                <label></label>
+                    <h5>Property Owner details as per BBMP eKhata</h5>
+                    <h6>Note: Plot-wise New Khata will be issued in owner's name. Hence, if owner has changed then first get Mutation done in eKhata.</h6>
 
-                            </div>
-                        </div>
-                        <div className="col-6 col-sm-6 col-md-2 col-lg-2 col-xl-2">
-                            <div className="form-group">
-                                <label></label>
-                                <button className='btn btn-success btn-block' disabled={isEPIDSectionDisabled} onClick={() => handleSaveAndProceed(epidNumber)}>Save and continue</button>
-                            </div>
+                    <DataTable
+                        columns={columns}
+                        data={epid_fetchedData?.OwnerDetails || []}
+                        pagination
+                        noHeader
+                        dense={false}
+                        customStyles={customStyles}
+                    />
+
+                    <div className='row mt-3'>
+                        <div className="col-md-10"></div>
+                        <div className="col-md-2">
+                            <button className='btn btn-success btn-block'
+                                disabled={isEPIDSectionDisabled}
+                                onClick={() => handleSaveAndProceed(epidNumber)}
+                            >
+                                Save and continue
+                            </button>
                         </div>
                     </div>
                 </div>
             )}
+
             {epid_fetchedData && (
                 <>
                     <style>{`
@@ -2333,15 +2289,16 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                     <div className="table-responsive-wrapper">
                         <div className="header-with-button">
                             <h4>Property Details</h4>
-                            <button className='btn btn-warning' onClick={showImplementationAlert} style={{ flexShrink: 0 }}>View eKhata</button>
+                            <button className='btn btn-warning' onClick={showImplementationAlert}>View eKhata</button>
                         </div>
 
+                        {/* Property Details */}
                         <table>
                             <thead>
                                 <tr>
                                     <th>Property ID</th>
-                                    <th>Property Category</th>
-                                    <th>Property Classification</th>
+                                    <th>Category</th>
+                                    <th>Classification</th>
                                     <th>Ward Number</th>
                                     <th>Ward Name</th>
                                     <th>Street Name</th>
@@ -2353,17 +2310,48 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                                     <td>{epid_fetchedData.PropertyCategory}</td>
                                     <td>{epid_fetchedData.PropertyClassification}</td>
                                     <td>{epid_fetchedData.WardNumber}</td>
-                                    <td>{epid_fetchedData.WardName}</td>
-                                    <td>{epid_fetchedData.StreetName}</td>
+                                    <td>{epid_fetchedData.WardName?.trim()}</td>
+                                    <td>{epid_fetchedData.StreetName?.trim()}</td>
                                 </tr>
+                            </tbody>
+                        </table>
+
+                        {/* Kaveri Registration Numbers */}
+                        {epid_fetchedData.KaveriRegistrationNumber?.length > 0 && (
+                            <>
+                                <h4>Kaveri Registration Numbers</h4>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Registration Number</th>
+                                            <th>EC Number</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {epid_fetchedData.KaveriRegistrationNumber.map((item, idx) => (
+                                            <tr key={idx}>
+                                                <td>{item.kaveriRegistrationNumber}</td>
+                                                <td>{item.kaveriECNumber}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </>
+                        )}
+
+                        {/* More Property Info */}
+                        <table>
+                            <thead>
                                 <tr>
                                     <th>Street Code</th>
-                                    <th>SAS Application Number</th>
+                                    <th>SAS Application No</th>
                                     <th>Is Mutation</th>
-                                    <th>Assessment Number</th>
+                                    <th>Assessment No</th>
                                     <th>Court Stay</th>
                                     <th>Enquiry Dispute</th>
                                 </tr>
+                            </thead>
+                            <tbody>
                                 <tr>
                                     <td>{epid_fetchedData.Streetcode}</td>
                                     <td>{epid_fetchedData.SASApplicationNumber}</td>
@@ -2375,6 +2363,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                             </tbody>
                         </table>
 
+                        {/* Check Bandi */}
                         <h4>Check Bandi</h4>
                         <table>
                             <thead>
@@ -2387,14 +2376,15 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>{epid_fetchedData.CheckBandi.north}</td>
-                                    <td>{epid_fetchedData.CheckBandi.south}</td>
-                                    <td>{epid_fetchedData.CheckBandi.east}</td>
-                                    <td>{epid_fetchedData.CheckBandi.west}</td>
+                                    <td>{epid_fetchedData.CheckBandi?.north}</td>
+                                    <td>{epid_fetchedData.CheckBandi?.south}</td>
+                                    <td>{epid_fetchedData.CheckBandi?.east}</td>
+                                    <td>{epid_fetchedData.CheckBandi?.west}</td>
                                 </tr>
                             </tbody>
                         </table>
 
+                        {/* Site Details */}
                         <h4>Site Details</h4>
                         <table>
                             <thead>
@@ -2406,13 +2396,14 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>{epid_fetchedData.SiteDetails.siteArea}</td>
-                                    <td>{epid_fetchedData.SiteDetails.dimensions.eastWest}</td>
-                                    <td>{epid_fetchedData.SiteDetails.dimensions.northSouth}</td>
+                                    <td>{epid_fetchedData.SiteDetails?.siteArea}</td>
+                                    <td>{epid_fetchedData.SiteDetails?.dimensions?.eastWest || '-'}</td>
+                                    <td>{epid_fetchedData.SiteDetails?.dimensions?.northSouth || '-'}</td>
                                 </tr>
                             </tbody>
                         </table>
 
+                        {/* Owner Details */}
                         <h4>Owner Details</h4>
                         <table>
                             <thead>
@@ -2427,7 +2418,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                                 </tr>
                             </thead>
                             <tbody>
-                                {epid_fetchedData.OwnerDetails.map((owner, index) => (
+                                {epid_fetchedData.OwnerDetails?.map((owner, index) => (
                                     <tr key={index}>
                                         <td>{owner.ownerName}</td>
                                         <td>{owner.idType}</td>
@@ -2443,6 +2434,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                     </div>
                 </>
             )}
+
 
 
 
