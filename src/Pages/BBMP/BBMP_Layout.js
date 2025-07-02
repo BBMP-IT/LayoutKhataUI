@@ -1722,84 +1722,159 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
             const fetchedData = await handleFetchEPIDDetails(epidNumber);
 
             localStorage.setItem("epid_JSON", JSON.stringify(fetchedData));
-            if (fetchedData) {
-                const {
-                    propertyID,
-                    propertyCategory,
-                    propertyClassification,
-                    wardNumber,
-                    wardName,
-                    streetName,
-                    streetcode,
-                    sasApplicationNumber,
-                    isMuation,
-                    kaveriRegistrationNumber,
-                    assessmentNumber,
-                    courtStay,
-                    enquiryDispute,
-                    checkBandi,
-                    siteDetails,
-                    ownerDetails,
-                } = fetchedData;
+    //         if (fetchedData?.data && fetchedData.responseMessage === "Success") {
+    //             const {
+    //                 propertyID,
+    //                 propertyCategory,
+    //                 propertyClassification,
+    //                 wardNumber,
+    //                 wardName,
+    //                 streetName,
+    //                 streetcode,
+    //                 sasApplicationNumber,
+    //                 isMuation,
+    //                 kaveriRegistrationNumber,
+    //                 assessmentNumber,
+    //                 courtStay,
+    //                 enquiryDispute,
+    //                 checkBandi,
+    //                 siteDetails,
+    //                 ownerDetails,
+    //             } = fetchedData;
 
-                //  Safely access and log the first owner's name
-                if (Array.isArray(ownerDetails) && ownerDetails.length > 0) {
+    //             //  Safely access and log the first owner's name
+    //             if (Array.isArray(ownerDetails) && ownerDetails.length > 0) {
 
-                } else {
-                    console.warn("Owner details array is empty or invalid");
-                }
-                setOwnerTableData(ownerDetails); // clear table data first
-                setEPID_FetchedData({
-                    PropertyID: propertyID,
-                    PropertyCategory: propertyCategory,
-                    PropertyClassification: propertyClassification,
-                    WardNumber: wardNumber,
-                    WardName: wardName,
-                    StreetName: streetName,
-                    Streetcode: streetcode,
-                    SASApplicationNumber: sasApplicationNumber,
-                    IsMuation: isMuation,
-                    KaveriRegistrationNumber: kaveriRegistrationNumber,
-                    AssessmentNumber: assessmentNumber,
-                    courtStay,
-                    enquiryDispute,
-                    CheckBandi: checkBandi,
-                    SiteDetails: siteDetails,
-                    OwnerDetails: ownerDetails,
-                });
-                setAreaSqft(0);
-                localStorage.removeItem('areaSqft');
-                setAreaSqft(siteDetails.siteArea);
-                setArea_Sqft(siteDetails.siteArea);
-                localStorage.setItem('areaSqft', siteDetails.siteArea);
-                setOwnerTableData(ownerDetails);
+    //             } else {
+    //                 console.warn("Owner details array is empty or invalid");
+    //             }
+    //             setOwnerTableData(ownerDetails); // clear table data first
+    //             setEPID_FetchedData({
+    //                 PropertyID: propertyID,
+    //                 PropertyCategory: propertyCategory,
+    //                 PropertyClassification: propertyClassification,
+    //                 WardNumber: wardNumber,
+    //                 WardName: wardName,
+    //                 StreetName: streetName,
+    //                 Streetcode: streetcode,
+    //                 SASApplicationNumber: sasApplicationNumber,
+    //                 IsMuation: isMuation,
+    //                 KaveriRegistrationNumber: kaveriRegistrationNumber,
+    //                 AssessmentNumber: assessmentNumber,
+    //                 courtStay,
+    //                 enquiryDispute,
+    //                 CheckBandi: checkBandi,
+    //                 SiteDetails: siteDetails,
+    //                 OwnerDetails: ownerDetails,
+    //             });
+    //             setAreaSqft(0);
+    //             localStorage.removeItem('areaSqft');
+    //             setAreaSqft(siteDetails.siteArea);
+    //             setArea_Sqft(siteDetails.siteArea);
+    //             localStorage.setItem('areaSqft', siteDetails.siteArea);
+    //             setOwnerTableData(ownerDetails);
 
-                Swal.fire({
-                    title: "Success",
-                    text: "EPID Details fetched successfully!",
-                    icon: "success",
-                    confirmButtonText: "OK",
-                }).then(() => {
-                    setEpidNumber("");
-                    setEPIDShowTable(true);
-                });
-            } else {
-                Swal.fire({
-                    title: "Error",
-                    text: "EPID is invalid. Please provide a correct EPID",
-                    icon: "error",
-                    confirmButtonText: "OK",
-                    allowOutsideClick: false,    // Prevent clicking outside to close
-                    allowEscapeKey: false,       // Prevent pressing ESC to close
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // User clicked OK
-                        setEpidNumber("");
-                        setEPIDShowTable(false);
-                        setEPID_FetchedData(false);
-                    }
-                });
-            }
+    //             Swal.fire({
+    //                 title: "Success",
+    //                 text: "EPID Details fetched successfully!",
+    //                 icon: "success",
+    //                 confirmButtonText: "OK",
+    //             }).then(() => {
+    //                 setEpidNumber("");
+    //                 setEPIDShowTable(true);
+    //             });
+    //         } else {
+    //             const errorMessage = fetchedData?.error || "EPID is invalid. Please provide a correct EPID";
+    //     Swal.fire({
+    //         title: "Error",
+    //         text: errorMessage,
+    //         icon: "error",
+    //         confirmButtonText: "OK",
+    //         allowOutsideClick: false,
+    //         allowEscapeKey: false,
+    //     }).then(() => {
+    //         setEpidNumber("");
+    //         setEPIDShowTable(false);
+    //         setEPID_FetchedData(false);
+    //     });
+    // }
+
+    if (fetchedData?.data && fetchedData.responseMessage === "Success") {
+    const {
+        propertyID,
+        propertyCategory,
+        propertyClassification,
+        wardNumber,
+        wardName,
+        streetName,
+        streetcode,
+        sasApplicationNumber,
+        isMuation,
+        kaveriRegistrationNumber,
+        assessmentNumber,
+        courtStay,
+        enquiryDispute,
+        checkBandi,
+        siteDetails,
+        ownerDetails,
+    } = fetchedData.data;
+
+    if (Array.isArray(ownerDetails) && ownerDetails.length > 0) {
+        // valid
+    } else {
+        console.warn("Owner details array is empty or invalid");
+    }
+
+    setOwnerTableData(ownerDetails);
+    setEPID_FetchedData({
+        PropertyID: propertyID,
+        PropertyCategory: propertyCategory,
+        PropertyClassification: propertyClassification,
+        WardNumber: wardNumber,
+        WardName: wardName,
+        StreetName: streetName,
+        Streetcode: streetcode,
+        SASApplicationNumber: sasApplicationNumber,
+        IsMuation: isMuation,
+        KaveriRegistrationNumber: kaveriRegistrationNumber,
+        AssessmentNumber: assessmentNumber,
+        courtStay,
+        enquiryDispute,
+        CheckBandi: checkBandi,
+        SiteDetails: siteDetails,
+        OwnerDetails: ownerDetails,
+    });
+
+    setAreaSqft(0);
+    localStorage.removeItem('areaSqft');
+    setAreaSqft(siteDetails.siteArea);
+    setArea_Sqft(siteDetails.siteArea);
+    localStorage.setItem('areaSqft', siteDetails.siteArea);
+
+    Swal.fire({
+        title: "Success",
+        text: "EPID Details fetched successfully!",
+        icon: "success",
+        confirmButtonText: "OK",
+    }).then(() => {
+        setEpidNumber("");
+        setEPIDShowTable(true);
+    });
+} else {
+    const errorMessage = fetchedData?.error || fetchedData?.responseMessage || "EPID is invalid.";
+    Swal.fire({
+        title: "Error",
+        text: errorMessage,
+        icon: "error",
+        confirmButtonText: "OK",
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+    }).then(() => {
+        setEpidNumber("");
+        setEPIDShowTable(false);
+        setEPID_FetchedData(false);
+    });
+}
         } catch (error) {
             console.error("Error fetching EPID details:", error);
             Swal.fire({

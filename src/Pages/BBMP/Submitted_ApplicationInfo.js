@@ -302,32 +302,8 @@ const BBMP_SubmittedInfo = () => {
 
         { name: 'ID Type', width: '120px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idType || 'N/A', center: true },
         { name: 'ID Number', width: '220px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idNumber || 'N/A', center: true },
-        {
-            name: 'Validate OTP',
-            width: '250px',
-            cell: (row, index) => (
-                <div className='mb-3'><br />
-                    <input
-                        type="tel"
-                        className="form-control mb-1"
-                        placeholder="Mobile Number"
-                        readOnly
-                        value={
-                            phoneNumbers[index] ??
-                            row.MobileNumber ??
-                            epid_fetchedData?.OwnerDetails?.[0]?.mobileNumber ??
-                            ""
-                        }
-                        maxLength={10}
-                    />
-
-                    <div className="text-success font-weight-bold mt-2">
-                        OTP Verified <i className="fa fa-check-circle"></i>
-                    </div>
-
-                </div>
-            ), center: true
-        }
+      
+        
     ];
 
     //fetching Details from LKRSID

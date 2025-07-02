@@ -295,24 +295,38 @@ export const handleFetchEPIDDetails = async (epidNumber) => {
     const parsedResponse = response.epidKhataDetails?.response;
 
     if (parsedResponse?.isValueExists === "Y") {
-      if (response.responseCode === 200 && response.responseStatus === true) {
-        const approvedDetails = parsedResponse.approvedPropertyDetails;
-        if (!approvedDetails) {
-          throw new Error("No property details found");
-        }
-        return approvedDetails;
+      const approvedDetails = parsedResponse.approvedPropertyDetails;
+
+      if (!approvedDetails) {
+        return {
+          error: "No property details found",
+          responseMessage: response.responseMessage,
+        };
+      }
+
+      if (response.responseCode === 200 && response.responseStatus === true && response.responseMessage === "Success") {
+        return {
+          data: approvedDetails,
+          responseMessage: response.responseMessage,
+        };
       } else {
-        // You can just return null, let the calling method handle UI feedback
-        return { error: response.responseMessage || "Unknown error" };
+        return {
+          error: response.responseMessage || "Unknown error",
+          responseMessage: response.responseMessage,
+        };
       }
     } else {
-      return { error: "EPID is invalid. Please provide a correct EPID" };
+      return {
+        error: "EPID is invalid. Please provide a correct EPID",
+        responseMessage: response.responseMessage,
+      };
     }
   } catch (err) {
     console.error("Error fetching EPID details:", err);
-    throw err; // let handleFetchDetails catch this
+    throw err;
   }
 };
+
 
 //EPID first block Save API
 export const submitEPIDDetails = async (payload) => {
