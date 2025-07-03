@@ -708,3 +708,17 @@ export const deleteDCconversionInfo = async (payload) => {
     throw error;
   }
 };
+//zone fetch API 
+export const fetchZoneFromWardList = async (wardIds, lkrS_ID = 600) => {
+  try {
+    const response = await apiService.postRequest(`${config.endpoints.fetchZoneWard}`, {
+      wardId: wardIds,
+      lkrS_ID: lkrS_ID,
+    });
+
+    return response;
+  } catch (error) {
+    console.error("Error fetching zone from ward list", error);
+    throw error;
+  }
+};

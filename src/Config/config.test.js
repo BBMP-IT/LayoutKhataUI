@@ -10,6 +10,7 @@ const ApiCredentials = {
         password: "10750b6bdc29495297efd2fb29047a94",
         layoutForm: "https://testlayoutkhata.bbmpgov.in",
         ekycRequestURL: 0,
+        releaseEKYCnamescore: 1,
     }
 };
 
@@ -18,6 +19,7 @@ const config = {
     apiLoginBaseUrl: ApiCredentials.credentials.loginUrl,
     redirectBaseURL: ApiCredentials.credentials.layoutForm,
     redirectionTypeURL: ApiCredentials.credentials.ekycRequestURL,
+    rd_nameScore: ApiCredentials.releaseEKYCnamescore,
 
     credentials: ApiCredentials.credentials,
     endpoints: {
@@ -61,6 +63,7 @@ const config = {
         dashboardcount: '/api/LKRS/fnGetDashCount',
         dashboardData: '/api/LKRS/fnGetDashData',
         releaseEKYCInsert: '/api/Release/fnInsertReleaseEkycinfo',
+        fetchZoneWard: '/api/LKRS/fnGetZonefromWardList',
 
     }
 };

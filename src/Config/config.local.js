@@ -10,6 +10,7 @@ const ApiCredentials = {
         password: "10750b6bdc29495297efd2fb29047a94",
         layoutForm: "http://localhost:3001",
         ekycRequestURL: 0,
+        releaseEKYCnamescore: 1,
         
     }
 };
@@ -19,6 +20,7 @@ const config = {
       apiLoginBaseUrl: ApiCredentials.credentials.loginUrl,
       redirectBaseURL: ApiCredentials.credentials.layoutForm,
       redirectionTypeURL: ApiCredentials.credentials.ekycRequestURL,
+      rd_nameScore:  ApiCredentials.releaseEKYCnamescore,
 
   credentials: ApiCredentials.credentials, 
 
@@ -67,6 +69,7 @@ const config = {
         insertDCconversion: '/api/DCConversion/fnInsertDCConversioninfo',
         fetchDCconversion: '/api/DCConversion/fnGetDCConversioninfo',
         deleteDCconversion: '/api/DCConversion/fnDeleteDCConversioninfo',
+        fetchZoneWard: '/api/LKRS/fnGetZonefromWardList',
     }
 };
 

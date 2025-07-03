@@ -7,6 +7,7 @@ const ApiCredentials = {
         password: "10750b6bdc29495297efd2fb29047a94",
         layoutForm: "https://testlayoutkhata.bbmpgov.in",
         ekycRequestURL: 1,
+        releaseEKYCnamescore: 1,
     }
 };
 
@@ -15,6 +16,7 @@ const config = {
     apiLoginBaseUrl: ApiCredentials.credentials.loginUrl,
     redirectBaseURL: ApiCredentials.credentials.layoutForm,
     redirectionTypeURL: ApiCredentials.credentials.ekycRequestURL,
+    rd_nameScore: ApiCredentials.releaseEKYCnamescore,
 
     credentials: ApiCredentials.credentials,
     endpoints: {
@@ -61,6 +63,7 @@ const config = {
         insertDCconversion: '/api/DCConversion/fnInsertDCConversioninfo',
         fetchDCconversion: '/api/DCConversion/fnGetDCConversioninfo',
         deleteDCconversion: '/api/DCConversion/fnDeleteDCConversioninfo',
+        fetchZoneWard: '/api/LKRS/fnGetZonefromWardList',
 
     }
 };

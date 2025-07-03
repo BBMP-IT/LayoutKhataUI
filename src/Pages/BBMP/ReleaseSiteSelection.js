@@ -2812,7 +2812,8 @@ const ReleaseSelection = () => {
         if (response) {
           const score = response.nameMatchScore;
 
-          if (score >= 60) {
+          if (score >= `${config.rd_nameScore}`) {
+            
             setOwnerData(response);
 
             const payloadReleaseOwner = {

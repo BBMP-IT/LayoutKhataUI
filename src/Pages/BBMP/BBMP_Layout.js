@@ -163,6 +163,7 @@ const BBMP_LayoutForm = () => {
                 } else if (response.lkrS_LANDTYPE === "khata") {
                     setSelectedLandType("bbmpKhata");
                     setLandDetails("khata");
+                    
                 }
 
                 stop_loader();
@@ -377,7 +378,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
         const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
         if (!localLKRSID) return;
         await delay(1000);
-        await handleGetLKRSID(LKRS_ID);
+        await handleGetLKRSID(localLKRSID);
     }
 
 
@@ -1049,22 +1050,35 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
     // const handleRemoveRTC = (indexToRemove) => {
     //     setRtcAddedData(prev => prev.filter((_, index) => index !== indexToRemove));
     // };
-    const handleRemoveRTC = (rowToRemove) => {
-        Swal.fire({
-            title: "Are you sure?",
-            text: "This will remove the owner and all related owners for this main owner!",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Yes, delete",
-            cancelButtonText: "Cancel",
-            confirmButtonColor: "#d33"
-        }).then((result) => {
-            if (result.isConfirmed) {
-                setRtcAddedData(prev => prev.filter(item => item.main_owner_no !== rowToRemove.main_owner_no));
-                toast.success("Main owner and all related sub-owners removed!");
-            }
-        });
-    };
+const handleRemoveRTC = (rowToRemove) => {
+    Swal.fire({
+        title: "Are you sure?",
+        text: "This will remove only the selected owner record!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, delete",
+        cancelButtonText: "Cancel",
+        confirmButtonColor: "#d33"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            setRtcAddedData(prev =>
+                prev.filter(item =>
+                    !(
+                        item.survey_no === rowToRemove.survey_no &&
+                        item.surnoc === rowToRemove.surnoc &&
+                        item.hissa_no === rowToRemove.hissa_no &&
+                        item.owner === rowToRemove.owner &&
+                        item.father === rowToRemove.father &&
+                        item.owner_no === rowToRemove.owner_no &&
+                        item.main_owner_no === rowToRemove.main_owner_no
+                    )
+                )
+            );
+            toast.success("Selected owner record removed!");
+        }
+    });
+};
+
 
     const handleView = () => {
         Swal.fire({

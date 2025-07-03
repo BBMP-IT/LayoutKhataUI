@@ -28,6 +28,8 @@ const BBMP_Layout_Dashboard = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const handleEditClick = (lkrS_ID, lkrS_DISPLAYLKRSID) => {
+    localStorage.removeItem('LKRSID');
+    localStorage.removeItem('display_LKRSID');
     navigate("/LayoutForm", {
       state: {
         LKRSID: lkrS_ID,
@@ -74,57 +76,57 @@ const BBMP_Layout_Dashboard = () => {
         return `${day}-${month}-${year}`;
       },
       center: true,
-    }, 
-  {
-  name: "Detailed Status",
-  selector: (row) => row.lkrS_APPDETAILEDSTATUS,
-  center: true,
-  cell: (row) => {
-    let backgroundColor = 'transparent';
-    let textColor = 'inherit';
+    },
+    {
+      name: "Detailed Status",
+      selector: (row) => row.lkrS_APPDETAILEDSTATUS,
+      center: true,
+      cell: (row) => {
+        let backgroundColor = 'transparent';
+        let textColor = 'inherit';
 
-    // Conditions
-    const isGreen =
-      (row.lkrS_APPSTATUS === 10 ) ||
-      (row.lkrS_APPSTATUS === 8);
+        // Conditions
+        const isGreen =
+          (row.lkrS_APPSTATUS === 10) ||
+          (row.lkrS_APPSTATUS === 8);
 
-    const isRed =
-      row.lkrS_APPSTATUS === 11;
+        const isRed =
+          row.lkrS_APPSTATUS === 11;
 
-    const isOrange =
-      row.lkrS_APPSTATUS === 9;
+        const isOrange =
+          row.lkrS_APPSTATUS === 9;
 
-    //application created
-    const isBlue = row.lkrS_APPSTATUS === 1;
-    
- 
-    // Set background and text color
-    if (isGreen) {
-      backgroundColor = 'green';
-      textColor = 'white';
-    } else if (isRed) {
-      backgroundColor = 'red';
-      textColor = 'white';
-    } else if (isOrange) {
-      backgroundColor = 'orange';
-      textColor = 'white';
-    }
+        //application created
+        const isBlue = row.lkrS_APPSTATUS === 1;
 
-    return (
-      <div
-        style={{
-          backgroundColor,
-          color: textColor,
-          padding: '4px 8px',
-          borderRadius: '4px',
-        }}
-      >
-        {row.lkrS_APPDETAILEDSTATUS}
-      </div>
-    );
-  },
-},
-   {
+
+        // Set background and text color
+        if (isGreen) {
+          backgroundColor = 'green';
+          textColor = 'white';
+        } else if (isRed) {
+          backgroundColor = 'red';
+          textColor = 'white';
+        } else if (isOrange) {
+          backgroundColor = 'orange';
+          textColor = 'white';
+        }
+
+        return (
+          <div
+            style={{
+              backgroundColor,
+              color: textColor,
+              padding: '4px 8px',
+              borderRadius: '4px',
+            }}
+          >
+            {row.lkrS_APPDETAILEDSTATUS}
+          </div>
+        );
+      },
+    },
+    {
       name: "Action",
       selector: (row) => {
         if (row.lkrS_APPSTATUS === 1) {
@@ -155,25 +157,25 @@ const BBMP_Layout_Dashboard = () => {
       },
     },
   };
- const [dashboardData, setDashboardData] = useState({
+  const [dashboardData, setDashboardData] = useState({
     allCount: 0,
     incompletedCount: 0,
     submittedCount: 0,
     completedCount: 0,
   });
 
-   const [createdBy, setCreatedBy] = useState(localStorage.getItem('PhoneNumber'));
-      const [createdName, setCreatedName] = useState('');
-      const [roleID, setRoleID] = useState('');
+  const [createdBy, setCreatedBy] = useState(localStorage.getItem('PhoneNumber'));
+  const [createdName, setCreatedName] = useState('');
+  const [roleID, setRoleID] = useState('');
 
   useEffect(() => {
-      const storedCreatedBy = localStorage.getItem('PhoneNumber');
-        const storedCreatedName = localStorage.getItem('createdName');
-        const storedRoleID = localStorage.getItem('RoleID');
+    const storedCreatedBy = localStorage.getItem('PhoneNumber');
+    const storedCreatedName = localStorage.getItem('createdName');
+    const storedRoleID = localStorage.getItem('RoleID');
 
-        setCreatedBy(storedCreatedBy);
-        setCreatedName(storedCreatedName);
-        setRoleID(storedRoleID);
+    setCreatedBy(storedCreatedBy);
+    setCreatedName(storedCreatedName);
+    setRoleID(storedRoleID);
 
     const initDashboard = async () => {
       try {
@@ -245,7 +247,7 @@ const BBMP_Layout_Dashboard = () => {
     },
     // ➕ Add more dummy entries as needed
   ];
- 
+
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -271,10 +273,10 @@ const BBMP_Layout_Dashboard = () => {
   const handleClick = async () => {
     // const success = await generate_Token();
     // if (success) {
-localStorage.removeItem('LKRSID');
-localStorage.removeItem('display_LKRSID');
-localStorage.removeItem('totalNoOfSites');
-localStorage.removeItem('ownerName');
+    localStorage.removeItem('LKRSID');
+    localStorage.removeItem('display_LKRSID');
+    localStorage.removeItem('totalNoOfSites');
+    localStorage.removeItem('ownerName');
     navigate('/LayoutForm');
     // } else {
     //   // Optionally show an error alert here
@@ -395,7 +397,7 @@ localStorage.removeItem('ownerName');
                     </div>
                   </div>
 
-                  
+
 
 
                 </div>

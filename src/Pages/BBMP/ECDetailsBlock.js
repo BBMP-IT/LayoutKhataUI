@@ -972,7 +972,7 @@ const buttonRef = useRef(null);
 
 
                                     <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4">
-                                        <label className='form-label'>Scan & upload the JDA</label>
+                                        <label className='form-label'>Scan & upload the JDA <span className='mandatory_color'>*</span></label>
                                         <input
                                             type="file"
                                             className="form-control"

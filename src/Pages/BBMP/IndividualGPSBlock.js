@@ -22,7 +22,8 @@ import {
     handleFetchHissaOptions, fetchRTCDetailsAPI, handleFetchEPIDDetails, getAccessToken, sendOtpAPI, verifyOtpAPI, submitEPIDDetails, submitsurveyNoDetails,
     insertApprovalInfo, listApprovalInfo, deleteApprovalInfo, insertReleaseInfo, deleteReleaseInfo, listReleaseInfo, fileUploadAPI, fileListAPI, insertJDA_details, ownerEKYC_Details,
     ekyc_Details, ekyc_Response, ekyc_insertOwnerDetails, jdaEKYC_Details,
-    individualSiteAPI, individualSiteListAPI, fetchECDetails, fetchDeedDocDetails, fetchDeedDetails, fetchJDA_details, deleteSiteInfo, fetch_LKRSID, update_Final_SaveAPI
+    individualSiteAPI, individualSiteListAPI, fetchECDetails, fetchDeedDocDetails, fetchDeedDetails, fetchJDA_details, deleteSiteInfo, fetch_LKRSID,
+    update_Final_SaveAPI, fetchZoneFromWardList,
 } from '../../API/authService';
 
 import usericon from '../../assets/usericon.png';
@@ -37,8 +38,39 @@ export const useLoader = () => {
 
     return { loading, start_loader, stop_loader };
 };
+function pointInPolygon(lat, lon, polygon) {
+    let inside = false;
+    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+        const xi = polygon[i][0], yi = polygon[i][1];
+        const xj = polygon[j][0], yj = polygon[j][1];
+        const intersect = ((yi > lat) !== (yj > lat)) &&
+            (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi);
+        if (intersect) inside = !inside;
+    }
+    return inside;
+}
 
-const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID, totalNoofsites, ownerName, isRTCSectionSaved, isEPIDSectionSaved, 
+function getNearestDistance(lat, lon, polygon) {
+    const toRad = deg => deg * Math.PI / 180;
+    const R = 6371e3; // meters
+    let minDist = Infinity;
+
+    for (const [lng, latP] of polygon) {
+        const φ1 = toRad(lat), φ2 = toRad(latP);
+        const Δφ = toRad(latP - lat);
+        const Δλ = toRad(lng - lon);
+        const a = Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const d = R * c;
+        minDist = Math.min(minDist, d);
+    }
+
+    return minDist;
+}
+
+
+
+const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID, totalNoofsites, ownerName, isRTCSectionSaved, isEPIDSectionSaved,
     setIsSitesSectionSaved, }) => {
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
     const [shape, setShape] = useState("regular"); // Track selected shape
@@ -1161,13 +1193,18 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
     const [longitudeerror, setLongitudeError] = useState('');
     const [resultType, setResultType] = useState('Please select a property on Google Maps: *');
     const [resultTypeError, setResultTypeError] = useState('');
-    
 
     const markerRef = useRef(null);
     const mapInstance = useRef(null);
     const geocoder = useRef(null);
     const service = useRef(null);
     // const autocomplete = useRef(null);
+    const [zoneWardData, setZoneWardData] = useState([]);
+    const [zoneOptions, setZoneOptions] = useState([]);
+    const [wardOptions, setWardOptions] = useState([]);
+    const [selectedZone, setSelectedZone] = useState('');
+    const [selectedWard, setSelectedWard] = useState('');
+
 
     useEffect(() => {
         const initMap = () => {
@@ -1190,8 +1227,21 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             geocoder.current = new window.google.maps.Geocoder();
             service.current = new window.google.maps.places.PlacesService(map);
 
+            // 🟡 Enable Autocomplete here
+            const autocomplete = new window.google.maps.places.Autocomplete(searchInputRef.current);
+            autocomplete.bindTo("bounds", map);
 
+            autocomplete.addListener("place_changed", () => {
+                const place = autocomplete.getPlace();
+                if (!place.geometry) {
+                    setResultType("No details available for input: '" + place.name + "'");
+                    return;
+                }
 
+                moveMapTo(place.geometry.location, "Autocomplete Search", place.formatted_address || place.name);
+            });
+
+            // Map click event
             map.addListener('click', (event) => {
                 const location = event.latLng;
                 moveMapTo(location, "");
@@ -1203,6 +1253,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                 });
             });
 
+            // Marker drag event
             marker.addListener('dragend', (event) => {
                 const location = event.latLng;
                 moveMapTo(location, "Dragged Result");
@@ -1219,14 +1270,105 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             initMap();
         }
     }, []);
+    const getWardAndZoneData = async (lat, lon) => {
+        try {
+            const response = await fetch('/assets/ward_boundaries.json');
+            const data = await response.json();
+            const features = data.features;
+
+            let exactWard = null;
+            const nearbyWards = [];
+
+            for (const feature of features) {
+                const geometry = feature.geometry;
+                if (geometry.type === "MultiPolygon") {
+                    for (const coordinates of geometry.coordinates) {
+                        const polygon = coordinates[0];
+
+                        if (pointInPolygon(lat, lon, polygon)) {
+                            exactWard = {
+                                wardName: feature.properties.WARD_NAME,
+                                wardNo: feature.properties.WARD_NO,
+                            };
+                            break;
+                        } else {
+                            const distance = getNearestDistance(lat, lon, polygon);
+                            if (distance <= 500) {
+                                nearbyWards.push({
+                                    wardName: feature.properties.WARD_NAME,
+                                    wardNo: feature.properties.WARD_NO,
+                                });
+                            }
+                        }
+                    }
+                }
+                if (exactWard) break;
+            }
+
+            // ✅ Prepare wardId list for API
+            const allWardIds = [
+                ...(exactWard ? [exactWard.wardNo] : []),
+                ...nearbyWards.map(w => w.wardNo),
+            ];
+
+            // ✅ Fetch zone-ward list from API
+            const zoneWardData = await fetchZoneFromWardList(allWardIds, 600); // you already have this API
+            setZoneWardData(zoneWardData); // save raw data
+
+            // ✅ Deduplicate zone list
+            const uniqueZonesMap = new Map();
+            zoneWardData.forEach(z => {
+                if (!uniqueZonesMap.has(z.zoneID)) {
+                    uniqueZonesMap.set(z.zoneID, {
+                        label: z.zoneName,
+                        value: z.zoneID,
+                    });
+                }
+            });
+            const zoneList = Array.from(uniqueZonesMap.values());
+            setZoneOptions(zoneList); // update zone dropdown options
+
+            // ✅ Pre-select zone of exact ward
+            const exactZone = exactWard
+                ? zoneWardData.find(z => z.wardId === exactWard.wardNo)
+                : null;
+
+            if (exactZone) {
+                setSelectedZone(exactZone.zoneID); // auto-select zone
+
+                // ✅ Filter wards of selected zone
+                const wardsInZone = zoneWardData
+                    .filter(z => z.zoneID === exactZone.zoneID)
+                    .map(z => ({
+                        label: z.wardName,
+                        value: z.wardId,
+                    }));
+
+                setWardOptions(wardsInZone); // update ward dropdown
+                setSelectedWard(exactWard.wardNo); // auto-select exact ward
+            } else {
+                // fallback if no exact ward found
+                setWardOptions([]);
+                setSelectedWard('');
+            }
+        } catch (error) {
+            console.error("Error in getWardAndZoneData:", error);
+        }
+    };
+
 
     const moveMapTo = (location, title, formatted_address = '') => {
         if (!location) return;
         mapInstance.current.setCenter(location);
         markerRef.current.setPosition(location);
-        setLatitude(location.lat().toFixed(6));
-        setLongitude(location.lng().toFixed(6));
+        const lat = location.lat();
+        const lon = location.lng();
+        setLatitude(lat.toFixed(6));
+        setLongitude(lon.toFixed(6));
         setResultType(`${title} ${formatted_address}`);
+
+        // 🔁 Fetch ward & zone
+        getWardAndZoneData(lat, lon);
     };
 
     const handleSmartSearch = () => {
@@ -1363,17 +1505,17 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             });
             return;
         }
-         const existingSiteNumbers = allSites.map(site => site.sitE_NO);
-            const siteNumberToCheck = shape === "regular" ? regular_siteNumber : irregular_siteNumber;
+        const existingSiteNumbers = allSites.map(site => site.sitE_NO);
+        const siteNumberToCheck = shape === "regular" ? regular_siteNumber : irregular_siteNumber;
 
-            if (existingSiteNumbers.includes(siteNumberToCheck)) {
-                Swal.fire({
-                    icon: "warning",
-                    title: "Duplicate Site Number",
-                    text: `Site number "${siteNumberToCheck}" already exists. Please enter a new site number.`,
-                });
-                return; // Stop further execution
-            }
+        if (existingSiteNumbers.includes(siteNumberToCheck)) {
+            Swal.fire({
+                icon: "warning",
+                title: "Duplicate Site Number",
+                text: `Site number "${siteNumberToCheck}" already exists. Please enter a new site number.`,
+            });
+            return; // Stop further execution
+        }
 
         if (isChecked) {
             const existingSiteNumbers = allSites.map(site => site.sitE_NO);
@@ -2656,6 +2798,45 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                                     {longitudeerror && <div className="text-danger">{longitudeerror}</div>}
 
                                 </div>
+                                {/* Zone name */}
+                                <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mb-3">
+                                    <label className="form-label">Zones Name</label>
+                                    <select
+                                        className="form-select"
+                                        value={selectedZone}
+                                        onChange={(e) => {
+                                            const zoneId = parseInt(e.target.value);
+                                            setSelectedZone(zoneId);
+                                            const wards = zoneWardData
+                                                .filter(z => z.zoneID === zoneId)
+                                                .map(z => ({ label: z.wardName, value: z.wardId }));
+                                            setWardOptions(wards);
+                                            setSelectedWard('');
+                                        }}
+                                    >
+                                        <option value="">Select Zone</option>
+                                        {zoneOptions.map(opt => (
+                                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                        ))}
+                                    </select>
+
+                                </div>
+                                {/* ward name */}
+                                <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mb-3">
+                                    <label className="form-label">Wards Name</label>
+                                    <select
+                                        className="form-select"
+                                        value={selectedWard}
+                                        onChange={(e) => setSelectedWard(parseInt(e.target.value))}
+                                    >
+                                        <option value="">Select Ward</option>
+                                        {wardOptions.map(opt => (
+                                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                        ))}
+                                    </select>
+
+                                </div>
+
                                 {/* Owner Name */}
                                 <div className="col-md-12 col-lg-12 col-sm-12 text-center">
                                     <span className="fw-semibold text-dark">
@@ -2672,6 +2853,8 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                                 </div>
                             </div>
                         </div>
+
+
                         <div className="col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10 mt-3"></div>
 
                         <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-3">
