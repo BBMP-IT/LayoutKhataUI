@@ -8,6 +8,7 @@ import { AuthProvider } from './AuthContext';
 
 
 function App() {
+  
   return (
     <div className="App">
       <AuthProvider><AppRoutes /></AuthProvider>

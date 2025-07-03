@@ -28,8 +28,8 @@ const BBMP_Layout_Dashboard = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const handleEditClick = (lkrS_ID, lkrS_DISPLAYLKRSID) => {
-    localStorage.removeItem('LKRSID');
-    localStorage.removeItem('display_LKRSID');
+    sessionStorage.removeItem('LKRSID');
+    sessionStorage.removeItem('display_LKRSID');
     navigate("/LayoutForm", {
       state: {
         LKRSID: lkrS_ID,
@@ -164,14 +164,14 @@ const BBMP_Layout_Dashboard = () => {
     completedCount: 0,
   });
 
-  const [createdBy, setCreatedBy] = useState(localStorage.getItem('PhoneNumber'));
+  const [createdBy, setCreatedBy] = useState(sessionStorage.getItem('PhoneNumber'));
   const [createdName, setCreatedName] = useState('');
   const [roleID, setRoleID] = useState('');
 
   useEffect(() => {
-    const storedCreatedBy = localStorage.getItem('PhoneNumber');
-    const storedCreatedName = localStorage.getItem('createdName');
-    const storedRoleID = localStorage.getItem('RoleID');
+    const storedCreatedBy = sessionStorage.getItem('PhoneNumber');
+    const storedCreatedName = sessionStorage.getItem('createdName');
+    const storedRoleID = sessionStorage.getItem('RoleID');
 
     setCreatedBy(storedCreatedBy);
     setCreatedName(storedCreatedName);
@@ -180,7 +180,7 @@ const BBMP_Layout_Dashboard = () => {
     const initDashboard = async () => {
       try {
         start_loader();
-        let token = localStorage.getItem('access_token');
+        let token = sessionStorage.getItem('access_token');
         // const tokenGenerated = await generate_Token();
 
         if (!token) {
@@ -257,8 +257,8 @@ const BBMP_Layout_Dashboard = () => {
     try {
       const response = await getAccessToken();
       if (response?.access_token) {
-        localStorage.clear();
-        localStorage.setItem('access_token', response.access_token);
+        sessionStorage.clear();
+        sessionStorage.setItem('access_token', response.access_token);
         return true;  // Indicate success
       } else {
         console.error("No access token received");
@@ -273,10 +273,10 @@ const BBMP_Layout_Dashboard = () => {
   const handleClick = async () => {
     // const success = await generate_Token();
     // if (success) {
-    localStorage.removeItem('LKRSID');
-    localStorage.removeItem('display_LKRSID');
-    localStorage.removeItem('totalNoOfSites');
-    localStorage.removeItem('ownerName');
+    sessionStorage.removeItem('LKRSID');
+    sessionStorage.removeItem('display_LKRSID');
+    sessionStorage.removeItem('totalNoOfSites');
+    sessionStorage.removeItem('ownerName');
     navigate('/LayoutForm');
     // } else {
     //   // Optionally show an error alert here

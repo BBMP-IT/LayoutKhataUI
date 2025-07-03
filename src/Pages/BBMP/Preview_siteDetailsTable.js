@@ -48,8 +48,8 @@ export const useLoader = () => {
         if (LKRS_ID) {
             setLocalLKRSID(LKRS_ID);
         } else {
-            // fallback to localStorage if needed
-            const id = localStorage.getItem("LKRSID");
+            // fallback to sessionStorage if needed
+            const id = sessionStorage.getItem("LKRSID");
             if (id) setLocalLKRSID(id);
         }
     }, [LKRS_ID]);

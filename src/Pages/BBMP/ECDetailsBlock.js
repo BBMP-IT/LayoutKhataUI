@@ -55,7 +55,7 @@ const  ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIs
     const [error, setError] = useState('');
     const [deedNoURL, setDeedNoURL] = useState(null);
     const deedNoURLRef = useRef(null);
-    const [createdBy, setCreatedBy] = useState(localStorage.getItem('PhoneNumber'));
+    const [createdBy, setCreatedBy] = useState(sessionStorage.getItem('PhoneNumber'));
     const [createdName, setCreatedName] = useState('');
     const [roleID, setRoleID] = useState('');
     const [jdaID, setJdaID] = useState('');
@@ -65,9 +65,9 @@ const  ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIs
         };
     }, [deedNoURL]);
     useEffect(() => {
-        const storedCreatedBy = localStorage.getItem('createdBy');
-        const storedCreatedName = localStorage.getItem('createdName');
-        const storedRoleID = localStorage.getItem('RoleID');
+        const storedCreatedBy = sessionStorage.getItem('createdBy');
+        const storedCreatedName = sessionStorage.getItem('createdName');
+        const storedRoleID = sessionStorage.getItem('RoleID');
 
         setCreatedBy(storedCreatedBy);
         setCreatedName(storedCreatedName);
@@ -80,8 +80,8 @@ const  ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIs
         if (LKRS_ID) {
             setLocalLKRSID(LKRS_ID);
         } else {
-            // fallback to localStorage if needed
-            const id = localStorage.getItem("LKRSID");
+            // fallback to sessionStorage if needed
+            const id = sessionStorage.getItem("LKRSID");
             if (id) setLocalLKRSID(id);
         }
     }, [LKRS_ID]);
@@ -475,8 +475,8 @@ const buttonRef = useRef(null);
                             icon: "success",
                             confirmButtonText: "OK",
                         });
-                        localStorage.setItem('jdA_ID',response.jdA_ID);
-                        console.log("JDAID",localStorage.setItem('jdA_ID',response.jdA_ID));
+                        sessionStorage.setItem('jdA_ID',response.jdA_ID);
+                        console.log("JDAID",sessionStorage.setItem('jdA_ID',response.jdA_ID));
                         setJdaID(response.jdA_ID);
                         setIsJDASectionDisabled(true);
                         setIsECSectionSaved(true);
@@ -517,8 +517,8 @@ const buttonRef = useRef(null);
                             }
                         }
                         
-                        localStorage.setItem('jdA_ID',response.jdA_ID);
-                        console.log("JDAID",localStorage.setItem('jdA_ID',response.jdA_ID));
+                        sessionStorage.setItem('jdA_ID',response.jdA_ID);
+                        console.log("JDAID",sessionStorage.setItem('jdA_ID',response.jdA_ID));
                         setJdaID(response.jdA_ID);
                         setIsJDASectionDisabled(true);
                         setIsECSectionSaved(true);

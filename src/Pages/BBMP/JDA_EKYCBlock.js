@@ -60,7 +60,7 @@ const JDA_EKYCBlock = ({ LKRS_ID, jdaID, setIsJDAEKYCSectionSaved }) => {
     const [ownerData, setOwnerData] = useState(null);
     const [isVerified, setIsVerified] = useState(false);
 
-    const [createdBy, setCreatedBy] = useState(localStorage.getItem('PhoneNumber'));
+    const [createdBy, setCreatedBy] = useState(sessionStorage.getItem('PhoneNumber'));
     const [createdName, setCreatedName] = useState('');
     const [roleID, setRoleID] = useState('');
     const [LKRSID, setLKRSID] = useState('');
@@ -72,9 +72,9 @@ const JDA_EKYCBlock = ({ LKRS_ID, jdaID, setIsJDAEKYCSectionSaved }) => {
     const [ekyc_Data, setEkyc_Data] = useState(null);
     const [jda_ID, setJDA_ID] = useState('');
     useEffect(() => {
-        const storedCreatedBy = localStorage.getItem('PhoneNumber');
-        const storedCreatedName = localStorage.getItem('createdName');
-        const storedRoleID = localStorage.getItem('RoleID');
+        const storedCreatedBy = sessionStorage.getItem('PhoneNumber');
+        const storedCreatedName = sessionStorage.getItem('createdName');
+        const storedRoleID = sessionStorage.getItem('RoleID');
 
         setCreatedBy(storedCreatedBy);
         setCreatedName(storedCreatedName);
@@ -82,7 +82,7 @@ const JDA_EKYCBlock = ({ LKRS_ID, jdaID, setIsJDAEKYCSectionSaved }) => {
 
     }, ["1"]);
     const [localLKRSID, setLocalLKRSID] = useState(() => {
-        return localStorage.getItem("LKRSID") || "";
+        return sessionStorage.getItem("LKRSID") || "";
     });
 
     useEffect(() => {
@@ -96,7 +96,7 @@ const JDA_EKYCBlock = ({ LKRS_ID, jdaID, setIsJDAEKYCSectionSaved }) => {
         if (jdaID) {
             setJDA_ID(jdaID);
         } else {
-            const JDAID = localStorage.getItem('jdA_ID');
+            const JDAID = sessionStorage.getItem('jdA_ID');
 
             setJDA_ID(JDAID);
         }
@@ -464,7 +464,7 @@ const JDA_EKYCBlock = ({ LKRS_ID, jdaID, setIsJDAEKYCSectionSaved }) => {
                 });
 
                 const resultUrl = response?.ekycRequestUrl;
-                localStorage.setItem("tranNo", response?.tranNo);
+                sessionStorage.setItem("tranNo", response?.tranNo);
                 if (resultUrl) {
                     window.open(
                         resultUrl,
@@ -485,7 +485,7 @@ const JDA_EKYCBlock = ({ LKRS_ID, jdaID, setIsJDAEKYCSectionSaved }) => {
     };
     const [jdaDataList, setJDADataList] = useState([]);
     const fetchEKYC_ResponseDetails = async (jdaRepName, txnno) => {
-        const transaction_No = localStorage.getItem("tranNo");
+        const transaction_No = sessionStorage.getItem("tranNo");
         if (transaction_No === txnno) {
             try {
                 const payload = {

@@ -44,20 +44,21 @@ import Final_eKhatha_Status_based_on_ePID from './Pages/Final_eKhatha_Status_bas
 import Amalgamation from './Pages/Amalgamation';
 import EKYCAmalgamationResponse from "./Pages/EKYCAmalgamationResponse";
 import GetNewKhataReport from './Pages/NewKhataReport';
+
+
+import Error_Page from './Pages/BBMP/ErrorPage';
+
 import BBMPLogin from './Pages/BBMP/BBMPLogin';
 import BBMP_TaxDetails from './Pages/BBMP/taxDetails';
 import BBMP_Homepage from './Pages/BBMP/homePage';
 import BBMP_LayoutForm from './Pages/BBMP/BBMP_Layout';
 import BBMP_Layout_Dashboard from './Pages/BBMP/BBMP_Layout_Dashboard';
-
 import EKYCResultHandler from './Pages/BBMP/EKYC_Preview';
 import ReleaseSelection from './Pages/BBMP/ReleaseSiteSelection';
 import BBMP_SubmittedInfo from './Pages/BBMP/Submitted_ApplicationInfo';
 import LayoutForm from './Pages/BBMP/LayoutKhata';
 import ProtectedRoute from './ProtectedRoute';
 import ReleaseEKYCResultHandler from './Pages/BBMP/Release_EKYC_Preview';
-import Error_Page from './Pages/BBMP/ErrorPage';
-
 import ReleaseDashboard from './Pages/BBMP/ReleaseDashboard';
 import Endorsement from './Pages/BBMP/Endorsement';
 

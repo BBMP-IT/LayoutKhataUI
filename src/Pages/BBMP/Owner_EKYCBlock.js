@@ -241,15 +241,15 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
 
     const [selectedOption, setSelectedOption] = useState('owner');
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
-    const [createdBy, setCreatedBy] = useState(localStorage.getItem('PhoneNumber'));
+    const [createdBy, setCreatedBy] = useState(sessionStorage.getItem('PhoneNumber'));
     const [createdName, setCreatedName] = useState('');
     const [roleID, setRoleID] = useState('');
     const [LKRSID, setLKRSID] = useState('');
     const [localownerName, setLocalOwnerName] = useState('');
     useEffect(() => {
-        const storedCreatedBy = localStorage.getItem('createdBy');
-        const storedCreatedName = localStorage.getItem('createdName');
-        const storedRoleID = localStorage.getItem('RoleID');
+        const storedCreatedBy = sessionStorage.getItem('createdBy');
+        const storedCreatedName = sessionStorage.getItem('createdName');
+        const storedRoleID = sessionStorage.getItem('RoleID');
 
         setCreatedBy(storedCreatedBy);
         setCreatedName(storedCreatedName);
@@ -257,7 +257,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
 
     }, ["1"]);
     const [localLKRSID, setLocalLKRSID] = useState(() => {
-        return localStorage.getItem("LKRSID") || "";
+        return sessionStorage.getItem("LKRSID") || "";
     });
     useEffect(() => {
         if (LKRS_ID) {
@@ -404,7 +404,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
                 });
 
                 const resultUrl = response?.ekycRequestUrl;
-                localStorage.setItem("tranNo", response?.tranNo);
+                sessionStorage.setItem("tranNo", response?.tranNo);
                 if (resultUrl) {
                     window.open(
                         resultUrl,
@@ -424,7 +424,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
         }
     };
     const fetchEKYC_ResponseDetails = async (ownerName, txnno) => {
-        const transaction_No = localStorage.getItem("tranNo");
+        const transaction_No = sessionStorage.getItem("tranNo");
         if (transaction_No === txnno) {
             try {
                 const payload = {

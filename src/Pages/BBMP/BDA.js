@@ -56,18 +56,18 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
     //edit approval button disable
     const [isApprovalEditing, setisApprovalEditing] = useState(false);
 
-    const [createdBy, setCreatedBy] = useState(localStorage.getItem('PhoneNumber'));
+    const [createdBy, setCreatedBy] = useState(sessionStorage.getItem('PhoneNumber'));
     const [createdName, setCreatedName] = useState('');
     const [roleID, setRoleID] = useState('');
     const [LKRSID, setLKRSID] = useState('');
     const buttonRef = useRef(null);
     const [localLKRSID, setLocalLKRSID] = useState(() => {
-        return localStorage.getItem("LKRSID") || "";
+        return sessionStorage.getItem("LKRSID") || "";
     });
     useEffect(() => {
-        const storedCreatedBy = localStorage.getItem('createdBy');
-        const storedCreatedName = localStorage.getItem('createdName');
-        const storedRoleID = localStorage.getItem('RoleID');
+        const storedCreatedBy = sessionStorage.getItem('createdBy');
+        const storedCreatedName = sessionStorage.getItem('createdName');
+        const storedRoleID = sessionStorage.getItem('RoleID');
 
         setCreatedBy(storedCreatedBy);
         setCreatedName(storedCreatedName);
@@ -111,7 +111,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                     const totalSites = listResponse.map(item => item.lkrS_NUMBEROFSITES);
 
 
-                    localStorage.setItem('totalNoOfSites', JSON.stringify(totalSites));
+                    sessionStorage.setItem('totalNoOfSites', JSON.stringify(totalSites));
                     setTotalNoofsites(totalSites);
 
                     return {
@@ -387,7 +387,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                     if (response.responseStatus === true) {
                         Swal.fire(response.responseMessage, "", "success");
                         setTotalNoofsites(0);
-                        localStorage.removeItem('totalNoOfSites');
+                        sessionStorage.removeItem('totalNoOfSites');
 
                         setisApprovalEditing(false);
                         setIsEditing(true);
@@ -475,7 +475,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                                 const totalSites = item.lkrS_NUMBEROFSITES;
 
                                 setTotalNoofsites(totalSites);
-                                localStorage.setItem('totalNoOfSites', totalSites);
+                                sessionStorage.setItem('totalNoOfSites', totalSites);
 
                                 return {
                                     layoutApprovalNumber: item.apr_Approval_No,

@@ -65,9 +65,9 @@ const ReleaseSelection = () => {
       setReleaseData([]);//yet to be release table
     }
     fetchFinalReleasedSites(LKRS_ID);
-    const storedCreatedBy = localStorage.getItem('createdBy');
-    const storedCreatedName = localStorage.getItem('createdName');
-    const storedRoleID = localStorage.getItem('RoleID');
+    const storedCreatedBy = sessionStorage.getItem('createdBy');
+    const storedCreatedName = sessionStorage.getItem('createdName');
+    const storedRoleID = sessionStorage.getItem('RoleID');
 
   }, [LKRS_ID, display_LKRS_ID]);
   useEffect(() => {
@@ -1685,10 +1685,10 @@ const ReleaseSelection = () => {
         // Optionally update area sqft if siteDetails present
         if (khataDetailsJson.siteDetails?.siteArea) {
           setAreaSqft(khataDetailsJson.siteDetails.siteArea);
-          localStorage.setItem('areaSqft', khataDetailsJson.siteDetails.siteArea);
+          sessionStorage.setItem('areaSqft', khataDetailsJson.siteDetails.siteArea);
         } else {
           setAreaSqft(0);
-          localStorage.removeItem('areaSqft');
+          sessionStorage.removeItem('areaSqft');
         }
 
         setOwnerTableData(khataDetailsJson.ownerDetails || []);
@@ -1760,8 +1760,8 @@ const ReleaseSelection = () => {
     setTotalSqFt(calculatedTotalSqFt);
     setTotalSqM(calculatedTotalSqM);
 
-    // Store the rounded value in localStorage if that's what's intended
-    localStorage.setItem('areaSqft', calculatedTotalSqFt.toFixed(2));
+    // Store the rounded value in sessionStorage if that's what's intended
+    sessionStorage.setItem('areaSqft', calculatedTotalSqFt.toFixed(2));
 
   }, [combinedData]);
 
@@ -1974,7 +1974,7 @@ const ReleaseSelection = () => {
     if (/^L\d+$/i.test(localLKRSID)) {
       trimmedLKRSID = localLKRSID.substring(1);
     }
-    const siteRelID = localStorage.getItem("sitE_RELS_Latest_SITE_RELS_ID");
+    const siteRelID = sessionStorage.getItem("sitE_RELS_Latest_SITE_RELS_ID");
     try {
       start_loader();
       const payload = {
@@ -2580,7 +2580,7 @@ const ReleaseSelection = () => {
     try {
       const listResponse = await fetch_releasePercentageDetails(trimmedLKRSID);
       const releaseTypeId = listResponse.sitE_RELS_SITE_RELSTYPE_ID;
-      localStorage.setItem('sitE_RELS_Latest_SITE_RELS_ID', listResponse.sitE_RELS_Latest_SITE_RELS_ID);
+      sessionStorage.setItem('sitE_RELS_Latest_SITE_RELS_ID', listResponse.sitE_RELS_Latest_SITE_RELS_ID);
       const releasePercentage = listResponse.releasePercentage;
 
       if (releaseTypeId) {
@@ -2772,7 +2772,7 @@ const ReleaseSelection = () => {
         });
 
         const resultUrl = response?.ekycRequestUrl;
-        localStorage.setItem("tranNo", response?.tranNo);
+        sessionStorage.setItem("tranNo", response?.tranNo);
         if (resultUrl) {
           window.open(
             resultUrl,
@@ -2796,7 +2796,7 @@ const ReleaseSelection = () => {
     if (/^L\d+$/i.test(localLKRSID)) {
       trimmedLKRSID = localLKRSID.substring(1);
     }
-    const transaction_No = localStorage.getItem("tranNo");
+    const transaction_No = sessionStorage.getItem("tranNo");
     if (transaction_No === txnno) {
       try {
         const payload = {

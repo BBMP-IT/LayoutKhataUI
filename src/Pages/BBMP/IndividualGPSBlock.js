@@ -168,7 +168,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
     useEffect(() => {
 
-        const areaSQFT = localStorage.getItem('areaSqft');
+        const areaSQFT = sessionStorage.getItem('areaSqft');
         if (areaSQFT) {
             setTotalSQFT(areaSQFT);
             setTotalSQM(sqftToSqm(areaSQFT));
@@ -181,19 +181,19 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         if (LKRS_ID) {
             setLocalLKRSID(LKRS_ID);
         } else {
-            const id = localStorage.getItem("LKRSID");
+            const id = sessionStorage.getItem("LKRSID");
             if (id) setLocalLKRSID(id);
         }
         if (ownerName) {
             setLocalOwnerName(ownerName)
         } else {
-            const name = localStorage.getItem("ownerName");
+            const name = sessionStorage.getItem("ownerName");
             if (name) setLocalOwnerName(name);
         }
         if (totalNoofsites) {
             setLayoutSiteCount(totalNoofsites);
         } else {
-            const noofsites = localStorage.getItem("totalNoOfSites");
+            const noofsites = sessionStorage.getItem("totalNoOfSites");
             if (noofsites) setLayoutSiteCount(noofsites);
         }
     }, [LKRS_ID, ownerName, totalNoofsites]);
@@ -1433,7 +1433,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             return;
         }
 
-        const storedSiteCount = parseInt(localStorage.getItem("NUMBEROFSITES"), 10);
+        const storedSiteCount = parseInt(sessionStorage.getItem("NUMBEROFSITES"), 10);
         const totalAddedSites = allSites.length;
 
         // Check if trying to reduce below original count
@@ -1469,7 +1469,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
         const totalAddedSites = allSites.length;
         const textboxSitesCount = parseInt(layoutSiteCount, 10);
-        const storedSiteCount = parseInt(localStorage.getItem("NUMBEROFSITES"), 10);
+        const storedSiteCount = parseInt(sessionStorage.getItem("NUMBEROFSITES"), 10);
 
         // Check if trying to reduce below original count
         if (textboxSitesCount >= totalAddedSites) {
@@ -1580,7 +1580,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             sitediM_CREATEDROLE: roleID
         }));
 
-        let no_of_sites = Number(localStorage.getItem("NUMBEROFSITES")) || 0;
+        let no_of_sites = Number(sessionStorage.getItem("NUMBEROFSITES")) || 0;
         let updated_sites = "";
         let status_site = true;
         const NoofSites = parseInt(layoutSiteCount, 10);
@@ -1654,7 +1654,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                         setIsSitesSectionSaved(true);
 
                         const totalSitesFromAPI = response[0]?.lkrS_NUMBEROFSITES;
-                        localStorage.setItem("NUMBEROFSITES", totalSitesFromAPI);
+                        sessionStorage.setItem("NUMBEROFSITES", totalSitesFromAPI);
                     }
 
                 } catch (error) {
@@ -1722,7 +1722,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
     const fetchSiteDetails = async (LKRS_ID) => {
 
-        const storedSiteCount = localStorage.getItem("NUMBEROFSITES");
+        const storedSiteCount = sessionStorage.getItem("NUMBEROFSITES");
         if (storedSiteCount) {
             setLayoutSiteCount(storedSiteCount);
             setIsReadOnly(true);     // Make input and Save button readonly/disabled
@@ -1749,7 +1749,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                 // setIsAddDisabled(true);
 
                 const totalSitesFromAPI = response[0]?.lkrS_NUMBEROFSITES;
-                localStorage.setItem("NUMBEROFSITES", totalSitesFromAPI);
+                sessionStorage.setItem("NUMBEROFSITES", totalSitesFromAPI);
 
                 // Check if the response length matches the totalSitesFromAPI
                 if (response.length === Number(totalSitesFromAPI)) {
@@ -2903,8 +2903,8 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
         if (LKRS_ID) {
             setLocalLKRSID(LKRS_ID);
         } else {
-            // fallback to localStorage if needed
-            const id = localStorage.getItem("LKRSID");
+            // fallback to sessionStorage if needed
+            const id = sessionStorage.getItem("LKRSID");
             if (id) setLocalLKRSID(id);
         }
     }, [LKRS_ID]);

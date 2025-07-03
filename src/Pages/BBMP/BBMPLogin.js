@@ -73,7 +73,7 @@ const { UseLogin } = useAuth();
         const newLang = event.target.value;
         setLanguage(newLang);
         i18n.changeLanguage(newLang);
-        localStorage.setItem("selectedLanguage", newLang);
+        sessionStorage.setItem("selectedLanguage", newLang);
     };
 
     const start_loader = () => {
@@ -194,7 +194,7 @@ const { UseLogin } = useAuth();
             const data = response.data;
 
             if (data.responseCode === "200" && data.responseStatus === true) {
-                localStorage.setItem('PhoneNumber',phoneNumber);
+                sessionStorage.setItem('PhoneNumber',phoneNumber);
                 console.log("OTP verified, calling generate_Token");
                 generate_Token();
                 console.log("Token generated, showing Swal");
@@ -225,9 +225,9 @@ const { UseLogin } = useAuth();
     try {
       const response = await getAccessToken();
       if (response?.access_token) {
-        // localStorage.clear();
-        localStorage.setItem('PhoneNumber',phoneNumber);
-        localStorage.setItem('access_token', response.access_token);
+        // sessionStorage.clear();
+        sessionStorage.setItem('PhoneNumber',phoneNumber);
+        sessionStorage.setItem('access_token', response.access_token);
         UseLogin(response.access_token);
         return true;  // Indicate success
       } else {

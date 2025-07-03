@@ -54,7 +54,7 @@ const BBMP_SubmittedInfo = () => {
                 buttonRef.current.click();
             }
         } else {
-            const id = localStorage.getItem("LKRSID");
+            const id = sessionStorage.getItem("LKRSID");
             if (id) setLocalLKRSID(id);
         }
     }, [LKRS_ID]);
@@ -120,8 +120,8 @@ const BBMP_SubmittedInfo = () => {
         setTotalSqFt(calculatedTotalSqFt);
         setTotalSqM(calculatedTotalSqM);
 
-        // Store the rounded value in localStorage if that's what's intended
-        localStorage.setItem('areaSqft', calculatedTotalSqFt.toFixed(2));
+        // Store the rounded value in sessionStorage if that's what's intended
+        sessionStorage.setItem('areaSqft', calculatedTotalSqFt.toFixed(2));
 
     }, [combinedData]);
 
@@ -384,10 +384,10 @@ const BBMP_SubmittedInfo = () => {
                 // Optionally update area sqft if siteDetails present
                 if (khataDetailsJson.siteDetails?.siteArea) {
                     setTotalSqFt(khataDetailsJson.siteDetails.siteArea);
-                    localStorage.setItem('areaSqft', khataDetailsJson.siteDetails.siteArea);
+                    sessionStorage.setItem('areaSqft', khataDetailsJson.siteDetails.siteArea);
                 } else {
                     setTotalSqFt(0);
-                    localStorage.removeItem('areaSqft');
+                    sessionStorage.removeItem('areaSqft');
                 }
 
                 setOwnerTableData(khataDetailsJson.ownerDetails || []);

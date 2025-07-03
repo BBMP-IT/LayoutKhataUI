@@ -527,8 +527,8 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
         setTotalSqFt(calculatedTotalSqFt);
         setTotalSqM(calculatedTotalSqM);
 
-        // Store the rounded value in localStorage if that's what's intended
-        localStorage.setItem('areaSqft', calculatedTotalSqFt.toFixed(2));
+        // Store the rounded value in sessionStorage if that's what's intended
+        sessionStorage.setItem('areaSqft', calculatedTotalSqFt.toFixed(2));
 
     }, [combinedData]);
     const totalPages = Math.ceil(combinedData.length / rowsPerPage);
@@ -812,10 +812,10 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                 // Optionally update area sqft if siteDetails present
                 if (khataDetailsJson.siteDetails?.siteArea) {
                     setTotalSqFt(khataDetailsJson.siteDetails.siteArea);
-                    localStorage.setItem('areaSqft', khataDetailsJson.siteDetails.siteArea);
+                    sessionStorage.setItem('areaSqft', khataDetailsJson.siteDetails.siteArea);
                 } else {
                     setTotalSqFt(0);
-                    localStorage.removeItem('areaSqft');
+                    sessionStorage.removeItem('areaSqft');
                 }
 
                 setOwnerTableData(khataDetailsJson.ownerDetails || []);

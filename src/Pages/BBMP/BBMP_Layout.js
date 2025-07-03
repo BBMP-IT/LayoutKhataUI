@@ -51,7 +51,7 @@ const BBMP_LayoutForm = () => {
     const navigate = useNavigate();
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
     const [zoomLevel] = useState(0.9);
-    const [newLanguage, setNewLanguage] = useState(localStorage.getItem('selectedLanguage'));
+    const [newLanguage, setNewLanguage] = useState(sessionStorage.getItem('selectedLanguage'));
     const location = useLocation();
     const { LKRSID, DISPLAYLKRSID } = location.state || {};
 
@@ -70,9 +70,9 @@ const BBMP_LayoutForm = () => {
     const [order_details, setOrderDetails] = useState([]);
 
     const [areaSqft, setAreaSqft] = useState("0");
-    // const [LKRS_ID, setLKRS_ID] = useState(() => localStorage.getItem("LKRSID") || "");
-    const [LKRS_ID, setLKRS_ID] = useState(() => localStorage.getItem("LKRSID") || "");
-    const [display_LKRS_ID, setDisplay_LKRS_ID] = useState(() => localStorage.getItem("display_LKRSID") || "");
+    // const [LKRS_ID, setLKRS_ID] = useState(() => sessionStorage.getItem("LKRSID") || "");
+    const [LKRS_ID, setLKRS_ID] = useState(() => sessionStorage.getItem("LKRSID") || "");
+    const [display_LKRS_ID, setDisplay_LKRS_ID] = useState(() => sessionStorage.getItem("display_LKRSID") || "");
     const [totalNoofsites, setTotalNoofsites] = useState(0);
 
 
@@ -98,7 +98,7 @@ const BBMP_LayoutForm = () => {
 
     useEffect(() => {
         const interval = setInterval(() => {
-            const storedLang = localStorage.getItem('selectedLanguage') || 'en';
+            const storedLang = sessionStorage.getItem('selectedLanguage') || 'en';
             if (storedLang !== newLanguage) {
                 setNewLanguage(storedLang);
             }
@@ -106,16 +106,16 @@ const BBMP_LayoutForm = () => {
         return () => clearInterval(interval); // Cleanup
     }, [newLanguage]);
 
-    const CreatedBy = localStorage.getItem('PhoneNumber');
+    const CreatedBy = sessionStorage.getItem('PhoneNumber');
     const CreatedName = "username";
     const RoleID = "user";
 
     useEffect(() => {
 
         // generate_Token();
-        localStorage.setItem('createdBy', CreatedBy);
-        localStorage.setItem('createdName', CreatedName);
-        localStorage.setItem('RoleID', RoleID);
+        sessionStorage.setItem('createdBy', CreatedBy);
+        sessionStorage.setItem('createdName', CreatedName);
+        sessionStorage.setItem('RoleID', RoleID);
 
         if (display_LKRS_ID) {
             toast.success(`KRSID: ${display_LKRS_ID}`, {
@@ -308,7 +308,7 @@ const BBMP_LayoutForm = () => {
 const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, setDisplay_LKRS_ID, setIsRTCSectionSaved, setOwnerName }) => {
 
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
-    const [language, setLanguage] = useState(localStorage.getItem("selectedLanguage"));
+    const [language, setLanguage] = useState(sessionStorage.getItem("selectedLanguage"));
     const { t, i18n } = useTranslation();
     const [districts, setDistricts] = useState([]);
     const [selectedDistrict, setSelectedDistrict] = useState("");
@@ -349,16 +349,16 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
     //     }
     // }, [selectedDistrict, Language]);
 
-    const [createdBy, setCreatedBy] = useState(localStorage.getItem('PhoneNumber'));
+    const [createdBy, setCreatedBy] = useState(sessionStorage.getItem('PhoneNumber'));
     const [createdName, setCreatedName] = useState('');
     const [roleID, setRoleID] = useState('');
     const [totalSQFT, setTotalSQFT] = useState('');
     const [localLKRSID, setLocalLKRSID] = useState(LKRS_ID || "");
 
     useEffect(() => {
-        const storedCreatedBy = localStorage.getItem('PhoneNumber');
-        const storedCreatedName = localStorage.getItem('createdName');
-        const storedRoleID = localStorage.getItem('RoleID');
+        const storedCreatedBy = sessionStorage.getItem('PhoneNumber');
+        const storedCreatedName = sessionStorage.getItem('createdName');
+        const storedRoleID = sessionStorage.getItem('RoleID');
 
         setCreatedBy(storedCreatedBy);
         setCreatedName(storedCreatedName);
@@ -813,10 +813,10 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
         //     const response = await submitsurveyNoDetails(payload);
         //     if (response.responseStatus === true) {
         //         stop_loader();
-        //         localStorage.removeItem('LKRSID');
-        //         localStorage.removeItem('display_LKRSID');
-        //         localStorage.setItem('LKRSID', response.lkrsid);
-        //         localStorage.setItem('display_LKRSID', response.display_LKRSID);
+        //         sessionStorage.removeItem('LKRSID');
+        //         sessionStorage.removeItem('display_LKRSID');
+        //         sessionStorage.setItem('LKRSID', response.lkrsid);
+        //         sessionStorage.setItem('display_LKRSID', response.display_LKRSID);
         //         setDisplay_LKRS_ID(response.display_LKRSID);
         //         setLKRS_ID(response.lkrsid);
         //         const ownerNames = rtcAddedData
@@ -824,7 +824,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
         //             .filter(Boolean)                  // Remove empty/null values
         //             .join(', ');                      // Join with comma and space
 
-        //         localStorage.setItem("ownerName", ownerNames);
+        //         sessionStorage.setItem("ownerName", ownerNames);
         //         setOwnerName(ownerNames);
         //         const fetch_payload = {
         //             level: 1,
@@ -887,10 +887,10 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
             const saveResponse = await submitsurveyNoDetails(payload);
             if (saveResponse.responseStatus === true) {
                 stop_loader();
-                localStorage.removeItem('LKRSID');
-                localStorage.removeItem('display_LKRSID');
-                localStorage.setItem('LKRSID', saveResponse.lkrsid);
-                localStorage.setItem('display_LKRSID', saveResponse.display_LKRSID);
+                sessionStorage.removeItem('LKRSID');
+                sessionStorage.removeItem('display_LKRSID');
+                sessionStorage.setItem('LKRSID', saveResponse.lkrsid);
+                sessionStorage.setItem('display_LKRSID', saveResponse.display_LKRSID);
                 setDisplay_LKRS_ID(saveResponse.display_LKRSID);
                 setLKRS_ID(saveResponse.lkrsid);
                 const ownerNames = rtcAddedData
@@ -898,7 +898,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                     .filter(Boolean)
                     .join(', ');
 
-                localStorage.setItem("ownerName", ownerNames);
+                sessionStorage.setItem("ownerName", ownerNames);
                 setOwnerName(ownerNames);
 
                 try {
@@ -1105,7 +1105,7 @@ const handleRemoveRTC = (rowToRemove) => {
         totalSqM += sqft * 0.092903;
 
         setAreaSqft(totalSqFt);
-        localStorage.setItem('areaSqft', totalSqFt);
+        sessionStorage.setItem('areaSqft', totalSqFt);
     });
     // Normalize fgunta -> gunta and acre
     totalGunta += Math.floor(totalFGunta / 16);
@@ -1664,7 +1664,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
 
     }, [epid_fetchedData]);
 
-    const [createdBy, setCreatedBy] = useState(localStorage.getItem('PhoneNumber'));
+    const [createdBy, setCreatedBy] = useState(sessionStorage.getItem('PhoneNumber'));
     const [createdName, setCreatedName] = useState('');
     const [roleID, setRoleID] = useState('');
 
@@ -1677,9 +1677,9 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
         }
     }, [area_Sqft]);
     useEffect(() => {
-        const storedCreatedBy = localStorage.getItem('createdBy');
-        const storedCreatedName = localStorage.getItem('createdName');
-        const storedRoleID = localStorage.getItem('RoleID');
+        const storedCreatedBy = sessionStorage.getItem('createdBy');
+        const storedCreatedName = sessionStorage.getItem('createdName');
+        const storedRoleID = sessionStorage.getItem('RoleID');
 
         setCreatedBy(storedCreatedBy);
         setCreatedName(storedCreatedName);
@@ -1762,8 +1762,8 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
         try {
             const fetchedData = await handleFetchEPIDDetails(epidNumber);
 
-            // ✅ Store epidKhataDetails in session/localStorage
-            localStorage.setItem("epid_JSON", JSON.stringify(fetchedData.epidKhataDetails));
+            // ✅ Store epidKhataDetails in session/sessionStorage
+            sessionStorage.setItem("epid_JSON", JSON.stringify(fetchedData.epidKhataDetails));
 
             // ✅ Destructure from approvedPropertyDetails correctly
             const approvedDetails = fetchedData?.data?.approvedPropertyDetails;
@@ -1811,7 +1811,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                 const area = siteDetails?.siteArea || 0;
                 setAreaSqft(area);
                 setArea_Sqft(area);
-                localStorage.setItem("areaSqft", area);
+                sessionStorage.setItem("areaSqft", area);
 
                 Swal.fire({
                     title: "Success",
@@ -2035,10 +2035,10 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
 
                 if (khataDetailsJson.siteDetails?.siteArea) {
                     setAreaSqft(khataDetailsJson.siteDetails.siteArea);
-                    localStorage.setItem('areaSqft', khataDetailsJson.siteDetails.siteArea);
+                    sessionStorage.setItem('areaSqft', khataDetailsJson.siteDetails.siteArea);
                 } else {
                     setAreaSqft(0);
-                    localStorage.removeItem('areaSqft');
+                    sessionStorage.removeItem('areaSqft');
                 }
 
                 setOwnerTableData(enrichedOwnerDetails);
@@ -2056,7 +2056,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                 setEPID_FetchedData(null);
                 setOwnerTableData([]);
                 setAreaSqft(0);
-                localStorage.removeItem('areaSqft');
+                sessionStorage.removeItem('areaSqft');
             }
         } catch (error) {
             console.error("Failed to fetch LKRSID data:", error);
@@ -2066,7 +2066,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
     };
 
     const handleSaveAndProceed = async (epidNumber) => {
-        const storedData = localStorage.getItem("epid_JSON");
+        const storedData = sessionStorage.getItem("epid_JSON");
         let parsedData = storedData ? JSON.parse(storedData) : "";
 
         const payload = {
@@ -2126,10 +2126,10 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
 
             if (response.responseStatus === true) {
                 stop_loader();
-                localStorage.removeItem('LKRSID');
-                localStorage.setItem('LKRSID', response.lkrsid);
-                localStorage.removeItem('display_LKRSID');
-                localStorage.setItem('display_LKRSID', response.display_LKRSID);
+                sessionStorage.removeItem('LKRSID');
+                sessionStorage.setItem('LKRSID', response.lkrsid);
+                sessionStorage.removeItem('display_LKRSID');
+                sessionStorage.setItem('display_LKRSID', response.display_LKRSID);
                 setDisplay_LKRS_ID(response.display_LKRSID);
                 setLKRS_ID(response.lkrsid);
 
@@ -2139,7 +2139,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                         .map(owner => owner.ownerName?.trim())
                         .filter(Boolean)
                         .join(', ');
-                    localStorage.setItem("ownerName", ownerNames);
+                    sessionStorage.setItem("ownerName", ownerNames);
                     setOwnerName(ownerNames);
                 } else {
                     console.warn("Owner details array is empty or invalid");

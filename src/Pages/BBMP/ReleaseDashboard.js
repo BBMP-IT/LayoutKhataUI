@@ -167,10 +167,10 @@
 //                 // Optionally update area sqft if siteDetails present
 //                 if (khataDetailsJson.siteDetails?.siteArea) {
 //                     setAreaSqft(khataDetailsJson.siteDetails.siteArea);
-//                     localStorage.setItem('areaSqft', khataDetailsJson.siteDetails.siteArea);
+//                     sessionStorage.setItem('areaSqft', khataDetailsJson.siteDetails.siteArea);
 //                 } else {
 //                     setAreaSqft(0);
-//                     localStorage.removeItem('areaSqft');
+//                     sessionStorage.removeItem('areaSqft');
 //                 }
 
 //                 setOwnerTableData(khataDetailsJson.ownerDetails || []);
