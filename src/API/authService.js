@@ -13,12 +13,12 @@ export const getAccessToken = async () => {
   return await apiService.postRequest('/Token', formData);
 };
 export const checkTokenExpiry = () => {
-    const sessionData = JSON.parse(localStorage.getItem('sessionData'));
+    const sessionData = JSON.parse(sessionStorage.getItem('sessionData'));
     if (sessionData) {
         const currentTime = Date.now();
         if (currentTime >= sessionData.expiry) {
             // Expired
-            localStorage.clear();
+            sessionStorage.clear();
             return false;
         }
         return true;
@@ -37,8 +37,8 @@ export const regenerateToken = async () => {
 //handle session expired
 export const handleSessionExpired = () => {
   // Clear the token or set a session-expired flag
-  localStorage.removeItem('access_token');
-  localStorage.setItem('sessionExpired', 'true');
+  sessionStorage.removeItem('access_token');
+  sessionStorage.setItem('sessionExpired', 'true');
 };
 //send otp API
 export const sendOtpAPI = async (mobileNumber) => {

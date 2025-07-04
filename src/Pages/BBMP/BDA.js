@@ -304,11 +304,15 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
 
     const validateForm = () => {
         let newErrors = {};
+        const layoutAuthorityRegex = /^(?!.* {2,})[a-zA-Z0-9-/]+(?: [a-zA-Z0-9-/]+)*$/;
+
         if (!formData.layoutApprovalNumber.trim()) {
             newErrors.layoutApprovalNumber = "Layout Approval Number is required.";
         } else if (/\s/.test(formData.layoutApprovalNumber)) {
             newErrors.layoutApprovalNumber = "Spaces are not allowed in the Layout Approval Number.";
-        }
+         } else if (!layoutAuthorityRegex.test(formData.layoutApprovalNumber)){
+            newErrors.layoutApprovalNumber  = "Only alphanumeric, '-', '/', and single spaces are allowed. No special characters or multiple spaces.";
+        }   
         if (!formData.approvalOrder) {
             newErrors.approvalOrder = "Please upload a valid PDF (max 5MB).";
         }
@@ -327,7 +331,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
        if (!formData.approvalAuthority.trim()) {
     newErrors.approvalAuthority   = "Layout approval authority is required.";
 } else {
-    const layoutAuthorityRegex = /^(?!.* {2,})[a-zA-Z0-9-/]+(?: [a-zA-Z0-9-/]+)*$/;
+    
 
     if (!layoutAuthorityRegex.test(formData.approvalAuthority )) {
         newErrors.approvalAuthority  = "Only alphanumeric, '-', '/', and single spaces are allowed. No special characters or multiple spaces.";

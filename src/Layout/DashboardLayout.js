@@ -28,7 +28,7 @@ const DashboardLayout = ({ children }) => {
     const newLang = event.target.value;
     setLanguage(newLang);
     i18n.changeLanguage(newLang);
-    localStorage.setItem("selectedLanguage", newLang);
+    sessionStorage.setItem("selectedLanguage", newLang);
 
   };
 
@@ -49,7 +49,7 @@ const DashboardLayout = ({ children }) => {
   });
 
   useEffect(() => {
-    const storedLang = localStorage.getItem('selectedLanguage') || 'kn'; // Default to 'kn' if nothing in storage
+    const storedLang = sessionStorage.getItem('selectedLanguage') || 'kn'; // Default to 'kn' if nothing in storage
     setLanguage(storedLang);
     i18n.changeLanguage(storedLang);
     const dropdownSubmenus = document.querySelectorAll(".dropdown-submenu > a");
@@ -130,7 +130,7 @@ const DashboardLayout = ({ children }) => {
       cancelButtonText: 'Cancel'
     }).then((result) => {
       if (result.isConfirmed) {
-        localStorage.clear();
+        sessionStorage.clear();
         UseLogout();
         navigate("/", { replace: true });
       }

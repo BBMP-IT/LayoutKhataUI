@@ -454,15 +454,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         const totalArea = parseFloat(totalSQFT);
         const enteredArea = parseFloat(regularAreaSqFt);
 
-        if (isNaN(enteredArea) || enteredArea <= 0) {
-            Swal.fire({
-                title: "Invalid Area",
-                text: `Area must be a positive number`,
-                icon: "error",
-                confirmButtonText: "OK",
-            })
-            isValid = false;
-        } else if (enteredArea > totalArea) {
+      if (enteredArea > totalArea) {
             Swal.fire({
                 title: "Area Exceeds Limit",
                 text: `Area cannot exceed Total Area (${totalArea} SqFt) of the layout`,
@@ -1617,7 +1609,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             sitE_LATITUDE: latitude,
             sitE_LONGITUDE: longitude,
             sitE_OWNER: ownerNames,
-            sitE_CORNERPLOT: false,
+            sitE_CORNERPLOT: isRegular ?  cornerSite: irregularcornerSite,
             sitE_NO_OF_SIDES: isRegular ? 2 : numSides,
             sitE_EPID: "",
             sitE_SASNO: "",

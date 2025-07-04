@@ -53,7 +53,7 @@ const ReleaseSelection = () => {
   const fileInputRef = useRef(null);
 
   const [originalTotalRecords, setOriginalTotalRecords] = useState(0);
-  const CreatedBy = 1;
+  const CreatedBy = sessionStorage.getItem('PhoneNumber');
   const CreatedName = "username";
   const RoleID = "user";
   const [LKRSID, setLKRSID] = useState('');
@@ -65,7 +65,7 @@ const ReleaseSelection = () => {
       setReleaseData([]);//yet to be release table
     }
     fetchFinalReleasedSites(LKRS_ID);
-    const storedCreatedBy = sessionStorage.getItem('createdBy');
+    const storedCreatedBy = sessionStorage.getItem('PhoneNumber')
     const storedCreatedName = sessionStorage.getItem('createdName');
     const storedRoleID = sessionStorage.getItem('RoleID');
 

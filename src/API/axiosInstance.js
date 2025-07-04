@@ -13,8 +13,8 @@ const axiosInstance = axios.create({
 // Request interceptor for adding Authorization header
 axiosInstance.interceptors.request.use(
   (config) => {
-    const accessToken = localStorage.getItem('access_token');
-    const isTokenRequired = localStorage.getItem('isTokenRequired');
+    const accessToken = sessionStorage.getItem('access_token');
+    const isTokenRequired = sessionStorage.getItem('isTokenRequired');
 
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
@@ -34,7 +34,7 @@ axiosInstance.interceptors.response.use(
       debugger;
       if (status === 401) {
         console.error('401 Unauthorized, redirecting to login...');
-        localStorage.clear();
+        sessionStorage.clear();
         Swal.fire({
           title: "Unauthorized",
           text: "Your session has expired or you are unauthorized. Please re-login.",
@@ -96,8 +96,8 @@ export default axiosInstance;
 
 // axiosInstance.interceptors.request.use(
 //   (config) => {
-//     const accessToken = localStorage.getItem('access_token');
-//     const isTokenRequired = localStorage.getItem('isTokenRequired');
+//     const accessToken = sessionStorage.getItem('access_token');
+//     const isTokenRequired = sessionStorage.getItem('isTokenRequired');
 
 //     if (accessToken && isTokenRequired === "false") {
 //       config.headers.Authorization = `Bearer ${accessToken}`;
@@ -143,7 +143,7 @@ export default axiosInstance;
 
 //       try {
 //         const newToken = await regenerateToken();
-//         localStorage.setItem('access_token', newToken);
+//         sessionStorage.setItem('access_token', newToken);
 //         processQueue(null, newToken);
 
 //         originalRequest.headers['Authorization'] = 'Bearer ' + newToken;
