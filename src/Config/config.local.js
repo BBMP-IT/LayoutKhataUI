@@ -20,7 +20,7 @@ const config = {
       apiLoginBaseUrl: ApiCredentials.credentials.loginUrl,
       redirectBaseURL: ApiCredentials.credentials.layoutForm,
       redirectionTypeURL: ApiCredentials.credentials.ekycRequestURL,
-      rd_nameScore:  ApiCredentials.releaseEKYCnamescore,
+      rd_nameScore:  ApiCredentials.credentials.releaseEKYCnamescore,
 
   credentials: ApiCredentials.credentials, 
 

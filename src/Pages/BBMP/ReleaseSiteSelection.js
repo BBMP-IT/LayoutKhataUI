@@ -2811,8 +2811,8 @@ const ReleaseSelection = () => {
 
         if (response) {
           const score = response.nameMatchScore;
-
-          if (score >= `${config.rd_nameScore}`) {
+const EkycNameMatch  = `${config.rd_nameScore}`;
+          if (score >= EkycNameMatch) {
             
             setOwnerData(response);
 
