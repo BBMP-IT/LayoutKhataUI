@@ -8,6 +8,7 @@ const ApiCredentials = {
         layoutForm: "https://testlayoutkhata.bbmpgov.in",
         ekycRequestURL: 1,
         releaseEKYCnamescore: 1,
+        totalNoofSites: 5,
     }
 };
 
@@ -17,8 +18,9 @@ const config = {
     redirectBaseURL: ApiCredentials.credentials.layoutForm,
     redirectionTypeURL: ApiCredentials.credentials.ekycRequestURL,
     rd_nameScore: ApiCredentials.releaseEKYCnamescore,
+      sites:  ApiCredentials.credentials.totalNoofSites,
 
-    credentials: ApiCredentials.credentials,
+    credentials: ApiCredentials.credentials.credentials,
     endpoints: {
         sendOTP: '/fnSendOtp',
         verifyOTP: '/fnValidateOtp',

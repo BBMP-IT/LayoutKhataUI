@@ -807,80 +807,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                 suR_CREATEDROLE: roleID
             }))
         };
-        //reference error
-        // try {
-        //     start_loader();
-        //     const response = await submitsurveyNoDetails(payload);
-        //     if (response.responseStatus === true) {
-        //         stop_loader();
-        //         sessionStorage.removeItem('LKRSID');
-        //         sessionStorage.removeItem('display_LKRSID');
-        //         sessionStorage.setItem('LKRSID', response.lkrsid);
-        //         sessionStorage.setItem('display_LKRSID', response.display_LKRSID);
-        //         setDisplay_LKRS_ID(response.display_LKRSID);
-        //         setLKRS_ID(response.lkrsid);
-        //         const ownerNames = rtcAddedData
-        //             .map(item => item.owner?.trim())  // Trim each name
-        //             .filter(Boolean)                  // Remove empty/null values
-        //             .join(', ');                      // Join with comma and space
-
-        //         sessionStorage.setItem("ownerName", ownerNames);
-        //         setOwnerName(ownerNames);
-        //         const fetch_payload = {
-        //             level: 1,
-        //             LkrsId: response.lkrsid,
-        //         };
-        //         try {
-        //             start_loader();
-        //             const response_fetch = await fetch_LKRSID(response.lkrsid);
-
-        //             if (response_fetch && response_fetch.surveyNumberDetails && response_fetch.surveyNumberDetails.length > 0) {
-        //                 const parsedSurveyDetails = mapSurveyDetails(response_fetch.surveyNumberDetails);
-
-        //                 setRtcAddedData(prev => {
-        //                     const existingKeys = new Set(
-        //                         prev.map(item => `${item.surveyNumber}_${item.ownerName}`)
-        //                     );
-
-        //                     const filteredNewData = parsedSurveyDetails.filter(item => {
-        //                         const key = `${item.surveyNumber}_${item.ownerName}`;
-        //                         return !existingKeys.has(key);
-        //                     });
-
-        //                     return [...prev, ...filteredNewData];
-        //                 });
-        //                 setIsSurveyNoSectionDisabled(true);
-        //                 onDisableEPIDSection();
-        //                 setIsRTCSectionSaved(true);
-        //                 stop_loader();
-        //             } else {
-        //                 stop_loader();
-
-        //             }
-        //         } catch (error) {
-        //             stop_loader();
-        //             console.error("Failed to fetch LKRSID data:", error);
-        //         }
-        //         Swal.fire({
-        //             title: response.responseMessage,
-        //             // text: response.display_LKRSID,
-        //             icon: "success",
-        //             confirmButtonText: "OK",
-        //         });
-        //     } else {
-        //         stop_loader();
-        //         Swal.fire({
-        //             text: response.responseMessage || "Failed to save data",
-        //             icon: "error",
-        //             confirmButtonText: "OK",
-        //         });
-        //     }
-        // } catch (error) {
-        //     stop_loader();
-        //     console.error("Failed to insert data:", error);
-        // } finally {
-        //     stop_loader();
-        // }
+       
 
         try {
             start_loader();
@@ -2090,7 +2017,9 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                 khatA_ADDITIONALINFO: "",
                 khatA_CREATEDBY: createdBy,
                 khatA_CREATEDNAME: createdName,
-                khatA_CREATEDROLE: roleID
+                khatA_CREATEDROLE: roleID,
+               khatA_DEED: epid_fetchedData?.KaveriRegistrationNumber?.[0]?.kaveriRegistrationNumber,
+                khatA_EC: epid_fetchedData?.KaveriRegistrationNumber?.[0]?.kaveriECNumber,
             },
             khatA_OWNER_DETAILS: epid_fetchedData?.OwnerDetails.map(owner => ({
                 owN_ID: 0,

@@ -283,7 +283,11 @@ const buttonRef = useRef(null);
             }
         } catch (error) {
             console.error("Failed to insert data:", error);
-
+            Swal.fire({
+                    text: "Unable to retrieve EC. Please try again",
+                    icon: "error",
+                    confirmButtonText: "OK",
+                });
         } finally {
             stop_loader();
         }
@@ -754,7 +758,7 @@ const buttonRef = useRef(null);
                 </div>
                 <div className="card-body">
                     <div className='row'>
-                        <div className="alert alert-info">Note : EC should be atleast 1 day before registered deed of property until 31-10-2024 or later. If sale / registered deed date is before 01-04-2004 then EC should be from 01-04-2004 to 31-10-2024 after</div>
+                        <div className="alert alert-info">Note : EC should be atleast 1 day before registered deed of property until 31-10-2024 or later. If sale / registered deed date is before 01-04-2004 then EC should be from 01-04-2004 to 31-10-2024 or after</div>
                         <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mt-3">
                             <div className="form-group mt-2">
                                 <label className='form-label'>Enter EC Number of Mother Property <span className='mandatory_color'>*</span></label>

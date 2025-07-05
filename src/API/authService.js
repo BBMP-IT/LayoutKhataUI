@@ -337,7 +337,7 @@ export const handleFetchEPIDDetails = async (epidNumber) => {
   } catch (err) {
     console.error("Error fetching EPID details:", err);
     return {
-      error: "Exception occurred while fetching EPID details",
+      error: "Unable to retrieve data due to temporary issue with Eaasthi. Please try again later.",
       responseMessage: err?.message,
       exception: err
     };

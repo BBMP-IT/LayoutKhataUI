@@ -24,6 +24,7 @@ import {
     ekyc_Details, ekyc_Response, ekyc_insertOwnerDetails, jdaEKYC_Details,
     individualSiteAPI, individualSiteListAPI, fetchECDetails, fetchDeedDocDetails, fetchDeedDetails, fetchJDA_details, deleteSiteInfo, fetch_LKRSID, update_Final_SaveAPI
 } from '../../API/authService';
+import config from '../../Config/config';
 
 export const useLoader = () => {
     const [loading, setLoading] = useState(false);
@@ -211,10 +212,10 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
       setErrors((prev) => ({ ...prev, [name]: "Total Number of sites is required" }));
     } else if (isNaN(numberValue)) {
       setErrors((prev) => ({ ...prev, [name]: "Invalid number" }));
-    } else if (numberValue < 20 || numberValue > 5000) {
+    } else if (numberValue < `${config.sites}` || numberValue > 5000) {
       setErrors((prev) => ({
         ...prev,
-        [name]: "Total number of sites must be between 20 and 5000",
+        [name]: `Total number of sites must be between ${config.sites} and 5000`,
       }));
     } else {
       setErrors((prev) => ({ ...prev, [name]: "" }));
@@ -344,8 +345,8 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             newErrors.totalSites = "Total number of sites must be numeric.";
         } else if (/^0+$/.test(formData.totalSites)) {
             newErrors.totalSites = "Total number of sites cannot be all zeros.";
-        } else if (parseInt(formData.totalSites, 10) < 20 || parseInt(formData.totalSites, 10) > 5000) {
-            newErrors.totalSites = "Total number of sites must be between 20 and 5000.";
+        } else if (parseInt(formData.totalSites, 10) < `${config.sites}` || parseInt(formData.totalSites, 10) > 5000) {
+            newErrors.totalSites = `Total number of sites must be between ${config.sites} and 5000.`;
         }
         if (!formData.releaseType) {
             newErrors.releaseType = "Please select a Release Type.";
@@ -1383,9 +1384,9 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                                         disabled={!isEditing}
                                     >
                                         <option value="">Select Layout Approval Authority</option>
-                                        <option value="1">BDA</option>
-                                        <option value="2">BMICAPA </option>
-                                        <option value="3">KIADB </option>
+                                        <option value="1">BDA (Bangalore Development Authority)</option>
+                                        <option value="2">BMICAPA (Bangalore Mysore Infrastructure Corridor Area Planning Authority) </option>
+                                        <option value="3">KIADB (Karnataka Industrial Areas Development Board)</option>
                                     </select>
 
                                 </div>
@@ -1420,7 +1421,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                                     <label className='form-label'>
                                         Total Number of Sites <span className='mandatory_color'>*</span>&nbsp;
                                           <span className="note_color">
-                                        (Minimum 20 sites and maximum 5000 sites allowed)
+                                        (Minimum {config.sites} sites and maximum 5000 sites allowed)
                                     </span>
                                     </label>
                                     <input

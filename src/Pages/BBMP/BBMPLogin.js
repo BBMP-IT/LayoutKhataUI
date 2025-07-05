@@ -206,7 +206,7 @@ const { UseLogin } = useAuth();
                     confirmButtonText: "OK"
                 }).then(() => {
         // Navigate *after* user clicks OK
-        navigate('/LayoutDashboard');
+        navigate('/homePage');
     });
             }
             else {

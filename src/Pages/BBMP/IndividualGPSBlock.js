@@ -454,7 +454,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         const totalArea = parseFloat(totalSQFT);
         const enteredArea = parseFloat(regularAreaSqFt);
 
-      if (enteredArea > totalArea) {
+        if (enteredArea > totalArea) {
             Swal.fire({
                 title: "Area Exceeds Limit",
                 text: `Area cannot exceed Total Area (${totalArea} SqFt) of the layout`,
@@ -494,14 +494,6 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                 setter('');
             }
         };
-
-        validateChakbandi(chakbandiEast, setChakbandiEastError, chakbandiEastRef, 'East');
-        validateChakbandi(chakbandiWest, setChakbandiWestError, chakbandiWestRef, 'West');
-        validateChakbandi(chakbandiSouth, setChakbandiSouthError, chakbandiSouthRef, 'South');
-        validateChakbandi(chakbandiNorth, setChakbandiNorthError, chakbandiNorthRef, 'North');
-
-
-
         if (!latitude || latitude.trim() === '') {
             setLatitudeError('Latitude is required');
             if (!firstErrorField) firstErrorField = latitudeRef;
@@ -516,6 +508,15 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             firstErrorField.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
             firstErrorField.current.focus?.();
         }
+
+        validateChakbandi(chakbandiEast, setChakbandiEastError, chakbandiEastRef, 'East');
+        validateChakbandi(chakbandiWest, setChakbandiWestError, chakbandiWestRef, 'West');
+        validateChakbandi(chakbandiSouth, setChakbandiSouthError, chakbandiSouthRef, 'South');
+        validateChakbandi(chakbandiNorth, setChakbandiNorthError, chakbandiNorthRef, 'North');
+
+
+
+
 
         return isValid;
     };
@@ -542,6 +543,8 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         setRegularAreaSqFt('');
         setRegularAreaSqM('');
         setIsChecked(false);
+        setSelectedZone('');
+        setSelectedWard('');
     };
     // Function to fetch the previous data and populate the form fields
     const handleFetchPrevious = (e) => {
@@ -1459,6 +1462,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             return;
         }
 
+
         const totalAddedSites = allSites.length;
         const textboxSitesCount = parseInt(layoutSiteCount, 10);
         const storedSiteCount = parseInt(sessionStorage.getItem("NUMBEROFSITES"), 10);
@@ -1530,6 +1534,15 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
         setSiteIdCounter(prev => prev + 1);
 
+        if (!latitude || latitude.trim() === '') {
+            Swal.fire("Latitude is required", "", "warning");
+            return;
+        }
+        if (!longitude || longitude.trim() === '') {
+            Swal.fire("Longitude is required", "", "warning");
+            return;
+        }
+
         // Prepare siteDimensions
         const siteDimensions = isRegular ? [
             {
@@ -1577,24 +1590,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         let status_site = true;
         const NoofSites = parseInt(layoutSiteCount, 10);
 
-        //  Validate: layoutSiteCount should not be less than no_of_sites
-        // if (layoutSiteCount < no_of_sites) {
-        //     Swal.fire({
-        //         icon: "warning",
-        //         title: "Invalid Site Count",
-        //         text: "You cannot reduce the number of sites below the original count.",
-        //     });
-        //     return; // Stop execution if validation fails
-        // }
 
-        // //  Update logic
-        // if (NoofSites === no_of_sites) {
-        //     updated_sites = NoofSites;
-        //     status_site = false;
-        // } else if (NoofSites != no_of_sites) {
-        //     updated_sites = NoofSites;
-        //     status_site = true;
-        // }
 
         // Prepare payload
         const payload = {
@@ -1609,7 +1605,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             sitE_LATITUDE: latitude,
             sitE_LONGITUDE: longitude,
             sitE_OWNER: ownerNames,
-            sitE_CORNERPLOT: isRegular ?  cornerSite: irregularcornerSite,
+            sitE_CORNERPLOT: isRegular ? cornerSite : irregularcornerSite,
             sitE_NO_OF_SIDES: isRegular ? 2 : numSides,
             sitE_EPID: "",
             sitE_SASNO: "",
@@ -1622,6 +1618,8 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             sitE_CREATEDBY: createdBy,
             sitE_CREATEDNAME: createdName,
             sitE_CREATEDROLE: roleID,
+            sitE_ZONE: selectedZone || '',
+            sitE_WARD: selectedWard || '',
             // lkrS_NUMBEROFSITES: updated_sites,
             // updatE_LKRS_NUMBEROFSITES: status_site,
             siteDimensions
@@ -1796,14 +1794,19 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
                 setRegularAreaSqFt(latestSite.sitE_AREAINSQFT);
                 setRegularAreaSqM(latestSite.sitE_AREAINSQMT);
-                setCornerSite(latestSite.sitE_CORNERPLOT);
+                if(latestSite.sitE_CORNERPLOT === "yes"){
+                    setCornerSite(true);
+                }else{
+                    setCornerSite(false);
+                }
+                
                 setSiteType(latestSite.sitE_TYPEID);
                 setChakbandiEast(latestSite.sitE_EAST);
                 setChakbandiWest(latestSite.sitE_WEST);
                 setChakbandiSouth(latestSite.sitE_SOUTH);
                 setChakbandiNorth(latestSite.sitE_NORTH);
-                setLatitude(latestSite.sitE_LATITUDE);
-                setLongitude(latestSite.sitE_LONGITUDE);
+                // setLatitude(latestSite.sitE_LATITUDE);
+                // setLongitude(latestSite.sitE_LONGITUDE);
             }
         } else {
             setRegular_SiteNumber("");

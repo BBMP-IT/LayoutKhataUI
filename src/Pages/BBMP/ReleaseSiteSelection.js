@@ -77,6 +77,7 @@ const ReleaseSelection = () => {
     }
   }, [releaseData, finalApiList, originalTotalRecords]);
 
+  const [releasePercentage, setReleasePercentage] = useState(0);
 
   const totalRecords = releaseData.length + releasedData.length;
   const sixtyPercentCount = Math.round(0.6 * originalTotalRecords);
@@ -319,6 +320,7 @@ const ReleaseSelection = () => {
   };
 
   // handleRowSelect
+ 
   const handleRowSelect = (index) => {
     if (!isEKYCVerified) {
       Swal.fire({
@@ -338,7 +340,7 @@ const ReleaseSelection = () => {
       const allowedCount = Math.round((releasePercentage / 100) * originalTotalRecords);
       const remaining = allowedCount - releasedData.length;
 
-      if (selectedRows.length < remaining) {
+      if (selectedRows.length < remaining || selectedValue === 1) {
         setSelectedRows(prev => [...prev, index]);
       } else {
         Swal.fire({
@@ -351,9 +353,7 @@ const ReleaseSelection = () => {
     }
   };
 
-  // handleSelectAll
   const handleSelectAll = (e) => {
-
     if (!isEKYCVerified) {
       Swal.fire({
         icon: 'warning',
@@ -364,13 +364,12 @@ const ReleaseSelection = () => {
       return;
     }
 
-
-    const checked = e.target.checked;
+    const checked = e?.target?.checked ?? !selectAllChecked;
     let rowsToSelect = [];
 
-    if (checked) {
-      const allIndexes = releaseData.map((_, index) => index);
+    const allIndexes = releaseData.map((_, index) => index);
 
+    if (checked) {
       if (selectedValue === 1) {
         rowsToSelect = allIndexes;
       } else {
@@ -384,14 +383,18 @@ const ReleaseSelection = () => {
     setSelectAllChecked(checked);
   };
 
-  // Sync Select All
+  // Sync Select All checkbox with individual selections
   useEffect(() => {
-    if (releaseData.length > 0) {
-      setSelectAllChecked(selectedRows.length === releaseData.length);
-    } else {
-      setSelectAllChecked(false);
-    }
-  }, [selectedRows, releaseData]);
+    const allowedCount = selectedValue === 1
+      ? releaseData.length
+      : Math.round((releasePercentage / 100) * originalTotalRecords) - releasedData.length;
+
+    const allIndexes = releaseData.map((_, index) => index).slice(0, allowedCount);
+    const allSelected = allIndexes.every(index => selectedRows.includes(index));
+
+    setSelectAllChecked(allSelected);
+  }, [selectedRows, releaseData, releasePercentage, originalTotalRecords, releasedData, selectedValue]);
+
 
   // handleDimensionChange
   const handleDimensionChange = (ReleaseType, originalTotalRecords, unreleasedSites, releasedSites, lengthRO, percentage) => {
@@ -428,7 +431,7 @@ const ReleaseSelection = () => {
         if (releasedSites.length === 0 && unreleasedSites.length === originalTotalRecords) {
           // Allow 60% release
           setSelectionLimit(Math.round(0.6 * originalTotalRecords));
-
+          setDeletebtn_disabled(false); //enable delete btn
         } else if (releasedSites.length !== 0 && unreleasedSites.length !== 0) {
           Swal.fire({
             icon: 'info',
@@ -440,9 +443,11 @@ const ReleaseSelection = () => {
           });
           setSelectionLimit(0);
           setIsOrder_EditingArea(true); // allow to proceed if that’s your intention
+          setDeletebtn_disabled(true);//delete btn disabled
         }
         else {
           setIsOrder_EditingArea(false); // block save in other cases
+          
         }
       }
       //40% release
@@ -451,9 +456,10 @@ const ReleaseSelection = () => {
           // Allow 40% release
 
           setSelectionLimit(Math.round(0.4 * originalTotalRecords));
+          setDeletebtn_disabled(false); //enable delete btn
         } else if (releasedSites.length === originalTotalRecords && unreleasedSites.length === 0) {
           Swal.fire({
-            icon: 'info',
+            icon: 'success',
             title: 'All Sites are Released',
             text: 'All records have already been released.',
             confirmButtonColor: '#3085d6',
@@ -461,6 +467,7 @@ const ReleaseSelection = () => {
             allowEscapeKey: false
           });
           setSelectionLimit(0);
+         setDeletebtn_disabled(true);//delete btn disabled
         }
       }
     }
@@ -473,6 +480,7 @@ const ReleaseSelection = () => {
         if (releasedSites.length == 0 && unreleasedSites.length == originalTotalRecords) {
           // Allow 40 Release
           setSelectionLimit(fortyPercentCount);
+          setDeletebtn_disabled(false); //enable delete btn
         } else if (releasedSites.length != 0 && unreleasedSites.length != 0) {
           // Already Released
           Swal.fire({
@@ -482,6 +490,7 @@ const ReleaseSelection = () => {
             confirmButtonColor: '#3085d6',
           });
           setIsOrder_EditingArea(true);
+          setDeletebtn_disabled(true); //delete btn disabled
           setSelectionLimit(0);
         }
       }
@@ -493,26 +502,29 @@ const ReleaseSelection = () => {
           if (ReleasedPercentage < YetToBeReleasedPercentage) {
             // Allow 30 Release
             setSelectionLimit(thirtyPercentCount);
+            setDeletebtn_disabled(false); //enable delete btn
           } else {
             // Already Released
             Swal.fire({
               icon: 'info',
-              title: '30% phase already completed or invalid',
-              text: 'Either you have already completed the 30% phase or the selection is invalid.',
+              title: '30% phase already completed',
+              text: 'You have already completed the 30% release phase.',
               confirmButtonColor: '#3085d6',
             });
             setIsOrder_EditingArea(true);
+            setDeletebtn_disabled(true);//delete btn disabled
             setSelectionLimit(0);
           }
         } else if (releasedSites.length == originalTotalRecords && unreleasedSites.length == 0) {
           // Already Released
           Swal.fire({
-            icon: 'info',
+            icon: 'success',
             title: 'All Sites Released',
             text: 'All records have already been released.',
             confirmButtonColor: '#3085d6',
           });
           setSelectionLimit(0);
+          setDeletebtn_disabled(true);//delete btn disabled
         }
       }
       else if (lengthRO == 3) {
@@ -526,9 +538,9 @@ const ReleaseSelection = () => {
           } else {
             // Already Released
             Swal.fire({
-              icon: 'info',
-              title: 'Final 30% phase already completed or invalid',
-              text: 'Either you have already completed the final 30% phase or the selection is invalid.',
+              icon: 'success',
+            title: 'All Sites are Released',
+            text: 'All records have already been released.',
               confirmButtonColor: '#3085d6',
             });
             setSelectionLimit(0);
@@ -536,7 +548,7 @@ const ReleaseSelection = () => {
         } else if (releasedSites.length == originalTotalRecords && unreleasedSites.length == 0) {
           // Already Released
           Swal.fire({
-            icon: 'info',
+            icon: 'success',
             title: 'All Sites Released',
             text: 'All records have already been released.',
             confirmButtonColor: '#3085d6',
@@ -686,7 +698,6 @@ const ReleaseSelection = () => {
 
   // };
 
-  const [releasePercentage, setReleasePercentage] = useState(0);
 
   // const handleDimensionChange = (ReleaseType, originalTotalRecords, unreleasedSites, releasedSites, lengthRO, percentage) => {
   //   setSelectedValue(ReleaseType);
@@ -942,7 +953,82 @@ const ReleaseSelection = () => {
   };
   // Columns for the DataTable
   const releaseTableColumns = [
+{
+      name: (
+        <div>
+          <input
+            type="checkbox"
+            checked={selectAllChecked}
+            onChange={(e) => handleSelectAll(e, selectedValue)}
+            disabled={isSelectAllDisabled()}
+          />
+        </div>
+      ),
+      selector: row => row.id,
+      width: '50px',
+      sortable: false,
+      cell: (row, index) => {
+        const isSelected = selectedRows.includes(index);
+        return (
+          <div>
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={() => handleRowSelect(index)}
+            />
+          </div>
+        );
+      },
+      ignoreRowClick: true,
+      allowOverflow: true,
+      button: true,
+    },
+    {
+      name: "Shape",
+      selector: row => row.sitE_SHAPETYPE || '',
+      width: '100px', center: true
+    },
+    {
+      name: "Site Number",
+      selector: row => row.sitE_NO || '',
+      width: '120px', center: true
+    },
+     {
+      name: "Dimension",
+      cell: (row) => {
+        if (row.sitE_SHAPETYPE === "Regular") {
+          const feetSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINFT) || [];
+          const meterSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINMT) || [];
+          const roadFacingStatuses = row.siteDimensions?.map(dim => dim.sitediM_ROADFACING ? "yes" : "no") || [];
 
+          return (
+            <div className="dimension-cell">
+              <div className="nowrap">{feetSides.join(" x ")} (ft)</div>
+              <div className="nowrap">{meterSides.join(" x ")} (mtr)</div>
+              <div className="nowrap"><b>Road Facing:</b> {roadFacingStatuses.join(", ")}</div>
+            </div>
+          );
+        } else if (row.sitE_SHAPETYPE === "Irregular" && Array.isArray(row.siteDimensions)) {
+          const feetString = row.siteDimensions.map(side => side.sitediM_SIDEINFT).join(' x ');
+          const meterString = row.siteDimensions.map(side => side.sitediM_SIDEINMT).join(' x ');
+          const roadFacingString = row.siteDimensions.map(side => side.sitediM_ROADFACING ? "Yes" : "No").join(', ');
+
+          return (
+            <div className="dimension-cell">
+              <div className="nowrap">{feetString} (ft)</div>
+              <div className="nowrap">{meterString} (m)</div>
+              <div className="nowrap"><b>Road Facing:</b> {roadFacingString}</div>
+            </div>
+          );
+        }
+        return '';
+      },
+      center: true,
+      width: '200px', // Add fixed width for better control
+    },
+
+
+    
     // {
     //   name: ['1', '2', '3'].includes(selectedValue) ? (
     //     <div>
@@ -1006,130 +1092,57 @@ const ReleaseSelection = () => {
     //   button: true,
     // },
 
-    {
-      name: (
-        <div>
-          <input
-            type="checkbox"
-            checked={selectAllChecked}
-            onChange={(e) => handleSelectAll(e, selectedValue)}
-            disabled={isSelectAllDisabled()}
-          />
-        </div>
-      ),
-      selector: row => row.id,
-      width: '50px',
-      sortable: false,
-      cell: (row, index) => {
-        const isSelected = selectedRows.includes(index);
-        return (
-          <div>
-            <input
-              type="checkbox"
-              checked={isSelected}
-              onChange={() => handleRowSelect(index)}
-            />
-          </div>
-        );
-      },
-      ignoreRowClick: true,
-      allowOverflow: true,
-      button: true,
-    },
+    
+
     // {
-    //   name: "Site ID",
-    //   selector: row => row.sitE_ID || '',
+    //   name: 'Sl. No.',
+    //   selector: (row, index) => index + 1,
+    //   sortable: true,
+    //   width: '90px', center: true
     // },
-    {
-      name: 'Sl. No.',
-      selector: (row, index) => index + 1,
-      sortable: true,
-      width: '90px', center: true
-    },
-    {
-      name: "Shape",
-      selector: row => row.sitE_SHAPETYPE || '',
-      width: '100px', center: true
-    },
-    {
-      name: "Site Number",
-      selector: row => row.sitE_NO || '',
-      width: '120px', center: true
-    },
-    {
-      name: "Block/Area",
-      selector: row => row.sitE_AREA || '',
-      width: '120px', center: true
-    },
-    {
-      name: "No of sides",
-      selector: row => row.sitE_NO_OF_SIDES || '',
-      width: '120px', center: true
-    },
-    {
-      name: "Dimension",
-      cell: (row) => {
-        if (row.sitE_SHAPETYPE === "Regular") {
-          const feetSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINFT) || [];
-          const meterSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINMT) || [];
-          const roadFacingStatuses = row.siteDimensions?.map(dim => dim.sitediM_ROADFACING ? "yes" : "no") || [];
+    
+    // {
+    //   name: "Block/Area",
+    //   selector: row => row.sitE_AREA || '',
+    //   width: '120px', center: true
+    // },
+    // {
+    //   name: "No of sides",
+    //   selector: row => row.sitE_NO_OF_SIDES || '',
+    //   width: '120px', center: true
+    // },
+   
 
-          return (
-            <div className="dimension-cell">
-              <div className="nowrap">{feetSides.join(" x ")} (ft)</div>
-              <div className="nowrap">{meterSides.join(" x ")} (mtr)</div>
-              <div className="nowrap"><b>Road Facing:</b> {roadFacingStatuses.join(", ")}</div>
-            </div>
-          );
-        } else if (row.sitE_SHAPETYPE === "Irregular" && Array.isArray(row.siteDimensions)) {
-          const feetString = row.siteDimensions.map(side => side.sitediM_SIDEINFT).join(' x ');
-          const meterString = row.siteDimensions.map(side => side.sitediM_SIDEINMT).join(' x ');
-          const roadFacingString = row.siteDimensions.map(side => side.sitediM_ROADFACING ? "Yes" : "No").join(', ');
-
-          return (
-            <div className="dimension-cell">
-              <div className="nowrap">{feetString} (ft)</div>
-              <div className="nowrap">{meterString} (m)</div>
-              <div className="nowrap"><b>Road Facing:</b> {roadFacingString}</div>
-            </div>
-          );
-        }
-        return '';
-      },
-      center: true,
-      width: '200px', // Add fixed width for better control
-    },
-
-    {
-      name: "Total Area",
-      selector: row => `${row.sitE_AREAINSQFT} [Sq.ft], ${row.sitE_AREAINSQMT} [Sq.mtr]`,
-      center: true,
-      width: '200px',
-    },
-    {
-      name: "Corner Site",
-      selector: row => row.sitE_CORNERPLOT ? "YES" : "NO",
-      center: true,
-      width: '120px',
-    },
-    {
-      name: "Type of Site",
-      selector: row => row.sitE_TYPE || '',
-      center: true,
-      width: '120px',
-    },
-    {
-      name: (
-        <span title="East | West | North | South">Chakbandi</span>
-      ),
-      selector: row => `${row.sitE_EAST} | ${row.sitE_WEST} | ${row.sitE_NORTH} | ${row.sitE_SOUTH}`,
-      center: true,
-      width: '200px',
-    },
-    {
-      name: "Latitude, Longitude",
-      selector: row => `${row.sitE_LATITUDE}, ${row.sitE_LONGITUDE}`,
-    },
+    // {
+    //   name: "Total Area",
+    //   selector: row => `${row.sitE_AREAINSQFT} [Sq.ft], ${row.sitE_AREAINSQMT} [Sq.mtr]`,
+    //   center: true,
+    //   width: '200px',
+    // },
+    // {
+    //   name: "Corner Site",
+    //   selector: row => row.sitE_CORNERPLOT ? "YES" : "NO",
+    //   center: true,
+    //   width: '120px',
+    // },
+    // {
+    //   name: "Type of Site",
+    //   selector: row => row.sitE_TYPE || '',
+    //   center: true,
+    //   width: '120px',
+    // },
+    // {
+    //   name: (
+    //     <span title="East | West | North | South">Chakbandi</span>
+    //   ),
+    //   selector: row => `${row.sitE_EAST} | ${row.sitE_WEST} | ${row.sitE_NORTH} | ${row.sitE_SOUTH}`,
+    //   center: true,
+    //   width: '200px',
+    // },
+    // {
+    //   name: "Latitude, Longitude",
+    //   selector: row => `${row.sitE_LATITUDE}, ${row.sitE_LONGITUDE}`,
+    // },
   ];
   const releasedTableColumns = [
     // Conditionally add the "Actions" column only if selectedValue !== '100%'
@@ -1982,7 +1995,7 @@ const ReleaseSelection = () => {
         sitE_SITE_RELS_ID: siteRelID,
         site_Remarks: "",
         site_AdditionalInfo: "",
-        site_UpdatedBy: 0,
+        site_UpdatedBy: CreatedBy,
         site_UpdatedName: "user",
         site_UpdatedRole: "user",
         releaseSiteList: releasedData.map(site => ({
@@ -2048,13 +2061,7 @@ const ReleaseSelection = () => {
     }
   };
   const alreadyreleasedTableColumns = [
-    {
-      name: 'Sl. No.',
-      selector: (row, index) => index + 1,
-      sortable: true,
-      width: '90px', center: true
-    },
-    {
+     {
       name: "Shape",
       selector: row => row.sitE_SHAPETYPE || '',
       width: '100px', center: true
@@ -2064,17 +2071,7 @@ const ReleaseSelection = () => {
       selector: row => row.sitE_NO || '',
       width: '120px', center: true
     },
-    {
-      name: "Block/Area",
-      selector: row => row.sitE_AREA || '',
-      width: '120px', center: true
-    },
-    {
-      name: "No of sides",
-      selector: row => row.sitE_NO_OF_SIDES || '',
-      width: '120px', center: true
-    },
-    {
+ {
       name: "Dimension",
       cell: (row) => {
         if (row.sitE_SHAPETYPE === "Regular") {
@@ -2107,37 +2104,53 @@ const ReleaseSelection = () => {
       center: true,
       width: '200px', // Add fixed width for better control
     },
-
-    {
-      name: "Total Area",
-      selector: row => `${row.sitE_AREAINSQFT} [Sq.ft], ${row.sitE_AREAINSQMT} [Sq.mtr]`,
-      center: true,
-      width: '200px',
-    },
-    {
-      name: "Corner Site",
-      selector: row => row.sitE_CORNERPLOT ? "YES" : "NO",
-      center: true,
-      width: '120px',
-    },
-    {
-      name: "Type of Site",
-      selector: row => row.sitE_TYPE || '',
-      center: true,
-      width: '120px',
-    },
-    {
-      name: (
-        <span title="East | West | North | South">Chakbandi</span>
-      ),
-      selector: row => `${row.sitE_EAST} | ${row.sitE_WEST} | ${row.sitE_NORTH} | ${row.sitE_SOUTH}`,
-      center: true,
-      width: '200px',
-    },
-    {
-      name: "Latitude, Longitude",
-      selector: row => `${row.sitE_LATITUDE}, ${row.sitE_LONGITUDE}`,
-    },
+    // {
+      
+    //   name: 'Sl. No.',
+    //   selector: (row, index) => index + 1,
+    //   sortable: true,
+    //   width: '90px', center: true
+    // },
+    // {
+    //   name: "Block/Area",
+    //   selector: row => row.sitE_AREA || '',
+    //   width: '120px', center: true
+    // },
+    // {
+    //   name: "No of sides",
+    //   selector: row => row.sitE_NO_OF_SIDES || '',
+    //   width: '120px', center: true
+    // },
+    // {
+    //   name: "Total Area",
+    //   selector: row => `${row.sitE_AREAINSQFT} [Sq.ft], ${row.sitE_AREAINSQMT} [Sq.mtr]`,
+    //   center: true,
+    //   width: '200px',
+    // },
+    // {
+    //   name: "Corner Site",
+    //   selector: row => row.sitE_CORNERPLOT ? "YES" : "NO",
+    //   center: true,
+    //   width: '120px',
+    // },
+    // {
+    //   name: "Type of Site",
+    //   selector: row => row.sitE_TYPE || '',
+    //   center: true,
+    //   width: '120px',
+    // },
+    // {
+    //   name: (
+    //     <span title="East | West | North | South">Chakbandi</span>
+    //   ),
+    //   selector: row => `${row.sitE_EAST} | ${row.sitE_WEST} | ${row.sitE_NORTH} | ${row.sitE_SOUTH}`,
+    //   center: true,
+    //   width: '200px',
+    // },
+    // {
+    //   name: "Latitude, Longitude",
+    //   selector: row => `${row.sitE_LATITUDE}, ${row.sitE_LONGITUDE}`,
+    // },
   ];
   const [lkrsTableData, setLkrsTableData] = useState({
     lkrS_DISPLAYID: '',
@@ -2193,6 +2206,7 @@ const ReleaseSelection = () => {
   const fileReleaseOrderInputRef = useRef(null);
   const [isOrder_EditingArea, setIsOrder_EditingArea] = useState(true);
   const [savedOrder_Records, setSavedOrder_Records] = useState([]);
+  const [deletebtn_disabled, setDeletebtn_disabled] = useState();
   const handleOrderChange = (e) => {
     const { name, value } = e.target;
     setRelease_FormData({ ...release_formData, [name]: value });
@@ -2235,59 +2249,56 @@ const ReleaseSelection = () => {
     setRelease_Errors({ ...release_errors, release_Order: "" });
   };
   const validateOrderForm = () => {
-    let newErrors = {};
+  let newErrors = {};
 
-    if (!release_formData.layoutOrderNumber.trim()) {
-      newErrors.layoutOrderNumber = "Layout Order of site release Number is required.";
-    } else if (!/^[a-zA-Z0-9/-]+$/.test(release_formData.layoutOrderNumber.trim())) {
-      newErrors.layoutOrderNumber = "Only alphabets, numbers, slashes (/) and dashes (-) are allowed.";
+  if (!release_formData.layoutOrderNumber.trim()) {
+    newErrors.layoutOrderNumber = "Layout Order of site release Number is required.";
+  } else if (!/^[a-zA-Z0-9/-]+$/.test(release_formData.layoutOrderNumber.trim())) {
+    newErrors.layoutOrderNumber = "Only alphabets, numbers, slashes (/) and dashes (-) are allowed.";
+  }
+
+  if (!release_formData.release_Order) {
+    newErrors.release_Order = "Please upload a valid PDF (max 5MB).";
+  }
+
+  if (!release_formData.dateOfOrder) {
+    newErrors.dateOfOrder = "Date of approval is required.";
+  } else if (new Date(release_formData.dateOfOrder) > new Date()) {
+    newErrors.dateOfOrder = "Future dates are not allowed.";
+  }
+
+  if (!release_formData.orderAuthority.trim()) {
+    newErrors.orderAuthority = "Approval authority designation is required.";
+  }
+
+  const isDuplicate = order_records.some(
+    (order) =>
+      order.layoutReleaseNumber?.trim() === release_formData.layoutOrderNumber.trim()
+  );
+  if (isDuplicate) {
+    newErrors.layoutOrderNumber = "This release order number already exists.";
+  }
+
+  const existingDates = order_records
+    .map((r) => new Date(r.dateOfOrder))
+    .filter((d) => !isNaN(d));
+  if (existingDates.length > 0) {
+    const latestDate = new Date(Math.max(...existingDates.map((d) => d.getTime())));
+    const enteredDate = new Date(release_formData.dateOfOrder);
+    if (enteredDate <= latestDate) {
+      newErrors.dateOfOrder = `Date must be after the last release date (${latestDate.toLocaleDateString('en-GB')}).`;
     }
+  }
 
-    if (!release_formData.release_Order) {
-      newErrors.release_Order = "Please upload a valid PDF (max 5MB).";
-    }
+  if (Object.keys(newErrors).length > 0) {
+    setRelease_Errors(newErrors);
+    Swal.fire("Validation Error", "Please fix the highlighted errors.", "warning");
+    return false; // ❗ Explicit return
+  }
 
-    if (!release_formData.dateOfOrder) {
-      newErrors.dateOfOrder = "Date of approval is required.";
-    } else if (new Date(release_formData.dateOfOrder) > new Date()) {
-      newErrors.dateOfOrder = "Future dates are not allowed.";
-    }
+  return true; // ❗ Explicit success
+};
 
-    if (!release_formData.orderAuthority.trim()) {
-      newErrors.orderAuthority = "Approval authority designation is required.";
-    }
-
-
-    // ✅ 1. Duplicate Order Number Check using order_records
-    const isDuplicate = order_records.some(
-      (order_records) =>
-        order_records.layoutReleaseNumber?.trim() === release_formData.layoutOrderNumber.trim()
-    );
-    if (isDuplicate) {
-      newErrors.layoutOrderNumber = "This release order number already exists.";
-    }
-
-    // ✅ 2. Date should be after all existing release dates
-    const existingDates = order_records
-      .map((r) => new Date(r.dateOfOrder))
-      .filter((d) => !isNaN(d));
-    if (existingDates.length > 0) {
-      const latestDate = new Date(Math.max(...existingDates.map((d) => d.getTime())));
-      const enteredDate = new Date(release_formData.dateOfOrder);
-      if (enteredDate <= latestDate) {
-        newErrors.dateOfOrder = `Date must be after the last release date (${latestDate.toLocaleDateString('en-GB')}).`;
-      }
-    }
-
-    // If any errors, show and return early
-    if (Object.keys(newErrors).length > 0) {
-      setRelease_Errors(newErrors);
-      Swal.fire("Validation Error", "Please fix the highlighted errors.", "warning");
-      return;
-    }
-
-
-  };
   const handleOrderSave = async () => {
     if (!validateOrderForm()) return;
 
@@ -2335,6 +2346,7 @@ const ReleaseSelection = () => {
             };
 
             const listResponse = await fetchReleaseList(trimmedLKRSID);
+            setDeletebtn_disabled(true);
             console.table(listResponse);
             stop_loader();
           } catch (error) {
@@ -2513,6 +2525,7 @@ const ReleaseSelection = () => {
                 row.releaseOrderDocID
               )
             }
+           disabled={deletebtn_disabled}
           >
             <i className="fa fa-trash"></i>
           </button>
@@ -2811,9 +2824,9 @@ const ReleaseSelection = () => {
 
         if (response) {
           const score = response.nameMatchScore;
-const EkycNameMatch  = `${config.rd_nameScore}`;
+          const EkycNameMatch = `${config.rd_nameScore}`;
           if (score >= EkycNameMatch) {
-            
+
             setOwnerData(response);
 
             const payloadReleaseOwner = {
@@ -3392,99 +3405,9 @@ const EkycNameMatch  = `${config.rd_nameScore}`;
 
 
 
-                {showNextReleaseForm && (
-                  <div className="card mt-4">
-                    <div className="card-header layout_btn_color">
-                      <h5 className="card-title text-center">Next Release Details (40%)</h5>
-                    </div>
-                    <div className="card-body">
-                      <div className='row'>
-                        <div className='col-md-4'>
-                          <div className="form-group mb-3">
-                            <label>Site Release Order Number <span className='mandatory_color'>*</span></label>
-                            <input
-                              type="text"
-                              className={`form-control ${errors.siteReleaseOrderNumber ? 'is-invalid' : ''}`}
-                              value={siteReleaseOrderNumber}
-                              onChange={handleSiteReleaseOrderNumberChange}
-                            />
-                            {errors.siteReleaseOrderNumber && (
-                              <div className="invalid-feedback">{errors.siteReleaseOrderNumber}</div>
-                            )}
-                          </div>
-                        </div>
+           
 
-                        <div className="col-md-4">
-                          <label>Date Of Order</label>
-                          <input
-                            type="date"
-                            className={`form-control ${errors.dateOfOrder ? 'is-invalid' : ''}`}
-                            value={dateOfOrder}
-                            onChange={handleDateOfOrderChange}
-                            max={new Date().toISOString().split('T')[0]} // Restrict future dates
-                          />
-                          {errors.dateOfOrder && <div className="invalid-feedback">{errors.dateOfOrder}</div>}
-                        </div>
-
-                        <div className="col-md-4">
-                          <label>Scan & Upload Order of Site Release</label>
-                          <input
-                            type="file"
-                            accept="application/pdf"
-                            className={`form-control ${errors.orderFile ? 'is-invalid' : ''}`}
-                            onChange={handleOrderFileChange} ref={fileInputRef}
-                          />
-                          {errors.orderFile && <div className="invalid-feedback">{errors.orderFile}</div>}
-                        </div>
-
-
-                        <div className='col-md-4'></div>
-                        <div className='col-md-4'>
-                          <button className="btn btn-success btn-block" onClick={handleSave}>
-                            Save Next Release
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Table Display */}
-                {savedData.length > 0 && (
-                  <div className="card mt-4">
-                    <div className="card-header">
-                      <h5>Saved Release Records</h5>
-                    </div>
-                    <div className="card-body table-responsive">
-                      <table className="table table-bordered">
-                        <thead>
-                          <tr>
-                            <th>Site Release Order Number</th>
-                            <th>Date Of Order</th>
-                            <th>Uploaded File</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {savedData.map(record => (
-                            <tr key={record.id}>
-                              <td>{record.siteReleaseOrderNumber}</td>
-                              <td>{record.dateOfOrder}</td>
-                              <td>
-                                <a
-                                  href={record.orderFileURL}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                >
-                                  View PDF
-                                </a>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
+              
 
               </div>
             </div>
@@ -3508,7 +3431,77 @@ const EkycNameMatch  = `${config.rd_nameScore}`;
                         {selectedRows.length} record{selectedRows.length > 1 ? 's' : ''} selected
                       </p>
                     )}
-                    {releaseData.length > 0 ? (
+     {releaseData.length > 0 ? (
+        <>
+          {/* Select All Checkbox */}
+          <div className="d-flex justify-content-start mb-2">
+            <label>
+              <input
+                type="checkbox"
+                checked={selectAllChecked}
+                onChange={(e) => handleSelectAll(e)}
+                disabled={isSelectAllDisabled()}
+              />{' '}
+              Select All
+            </label>
+          </div>
+
+          {/* Cards Grid */}
+          <div className="row">
+            {releaseData.map((row, index) => {
+              const isSelected = selectedRows.includes(index);
+              const feetSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINFT).join(" x ") || '';
+              const meterSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINMT).join(" x ") || '';
+              const roadFacing = row.siteDimensions?.map(dim => dim.sitediM_ROADFACING ? "Yes" : "No").join(', ') || '';
+
+              return (
+                <div className="col-md-4 col-lg-3 col-xl-2 mb-3" key={row.id}>
+                  <div className={`card h-100 shadow p-2 blue-bordered-card position-relative ${isSelected ? 'border-primary' : ''}`}>  
+                    <div className="d-flex justify-content-between align-items-center">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => handleRowSelect(index)}
+                      />
+                      <span className="badge bg-secondary">{row.sitE_SHAPETYPE}</span>
+                    </div>
+
+                    <div className="mt-2">
+                      <div><strong>Site No:</strong> {row.sitE_NO}</div>
+                      <div><strong>Dimension:</strong></div>
+                      <div className="small text-muted">{feetSides} ft</div>
+                      <div className="small text-muted">{meterSides} m</div>
+                      <div className="small"><strong>Road Facing:</strong> {roadFacing}</div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Submit Button */}
+          <div className="row">
+            <div className="col-md-9"></div>
+            <div className="col-md-3">
+              <button className="btn btn-primary btn-block mt-3" onClick={moveToReleasedTable}>
+                Add
+              </button>
+            </div>
+          </div>
+        </>
+      ) : (
+        <div style={{
+          textAlign: 'center',
+          padding: '20px',
+          fontWeight: '500',
+          color: '#999'
+        }}>
+          There are no sites to display
+        </div>
+      )}
+
+
+                    {/* {releaseData.length > 0 ? (
                       <>
                         <DataTable
                           columns={releaseTableColumns}
@@ -3536,7 +3529,7 @@ const EkycNameMatch  = `${config.rd_nameScore}`;
                       }}>
                         There are no sites to display
                       </div>
-                    )}
+                    )} */}
                   </div>
                 </div>
               </div>
@@ -3599,7 +3592,7 @@ const EkycNameMatch  = `${config.rd_nameScore}`;
                   <h5 className="card-title" style={{ textAlign: 'center' }}>Released sites </h5>
                 </div>
                 <div className="card-body">
-                  <DataTable
+                  {/* <DataTable
                     columns={alreadyreleasedTableColumns}
                     data={finalApiList}
                     customStyles={customStyles}
@@ -3607,7 +3600,45 @@ const EkycNameMatch  = `${config.rd_nameScore}`;
                     striped
                     highlightOnHover
                     responsive
-                  />
+                  /> */}
+{finalApiList.length > 0 ? (
+  <div className="row">
+    {finalApiList.map((row, index) => {
+      const feetSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINFT).join(" x ") || '';
+      const meterSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINMT).join(" x ") || '';
+      const roadFacing = row.siteDimensions?.map(dim => dim.sitediM_ROADFACING ? "Yes" : "No").join(', ') || '';
+
+      return (
+        <div className="col-md-4 col-lg-3 col-xl-2 mb-2" key={row.id || index}>
+         <div className="card h-100 shadow p-3 green-bordered-card position-relative">
+  {/* Top-right badge */}
+  <div className="status-badge">Released</div>
+
+  <div className="mt-1">
+    <div><strong>Site No:</strong> {row.sitE_NO}</div>
+    <div><strong>Dimension:</strong></div>
+    <div className="small text-muted">{feetSides} ft</div>
+    <div className="small text-muted">{meterSides} m</div>
+    <div className="small"><strong>Road Facing:</strong> {roadFacing}</div>
+    <div className="small"><strong>Shape:</strong> {row.sitE_SHAPETYPE}</div>
+   
+  </div>
+</div>
+
+        </div>
+      );
+    })}
+  </div>
+) : (
+  <div style={{
+    textAlign: 'center',
+    padding: '20px',
+    fontWeight: '500',
+    color: '#999'
+  }}>
+    There are no released sites to display
+  </div>
+)}
 
                 </div>
               </div>
@@ -3632,5 +3663,7 @@ const tdStyle = {
   fontSize: "14px",
   color: "#333"
 };
+
+
 
 export default ReleaseSelection;

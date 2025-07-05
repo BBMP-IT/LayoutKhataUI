@@ -51,8 +51,8 @@ axiosInstance.interceptors.response.use(
         console.error('403 Forbidden, access denied...');
 
         Swal.fire({
-          title: "Access Denied",
-          text: "You do not have permission to access this resource.",
+          title: "Something went wrong, Please try again later!",
+          // text: "You do not have permission to access this resource.",
           icon: "error",
           confirmButtonText: "Ok",
           allowOutsideClick: false

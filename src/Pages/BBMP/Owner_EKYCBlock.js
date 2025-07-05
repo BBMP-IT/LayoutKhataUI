@@ -1044,8 +1044,8 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
                                             <tr>
                                                 <th>ಫೋಟೋ / Photo</th>
                                                 <th>ಮಾಲೀಕರ ಹೆಸರು / Owner Name</th>
-                                                <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>
-                                                <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhar Number</th>
+                                                <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhaar Name</th>
+                                                <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhaar Number</th>
                                                 <th>ಲಿಂಗ / Gender</th>
                                                 <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th>
                                                 <th>ವಿಳಾಸ / Address</th>

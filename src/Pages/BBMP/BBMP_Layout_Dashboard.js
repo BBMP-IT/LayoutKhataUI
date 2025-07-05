@@ -126,26 +126,26 @@ const BBMP_Layout_Dashboard = () => {
         );
       },
     },
-    {
-      name: "Action",
-      selector: (row) => {
-        if (row.lkrS_APPSTATUS === 1) {
-          return (
-            <button
-              className="btn btn-primary"
-              onClick={() => handleEditClick(row.lkrS_ID, row.lkrS_DISPLAYID)}
-            >
-              <i className="fa fa-pencil"></i>
-            </button>
-          );
-        }
-        return null;
-      },
-      center: true,
-      ignoreRowClick: true,
-      allowOverflow: true,
-      button: true,
-    },
+    // {
+    //   name: "Action",
+    //   selector: (row) => {
+    //     if (row.lkrS_APPSTATUS === 1) {
+    //       return (
+    //         <button
+    //           className="btn btn-primary"
+    //           onClick={() => handleEditClick(row.lkrS_ID, row.lkrS_DISPLAYID)}
+    //         >
+    //           <i className="fa fa-pencil"></i>
+    //         </button>
+    //       );
+    //     }
+    //     return null;
+    //   },
+    //   center: true,
+    //   ignoreRowClick: true,
+    //   allowOverflow: true,
+    //   button: true,
+    // },
 
   ];
   const customStyles = {

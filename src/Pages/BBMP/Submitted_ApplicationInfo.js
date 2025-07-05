@@ -299,11 +299,13 @@ const BBMP_SubmittedInfo = () => {
                 </div>
             )
         },
+        { name: 'Identifier Type', width: '220px', selector: () => epid_fetchedData?.OwnerDetails?.[0].relationShipType || '-', center: true },
+        { name: 'Identifier Name', width: '220px', selector: () => epid_fetchedData?.OwnerDetails?.[0].identifierName || '-', center: true },
 
         { name: 'ID Type', width: '120px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idType || 'N/A', center: true },
         { name: 'ID Number', width: '220px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idNumber || 'N/A', center: true },
-      
-        
+
+
     ];
 
     //fetching Details from LKRSID
@@ -342,56 +344,85 @@ const BBMP_SubmittedInfo = () => {
                     return [...prev, ...filteredNewData];
                 });
                 stop_loader();
-            } else if (response && response.khataDetails && response.khataOwnerDetails && response.khataOwnerDetails.length > 0) {
-                setSelectedLandType(response.lkrS_LANDTYPE); //  Store the land type
-                setECNumber(response.lkrS_ECNUMBER);         // Set EC Number
-                if (response.lkrS_ISJDA === "1") {
-                    setHasJDA(true);
-                } else {
-                    setHasJDA(false);
-                }
+            } else if (
+                response &&
+                response.khataDetails &&
+                response.khataOwnerDetails &&
+                response.khataOwnerDetails.length > 0
+            ) {
+                setSelectedLandType(response.lkrS_LANDTYPE); // Store the land type
+                setECNumber(response.lkrS_ECNUMBER); // Set EC Number
+                setHasJDA(response.lkrS_ISJDA === "1");
                 setEPIDShowTable(true);
+
                 let khataDetailsJson = {};
                 if (response.khataDetails?.khatA_JSON) {
                     try {
-                        khataDetailsJson = JSON.parse(response.khataDetails.khatA_JSON);
+                        const parsedJson = JSON.parse(response.khataDetails.khatA_JSON);
+                        khataDetailsJson = parsedJson.response?.approvedPropertyDetails || {};
                     } catch (err) {
                         console.warn("Failed to parse khatA_JSON", err);
                     }
                 }
 
+                const ownerDetailsFromJson = khataDetailsJson.ownerDetails || [];
+
+                const ownerDetailsFromApi =
+                    response.khataOwnerDetails?.map((item) => {
+                        let aadhaarResponse = {};
+                        try {
+                            aadhaarResponse = JSON.parse(item.owN_AADHAAR_RESPONSE || "{}")?.ekycResponse || {};
+                        } catch (err) {
+                            console.warn("Failed to parse owN_AADHAAR_RESPONSE", err);
+                        }
+
+                        return {
+                            ownerName: item.owN_NAME_EN || "",
+                            idType: item.owN_IDTYPE || "AADHAR",
+                            idNumber: item.owN_IDNUMBER || item.owN_AADHAARNUMBER || "",
+                            ownerAddress: aadhaarResponse.addressEng || "",
+                            identifierName: aadhaarResponse.identifierNameEng || "",
+                            gender: aadhaarResponse.gender || "",
+                            mobileNumber: aadhaarResponse.mobileNumber || "",
+                        };
+                    }) || [];
+
+                const mergedOwnerDetails = [...ownerDetailsFromJson, ...ownerDetailsFromApi];
+
                 setEPID_FetchedData({
-                    PropertyID: response.lkrS_EPID || '',
-                    PropertyCategory: khataDetailsJson.propertyCategory || '',
-                    PropertyClassification: khataDetailsJson.propertyClassification || '',
-                    WardNumber: khataDetailsJson.wardNumber || '',
-                    WardName: khataDetailsJson.wardName || '',
-                    StreetName: khataDetailsJson.streetName || '',
-                    Streetcode: khataDetailsJson.streetcode || '',
-                    SASApplicationNumber: khataDetailsJson.sasApplicationNumber || '',
-                    IsMuation: khataDetailsJson.isMuation || '',
+                    PropertyID: response.lkrS_EPID || "",
+                    PropertyCategory: khataDetailsJson.propertyCategory || "",
+                    PropertyClassification: khataDetailsJson.propertyClassification || "",
+                    WardNumber: khataDetailsJson.wardNumber || "",
+                    WardName: khataDetailsJson.wardName || "",
+                    StreetName: khataDetailsJson.streetName || "",
+                    Streetcode: khataDetailsJson.streetcode || "",
+                    SASApplicationNumber: khataDetailsJson.sasApplicationNumber || "",
+                    IsMuation: khataDetailsJson.isMuation || "",
                     KaveriRegistrationNumber: khataDetailsJson.kaveriRegistrationNumber || [],
-                    AssessmentNumber: khataDetailsJson.assessmentNumber || '',
-                    courtStay: khataDetailsJson.courtStay || '',
-                    enquiryDispute: khataDetailsJson.enquiryDispute || '',
+                    AssessmentNumber: khataDetailsJson.assessmentNumber || "",
+                    courtStay: khataDetailsJson.courtStay || "",
+                    enquiryDispute: khataDetailsJson.enquiryDispute || "",
                     CheckBandi: khataDetailsJson.checkBandi || {},
                     SiteDetails: khataDetailsJson.siteDetails || {},
-                    OwnerDetails: khataDetailsJson.ownerDetails || [],
-                    // Optionally add raw API response too if needed
+                    OwnerDetails: mergedOwnerDetails,
                     rawResponse: response,
                 });
 
-                // Optionally update area sqft if siteDetails present
                 if (khataDetailsJson.siteDetails?.siteArea) {
                     setTotalSqFt(khataDetailsJson.siteDetails.siteArea);
-                    sessionStorage.setItem('areaSqft', khataDetailsJson.siteDetails.siteArea);
-                } else {
-                    setTotalSqFt(0);
-                    sessionStorage.removeItem('areaSqft');
+                    sessionStorage.setItem("areaSqft", khataDetailsJson.siteDetails.siteArea);
                 }
-
-                setOwnerTableData(khataDetailsJson.ownerDetails || []);
-            } else {
+                else {
+                    stop_loader();
+                    Swal.fire({
+                        text: "Something went wrong, please try again later!",
+                        icon: "warning",
+                        confirmButtonText: "OK",
+                    });
+                }
+            }
+            else {
                 stop_loader();
                 Swal.fire({
                     text: "No survey details found.",
@@ -1132,7 +1163,7 @@ const BBMP_SubmittedInfo = () => {
                                                     <div>
                                                         <h5>Property Owner details as per BBMP eKhata</h5>
                                                         <h6>Note: Plot-wise New Khata will be issued in owner's name. Hence, if owner has changed then first get Mutation done in eKhata.</h6>
-                                                        {/* <h6>If there has been a change in ownership, the Mutation process in eKhata must be completed first, as the New Khata will be issued in the owner's name.</h6> */}
+
                                                         <DataTable
                                                             columns={columns}
                                                             data={epid_fetchedData?.OwnerDetails || []}
@@ -1144,6 +1175,203 @@ const BBMP_SubmittedInfo = () => {
 
                                                     </div>
                                                 )}
+
+                                                {epid_fetchedData && (
+                                                    <>
+                                                        <style>{`
+      /* Wrapper for horizontal scroll on small screens */
+      .table-responsive-wrapper { /* Renamed to avoid conflict if parent also uses table-responsive */
+      width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 20px;
+        border: 2px solid lightgray; /* stronger outer border */
+        padding: 20px;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-family: Arial, sans-serif;
+        min-width: 600px; /* ensures horizontal scroll on small screens */
+      }
+      th, td {
+        border: 1.5px solid lightblue; /* distinct cell borders */
+        padding: 8px;
+        text-align: left;
+      }
+      th {
+        font-weight: bold;
+        color: #000;
+        background-color: lightblue;
+      }
+      tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+      tr:hover {
+        background-color: #f1f1f1;
+      }
+      h3, h4 {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #333;
+        margin-top: 1.5em;
+        margin-bottom: 0.5em;
+      }
+      .header-with-button {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px; /* Space between heading/button and table */
+      }
+    `}</style>
+                                                        <div className="table-responsive-wrapper">
+                                                            <div className="header-with-button">
+                                                                <h4>Property Details</h4>
+                                                                {/* <button className='btn btn-warning' onClick={showImplementationAlert}>View eKhata</button> */}
+                                                            </div>
+
+                                                            {/* Property Details */}
+                                                            <table>
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>Property ID</th>
+                                                                        <th>Category</th>
+                                                                        <th>Classification</th>
+                                                                        <th>Ward Number</th>
+                                                                        <th>Ward Name</th>
+                                                                        <th>Street Name</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <tr>
+                                                                        <td>{epid_fetchedData.PropertyID}</td>
+                                                                        <td>{epid_fetchedData.PropertyCategory}</td>
+                                                                        <td>{epid_fetchedData.PropertyClassification}</td>
+                                                                        <td>{epid_fetchedData.WardNumber}</td>
+                                                                        <td>{epid_fetchedData.WardName?.trim()}</td>
+                                                                        <td>{epid_fetchedData.StreetName?.trim()}</td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+
+                                                            {/* Kaveri Registration Numbers */}
+                                                            {epid_fetchedData.KaveriRegistrationNumber?.length > 0 && (
+                                                                <>
+                                                                    <h4>Kaveri Registration Numbers</h4>
+                                                                    <table>
+                                                                        <thead>
+                                                                            <tr>
+                                                                                <th>Registration Number</th>
+                                                                                <th>EC Number</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            {epid_fetchedData.KaveriRegistrationNumber.map((item, idx) => (
+                                                                                <tr key={idx}>
+                                                                                    <td>{item.kaveriRegistrationNumber}</td>
+                                                                                    <td>{item.kaveriECNumber}</td>
+                                                                                </tr>
+                                                                            ))}
+                                                                        </tbody>
+                                                                    </table>
+                                                                </>
+                                                            )}
+
+                                                            {/* More Property Info */}
+                                                            <table>
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>Street Code</th>
+                                                                        <th>SAS Application No</th>
+                                                                        <th>Is Mutation</th>
+                                                                        <th>Assessment No</th>
+                                                                        <th>Court Stay</th>
+                                                                        <th>Enquiry Dispute</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <tr>
+                                                                        <td>{epid_fetchedData.Streetcode}</td>
+                                                                        <td>{epid_fetchedData.SASApplicationNumber}</td>
+                                                                        <td>{epid_fetchedData.IsMuation}</td>
+                                                                        <td>{epid_fetchedData.AssessmentNumber}</td>
+                                                                        <td>{epid_fetchedData.courtStay}</td>
+                                                                        <td>{epid_fetchedData.enquiryDispute}</td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+
+                                                            {/* Check Bandi */}
+                                                            <h4>Check Bandi</h4>
+                                                            <table>
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>North</th>
+                                                                        <th>South</th>
+                                                                        <th>East</th>
+                                                                        <th>West</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <tr>
+                                                                        <td>{epid_fetchedData.CheckBandi?.north}</td>
+                                                                        <td>{epid_fetchedData.CheckBandi?.south}</td>
+                                                                        <td>{epid_fetchedData.CheckBandi?.east}</td>
+                                                                        <td>{epid_fetchedData.CheckBandi?.west}</td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+
+                                                            {/* Site Details */}
+                                                            <h4>Site Details</h4>
+                                                            <table>
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>Site Area (sq ft)</th>
+                                                                        <th>East-West Dimension</th>
+                                                                        <th>North-South Dimension</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <tr>
+                                                                        <td>{epid_fetchedData.SiteDetails?.siteArea}</td>
+                                                                        <td>{epid_fetchedData.SiteDetails?.dimensions?.eastWest || '-'}</td>
+                                                                        <td>{epid_fetchedData.SiteDetails?.dimensions?.northSouth || '-'}</td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+
+                                                            {/* Owner Details */}
+                                                            <h4>Owner Details</h4>
+                                                            <table>
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>Owner Name</th>
+                                                                        <th>ID Type</th>
+                                                                        <th>ID Number</th>
+                                                                        <th>Address</th>
+                                                                        <th>Identifier Name</th>
+                                                                        <th>Gender</th>
+                                                                        <th>Mobile Number</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {epid_fetchedData.OwnerDetails?.map((owner, index) => (
+                                                                        <tr key={index}>
+                                                                            <td>{owner.ownerName}</td>
+                                                                            <td>{owner.idType}</td>
+                                                                            <td>{owner.idNumber}</td>
+                                                                            <td>{owner.ownerAddress}</td>
+                                                                            <td>{owner.identifierName}</td>
+                                                                            <td>{owner.gender}</td>
+                                                                            <td>{owner.mobileNumber}</td>
+                                                                        </tr>
+                                                                    ))}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </>
+                                                )}
+
                                                 <hr />
                                             </>
                                         )}
@@ -1368,113 +1596,117 @@ const BBMP_SubmittedInfo = () => {
                                             </>
                                         )}
                                         {/* Owner EKYC */}
-                                        {ownerDataList.filter(owner => owner.owN_AADHAARVERISTATUS === "Success")
-                                            .map((owner, index) => {
-                                                let parsedAadhaar = {};
+                                         <div className='row'>
+                                <div className='col-12'>
+                                    <h5>Owner / Owner Representative EKYC Details</h5>
+                                    <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
+                                        <thead className="table-light">
+                                            <tr>
+                                                <th>ಫೋಟೋ / Photo</th>
+                                                <th>ಮಾಲೀಕರ ಹೆಸರು / Owner Name</th>
+                                                <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>
+                                                <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhar Number</th>
+                                                <th>ಲಿಂಗ / Gender</th>
+                                                <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th>
+                                                <th>ವಿಳಾಸ / Address</th>
+                                                <th>ಇಕೆವೈಸಿ ಸ್ಥಿತಿ / EKYC Status</th>
+                                                <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {ownerDataList
+                                                .filter(owner => owner.owN_AADHAARVERISTATUS === "Success")
+                                                .map((owner, index) => {
+                                                    let parsedAadhaar = {};
+                                                    try {
+                                                        parsedAadhaar = JSON.parse(owner.owN_AADHAAR_RESPONSE).ekycResponse || {};
+                                                    } catch (err) {
+                                                        console.warn("Invalid Aadhaar JSON for owner:", owner.owN_NAME_EN);
+                                                    }
+
+                                                    return (
+                                                        <tr key={index}>
+                                                            <td style={{ textAlign: 'center' }}>
+                                                                <img src={usericon} alt="Owner" width="50" height="50" />
+                                                            </td>
+                                                            <td style={{ textAlign: 'center' }}>{owner.owN_NAME_EN || 'N/A'}</td>
+                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.ownerNameEng || 'N/A'}</td>
+                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.maskedAadhaar || 'N/A'}</td>
+                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.gender || 'N/A'}</td>
+                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.dateOfBirth || 'N/A'}</td>
+                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.addressEng || 'N/A'}</td>
+                                                            <td style={{ textAlign: 'center' }}>Verified</td>
+                                                            <td style={{ textAlign: 'center' }}>
+                                                                {owner.owN_NAMEMATCHSCORE > 80 ? 'Matched' : 'Not Matched'}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            {/* JDA EKYC */}
+
+
+
+                            {ownerEKYCDataList.length > 0 && (
+                                <div className="col-12">
+                                    <h5>JDA / JDA Representative EKYC Details</h5>
+                                    <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
+                                        <thead className="table-light">
+                                            <tr>
+                                                <th>ಫೋಟೋ / Photo</th>
+                                                <th>ಜೆಡಿಎ ಹೆಸರು / JDA Name</th>
+                                                <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>
+                                                <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhar Number</th>
+                                                <th>ಲಿಂಗ / Gender</th> {/* New column */}
+                                                <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th> {/* New column */}
+                                                <th>ವಿಳಾಸ / Address</th> {/* New column */}
+                                                <th>ಇಕೆವೈಸಿ ಸ್ಥಿತಿ / EKYC Status</th> {/* New column */}
+                                                <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th> {/* New column */}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {ownerEKYCDataList.map((owner, index) => {
+                                                let aadhaarResponse = {};
                                                 try {
-                                                    parsedAadhaar = JSON.parse(owner.owN_AADHAAR_RESPONSE).ekycResponse || {};
-                                                } catch (err) {
-                                                    console.warn("Invalid Aadhaar JSON for owner:", owner.owN_NAME_EN);
+                                                    aadhaarResponse = JSON.parse(owner.jdaekyC_AADHAAR_RESPONSE || '{}').ekycResponse || {};
+                                                } catch (e) {
+                                                    console.error("Error parsing AADHAAR_RESPONSE:", e);
                                                 }
 
+                                                const nameMatchStatus = parseFloat(owner.jdAekyc_NameMatchScore) > 60 ? 'Name Match Successful' : 'Not Matched';
+                                                const ekycStatus = aadhaarResponse.maskedAadhaar ? 'Verified' : 'Not Verified'; // Assuming if maskedAadhaar exists, EKYC is complete
+
                                                 return (
-                                                    <div className='col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12'>
-                                                        <h5>Owner / Owner Representative EKYC Details</h5>
-                                                        <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
-                                                            <thead className="table-light">
-                                                                <tr>
-                                                                    <th>ಫೋಟೋ / Photo</th>
-                                                                    <th>ಮಾಲೀಕರ ಹೆಸರು / Owner Name</th>
-                                                                    <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>
-                                                                    <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhar Number</th>
-                                                                    <th>ಲಿಂಗ / Gender</th>
-                                                                    <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th>
-                                                                    <th>ವಿಳಾಸ / Address</th>
-                                                                    <th>ಇಕೆವೈಸಿ ಸ್ಥಿತಿ / EKYC Status</th>
-                                                                    <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                <tr key={index}>
-                                                                    <td style={{ textAlign: 'center' }}>
-                                                                        <img src={usericon} alt="Owner" width="50" height="50" />
-                                                                    </td>
-                                                                    <td style={{ textAlign: 'center' }}>{owner.owN_NAME_EN || 'N/A'}</td>
-                                                                    <td style={{ textAlign: 'center' }}>{parsedAadhaar.ownerNameEng || 'N/A'}</td>
-                                                                    <td style={{ textAlign: 'center' }}>{parsedAadhaar.maskedAadhaar || 'N/A'}</td>
-                                                                    <td style={{ textAlign: 'center' }}>{parsedAadhaar.gender || 'N/A'}</td>
-                                                                    <td style={{ textAlign: 'center' }}>{parsedAadhaar.dateOfBirth || 'N/A'}</td>
-                                                                    <td style={{ textAlign: 'center' }}>{parsedAadhaar.addressEng || 'N/A'}</td>
-                                                                    <td style={{ textAlign: 'center' }}>Verified</td>
-                                                                    <td style={{ textAlign: 'center' }}>
-                                                                        {owner.owN_NAMEMATCHSCORE > 80 ? 'Matched' : 'Not Matched'}
-                                                                    </td>
-                                                                </tr>
-                                                            </tbody>
+                                                    <tr key={index}>
+                                                        <td style={{ textAlign: 'center' }}><img src={usericon} alt="Owner" width="50" height="50" /></td>
 
-                                                        </table>
-                                                    </div>
-                                                );
-                                            })
-                                        }
+                                                        <td style={{ textAlign: 'center' }}>{owner.jdAekyc_JDA_Name || 'N/A'}</td>
+                                                        <td style={{ textAlign: 'center' }}>{aadhaarResponse.ownerNameEng || 'N/A'}</td>
+                                                        <td style={{ textAlign: 'center' }}>{owner.jdAekyc_AadhaarNumber || 'N/A'}</td>
+                                                        <td style={{ textAlign: 'center' }}>{aadhaarResponse.gender || 'N/A'}</td>
+                                                        <td style={{ textAlign: 'center' }}>{aadhaarResponse.dateOfBirth || 'N/A'}</td>
+                                                        <td style={{ textAlign: 'center' }}>{aadhaarResponse.addressEng || 'N/A'}</td>
 
-                                        {/* JDA EKYC */}
-                                        {ownerEKYCDataList.length > 0 && (
-                                            <div className="col-12">
-                                                <h5>JDA / JDA Representative EKYC Details</h5>
-                                                <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
-                                                    <thead className="table-light">
-                                                        <tr>
-                                                            <th>ಫೋಟೋ / Photo</th>
-                                                            <th>ಜೆಡಿಎ ಹೆಸರು / JDA Name</th>
-                                                            <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>
-                                                            <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhar Number</th>
-                                                            <th>ಲಿಂಗ / Gender</th> {/* New column */}
-                                                            <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th> {/* New column */}
-                                                            <th>ವಿಳಾಸ / Address</th> {/* New column */}
-                                                            <th>ಇಕೆವೈಸಿ ಸ್ಥಿತಿ / EKYC Status</th> {/* New column */}
-                                                            <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th> {/* New column */}
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {ownerEKYCDataList.map((owner, index) => {
-                                                            let aadhaarResponse = {};
-                                                            try {
-                                                                aadhaarResponse = JSON.parse(owner.jdaekyC_AADHAAR_RESPONSE || '{}').ekycResponse || {};
-                                                            } catch (e) {
-                                                                console.error("Error parsing AADHAAR_RESPONSE:", e);
-                                                            }
-
-                                                            const nameMatchStatus = parseFloat(owner.jdAekyc_NameMatchScore) > 60 ? 'Name Match Successful' : 'Not Matched';
-                                                            const ekycStatus = aadhaarResponse.maskedAadhaar ? 'Verified' : 'Not Verified'; // Assuming if maskedAadhaar exists, EKYC is complete
-
-                                                            return (
-                                                                <tr key={index}>
-                                                                    <td style={{ textAlign: 'center' }}><img src={usericon} alt="Owner" width="50" height="50" /></td>
-
-                                                                    <td style={{ textAlign: 'center' }}>{owner.jdAekyc_JDA_Name || 'N/A'}</td>
-                                                                    <td style={{ textAlign: 'center' }}>{aadhaarResponse.ownerNameEng || 'N/A'}</td>
-                                                                    <td style={{ textAlign: 'center' }}>{owner.jdAekyc_AadhaarNumber || 'N/A'}</td>
-                                                                    <td style={{ textAlign: 'center' }}>{aadhaarResponse.gender || 'N/A'}</td>
-                                                                    <td style={{ textAlign: 'center' }}>{aadhaarResponse.dateOfBirth || 'N/A'}</td>
-                                                                    <td style={{ textAlign: 'center' }}>{aadhaarResponse.addressEng || 'N/A'}</td>
-
-                                                                    {/*                                                
+                                                        {/*                                                
                                                 <td style={{ textAlign: 'center' }}>
                                                     {aadhaarResponse.photoContent ? <img src={`data:image/jpeg;base64,${aadhaarResponse.photoContent}`} alt="Aadhaar Photo" style={{ width: '50px', height: '50px' }} /> : 'No Photo'}
                                                 </td> */}
 
 
 
-                                                                    <td style={{ textAlign: 'center' }}>{ekycStatus}</td>
-                                                                    <td style={{ textAlign: 'center' }}>{nameMatchStatus}</td>
-                                                                </tr>
-                                                            );
-                                                        })}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        )}
+                                                        <td style={{ textAlign: 'center' }}>{ekycStatus}</td>
+                                                        <td style={{ textAlign: 'center' }}>{nameMatchStatus}</td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
                                     </div>
                                 </div>
                             </div>
@@ -1649,7 +1881,9 @@ const Preview_siteDetailsTable = ({ data, setData, totalSitesCount, }) => {
     return (
         <div>
             {loading && <Loader />}
-            <h4>Layout & Individual sites Details</h4>
+            <h4>
+
+            </h4>
             <div style={{ overflowX: "auto", padding: "1rem" }}>
                 <table
                     {...getTableProps()}

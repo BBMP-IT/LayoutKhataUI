@@ -599,7 +599,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
             stop_loader();
         }
     }
-        const dccolumns = [
+    const dccolumns = [
         {
             name: 'S.no',
             cell: (row, index) => index + 1,
@@ -663,7 +663,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
             },
             center: true,
         },
-       
+
 
     ];
 
@@ -702,35 +702,38 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                 </div>
             )
         },
+        { name: 'Identifier Type', width: '220px', selector: () => epid_fetchedData?.OwnerDetails?.[0].relationShipType || '-', center: true },
+        { name: 'Identifier Name', width: '220px', selector: () => epid_fetchedData?.OwnerDetails?.[0].identifierName || '-', center: true },
 
         { name: 'ID Type', width: '120px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idType || 'N/A', center: true },
         { name: 'ID Number', width: '220px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idNumber || 'N/A', center: true },
-        {
-            name: 'Validate OTP',
-            width: '250px',
-            cell: (row, index) => (
-                <div className='mb-3'><br />
-                    <input
-                        type="tel"
-                        className="form-control mb-1"
-                        placeholder="Mobile Number"
-                        readOnly
-                        value={
-                            phoneNumbers[index] ??
-                            row.MobileNumber ??
-                            epid_fetchedData?.OwnerDetails?.[0]?.mobileNumber ??
-                            ""
-                        }
-                        maxLength={10}
-                    />
 
-                    <div className="text-success font-weight-bold mt-2">
-                        OTP Verified <i className="fa fa-check-circle"></i>
-                    </div>
+        // {
+        //     name: 'Validate OTP',
+        //     width: '250px',
+        //     cell: (row, index) => (
+        //         <div className='mb-3'><br />
+        //             <input
+        //                 type="tel"
+        //                 className="form-control mb-1"
+        //                 placeholder="Mobile Number"
+        //                 readOnly
+        //                 value={
+        //                     phoneNumbers[index] ??
+        //                     row.MobileNumber ??
+        //                     epid_fetchedData?.OwnerDetails?.[0]?.mobileNumber ??
+        //                     ""
+        //                 }
+        //                 maxLength={10}
+        //             />
 
-                </div>
-            ), center: true
-        }
+        //             <div className="text-success font-weight-bold mt-2">
+        //                 OTP Verified <i className="fa fa-check-circle"></i>
+        //             </div>
+
+        //         </div>
+        //     ), center: true
+        // }
     ];
 
     //fetching Details from LKRSID
@@ -770,56 +773,82 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                     return [...prev, ...filteredNewData];
                 });
                 stop_loader();
-            } else if (response && response.khataDetails && response.khataOwnerDetails && response.khataOwnerDetails.length > 0) {
-                setSelectedLandType(response.lkrS_LANDTYPE); //  Store the land type
-                setECNumber(response.lkrS_ECNUMBER);         // Set EC Number
-                // if (response.lkrS_ISJDA === "1") {
-                //     setHasJDA(true);
-                // } else {
-                //     setHasJDA(false);
-                // }
+            } else if (
+                response &&
+                response.khataDetails &&
+                response.khataOwnerDetails &&
+                response.khataOwnerDetails.length > 0
+            ) {
+                setSelectedLandType(response.lkrS_LANDTYPE); // Store the land type
+                setECNumber(response.lkrS_ECNUMBER); // Set EC Number
+                setHasJDA(response.lkrS_ISJDA === "1");
                 setEPIDShowTable(true);
+
                 let khataDetailsJson = {};
                 if (response.khataDetails?.khatA_JSON) {
                     try {
-                        khataDetailsJson = JSON.parse(response.khataDetails.khatA_JSON);
+                        const parsedJson = JSON.parse(response.khataDetails.khatA_JSON);
+                        khataDetailsJson = parsedJson.response?.approvedPropertyDetails || {};
                     } catch (err) {
                         console.warn("Failed to parse khatA_JSON", err);
                     }
                 }
 
+                const ownerDetailsFromJson = khataDetailsJson.ownerDetails || [];
+
+                const ownerDetailsFromApi =
+                    response.khataOwnerDetails?.map((item) => {
+                        let aadhaarResponse = {};
+                        try {
+                            aadhaarResponse = JSON.parse(item.owN_AADHAAR_RESPONSE || "{}")?.ekycResponse || {};
+                        } catch (err) {
+                            console.warn("Failed to parse owN_AADHAAR_RESPONSE", err);
+                        }
+
+                        return {
+                            ownerName: item.owN_NAME_EN || "",
+                            idType: item.owN_IDTYPE || "AADHAR",
+                            idNumber: item.owN_IDNUMBER || item.owN_AADHAARNUMBER || "",
+                            ownerAddress: aadhaarResponse.addressEng || "",
+                            identifierName: aadhaarResponse.identifierNameEng || "",
+                            gender: aadhaarResponse.gender || "",
+                            mobileNumber: aadhaarResponse.mobileNumber || "",
+                        };
+                    }) || [];
+
+                const mergedOwnerDetails = [...ownerDetailsFromJson, ...ownerDetailsFromApi];
+
                 setEPID_FetchedData({
-                    PropertyID: response.lkrS_EPID || '',
-                    PropertyCategory: khataDetailsJson.propertyCategory || '',
-                    PropertyClassification: khataDetailsJson.propertyClassification || '',
-                    WardNumber: khataDetailsJson.wardNumber || '',
-                    WardName: khataDetailsJson.wardName || '',
-                    StreetName: khataDetailsJson.streetName || '',
-                    Streetcode: khataDetailsJson.streetcode || '',
-                    SASApplicationNumber: khataDetailsJson.sasApplicationNumber || '',
-                    IsMuation: khataDetailsJson.isMuation || '',
+                    PropertyID: response.lkrS_EPID || "",
+                    PropertyCategory: khataDetailsJson.propertyCategory || "",
+                    PropertyClassification: khataDetailsJson.propertyClassification || "",
+                    WardNumber: khataDetailsJson.wardNumber || "",
+                    WardName: khataDetailsJson.wardName || "",
+                    StreetName: khataDetailsJson.streetName || "",
+                    Streetcode: khataDetailsJson.streetcode || "",
+                    SASApplicationNumber: khataDetailsJson.sasApplicationNumber || "",
+                    IsMuation: khataDetailsJson.isMuation || "",
                     KaveriRegistrationNumber: khataDetailsJson.kaveriRegistrationNumber || [],
-                    AssessmentNumber: khataDetailsJson.assessmentNumber || '',
-                    courtStay: khataDetailsJson.courtStay || '',
-                    enquiryDispute: khataDetailsJson.enquiryDispute || '',
+                    AssessmentNumber: khataDetailsJson.assessmentNumber || "",
+                    courtStay: khataDetailsJson.courtStay || "",
+                    enquiryDispute: khataDetailsJson.enquiryDispute || "",
                     CheckBandi: khataDetailsJson.checkBandi || {},
                     SiteDetails: khataDetailsJson.siteDetails || {},
-                    OwnerDetails: khataDetailsJson.ownerDetails || [],
-                    // Optionally add raw API response too if needed
+                    OwnerDetails: mergedOwnerDetails,
                     rawResponse: response,
                 });
 
-                // Optionally update area sqft if siteDetails present
                 if (khataDetailsJson.siteDetails?.siteArea) {
                     setTotalSqFt(khataDetailsJson.siteDetails.siteArea);
-                    sessionStorage.setItem('areaSqft', khataDetailsJson.siteDetails.siteArea);
+                    sessionStorage.setItem("areaSqft", khataDetailsJson.siteDetails.siteArea);
                 } else {
                     setTotalSqFt(0);
-                    sessionStorage.removeItem('areaSqft');
+                    sessionStorage.removeItem("areaSqft");
                 }
 
-                setOwnerTableData(khataDetailsJson.ownerDetails || []);
-            } else {
+                setOwnerTableData(mergedOwnerDetails);
+            }
+            else {
                 stop_loader();
                 Swal.fire({
                     text: "No survey details found.",
@@ -1584,7 +1613,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                                         <div>
                                             <h5>Property Owner details as per BBMP eKhata</h5>
                                             <h6>Note: Plot-wise New Khata will be issued in owner's name. Hence, if owner has changed then first get Mutation done in eKhata.</h6>
-                                            {/* <h6>If there has been a change in ownership, the Mutation process in eKhata must be completed first, as the New Khata will be issued in the owner's name.</h6> */}
+
                                             <DataTable
                                                 columns={columns}
                                                 data={epid_fetchedData?.OwnerDetails || []}
@@ -1596,6 +1625,203 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
 
                                         </div>
                                     )}
+
+                                    {epid_fetchedData && (
+                                        <>
+                                            <style>{`
+      /* Wrapper for horizontal scroll on small screens */
+      .table-responsive-wrapper { /* Renamed to avoid conflict if parent also uses table-responsive */
+      width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 20px;
+        border: 2px solid lightgray; /* stronger outer border */
+        padding: 20px;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-family: Arial, sans-serif;
+        min-width: 600px; /* ensures horizontal scroll on small screens */
+      }
+      th, td {
+        border: 1.5px solid lightblue; /* distinct cell borders */
+        padding: 8px;
+        text-align: left;
+      }
+      th {
+        font-weight: bold;
+        color: #000;
+        background-color: lightblue;
+      }
+      tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+      tr:hover {
+        background-color: #f1f1f1;
+      }
+      h3, h4 {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #333;
+        margin-top: 1.5em;
+        margin-bottom: 0.5em;
+      }
+      .header-with-button {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px; /* Space between heading/button and table */
+      }
+    `}</style>
+                                            <div className="table-responsive-wrapper">
+                                                <div className="header-with-button">
+                                                    <h4>Property Details</h4>
+                                                    {/* <button className='btn btn-warning' onClick={showImplementationAlert}>View eKhata</button> */}
+                                                </div>
+
+                                                {/* Property Details */}
+                                                <table>
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Property ID</th>
+                                                            <th>Category</th>
+                                                            <th>Classification</th>
+                                                            <th>Ward Number</th>
+                                                            <th>Ward Name</th>
+                                                            <th>Street Name</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>{epid_fetchedData.PropertyID}</td>
+                                                            <td>{epid_fetchedData.PropertyCategory}</td>
+                                                            <td>{epid_fetchedData.PropertyClassification}</td>
+                                                            <td>{epid_fetchedData.WardNumber}</td>
+                                                            <td>{epid_fetchedData.WardName?.trim()}</td>
+                                                            <td>{epid_fetchedData.StreetName?.trim()}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+
+                                                {/* Kaveri Registration Numbers */}
+                                                {epid_fetchedData.KaveriRegistrationNumber?.length > 0 && (
+                                                    <>
+                                                        <h4>Kaveri Registration Numbers</h4>
+                                                        <table>
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Registration Number</th>
+                                                                    <th>EC Number</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {epid_fetchedData.KaveriRegistrationNumber.map((item, idx) => (
+                                                                    <tr key={idx}>
+                                                                        <td>{item.kaveriRegistrationNumber}</td>
+                                                                        <td>{item.kaveriECNumber}</td>
+                                                                    </tr>
+                                                                ))}
+                                                            </tbody>
+                                                        </table>
+                                                    </>
+                                                )}
+
+                                                {/* More Property Info */}
+                                                <table>
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Street Code</th>
+                                                            <th>SAS Application No</th>
+                                                            <th>Is Mutation</th>
+                                                            <th>Assessment No</th>
+                                                            <th>Court Stay</th>
+                                                            <th>Enquiry Dispute</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>{epid_fetchedData.Streetcode}</td>
+                                                            <td>{epid_fetchedData.SASApplicationNumber}</td>
+                                                            <td>{epid_fetchedData.IsMuation}</td>
+                                                            <td>{epid_fetchedData.AssessmentNumber}</td>
+                                                            <td>{epid_fetchedData.courtStay}</td>
+                                                            <td>{epid_fetchedData.enquiryDispute}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+
+                                                {/* Check Bandi */}
+                                                <h4>Check Bandi</h4>
+                                                <table>
+                                                    <thead>
+                                                        <tr>
+                                                            <th>North</th>
+                                                            <th>South</th>
+                                                            <th>East</th>
+                                                            <th>West</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>{epid_fetchedData.CheckBandi?.north}</td>
+                                                            <td>{epid_fetchedData.CheckBandi?.south}</td>
+                                                            <td>{epid_fetchedData.CheckBandi?.east}</td>
+                                                            <td>{epid_fetchedData.CheckBandi?.west}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+
+                                                {/* Site Details */}
+                                                <h4>Site Details</h4>
+                                                <table>
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Site Area (sq ft)</th>
+                                                            <th>East-West Dimension</th>
+                                                            <th>North-South Dimension</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>{epid_fetchedData.SiteDetails?.siteArea}</td>
+                                                            <td>{epid_fetchedData.SiteDetails?.dimensions?.eastWest || '-'}</td>
+                                                            <td>{epid_fetchedData.SiteDetails?.dimensions?.northSouth || '-'}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+
+                                                {/* Owner Details */}
+                                                <h4>Owner Details</h4>
+                                                <table>
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Owner Name</th>
+                                                            <th>ID Type</th>
+                                                            <th>ID Number</th>
+                                                            <th>Address</th>
+                                                            <th>Identifier Name</th>
+                                                            <th>Gender</th>
+                                                            <th>Mobile Number</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {epid_fetchedData.OwnerDetails?.map((owner, index) => (
+                                                            <tr key={index}>
+                                                                <td>{owner.ownerName}</td>
+                                                                <td>{owner.idType}</td>
+                                                                <td>{owner.idNumber}</td>
+                                                                <td>{owner.ownerAddress}</td>
+                                                                <td>{owner.identifierName}</td>
+                                                                <td>{owner.gender}</td>
+                                                                <td>{owner.mobileNumber}</td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </>
+                                    )}
+
                                     <hr />
                                 </>
                             )}

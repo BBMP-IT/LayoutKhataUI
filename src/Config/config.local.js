@@ -11,6 +11,7 @@ const ApiCredentials = {
         layoutForm: "http://localhost:3001",
         ekycRequestURL: 0,
         releaseEKYCnamescore: 1,
+        totalNoofSites: 5,
         
     }
 };
@@ -21,6 +22,7 @@ const config = {
       redirectBaseURL: ApiCredentials.credentials.layoutForm,
       redirectionTypeURL: ApiCredentials.credentials.ekycRequestURL,
       rd_nameScore:  ApiCredentials.credentials.releaseEKYCnamescore,
+      sites:  ApiCredentials.credentials.totalNoofSites,
 
   credentials: ApiCredentials.credentials, 
 

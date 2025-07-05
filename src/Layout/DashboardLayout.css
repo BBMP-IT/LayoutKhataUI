@@ -16429,3 +16429,37 @@
   text-overflow: ellipsis;
   text-align: center;
 }
+
+.blue-bordered-card {
+  border: 2px solid blue; /* Bootstrap primary blue */
+  border-radius: 8px;
+  transition: box-shadow 0.2s ease;
+}
+
+.blue-bordered-card:hover {
+  box-shadow: 0 0 10px rgba(0, 123, 255, 0.3);
+}
+
+.green-bordered-card {
+  border: 2px solid green; /* Bootstrap primary blue */
+  border-radius: 8px;
+  transition: box-shadow 0.2s ease;
+}
+
+.green-bordered-card:hover {
+  box-shadow: 0 0 10px rgba(0, 123, 255, 0.3);
+}
+.status-badge {
+  position: absolute;
+  top: 12px;
+  right: 0;
+  background-color: green; /* Match the blue in the image */
+  color: white;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+  clip-path: polygon(0% 0%, 100% 0%, 90% 100%, 0% 100%);
+  z-index: 1;
+}
