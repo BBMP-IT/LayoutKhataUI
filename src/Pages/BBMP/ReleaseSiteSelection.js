@@ -320,7 +320,7 @@ const ReleaseSelection = () => {
   };
 
   // handleRowSelect
- 
+
   const handleRowSelect = (index) => {
     if (!isEKYCVerified) {
       Swal.fire({
@@ -447,7 +447,7 @@ const ReleaseSelection = () => {
         }
         else {
           setIsOrder_EditingArea(false); // block save in other cases
-          
+
         }
       }
       //40% release
@@ -467,7 +467,7 @@ const ReleaseSelection = () => {
             allowEscapeKey: false
           });
           setSelectionLimit(0);
-         setDeletebtn_disabled(true);//delete btn disabled
+          setDeletebtn_disabled(true);//delete btn disabled
         }
       }
     }
@@ -539,8 +539,8 @@ const ReleaseSelection = () => {
             // Already Released
             Swal.fire({
               icon: 'success',
-            title: 'All Sites are Released',
-            text: 'All records have already been released.',
+              title: 'All Sites are Released',
+              text: 'All records have already been released.',
               confirmButtonColor: '#3085d6',
             });
             setSelectionLimit(0);
@@ -953,7 +953,7 @@ const ReleaseSelection = () => {
   };
   // Columns for the DataTable
   const releaseTableColumns = [
-{
+    {
       name: (
         <div>
           <input
@@ -993,7 +993,7 @@ const ReleaseSelection = () => {
       selector: row => row.sitE_NO || '',
       width: '120px', center: true
     },
-     {
+    {
       name: "Dimension",
       cell: (row) => {
         if (row.sitE_SHAPETYPE === "Regular") {
@@ -1028,7 +1028,7 @@ const ReleaseSelection = () => {
     },
 
 
-    
+
     // {
     //   name: ['1', '2', '3'].includes(selectedValue) ? (
     //     <div>
@@ -1092,7 +1092,7 @@ const ReleaseSelection = () => {
     //   button: true,
     // },
 
-    
+
 
     // {
     //   name: 'Sl. No.',
@@ -1100,7 +1100,7 @@ const ReleaseSelection = () => {
     //   sortable: true,
     //   width: '90px', center: true
     // },
-    
+
     // {
     //   name: "Block/Area",
     //   selector: row => row.sitE_AREA || '',
@@ -1111,7 +1111,7 @@ const ReleaseSelection = () => {
     //   selector: row => row.sitE_NO_OF_SIDES || '',
     //   width: '120px', center: true
     // },
-   
+
 
     // {
     //   name: "Total Area",
@@ -1629,7 +1629,8 @@ const ReleaseSelection = () => {
           lkrS_EPID: response.lkrS_EPID || '',
           lkrS_SITEAREA_SQFT: response.lkrS_SITEAREA_SQFT || '',
           lkrS_SITEAREA_SQMT: response.lkrS_SITEAREA_SQMT || '',
-          lkrS_ECNUMBER: response.lkrS_ECNUMBER || ''
+          lkrS_ECNUMBER: response.lkrS_ECNUMBER || '',
+          lkrS_LANDTYPE: response.lkrS_LANDTYPE || ''
         });
         await Fetch_Approval_percentage(response.lkrS_ID);
         setSelectedLandType(response.lkrS_LANDTYPE); //  Store the land type
@@ -1658,7 +1659,8 @@ const ReleaseSelection = () => {
           lkrS_EPID: response.lkrS_EPID || '',
           lkrS_SITEAREA_SQFT: response.lkrS_SITEAREA_SQFT || '',
           lkrS_SITEAREA_SQMT: response.lkrS_SITEAREA_SQMT || '',
-          lkrS_ECNUMBER: response.lkrS_ECNUMBER || ''
+          lkrS_ECNUMBER: response.lkrS_ECNUMBER || '',
+          lkrS_LANDTYPE: response.lkrS_LANDTYPE || ''
         });
         await Fetch_Approval_percentage(response.lkrS_ID);
         setSelectedLandType(response.lkrS_LANDTYPE); //  Store the land type
@@ -2061,7 +2063,7 @@ const ReleaseSelection = () => {
     }
   };
   const alreadyreleasedTableColumns = [
-     {
+    {
       name: "Shape",
       selector: row => row.sitE_SHAPETYPE || '',
       width: '100px', center: true
@@ -2071,7 +2073,7 @@ const ReleaseSelection = () => {
       selector: row => row.sitE_NO || '',
       width: '120px', center: true
     },
- {
+    {
       name: "Dimension",
       cell: (row) => {
         if (row.sitE_SHAPETYPE === "Regular") {
@@ -2105,7 +2107,7 @@ const ReleaseSelection = () => {
       width: '200px', // Add fixed width for better control
     },
     // {
-      
+
     //   name: 'Sl. No.',
     //   selector: (row, index) => index + 1,
     //   sortable: true,
@@ -2158,6 +2160,7 @@ const ReleaseSelection = () => {
     lkrS_SITEAREA_SQFT: '',
     lkrS_SITEAREA_SQMT: '',
     lkrS_ECNUMBER: '',
+    lkrS_LANDTYPE: '',
   });
   const [approvalTableData, setApprovalTableData] = useState({
     approvalOrderNo: '',
@@ -2249,55 +2252,55 @@ const ReleaseSelection = () => {
     setRelease_Errors({ ...release_errors, release_Order: "" });
   };
   const validateOrderForm = () => {
-  let newErrors = {};
+    let newErrors = {};
 
-  if (!release_formData.layoutOrderNumber.trim()) {
-    newErrors.layoutOrderNumber = "Layout Order of site release Number is required.";
-  } else if (!/^[a-zA-Z0-9/-]+$/.test(release_formData.layoutOrderNumber.trim())) {
-    newErrors.layoutOrderNumber = "Only alphabets, numbers, slashes (/) and dashes (-) are allowed.";
-  }
-
-  if (!release_formData.release_Order) {
-    newErrors.release_Order = "Please upload a valid PDF (max 5MB).";
-  }
-
-  if (!release_formData.dateOfOrder) {
-    newErrors.dateOfOrder = "Date of approval is required.";
-  } else if (new Date(release_formData.dateOfOrder) > new Date()) {
-    newErrors.dateOfOrder = "Future dates are not allowed.";
-  }
-
-  if (!release_formData.orderAuthority.trim()) {
-    newErrors.orderAuthority = "Approval authority designation is required.";
-  }
-
-  const isDuplicate = order_records.some(
-    (order) =>
-      order.layoutReleaseNumber?.trim() === release_formData.layoutOrderNumber.trim()
-  );
-  if (isDuplicate) {
-    newErrors.layoutOrderNumber = "This release order number already exists.";
-  }
-
-  const existingDates = order_records
-    .map((r) => new Date(r.dateOfOrder))
-    .filter((d) => !isNaN(d));
-  if (existingDates.length > 0) {
-    const latestDate = new Date(Math.max(...existingDates.map((d) => d.getTime())));
-    const enteredDate = new Date(release_formData.dateOfOrder);
-    if (enteredDate <= latestDate) {
-      newErrors.dateOfOrder = `Date must be after the last release date (${latestDate.toLocaleDateString('en-GB')}).`;
+    if (!release_formData.layoutOrderNumber.trim()) {
+      newErrors.layoutOrderNumber = "Layout Order of site release Number is required.";
+    } else if (!/^[a-zA-Z0-9/-]+$/.test(release_formData.layoutOrderNumber.trim())) {
+      newErrors.layoutOrderNumber = "Only alphabets, numbers, slashes (/) and dashes (-) are allowed.";
     }
-  }
 
-  if (Object.keys(newErrors).length > 0) {
-    setRelease_Errors(newErrors);
-    Swal.fire("Validation Error", "Please fix the highlighted errors.", "warning");
-    return false; // ❗ Explicit return
-  }
+    if (!release_formData.release_Order) {
+      newErrors.release_Order = "Please upload a valid PDF (max 5MB).";
+    }
 
-  return true; // ❗ Explicit success
-};
+    if (!release_formData.dateOfOrder) {
+      newErrors.dateOfOrder = "Date of approval is required.";
+    } else if (new Date(release_formData.dateOfOrder) > new Date()) {
+      newErrors.dateOfOrder = "Future dates are not allowed.";
+    }
+
+    if (!release_formData.orderAuthority.trim()) {
+      newErrors.orderAuthority = "Approval authority designation is required.";
+    }
+
+    const isDuplicate = order_records.some(
+      (order) =>
+        order.layoutReleaseNumber?.trim() === release_formData.layoutOrderNumber.trim()
+    );
+    if (isDuplicate) {
+      newErrors.layoutOrderNumber = "This release order number already exists.";
+    }
+
+    const existingDates = order_records
+      .map((r) => new Date(r.dateOfOrder))
+      .filter((d) => !isNaN(d));
+    if (existingDates.length > 0) {
+      const latestDate = new Date(Math.max(...existingDates.map((d) => d.getTime())));
+      const enteredDate = new Date(release_formData.dateOfOrder);
+      if (enteredDate <= latestDate) {
+        newErrors.dateOfOrder = `Date must be after the last release date (${latestDate.toLocaleDateString('en-GB')}).`;
+      }
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setRelease_Errors(newErrors);
+      Swal.fire("Validation Error", "Please fix the highlighted errors.", "warning");
+      return false; // ❗ Explicit return
+    }
+
+    return true; // ❗ Explicit success
+  };
 
   const handleOrderSave = async () => {
     if (!validateOrderForm()) return;
@@ -2525,7 +2528,7 @@ const ReleaseSelection = () => {
                 row.releaseOrderDocID
               )
             }
-           disabled={deletebtn_disabled}
+            disabled={deletebtn_disabled}
           >
             <i className="fa fa-trash"></i>
           </button>
@@ -2964,6 +2967,16 @@ const ReleaseSelection = () => {
                     <h5>Property Details</h5>
                     <table style={{ borderCollapse: 'collapse', width: '100%' }}>
                       <tbody>
+                        <tr>
+                          <th colSpan={2} style={thStyle}>Land type</th>
+                          <td colSpan={2} style={tdStyle}>
+                            {lkrsTableData.lkrS_LANDTYPE === 'surveyNo'
+                              ? 'Converted Revenue Survey Number (No BBMP Khata)'
+                              : lkrsTableData.lkrS_LANDTYPE === 'khata'
+                                ? 'BBMP A-Khata'
+                                : lkrsTableData.lkrS_LANDTYPE}
+                          </td>
+                        </tr>
                         <tr>
                           <th style={thStyle}>KRS ID</th>
                           <td style={tdStyle}>{lkrsTableData.lkrS_DISPLAYID}</td>
@@ -3405,9 +3418,9 @@ const ReleaseSelection = () => {
 
 
 
-           
 
-              
+
+
 
               </div>
             </div>
@@ -3431,74 +3444,74 @@ const ReleaseSelection = () => {
                         {selectedRows.length} record{selectedRows.length > 1 ? 's' : ''} selected
                       </p>
                     )}
-     {releaseData.length > 0 ? (
-        <>
-          {/* Select All Checkbox */}
-          <div className="d-flex justify-content-start mb-2">
-            <label>
-              <input
-                type="checkbox"
-                checked={selectAllChecked}
-                onChange={(e) => handleSelectAll(e)}
-                disabled={isSelectAllDisabled()}
-              />{' '}
-              Select All
-            </label>
-          </div>
+                    {releaseData.length > 0 ? (
+                      <>
+                        {/* Select All Checkbox */}
+                        <div className="d-flex justify-content-start mb-2">
+                          <label>
+                            <input
+                              type="checkbox"
+                              checked={selectAllChecked}
+                              onChange={(e) => handleSelectAll(e)}
+                              disabled={isSelectAllDisabled()}
+                            />{' '}
+                            Select All
+                          </label>
+                        </div>
 
-          {/* Cards Grid */}
-          <div className="row">
-            {releaseData.map((row, index) => {
-              const isSelected = selectedRows.includes(index);
-              const feetSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINFT).join(" x ") || '';
-              const meterSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINMT).join(" x ") || '';
-              const roadFacing = row.siteDimensions?.map(dim => dim.sitediM_ROADFACING ? "Yes" : "No").join(', ') || '';
+                        {/* Cards Grid */}
+                        <div className="row">
+                          {releaseData.map((row, index) => {
+                            const isSelected = selectedRows.includes(index);
+                            const feetSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINFT).join(" x ") || '';
+                            const meterSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINMT).join(" x ") || '';
+                            const roadFacing = row.siteDimensions?.map(dim => dim.sitediM_ROADFACING ? "Yes" : "No").join(', ') || '';
 
-              return (
-                <div className="col-md-4 col-lg-3 col-xl-2 mb-3" key={row.id}>
-                  <div className={`card h-100 shadow p-2 blue-bordered-card position-relative ${isSelected ? 'border-primary' : ''}`}>  
-                    <div className="d-flex justify-content-between align-items-center">
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => handleRowSelect(index)}
-                      />
-                      <span className="badge bg-secondary">{row.sitE_SHAPETYPE}</span>
-                    </div>
+                            return (
+                              <div className="col-md-4 col-lg-3 col-xl-2 mb-3" key={row.id}>
+                                <div className={`card h-100 shadow p-2 blue-bordered-card position-relative ${isSelected ? 'border-primary' : ''}`}>
+                                  <div className="d-flex justify-content-between align-items-center">
+                                    <input
+                                      type="checkbox"
+                                      checked={isSelected}
+                                      onChange={() => handleRowSelect(index)}
+                                    />
+                                    <span className="badge bg-secondary">{row.sitE_SHAPETYPE}</span>
+                                  </div>
 
-                    <div className="mt-2">
-                      <div><strong>Site No:</strong> {row.sitE_NO}</div>
-                      <div><strong>Dimension:</strong></div>
-                      <div className="small text-muted">{feetSides} ft</div>
-                      <div className="small text-muted">{meterSides} m</div>
-                      <div className="small"><strong>Road Facing:</strong> {roadFacing}</div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                                  <div className="mt-2">
+                                    <div><strong>Site No:</strong> {row.sitE_NO}</div>
+                                    <div><strong>Dimension:</strong></div>
+                                    <div className="small text-muted">{feetSides} ft</div>
+                                    <div className="small text-muted">{meterSides} m</div>
+                                    <div className="small"><strong>Road Facing:</strong> {roadFacing}</div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
 
-          {/* Submit Button */}
-          <div className="row">
-            <div className="col-md-9"></div>
-            <div className="col-md-3">
-              <button className="btn btn-primary btn-block mt-3" onClick={moveToReleasedTable}>
-                Add
-              </button>
-            </div>
-          </div>
-        </>
-      ) : (
-        <div style={{
-          textAlign: 'center',
-          padding: '20px',
-          fontWeight: '500',
-          color: '#999'
-        }}>
-          There are no sites to display
-        </div>
-      )}
+                        {/* Submit Button */}
+                        <div className="row">
+                          <div className="col-md-9"></div>
+                          <div className="col-md-3">
+                            <button className="btn btn-primary btn-block mt-3" onClick={moveToReleasedTable}>
+                              Add
+                            </button>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div style={{
+                        textAlign: 'center',
+                        padding: '20px',
+                        fontWeight: '500',
+                        color: '#999'
+                      }}>
+                        There are no sites to display
+                      </div>
+                    )}
 
 
                     {/* {releaseData.length > 0 ? (
@@ -3601,44 +3614,44 @@ const ReleaseSelection = () => {
                     highlightOnHover
                     responsive
                   /> */}
-{finalApiList.length > 0 ? (
-  <div className="row">
-    {finalApiList.map((row, index) => {
-      const feetSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINFT).join(" x ") || '';
-      const meterSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINMT).join(" x ") || '';
-      const roadFacing = row.siteDimensions?.map(dim => dim.sitediM_ROADFACING ? "Yes" : "No").join(', ') || '';
+                  {finalApiList.length > 0 ? (
+                    <div className="row">
+                      {finalApiList.map((row, index) => {
+                        const feetSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINFT).join(" x ") || '';
+                        const meterSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINMT).join(" x ") || '';
+                        const roadFacing = row.siteDimensions?.map(dim => dim.sitediM_ROADFACING ? "Yes" : "No").join(', ') || '';
 
-      return (
-        <div className="col-md-4 col-lg-3 col-xl-2 mb-2" key={row.id || index}>
-         <div className="card h-100 shadow p-3 green-bordered-card position-relative">
-  {/* Top-right badge */}
-  <div className="status-badge">Released</div>
+                        return (
+                          <div className="col-md-4 col-lg-3 col-xl-2 mb-2" key={row.id || index}>
+                            <div className="card h-100 shadow p-3 green-bordered-card position-relative">
+                              {/* Top-right badge */}
+                              <div className="status-badge">Released</div>
 
-  <div className="mt-1">
-    <div><strong>Site No:</strong> {row.sitE_NO}</div>
-    <div><strong>Dimension:</strong></div>
-    <div className="small text-muted">{feetSides} ft</div>
-    <div className="small text-muted">{meterSides} m</div>
-    <div className="small"><strong>Road Facing:</strong> {roadFacing}</div>
-    <div className="small"><strong>Shape:</strong> {row.sitE_SHAPETYPE}</div>
-   
-  </div>
-</div>
+                              <div className="mt-1">
+                                <div><strong>Site No:</strong> {row.sitE_NO}</div>
+                                <div><strong>Dimension:</strong></div>
+                                <div className="small text-muted">{feetSides} ft</div>
+                                <div className="small text-muted">{meterSides} m</div>
+                                <div className="small"><strong>Road Facing:</strong> {roadFacing}</div>
+                                <div className="small"><strong>Shape:</strong> {row.sitE_SHAPETYPE}</div>
 
-        </div>
-      );
-    })}
-  </div>
-) : (
-  <div style={{
-    textAlign: 'center',
-    padding: '20px',
-    fontWeight: '500',
-    color: '#999'
-  }}>
-    There are no released sites to display
-  </div>
-)}
+                              </div>
+                            </div>
+
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div style={{
+                      textAlign: 'center',
+                      padding: '20px',
+                      fontWeight: '500',
+                      color: '#999'
+                    }}>
+                      There are no released sites to display
+                    </div>
+                  )}
 
                 </div>
               </div>

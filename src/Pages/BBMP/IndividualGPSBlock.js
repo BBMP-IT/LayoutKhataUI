@@ -166,14 +166,14 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
     const [layoutSiteCount, setLayoutSiteCount] = useState("");
     const [layoutSiteCountError, setLayoutSiteCountError] = useState("");
 
-    useEffect(() => {
-
-        const areaSQFT = sessionStorage.getItem('areaSqft');
-        if (areaSQFT) {
-            setTotalSQFT(areaSQFT);
-            setTotalSQM(sqftToSqm(areaSQFT));
-        }
-    }, [areaSqft]);
+   useEffect(() => {
+    const areaSQFT = sessionStorage.getItem('areaSqft');
+    if (areaSQFT) {
+        const sqftRounded = Math.round(parseFloat(areaSQFT));
+        setTotalSQFT(sqftRounded);                // integer only
+        setTotalSQM(sqftToSqm(sqftRounded));      // 1 decimal only
+    }
+}, [areaSqft]);
 
     const [localLKRSID, setLocalLKRSID] = useState("");
     const [localOwnername, setLocalOwnerName] = useState("");
@@ -216,7 +216,9 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
         }
     }
-    const sqftToSqm = (sqft) => (sqft ? (parseFloat(sqft) * 0.092903).toFixed(2) : '');
+    const sqftToSqm = (sqft) => {
+    return sqft ? (parseFloat(sqft) * 0.092903).toFixed(1) : '';
+};
 
 
     const handleNumSidesChange = (e) => {
@@ -307,7 +309,8 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
     //east-west feet to meter calculation values 
     const handleEastwestFeetChange = (e) => {
         const value = e.target.value;
-        if (/^(?!0)\d*(\.\d*)?$/.test(value) || value === "") {
+        // Allow only positive integers
+        if (/^(?!0)\d*$/.test(value) || value === "") {
             setEastwestFeet(value);
 
             if (value === "") {
@@ -315,20 +318,21 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                 setEastwestMeter('');
             } else {
                 setEastwestError('');
-                const feet = parseFloat(value);
+                const feet = parseInt(value);
                 if (!isNaN(feet)) {
                     const meter = feet * 0.3048;
-                    setEastwestMeter(meter.toFixed(2));
+                    setEastwestMeter(meter.toFixed(1)); // meters can be 1 decimal
                 }
             }
-            // Recalculate Area
             calculateArea(value, northsouthFeet, null, null);
         }
     };
+
     // East-West meter change handler
     const handleEastwestMeterChange = (e) => {
         const value = e.target.value;
-        if (/^(?!0)\d*(\.\d*)?$/.test(value) || value === "") {
+        // Allow number with max one decimal
+        if (/^(?!0)\d*(\.\d{0,1})?$/.test(value) || value === "") {
             setEastwestMeter(value);
 
             if (value === "") {
@@ -339,41 +343,65 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                 const meter = parseFloat(value);
                 if (!isNaN(meter)) {
                     const feet = meter / 0.3048;
-                    setEastwestFeet(feet.toFixed(2));
+                    setEastwestFeet(Math.round(feet)); // feet should be integer
+                }
+            }
+            calculateArea(null, null, value, northsouthMeter);
+        }
+    };
+
+    //north-south feet or meter calculation function
+const feetToMeter = (feet) => (feet ? (parseFloat(feet) * 0.3048).toFixed(1) : '');
+const meterToFeet = (meter) => (meter ? Math.round(parseFloat(meter) / 0.3048) : '');
+
+    // North-South feet change handler
+    const handleNorthsouthFeetChange = (e) => {
+        const value = e.target.value;
+
+        // Allow only non-zero leading integers
+        if (/^(?!0)\d*$/.test(value) || value === '') {
+            setNorthsouthFeet(value);
+
+            if (value === '') {
+                setNorthsouthError('North-south length is required');
+                setNorthsouthMeter('');
+            } else {
+                setNorthsouthError('');
+                const feet = parseInt(value);
+                if (!isNaN(feet)) {
+                    const meter = feet * 0.3048;
+                    setNorthsouthMeter(meter.toFixed(1)); // 1 decimal for meter
                 }
             }
 
             // Recalculate Area
-            calculateArea(null, null, value, northsouthMeter);
+            calculateArea(eastwestFeet, value, null, null);
         }
     };
-    //north-south feet or meter calculation function
-    const feetToMeter = (feet) => (feet ? (parseFloat(feet) * 0.3048).toFixed(2) : '');
-    const meterToFeet = (meter) => (meter ? (parseFloat(meter) / 0.3048).toFixed(2) : '');
-    // North-South feet change handler
-    const handleNorthsouthFeetChange = (e) => {
-        const value = e.target.value;
-        if (/^(?!0)\d*(\.\d{0,2})?$/.test(value) || value === '') {
-            setNorthsouthFeet(value);
-            setNorthsouthMeter(feetToMeter(value));
-            setNorthsouthError(value ? '' : 'North-south length is required');
-        }
-
-        // Recalculate Area
-        calculateArea(eastwestFeet, value, null, null);
-    };
-    // North-South meter change handler
     const handleNorthsouthMeterChange = (e) => {
         const value = e.target.value;
-        if (/^(?!0)\d*(\.\d{0,2})?$/.test(value) || value === '') {
-            setNorthsouthMeter(value);
-            setNorthsouthFeet(meterToFeet(value));
-            setNorthsouthError(value ? '' : 'North-south length is required');
-        }
 
-        // Recalculate Area
-        calculateArea(null, null, eastwestMeter, value);
+        // Allow number with max one decimal place
+        if (/^(?!0)\d*(\.\d{0,1})?$/.test(value) || value === '') {
+            setNorthsouthMeter(value);
+
+            if (value === '') {
+                setNorthsouthError('North-south length is required');
+                setNorthsouthFeet('');
+            } else {
+                setNorthsouthError('');
+                const meter = parseFloat(value);
+                if (!isNaN(meter)) {
+                    const feet = meter / 0.3048;
+                    setNorthsouthFeet(Math.round(feet)); // feet should be integer
+                }
+            }
+
+            // Recalculate Area
+            calculateArea(null, null, eastwestMeter, value);
+        }
     };
+
     // Area Calculation Function (for regular-shaped site)
     const calculateArea = (lengthFt, widthFt, lengthM, widthM) => {
         if (lengthFt && widthFt) {
@@ -1794,12 +1822,12 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
                 setRegularAreaSqFt(latestSite.sitE_AREAINSQFT);
                 setRegularAreaSqM(latestSite.sitE_AREAINSQMT);
-                if(latestSite.sitE_CORNERPLOT === "yes"){
+                if (latestSite.sitE_CORNERPLOT === "yes") {
                     setCornerSite(true);
-                }else{
+                } else {
                     setCornerSite(false);
                 }
-                
+
                 setSiteType(latestSite.sitE_TYPEID);
                 setChakbandiEast(latestSite.sitE_EAST);
                 setChakbandiWest(latestSite.sitE_WEST);

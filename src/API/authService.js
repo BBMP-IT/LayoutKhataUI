@@ -13,17 +13,17 @@ export const getAccessToken = async () => {
   return await apiService.postRequest('/Token', formData);
 };
 export const checkTokenExpiry = () => {
-    const sessionData = JSON.parse(sessionStorage.getItem('sessionData'));
-    if (sessionData) {
-        const currentTime = Date.now();
-        if (currentTime >= sessionData.expiry) {
-            // Expired
-            sessionStorage.clear();
-            return false;
-        }
-        return true;
+  const sessionData = JSON.parse(sessionStorage.getItem('sessionData'));
+  if (sessionData) {
+    const currentTime = Date.now();
+    if (currentTime >= sessionData.expiry) {
+      // Expired
+      sessionStorage.clear();
+      return false;
     }
-    return false;  // no session data
+    return true;
+  }
+  return false;  // no session data
 };
 //Regenerate token API
 export const regenerateToken = async () => {
@@ -70,7 +70,7 @@ export const verifyOtpAPI = async (mobileNumber, otp) => {
 //District API 
 export const handleFetchDistricts = async (newLanguage) => {
   try {
-   
+
 
     const response = await apiService.getRequest(`${config.endpoints.kaveriDistrict}`, {}); // assuming relative path only
 
@@ -92,7 +92,7 @@ export const handleFetchDistricts = async (newLanguage) => {
 //taluk API
 export const handleFetchTalukOptions = async (districtCode, language) => {
   try {
-    
+
 
     const response = await apiService.postRequest(`${config.endpoints.kaveriTaluk}`, {
       districT_CODE: String(districtCode),
@@ -117,7 +117,7 @@ export const handleFetchTalukOptions = async (districtCode, language) => {
 //Hobli API
 export const handleFetchHobliOptions = async (districtCode, talukCode, language) => {
   try {
-   
+
     const response = await apiService.postRequest(`${config.endpoints.kaveriHobli}`, {
       districT_CODE: String(districtCode),
       taluK_CODE: String(talukCode),
@@ -232,8 +232,8 @@ export const fetchRTCDetailsAPI = async ({
 //Survey Number first block Save API
 export const submitsurveyNoDetails = async (payload) => {
   try {
-    const response = await apiService.postRequest(`${config.endpoints.EPIDFetchDetails}`,  payload);
-     return response;
+    const response = await apiService.postRequest(`${config.endpoints.EPIDFetchDetails}`, payload);
+    return response;
   } catch (error) {
     console.error("EPID Fetching Details Error:", error);
     throw error;
@@ -263,7 +263,7 @@ export const submitsurveyNoDetails = async (payload) => {
 //         var message = response.responseMessage;
 //         if(message === "NOT AUTHORISED"){
 //           message = "NOT AUTHORISED";
-          
+
 //         }
 //         Swal.fire({
 //         title: "Error",
@@ -349,10 +349,10 @@ export const handleFetchEPIDDetails = async (epidNumber) => {
 //EPID first block Save API
 export const submitEPIDDetails = async (payload) => {
   try {
-   
-    const response = await apiService.postRequest(`${config.endpoints.EPIDFetchDetails}`,  payload);
 
-     return response;
+    const response = await apiService.postRequest(`${config.endpoints.EPIDFetchDetails}`, payload);
+
+    return response;
   } catch (error) {
     console.error("EPID Fetching Details Error:", error);
     throw error;
@@ -371,9 +371,9 @@ export const insertApprovalInfo = async (payload) => {
 //Approval Order List API
 export const listApprovalInfo = async ({ level, aprLkrsId, aprId }) => {
   try {
-     const url = `${config.endpoints.listApprovalInfo}?level=${level}&aprLkrsId=${aprLkrsId}&aprId=${aprId}`;
+    const url = `${config.endpoints.listApprovalInfo}?level=${level}&aprLkrsId=${aprLkrsId}&aprId=${aprId}`;
     const response = await apiService.getRequest(url);
-  return response;
+    return response;
   } catch (error) {
     console.error("Insert Approval Info Error:", error);
     throw error;
@@ -382,8 +382,8 @@ export const listApprovalInfo = async ({ level, aprLkrsId, aprId }) => {
 //Delete Approval information
 export const deleteApprovalInfo = async (payload) => {
   try {
-    const response = await apiService.deleteRequest(`${config.endpoints.deleteApprovalInfo}`,  payload);
-     return response;
+    const response = await apiService.deleteRequest(`${config.endpoints.deleteApprovalInfo}`, payload);
+    return response;
   } catch (error) {
     console.error("Deleting approval info Details Error:", error);
     throw error;
@@ -402,8 +402,8 @@ export const insertReleaseInfo = async (payload) => {
 //Delete Release Order information
 export const deleteReleaseInfo = async (payload) => {
   try {
-    const response = await apiService.deleteRequest(`${config.endpoints.deleteReleaseInfo}`,  payload);
-     return response;
+    const response = await apiService.deleteRequest(`${config.endpoints.deleteReleaseInfo}`, payload);
+    return response;
   } catch (error) {
     console.error("Deleting approval info Details Error:", error);
     throw error;
@@ -412,9 +412,9 @@ export const deleteReleaseInfo = async (payload) => {
 //release Order List API
 export const listReleaseInfo = async ({ level, lkrsId, siteRelsId }) => {
   try {
-     const url = `${config.endpoints.listReleaseInfo}?level=${level}&siteRelsId=${siteRelsId}&lkrsId=${lkrsId}`;
+    const url = `${config.endpoints.listReleaseInfo}?level=${level}&siteRelsId=${siteRelsId}&lkrsId=${lkrsId}`;
     const response = await apiService.getRequest(url);
-  return response;
+    return response;
   } catch (error) {
     console.error("Insert Approval Info Error:", error);
     throw error;
@@ -454,7 +454,7 @@ export const insertJDA_details = async (payload) => {
 //JDA details fetch API
 export const fetchJDA_details = async (level, lkrsId, jdaId) => {
   try {
-    
+
     const url = `${config.endpoints.fetchJDAInfo}?level=${level}&lkrsId=${lkrsId}&jdaId=${jdaId}`;
     const response = await apiService.getRequest(url);
     return response;
@@ -554,9 +554,9 @@ export const individualSiteAPI = async (payload) => {
 //Individual site table details APi
 export const individualSiteListAPI = async ({ level, LkrsId, SiteID }) => {
   try {
-     const url = `${config.endpoints.fetchIndividualSiteDetails}?level=${level}&LkrsId=${LkrsId}&SiteID=${SiteID}`;
+    const url = `${config.endpoints.fetchIndividualSiteDetails}?level=${level}&LkrsId=${LkrsId}&SiteID=${SiteID}`;
     const response = await apiService.getRequest(url);
-  return response;
+    return response;
   } catch (error) {
     console.error("fetch individual site Info Error:", error);
     throw error;
@@ -565,8 +565,8 @@ export const individualSiteListAPI = async ({ level, LkrsId, SiteID }) => {
 //EC fetch Details API
 export const fetchECDetails = async (payload) => {
   try {
-    const response = await apiService.postRequest(`${config.endpoints.fetchECDetails}`,  payload);
-     return response;
+    const response = await apiService.postRequest(`${config.endpoints.fetchECDetails}`, payload);
+    return response;
   } catch (error) {
     console.error("EC Fetching Details Error:", error);
     throw error;
@@ -575,8 +575,8 @@ export const fetchECDetails = async (payload) => {
 //Deed fetch Details API
 export const fetchDeedDetails = async (payload) => {
   try {
-    const response = await apiService.postRequest(`${config.endpoints.fetchDeedDetails}`,  payload);
-     return response;
+    const response = await apiService.postRequest(`${config.endpoints.fetchDeedDetails}`, payload);
+    return response;
   } catch (error) {
     console.error("EC Fetching Details Error:", error);
     throw error;
@@ -585,8 +585,8 @@ export const fetchDeedDetails = async (payload) => {
 //Deed Document fetch Details API
 export const fetchDeedDocDetails = async (payload) => {
   try {
-    const response = await apiService.postRequest(`${config.endpoints.fetchDeedDetailsDoc}`,  payload);
-     return response;
+    const response = await apiService.postRequest(`${config.endpoints.fetchDeedDetailsDoc}`, payload);
+    return response;
   } catch (error) {
     console.error("EC Fetching Details Error:", error);
     throw error;
@@ -595,8 +595,8 @@ export const fetchDeedDocDetails = async (payload) => {
 //Delete Site information
 export const deleteSiteInfo = async (payload) => {
   try {
-    const response = await apiService.deleteRequest(`${config.endpoints.delete_siteInfo}`,  payload);
-     return response;
+    const response = await apiService.deleteRequest(`${config.endpoints.delete_siteInfo}`, payload);
+    return response;
   } catch (error) {
     console.error("Deleting site info Details Error:", error);
     throw error;
@@ -606,7 +606,7 @@ export const deleteSiteInfo = async (payload) => {
 export const fetch_LKRSID = async (localLKRSID) => {
   try {
     const url = `${config.endpoints.fetchLKRSID}?level=1&LkrsId=${localLKRSID}`;
-    
+
     const response = await apiService.getRequest(url);
     return response;
   } catch (error) {
@@ -617,8 +617,8 @@ export const fetch_LKRSID = async (localLKRSID) => {
 //final Save button API
 export const update_Final_SaveAPI = async (payload) => {
   try {
-    const response = await apiService.postRequest(`${config.endpoints.layoutKhata_Save}`,  payload);
-     return response;
+    const response = await apiService.postRequest(`${config.endpoints.layoutKhata_Save}`, payload);
+    return response;
   } catch (error) {
     console.error("EC Fetching Details Error:", error);
     throw error;
@@ -638,8 +638,8 @@ export const fetch_releasePercentageDetails = async (lkrsId) => {
 //final Save button API
 export const final_Release_Sites = async (payload) => {
   try {
-    const response = await apiService.postRequest(`${config.endpoints.releaseSites}`,  payload);
-     return response;
+    const response = await apiService.postRequest(`${config.endpoints.releaseSites}`, payload);
+    return response;
   } catch (error) {
     console.error("Sites release Details Error:", error);
     throw error;
@@ -688,7 +688,7 @@ export const dc_insertDetails = async (payload) => {
   }
 };
 //DC conversion Fetch API 
-export const dcConversionListAPI = async ( LKRSID, dcID) => {
+export const dcConversionListAPI = async (LKRSID, dcID) => {
   try {
     const url = `${config.endpoints.fetchDCconversion}?level=1&lkrsId=${LKRSID}`;
     const response = await apiService.getRequest(url);
@@ -698,11 +698,24 @@ export const dcConversionListAPI = async ( LKRSID, dcID) => {
     throw error;
   }
 };
+//DC conversion Fetch from Bhoomi API 
+export const bhommiDCConversionFetchAPI = async (affidavitID) => {
+  try {
+    const response = await apiService.postRequest(
+      `${config.endpoints.fetchDCconversion}`,
+      { affidavitID: affidavitID }
+    );
+    return response;
+  } catch (error) {
+    console.error("DC conversion fetch Error:", error);
+    throw error;
+  }
+};
 //Delete DCconversion information
 export const deleteDCconversionInfo = async (payload) => {
   try {
-    const response = await apiService.deleteRequest(`${config.endpoints.deleteDCconversion}`,  payload);
-     return response;
+    const response = await apiService.deleteRequest(`${config.endpoints.deleteDCconversion}`, payload);
+    return response;
   } catch (error) {
     console.error("Deleting approval info Details Error:", error);
     throw error;

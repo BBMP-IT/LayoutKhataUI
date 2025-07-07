@@ -15,7 +15,7 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { toast, Toaster } from 'react-hot-toast';
 
 import apiService from '../../API/apiService';
-import { dc_insertDetails, dcConversionListAPI, fileListAPI, fileUploadAPI, deleteDCconversionInfo } from '../../API/authService';
+import { dc_insertDetails, dcConversionListAPI, fileListAPI, fileUploadAPI, deleteDCconversionInfo, bhommiDCConversionFetchAPI } from '../../API/authService';
 
 export const useLoader = () => {
     const [loading, setLoading] = useState(false);
@@ -103,6 +103,151 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
             setErrors(prev => ({ ...prev, file: '' }));
         }
     };
+    //Bhoomi DC conversion Fetch details
+    const bhommiDCConversion = async (affidavitID) => {
+
+        if (!isRTCSectionSaved && !isEPIDSectionSaved) {
+            Swal.fire("Please save the land details before proceeding with layout approval", "", "warning");
+            return;
+        }
+
+        const newErrors = {};
+
+        const trimmedDCNumber = dcNumber.trim();
+        const dcNumberPattern = /^[A-Za-z1-9][A-Za-z0-9/-]*$/;
+
+        //  DC Number Validation
+        if (!trimmedDCNumber) {
+            newErrors.dcNumber = "DC Conversion Order Number is required.";
+        } else if (!dcNumberPattern.test(trimmedDCNumber)) {
+            newErrors.dcNumber = "Only alphanumeric characters, '/', and '-' allowed. No spaces or leading zeros.";
+        } else if (
+            records.some(
+                (item) =>
+                    item.layoutDCNumber?.toLowerCase() === trimmedDCNumber.toLowerCase()
+            )
+        ) {
+            Swal.fire({
+                title: "Duplicate Entry",
+                text: "Duplicate DC Conversion Order Number is not allowed.",
+                icon: "warning",
+                confirmButtonText: "OK",
+            });
+            return;
+        }
+
+
+        // //  DC Date Validation
+        // if (!dcDate) {
+        //     newErrors.dcDate = "DC Conversion Order Date is required.";
+        // } else if (new Date(dcDate) > new Date()) {
+        //     newErrors.dcDate = "Date cannot be in the future.";
+        // }
+
+        // //  File Upload Validation
+        // if (!uploadDCFile) {
+        //     newErrors.file = "Please upload the conversion order PDF.";
+        // } else if (uploadDCFile.type !== "application/pdf") {
+        //     newErrors.file = "Only PDF files are allowed.";
+        // } else if (uploadDCFile.size > 5 * 1024 * 1024) {
+        //     newErrors.file = "File size must be less than 5MB.";
+        // }
+
+        setErrors(newErrors);
+
+        if (Object.keys(newErrors).length > 0) {
+            return;
+        }
+
+        //  All validations passed — Now call your API
+const formatDateForAPI = (dateStr) => {
+  const [day, month, year] = dateStr.split('/');
+  return `${year}-${month}-${day}T00:00:00`;
+};
+
+
+        try {
+
+            const response = await bhommiDCConversionFetchAPI(affidavitID);
+
+            if (response.responsE_CODE === "200") {
+                console.log(response);
+                const requestDetails = response.requesT_DETAILS[0];
+                try {
+                    const payload = {
+                        dC_id: 0,
+                        dC_LKRS_Id: localLKRSID,
+                       dC_Conversion_No: String(requestDetails.reQ_AID),      
+                        dC_Conversion_Date: formatDateForAPI(requestDetails.reQ_CDTE),
+                        dC_Remarks: "",
+                        dC_AdditionalInfo: "",
+                        dC_CreatedBy: createdBy,
+                        dC_CreatedName: createdName,
+                        dC_CreatedRole: roleID
+
+                    };
+
+                    // Example: calling your API function
+                    const responseDC = await dc_insertDetails(payload);
+
+                    if (responseDC.responseStatus === true) {
+
+                        start_loader();
+                        try {
+                            const listPayload = {
+                                lkrsId: localLKRSID,
+                                Dc_Id: responseDC.dC_id,
+                            };
+
+                            const listResponse = await dcConversionListAPI(localLKRSID, responseDC.dC_id);
+                            console.table(listResponse);
+
+
+
+                            if (Array.isArray(listResponse)) {
+                                const formattedList = listResponse.map((item, index) => ({
+                                    layoutDCNumber: item.dC_Conversion_No,
+                                    dateOfOrder: item.dC_Conversion_Date,
+                                    dc_id: item.dC_id,
+
+                                }));
+                                setRecords(formattedList);
+                            }
+                            stop_loader();
+                        } catch (error) {
+                            stop_loader();
+                            console.error("Error fetching DC conversion list:", error);
+                        } finally {
+                            stop_loader();
+                        }
+
+
+                    } else {
+                        Swal.fire({
+                            title: response.responseMessage,
+                            icon: "error",
+                            confirmButtonText: "OK",
+                        });
+                    }
+
+                } catch (error) {
+                    console.error("API Error:", error);
+                    alert("Failed to save DC details. Please try again.");
+                }
+
+            } else {
+                Swal.fire({
+                    title: response.responseMessage,
+                    icon: "error",
+                    confirmButtonText: "OK",
+                });
+            }
+
+        } catch (error) {
+            console.error("API Error:", error);
+            alert("Failed to fetch DC conversion info. Please try again.");
+        }
+    };
 
     //fetch DC conversion values
     const fetch_DCConversion = async (localLKRSID) => {
@@ -137,155 +282,8 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
     }
     //DC conversion insert
     const handleDCSave = async (dcNumber, dcDate, dcFile) => {
-        if (!isRTCSectionSaved && !isEPIDSectionSaved) {
-            Swal.fire("Please save the land details before proceeding with layout approval", "", "warning");
-            return;
-        }
-
-        const newErrors = {};
-
-        const trimmedDCNumber = dcNumber.trim();
-        const dcNumberPattern = /^[A-Za-z1-9][A-Za-z0-9/-]*$/;
-
-        //  DC Number Validation
-        if (!trimmedDCNumber) {
-            newErrors.dcNumber = "DC Conversion Order Number is required.";
-        } else if (!dcNumberPattern.test(trimmedDCNumber)) {
-            newErrors.dcNumber = "Only alphanumeric characters, '/', and '-' allowed. No spaces or leading zeros.";
-        } else if (
-            records.some(
-                (item) =>
-                    item.layoutDCNumber?.toLowerCase() === trimmedDCNumber.toLowerCase()
-            )
-        ) {
-            Swal.fire({
-                title: "Duplicate Entry",
-                text: "Duplicate DC Conversion Order Number is not allowed.",
-                icon: "warning",
-                confirmButtonText: "OK",
-            });
-            return;
-        }
 
 
-        //  DC Date Validation
-        if (!dcDate) {
-            newErrors.dcDate = "DC Conversion Order Date is required.";
-        } else if (new Date(dcDate) > new Date()) {
-            newErrors.dcDate = "Date cannot be in the future.";
-        }
-
-        //  File Upload Validation
-        if (!uploadDCFile) {
-            newErrors.file = "Please upload the conversion order PDF.";
-        } else if (uploadDCFile.type !== "application/pdf") {
-            newErrors.file = "Only PDF files are allowed.";
-        } else if (uploadDCFile.size > 5 * 1024 * 1024) {
-            newErrors.file = "File size must be less than 5MB.";
-        }
-
-        setErrors(newErrors);
-
-        if (Object.keys(newErrors).length > 0) {
-            return;
-        }
-
-        //  All validations passed — Now call your API
-        try {
-            const payload = {
-                dC_id: 0,
-                dC_LKRS_Id: localLKRSID,
-                dC_Conversion_No: dcNumber,
-                dC_Conversion_Date: dcDate,
-                dC_Remarks: "",
-                dC_AdditionalInfo: "",
-                dC_CreatedBy: createdBy,
-                dC_CreatedName: createdName,
-                dC_CreatedRole: roleID
-
-            };
-
-            // Example: calling your API function
-            const response = await dc_insertDetails(payload);
-
-            if (response.responseStatus === true) {
-
-                const dcconversionfile_upload = await file_UploadAPI(
-                    5, // master document ID 
-                    dcNumber,
-                    dcFile,
-                    dcDate,
-                    response.dC_id,
-                    "DC conversion"
-                );
-
-                if (dcconversionfile_upload) {
-                    start_loader();
-                    try {
-                        const listPayload = {
-                            lkrsId: localLKRSID,
-                            Dc_Id: response.dC_id,
-                        };
-
-                        const listResponse = await dcConversionListAPI(localLKRSID, response.dC_id);
-                        console.table(listResponse);
-                        const listFileResponse = await fileListAPI(3, localLKRSID, 5, 0); //level, LKRSID, MdocID, docID
-
-
-
-                        if (Array.isArray(listResponse)) {
-                            const formattedList = listResponse.map((item, index) => ({
-                                layoutDCNumber: item.dC_Conversion_No,
-                                dateOfOrder: item.dC_Conversion_Date,
-                                DCFile: listFileResponse[index]?.doctrN_DOCBASE64 || null,
-                                dc_id: item.dC_id,
-                                DCconversionDocID: listFileResponse[index]?.doctrN_ID || null,
-
-                            }));
-                            setRecords(formattedList);
-                        }
-                        stop_loader();
-                    } catch (error) {
-                        stop_loader();
-                        console.error("Error fetching DC conversion list:", error);
-                    } finally {
-                        stop_loader();
-                    }
-
-                    Swal.fire({
-                        title: response.responseMessage,
-                        icon: "success",
-                        confirmButtonText: "OK",
-                    });
-
-                    // Reset form
-                    if (fileDCInputRef.current) {
-                        fileDCInputRef.current.value = ""; // clear file input field
-                    }
-                    if (fileDCFileRef.current) fileDCFileRef.current.value = "";
-                    setDcNumber("");                   // clear order number
-                    setDCdate("");                     // clear date
-                    setUploadDCFile(null);            // clear file
-                    setUploadedDCFileURL(null);       // clear preview
-                    setErrors(prev => ({
-                        ...prev,
-                        dcNumber: '',
-                        dcDate: '',
-                        dcFile: ''
-                    }));
-                }
-            } else {
-                Swal.fire({
-                    title: response.responseMessage,
-                    icon: "error",
-                    confirmButtonText: "OK",
-                });
-            }
-
-        } catch (error) {
-            console.error("API Error:", error);
-            alert("Failed to save DC details. Please try again.");
-        }
     };
 
     //file Upload API
@@ -345,7 +343,6 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
             selector: row => row.layoutDCNumber,
             sortable: true,
             center: true,
-            with: '150px'
         },
         {
             name: 'DC Conersion Date',
@@ -365,38 +362,37 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
             },
             sortable: true,
             center: true,
-            width: '150px',
         },
-        {
-            name: `Uploaded DC Conversion File`,
-            cell: row => {
-                if (row.DCFile) {
-                    const blob = base64ToBlob(row.DCFile);
+        // {
+        //     name: `Uploaded DC Conversion File`,
+        //     cell: row => {
+        //         if (row.DCFile) {
+        //             const blob = base64ToBlob(row.DCFile);
 
-                    if (blob) {
-                        const fileUrl = URL.createObjectURL(blob);
-                        return (
-                            <a
-                                href={fileUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="stableBlueLink"
-                                onClick={() => {
-                                    setTimeout(() => URL.revokeObjectURL(fileUrl), 1000);
-                                }}
-                            >
-                                View File
-                            </a>
-                        );
-                    } else {
-                        return 'Invalid file';
-                    }
-                } else {
-                    return 'No file';
-                }
-            },
-            center: true,
-        },
+        //             if (blob) {
+        //                 const fileUrl = URL.createObjectURL(blob);
+        //                 return (
+        //                     <a
+        //                         href={fileUrl}
+        //                         target="_blank"
+        //                         rel="noopener noreferrer"
+        //                         className="stableBlueLink"
+        //                         onClick={() => {
+        //                             setTimeout(() => URL.revokeObjectURL(fileUrl), 1000);
+        //                         }}
+        //                     >
+        //                         View File
+        //                     </a>
+        //                 );
+        //             } else {
+        //                 return 'Invalid file';
+        //             }
+        //         } else {
+        //             return 'No file';
+        //         }
+        //     },
+        //     center: true,
+        // },
         {
             name: "Action",
             cell: (row, index) => (
@@ -465,7 +461,7 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
                         dC_UpdatedBy: createdBy,
                         dC_UpdatedName: createdName,
                         dC_UpdatedRole: roleID,
-                        dC_DOCUMENT_ID: DCconversionDocID
+                        dC_DOCUMENT_ID: 0
                     };
 
                     const response = await deleteDCconversionInfo(deletePayload);
@@ -518,15 +514,15 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
                                 )}
                             </div>
                         </div>
-                        <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 ' hidden>
+                        <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 ' >
                             <div className="form-group">
                                 <label className="form-label">&nbsp;
                                 </label>
-                                <button className="btn btn-primary btn-block" disabled={isDCSectionDisabled}>Fetch</button>
+                                <button className="btn btn-primary btn-block" disabled={isDCSectionDisabled} onClick={() => bhommiDCConversion(dcNumber)}>Fetch</button>
                             </div>
                         </div>
                         {/* DC conversion Date */}
-                        <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4">
+                        <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4" hidden>
                             <div className="form-group">
                                 <label className="form-label">
                                     Enter DC Conversion Date <span className="mandatory_color">*</span>
@@ -546,7 +542,7 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
                             </div>
                         </div>
                         {/* Scan & Upload Layout DC Conversion order */}
-                        <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4">
+                        <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4" hidden>
                             <div className="form-group">
                                 <label className="form-label">Upload Conversion order  <span className="mandatory_color">*</span></label>
                                 <input
@@ -610,7 +606,7 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
                         {/* Save and continue button */}
                         <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2'>
                             <div className="form-group">
-                                <button className="btn btn-success btn-block" onClick={() => handleDCSave(dcNumber, dcDate, uploadDCFile)}>
+                                <button className="btn btn-success btn-block" onClick={() => bhommiDCConversion(dcNumber)}>
                                     Save and continue
                                 </button>
                             </div>
