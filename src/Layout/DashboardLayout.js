@@ -132,7 +132,7 @@ const DashboardLayout = ({ children }) => {
       if (result.isConfirmed) {
         sessionStorage.clear();
         UseLogout();
-        navigate("/", { replace: true });
+        navigate("/Login", { replace: true });
       }
       // If cancelled, do nothing
     });

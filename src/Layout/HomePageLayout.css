@@ -3,26 +3,73 @@
 /* Card Style */
 
 .card-custom {
-  background: #fff;
-  text-align: center;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* ↓ softer */
-  transition: 0.3s;
+  background: #ffffff; /* White background */
+  border-radius: 15px;
+  overflow: hidden;
+  padding: 20px 10px;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  transition: all 0.5s ease;
+  box-shadow: 0 4px 12px rgba(2, 62, 138, 0.2);
 }
 
-.card-custom:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* ↓ softer hover shadow */
+/* Holographic shimmer effect with your gradient */
+.holographic-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    transparent 30%,
+    rgba(2, 62, 138, 0.3),
+    rgba(0, 119, 182, 0.3)
+  );
+  transform: rotate(-45deg);
+  transition: transform 1.2s ease, opacity 1.2s ease;
+  opacity: 0;
+  z-index: 1;
 }
 
 
-.card-custom img {
-  width: 60px;
-  height: 60px;
-  object-fit: contain;
-  margin-bottom: 15px;
+/* Hover interaction */
+.holographic-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(2, 62, 138, 0.4);
+}
+
+.holographic-card:hover::before {
+  opacity: 1;
+  transform: rotate(-45deg) translateY(100%);
+}
+
+/* White icons with gradient border effect */
+.gradient-icon {
+  font-size: 36px;
+  color: white; /* Icon becomes white */
+  z-index: 2;
+  background: linear-gradient(45deg, #023e8a, #0077b6);
+  padding: 10px;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(2, 62, 138, 0.2);
+}
+
+/* Title text with gradient color */
+.card-title-custom {
+  font-size: 14px;
+  font-weight: 600;
+  background: linear-gradient(45deg, #023e8a, #0077b6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-top: 10px;
+  position: relative;
+  z-index: 2;
 }
 
 
@@ -59,9 +106,4 @@
   }
 }
 
-.gradient-icon {
-  font-size: 36px;
-  background: linear-gradient(45deg, #023e8a, #0077b6);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
+

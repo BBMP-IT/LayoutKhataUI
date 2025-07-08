@@ -46,7 +46,7 @@ import { useAuth } from '../src/AuthContext';
 const ProtectedRoute = ({ element }) => {
     const { isAuthenticated } = useAuth();
     // console.log(isAuthenticated,"ProRout")
-    return isAuthenticated ? element : <Navigate to="/" replace />
+    return isAuthenticated ? element : <Navigate to="/Login" replace />
 }
 
 export default ProtectedRoute;

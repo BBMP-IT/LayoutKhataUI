@@ -50,7 +50,7 @@ const HomePageLayout = ({ children }) => {
       if (result.isConfirmed) {
         sessionStorage.clear();
        
-        navigate("/", { replace: true });
+        navigate("/Login", { replace: true });
       }
       // If cancelled, do nothing
     });
@@ -108,7 +108,7 @@ const HomePageLayout = ({ children }) => {
                   <div className="fw-bold text-white mt-2">Government of Karnataka</div>
                 </div>
                 <div className="col-md-4 mb-3">
-                  <h2 className="text-white">{t('translation.eaasthi.bbmpHeading')}</h2>
+                  <h2 className="text-white">Bruhat Bengaluru Mahanagara Palike</h2>
                 </div>
                 <div className="col-md-2 mb-3">
                   <img src={bbmplogo} alt="BBMP" width={80} height={80} className="rounded-circle bg-white p-1" />

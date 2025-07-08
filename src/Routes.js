@@ -77,8 +77,8 @@ const AppRoutes = () => {
           {/* <Breadcrumbs /> */}
           <Routes>
       
-            <Route path="/" element={<BBMPLogin />} />
-            <Route path="/home" element={<BBMP_Home/>}/>
+            <Route path="/Login" element={<BBMPLogin />} />
+            <Route path="/" element={<BBMP_Home/>}/>
             {/* Protected Routes */}
             <Route path="/homePage" element={<ProtectedRoute element={<BBMP_Homepage />} />} />
             <Route path="/LayoutForm" element={<ProtectedRoute element={<BBMP_LayoutForm />} />} />

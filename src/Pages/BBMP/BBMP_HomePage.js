@@ -7,7 +7,7 @@ const BBMP_Home = () => {
     const [loading, setLoading] = useState(false);
 
     const cardData = [
-        { iconClass: "fas fa-sign-in-alt", title: "Login", link: "https://testlayoutkhata.bbmpgov.in/" },
+        { iconClass: "fas fa-sign-in-alt", title: "Login", link: "https://testlayoutkhata.bbmpgov.in/Login" },
         { iconClass: "fas fa-clipboard-list", title: "Pendency Reports", link: "https://bbmpeaasthi.karnataka.gov.in/citizen_core/PendanceReport" },
         { iconClass: "fas fa-hourglass-half", title: "Pending Mutations", link: "https://bbmpeaasthi.karnataka.gov.in/citizen_core/PendingMutationReport" },
         { iconClass: "fas fa-file-alt", title: "Final eKhatha status based on ePID", link: "https://bbmpeaasthi.karnataka.gov.in/citizen_core/Final_eKhatha_Status_based_on_ePID" },
@@ -45,19 +45,25 @@ const BBMP_Home = () => {
         { iconClass: "fas fa-map-pin", title: "Site wise NewKhata as per release", link: "#" }
     ];
 
+function Card({ iconClass, title, link }) {
+    return (
+        <div className="col-6 col-sm-6 col-md-2 col-lg-2 col-xl-2 mb-4 d-flex align-items-stretch">
+            <a
+                href={link}
+                className="card-custom holographic-card w-100 text-decoration-none"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                <div className="text-center mb-2">
+                    <i className={`${iconClass} gradient-icon`}></i>
+                </div>
+                <div className="card-title-custom text-center">{title}</div>
+            </a>
+        </div>
+    );
+}
 
-    function Card({ iconClass, title, link }) {
-        return (
-            <div className="col-6 col-sm-6 col-md-2 col-lg-2 col-xl-2 mb-4 d-flex align-items-stretch">
-                <a href={link} className="card-custom w-100 text-decoration-none" target="_blank" rel="noopener noreferrer">
-                    <div className="text-center mb-2">
-                         <i className={`${iconClass} gradient-icon`}></i>
-                    </div>
-                    <div className="card-title-custom text-center">{title}</div>
-                </a>
-            </div>
-        );
-    }
+
 
 
     return (

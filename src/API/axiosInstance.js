@@ -43,7 +43,7 @@ axiosInstance.interceptors.response.use(
           allowOutsideClick: false
         }).then(() => {
          triggerLogout();
-          window.location.href = "/"; 
+          window.location.href = "/Login"; 
         });
 
       } else if (status === 403) {
