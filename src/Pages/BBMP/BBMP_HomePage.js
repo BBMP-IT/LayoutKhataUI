@@ -40,7 +40,7 @@ const BBMP_Home = () => {
         { iconClass: "fas fa-list-ul", title: "Ward List - East", link: "https://bbmpeaasthi.karnataka.gov.in/frmBangalore1CentersbyZone.aspx?zone=East" },
         { iconClass: "fas fa-building", title: "Bangalore-One Centers - East", link: "https://bbmpeaasthi.karnataka.gov.in/frmBangalore1CentersbyZone.aspx?zone=East" },
         { iconClass: "fas fa-project-diagram", title: "Process Flow", link: "https://bbmpeaasthi.karnataka.gov.in/frmProcessFlowDisplay.aspx" },
-        { iconClass: "fas fa-columns", title: "Layout khata Dashboard", link: "#" },
+        { iconClass: "fas fa-columns", title: "Layout khata Dashboard", link: "https://testlayoutkhata.bbmpgov.in/l" },
         { iconClass: "fas fa-drafting-compass", title: "Enter Layout plan submitted", link: "#" },
         { iconClass: "fas fa-map-pin", title: "Site wise NewKhata as per release", link: "#" }
     ];
