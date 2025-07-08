@@ -633,36 +633,36 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
             center: true,
             width: '200px',
         },
-        {
-            name: `Uploaded DC Conversion File`,
-            cell: row => {
-                if (row.DCFile) {
-                    const blob = base64ToBlob(row.DCFile);
+        // {
+        //     name: `Uploaded DC Conversion File`,
+        //     cell: row => {
+        //         if (row.DCFile) {
+        //             const blob = base64ToBlob(row.DCFile);
 
-                    if (blob) {
-                        const fileUrl = URL.createObjectURL(blob);
-                        return (
-                            <a
-                                href={fileUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="stableBlueLink"
-                                onClick={() => {
-                                    setTimeout(() => URL.revokeObjectURL(fileUrl), 1000);
-                                }}
-                            >
-                                View File
-                            </a>
-                        );
-                    } else {
-                        return 'Invalid file';
-                    }
-                } else {
-                    return 'No file';
-                }
-            },
-            center: true,
-        },
+        //             if (blob) {
+        //                 const fileUrl = URL.createObjectURL(blob);
+        //                 return (
+        //                     <a
+        //                         href={fileUrl}
+        //                         target="_blank"
+        //                         rel="noopener noreferrer"
+        //                         className="stableBlueLink"
+        //                         onClick={() => {
+        //                             setTimeout(() => URL.revokeObjectURL(fileUrl), 1000);
+        //                         }}
+        //                     >
+        //                         View File
+        //                     </a>
+        //                 );
+        //             } else {
+        //                 return 'Invalid file';
+        //             }
+        //         } else {
+        //             return 'No file';
+        //         }
+        //     },
+        //     center: true,
+        // },
 
 
     ];

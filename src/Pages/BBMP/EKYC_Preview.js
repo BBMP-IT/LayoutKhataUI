@@ -48,7 +48,7 @@ const EKYCResultHandler = () => {
 
     setTimeout(() => {
       window.close();
-    }, 9000);
+    }, 2000);
   }, [location]);
 
   // Handler for the "Go Back" button

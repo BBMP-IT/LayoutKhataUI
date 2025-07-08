@@ -62,6 +62,8 @@ import ReleaseEKYCResultHandler from './Pages/BBMP/Release_EKYC_Preview';
 import ReleaseDashboard from './Pages/BBMP/ReleaseDashboard';
 import Endorsement from './Pages/BBMP/Endorsement';
 
+import BBMP_Home from './Pages/BBMP/BBMP_HomePage';
+
 
 const AppRoutes = () => {
 
@@ -76,7 +78,7 @@ const AppRoutes = () => {
           <Routes>
       
             <Route path="/" element={<BBMPLogin />} />
-
+            <Route path="/home" element={<BBMP_Home/>}/>
             {/* Protected Routes */}
             <Route path="/homePage" element={<ProtectedRoute element={<BBMP_Homepage />} />} />
             <Route path="/LayoutForm" element={<ProtectedRoute element={<BBMP_LayoutForm />} />} />

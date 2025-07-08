@@ -52,8 +52,18 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
 
     }, []);
     const [localLKRSID, setLocalLKRSID] = useState("");
+     const buttonRef = useRef(null);
+    
     useEffect(() => {
-        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+       
+        if (buttonRef.current) {
+            buttonRef.current.click();
+        }
+    }, [LKRS_ID]);
+
+
+     const fetch_details = async () => {
+         const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
         if (LKRS_ID) {
             setLocalLKRSID(LKRS_ID);
             delay(1000);
@@ -65,7 +75,8 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
             delay(1000);
             fetch_DCConversion(id);
         }
-    }, [LKRS_ID]);
+    }
+
     const [records, setRecords] = useState([]);
     const [isDCSectionDisabled, setIsDCSectionDisabled] = useState(false);
     const fileDCInputRef = useRef(null);
@@ -486,6 +497,7 @@ const formatDateForAPI = (dateStr) => {
         <div className={`layout-form-container ${loading ? 'no-interaction' : ''}`}>
             {loading && <Loader />}
             <div className="card">
+                <button className='btn btn-block' onClick={fetch_details} ref={buttonRef} hidden>Click me</button>
                 {/* <button className='btn btn-block' onClick={loadData} ref={buttonRef} hidden></button> */}
                 <div className="card-header layout_btn_color" >
                     <h5 className="card-title" style={{ textAlign: 'center' }}>DC Conversion</h5>
@@ -604,7 +616,7 @@ const formatDateForAPI = (dateStr) => {
                         </div>
                         <div className='col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10'></div>
                         {/* Save and continue button */}
-                        <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2'>
+                        <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2' hidden>
                             <div className="form-group">
                                 <button className="btn btn-success btn-block" onClick={() => bhommiDCConversion(dcNumber)}>
                                     Save and continue

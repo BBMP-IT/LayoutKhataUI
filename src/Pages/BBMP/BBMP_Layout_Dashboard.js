@@ -27,13 +27,55 @@ const BBMP_Layout_Dashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
+  //pending application redirection
   const handleEditClick = (lkrS_ID, lkrS_DISPLAYLKRSID) => {
     sessionStorage.removeItem('LKRSID');
     sessionStorage.removeItem('display_LKRSID');
+    sessionStorage.setItem('LKRSID', lkrS_ID);
+    sessionStorage.setItem('display_LKRSID', lkrS_DISPLAYLKRSID);
     navigate("/LayoutForm", {
       state: {
         LKRSID: lkrS_ID,
         DISPLAYLKRSID: lkrS_DISPLAYLKRSID,
+      },
+    });
+  };
+  //release dashboard redirection
+  const handleReleaseClick = (lkrS_ID, lkrS_DISPLAYLKRSID) => {
+    sessionStorage.removeItem('LKRSID');
+    sessionStorage.removeItem('display_LKRSID');
+    sessionStorage.setItem('LKRSID', lkrS_ID);
+    sessionStorage.setItem('display_LKRSID', lkrS_DISPLAYLKRSID);
+    navigate("/Release", {
+      state: {
+        LKRS_ID: lkrS_ID,
+        display_LKRS_ID: lkrS_DISPLAYLKRSID,
+      },
+    });
+  };
+  //submitted information redirection
+  const handleSubmittedInfoClick = (lkrS_ID, lkrS_DISPLAYLKRSID) => {
+    sessionStorage.removeItem('LKRSID');
+    sessionStorage.removeItem('display_LKRSID');
+    sessionStorage.setItem('LKRSID', lkrS_ID);
+    sessionStorage.setItem('display_LKRSID', lkrS_DISPLAYLKRSID);
+    navigate("/Info", {
+      state: {
+        LKRS_ID: lkrS_ID,
+        display_LKRS_ID: lkrS_DISPLAYLKRSID,
+      },
+    });
+  };
+  //Endorsement information redirection
+  const handleEndorsementClick = (lkrS_ID, lkrS_DISPLAYLKRSID) => {
+    sessionStorage.removeItem('LKRSID');
+    sessionStorage.removeItem('display_LKRSID');
+    sessionStorage.setItem('LKRSID', lkrS_ID);
+    sessionStorage.setItem('display_LKRSID', lkrS_DISPLAYLKRSID);
+    navigate("/Endorsement", {
+      state: {
+        LKRS_ID: lkrS_ID,
+        display_LKRS_ID: lkrS_DISPLAYLKRSID,
       },
     });
   };
@@ -63,7 +105,7 @@ const BBMP_Layout_Dashboard = () => {
     },
     {
       name: "EPID",
-      selector: (row) => row.lkrS_EPID,
+      selector: (row) => row.lkrS_EPID || "-",
       center: true,
     },
     {
@@ -80,6 +122,7 @@ const BBMP_Layout_Dashboard = () => {
     {
       name: "Detailed Status",
       selector: (row) => row.lkrS_APPDETAILEDSTATUS,
+      width: "250px",
       center: true,
       cell: (row) => {
         let backgroundColor = 'transparent';
@@ -92,12 +135,13 @@ const BBMP_Layout_Dashboard = () => {
 
         const isRed =
           row.lkrS_APPSTATUS === 11;
-
+        //application created
         const isOrange =
+          row.lkrS_APPSTATUS === 1;
+        const isgrey =
           row.lkrS_APPSTATUS === 9;
 
-        //application created
-        const isBlue = row.lkrS_APPSTATUS === 1;
+
 
 
         // Set background and text color
@@ -109,6 +153,9 @@ const BBMP_Layout_Dashboard = () => {
           textColor = 'white';
         } else if (isOrange) {
           backgroundColor = 'orange';
+          textColor = 'black';
+        } else if (isgrey) {
+          backgroundColor = 'gray';
           textColor = 'white';
         }
 
@@ -126,37 +173,84 @@ const BBMP_Layout_Dashboard = () => {
         );
       },
     },
-    // {
-    //   name: "Action",
-    //   selector: (row) => {
-    //     if (row.lkrS_APPSTATUS === 1) {
-    //       return (
-    //         <button
-    //           className="btn btn-primary"
-    //           onClick={() => handleEditClick(row.lkrS_ID, row.lkrS_DISPLAYID)}
-    //         >
-    //           <i className="fa fa-pencil"></i>
-    //         </button>
-    //       );
-    //     }
-    //     return null;
-    //   },
-    //   center: true,
-    //   ignoreRowClick: true,
-    //   allowOverflow: true,
-    //   button: true,
-    // },
+    {
+      name: "Action",
+      selector: (row) => {
+        if (row.lkrS_APPSTATUS === 1) {
+          return (
+            <button
+              className="btn btn-danger btn-sm"
+              onClick={() => handleEditClick(row.lkrS_ID, row.lkrS_DISPLAYID)}
+               title="Edit"
+            >
+              <i className="fa fa-pencil"></i>
+            </button>
+          );
+        } else if (row.lkrS_APPSTATUS === 10) {
+          return (
+            <div style={{ display: 'flex', flexDirection: 'row', gap: '6px', alignItems: 'center' }}>
+
+              <button
+                className="btn btn-info btn-sm"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                title="View Submitted Info"
+                onClick={() => handleSubmittedInfoClick(row.lkrS_ID, row.lkrS_DISPLAYID)}
+              >
+                <i className="fa fa-file-alt"></i> 
+              </button>
+
+              <button
+                className="btn btn-success btn-sm"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                title="View Endorsement"
+                onClick={() => handleEndorsementClick(row.lkrS_ID, row.lkrS_DISPLAYID)}
+              >
+                <i className="fa fa-check-circle"></i> {/* Icon for endorsement */}
+              </button>
+
+            </div>
+          );
+        } else if (row.lkrS_APPSTATUS === 9) {
+          return (
+            <button
+              className="btn btn-primary btn-sm"
+              onClick={() => handleReleaseClick(row.lkrS_ID, row.lkrS_DISPLAYID)}
+            >
+              Site Release
+            </button>
+          );
+        }
+        return null;
+      },
+      center: true,
+      ignoreRowClick: true,
+      allowOverflow: true,
+      button: true,
+      width: "200px"
+    }
+
 
   ];
   const customStyles = {
     headCells: {
       style: {
-        backgroundColor: '#f0f0f0', // Light grey background
-        color: '#333',              // Dark grey text
-        fontWeight: 'bold',         // Bold text
+        backgroundColor: '#f0f0f0',
+        color: '#333',
+        fontWeight: 'bold',
+      },
+    },
+    cells: {
+      style: {
+        maxWidth: '200px', // adjust as needed
+        whiteSpace: 'normal',
+        wordBreak: 'break-word',
+        justifyContent: 'center',
       },
     },
   };
+
   const [dashboardData, setDashboardData] = useState({
     allCount: 0,
     incompletedCount: 0,
@@ -278,10 +372,7 @@ const BBMP_Layout_Dashboard = () => {
     sessionStorage.removeItem('totalNoOfSites');
     sessionStorage.removeItem('ownerName');
     navigate('/LayoutForm');
-    // } else {
-    //   // Optionally show an error alert here
-    //   alert("Token generation failed. Please try again.");
-    // }
+
   };
 
 
@@ -331,95 +422,100 @@ const BBMP_Layout_Dashboard = () => {
             </div>
           </div>
           <br />
-          {/* Data Table */}
-          <DataTable
-            title={
-              <div className="text-center">
-                <div className="row">
-                  <div className="col-3">
-                    <div className="form-check">
-                      <label className="form-check-label fs-6">
-                        <input
-                          className="form-check-input"
-                          type="radio"
-                          name="levelOptions"
-                          value="1"
-                          checked={selectedLevel === 1}
-                          onChange={() => handleLevelChange(1)}
-                        />
-                        All ({dashboardData.allCount})
-                      </label>
+          <div className="card shadow-sm mb-4">
+            <div className="card-header bg-light">
+              <h5 className="mb-0 " style={{ color: '#fff' }}>Dashboard</h5>
+            </div>
+            <div className="card-body" style={{ overflowX: 'auto' }}>
+
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' }}>
+                <DataTable
+                  title={
+                    <div className="text-center">
+                      <div className="row">
+                        <div className="col-3">
+                          <div className="form-check">
+                            <label className="form-check-label fs-6">
+                              <input
+                                className="form-check-input"
+                                type="radio"
+                                name="levelOptions"
+                                value="1"
+                                checked={selectedLevel === 1}
+                                onChange={() => handleLevelChange(1)}
+                              />
+                              All ({dashboardData.allCount})
+                            </label>
+                          </div>
+                        </div>
+                        <div className="col-3">
+                          <div className="form-check">
+                            <label className="form-check-label fs-6">
+                              <input
+                                className="form-check-input"
+                                type="radio"
+                                name="levelOptions"
+                                value="4"
+                                checked={selectedLevel === 4}
+                                onChange={() => handleLevelChange(4)}
+                              />
+                              Completed ({dashboardData.completedCount})
+                            </label>
+                          </div>
+                        </div>
+                        <div className="col-3">
+                          <div className="form-check">
+                            <label className="form-check-label fs-6">
+                              <input
+                                className="form-check-input"
+                                type="radio"
+                                name="levelOptions"
+                                value="3"
+                                checked={selectedLevel === 3}
+                                onChange={() => handleLevelChange(3)}
+                              />
+                              Submitted ({dashboardData.submittedCount})
+                            </label>
+                          </div>
+                        </div>
+                        <div className="col-3">
+                          <div className="form-check">
+                            <label className="form-check-label fs-6">
+                              <input
+                                className="form-check-input"
+                                type="radio"
+                                name="levelOptions"
+                                value="2"
+                                checked={selectedLevel === 2}
+                                onChange={() => handleLevelChange(2)}
+                              />
+                              Incomplete ({dashboardData.incompletedCount})
+                            </label>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div className="col-3">
-                    <div className="form-check">
-                      <label className="form-check-label fs-6">
-                        <input
-                          className="form-check-input"
-                          type="radio"
-                          name="levelOptions"
-                          value="4"
-                          checked={selectedLevel === 4}
-                          onChange={() => handleLevelChange(4)}
-                        />
-                        Completed ({dashboardData.completedCount})
-                      </label>
-                    </div>
-                  </div>
-                  <div className="col-3">
-                    <div className="form-check">
-                      <label className="form-check-label fs-6">
-                        <input
-                          className="form-check-input"
-                          type="radio"
-                          name="levelOptions"
-                          value="3"
-                          checked={selectedLevel === 3}
-                          onChange={() => handleLevelChange(3)}
-                        />
-                        Submitted ({dashboardData.submittedCount})
-                      </label>
-                    </div>
-                  </div>
-                  <div className="col-3">
-                    <div className="form-check">
-                      <label className="form-check-label fs-6">
-                        <input
-                          className="form-check-input"
-                          type="radio"
-                          name="levelOptions"
-                          value="2"
-                          checked={selectedLevel === 2}
-                          onChange={() => handleLevelChange(2)}
-                        />
-                        Incomplete ({dashboardData.incompletedCount})
-                      </label>
-                    </div>
-                  </div>
-
-
-
-
-                </div>
-
+                  }
+                  columns={columns}
+                  data={records}
+                  responsive
+                  pagination
+                  customStyles={customStyles}
+                  paginationServer={false}
+                  paginationDefaultPage={currentPage}
+                  paginationPerPage={rowsPerPage}
+                  onChangePage={(page) => setCurrentPage(page)}
+                  onChangeRowsPerPage={(newPerPage, page) => {
+                    setRowsPerPage(newPerPage);
+                    setCurrentPage(page);
+                  }}
+                  highlightOnHover
+                  striped
+                />
               </div>
-            }
-            columns={columns}
-            data={records}
-            pagination
-            customStyles={customStyles}
-            paginationServer={false}
-            paginationDefaultPage={currentPage}
-            paginationPerPage={rowsPerPage}
-            onChangePage={(page) => setCurrentPage(page)}
-            onChangeRowsPerPage={(newPerPage, page) => {
-              setRowsPerPage(newPerPage);
-              setCurrentPage(page);
-            }}
-            highlightOnHover
-            striped
+            </div>
+          </div>
 
-          />
 
 
 

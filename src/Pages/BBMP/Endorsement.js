@@ -33,7 +33,7 @@ const Endorsement = () => {
   const printData = () => window.print();
 
   const backToDashboard = () => {
-    window.location.href = "/dashboard"; // update as needed
+    window.location.href = "/LayoutDashboard"; // update as needed
   };
 
   const FnviewApplication = () => {

@@ -8,6 +8,8 @@ import { useSSR } from 'react-i18next';
 const ReleaseEKYCResultHandler = () => {
   const location = useLocation();
   const navigate = useNavigate();
+   const [countdown, setCountdown] = useState(5);
+  
   useEffect(() => {
     // Extract query params (e.g., ?status=success&token=xyz)
    const params = new URLSearchParams(location.search);
@@ -31,6 +33,15 @@ const ReleaseEKYCResultHandler = () => {
           `${config.redirectBaseURL}`
       );
     }
+         const interval = setInterval(() => {
+      setCountdown(prev => {
+        if (prev === 1) {
+          clearInterval(interval);
+          window.close();
+        }
+        return prev - 1;
+      });
+    }, 1000);
 
     setTimeout(() => {
       window.close();
@@ -38,17 +49,21 @@ const ReleaseEKYCResultHandler = () => {
   }, [location]);
 
   // Handler for the "Go Back" button
+  // Handler for the "Go Back" button
   const handleGoBack = () => {
-   
-    window.location.href = `${config.redirectBaseURL}/Release`;
+    // navigate('/LayoutForm');
+     window.close();
   };
+
 
   return (
     <div style={{ padding: 40 }}>
       <h2>eKYC Result Received</h2>
-      <p>Thank you! Your eKYC result is being processed. You may close this tab or go back to the Layout Form page.</p>
+      <p>
+        Thank you! Your eKYC result is being processed. This tab will close automatically in <strong>{countdown}</strong> second{countdown !== 1 ? 's' : ''}.
+      </p>
       <button onClick={handleGoBack} className="btn btn-primary">
-        Go Back to Layout Form
+        Go Back to Release Form
       </button>
     </div>
   );

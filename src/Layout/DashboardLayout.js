@@ -333,7 +333,7 @@ const DashboardLayout = ({ children }) => {
                     </a>
                   </li>
 
-                  {/* <li className="nav-item dropdown">
+                  <li className="nav-item dropdown">
                     <a
                       href="#"
                       className={`nav-link dropdown-toggle ${isDropdownOpen ? "show" : ""}`}
@@ -374,7 +374,7 @@ const DashboardLayout = ({ children }) => {
                         </a>
                       </li>
                     </ul>
-                  </li> */}
+                  </li>
                   <li className="nav-item dropdown">
                     <a
                       href="#"
@@ -393,12 +393,12 @@ const DashboardLayout = ({ children }) => {
                       </li>
                       <li>
                         <a className="dropdown-item" href="/LayoutForm">
-                          Khata Registration
+                         Enter Layout plan submitted
                         </a>
                       </li>
                        <li>
                         <a className="dropdown-item" href="/Release">
-                          Release Dashboard
+                          Site wise NewKhata as per release
                         </a>
                       </li>
                        

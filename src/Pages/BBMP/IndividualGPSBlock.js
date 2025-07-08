@@ -163,17 +163,17 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
     const [totalSQFT, setTotalSQFT] = useState('');
     const [totalSQM, setTotalSQM] = useState('');
-    const [layoutSiteCount, setLayoutSiteCount] = useState("");
+    const [layoutSiteCount, setLayoutSiteCount] = useState(0);
     const [layoutSiteCountError, setLayoutSiteCountError] = useState("");
 
-   useEffect(() => {
-    const areaSQFT = sessionStorage.getItem('areaSqft');
-    if (areaSQFT) {
-        const sqftRounded = Math.round(parseFloat(areaSQFT));
-        setTotalSQFT(sqftRounded);                // integer only
-        setTotalSQM(sqftToSqm(sqftRounded));      // 1 decimal only
-    }
-}, [areaSqft]);
+    useEffect(() => {
+        const areaSQFT = sessionStorage.getItem('areaSqft');
+        if (areaSQFT) {
+            const sqftRounded = Math.round(parseFloat(areaSQFT));
+            setTotalSQFT(sqftRounded);                // integer only
+            setTotalSQM(sqftToSqm(sqftRounded));      // 1 decimal only
+        }
+    }, [areaSqft]);
 
     const [localLKRSID, setLocalLKRSID] = useState("");
     const [localOwnername, setLocalOwnerName] = useState("");
@@ -217,8 +217,8 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         }
     }
     const sqftToSqm = (sqft) => {
-    return sqft ? (parseFloat(sqft) * 0.092903).toFixed(1) : '';
-};
+        return sqft ? (parseFloat(sqft) * 0.092903).toFixed(1) : '';
+    };
 
 
     const handleNumSidesChange = (e) => {
@@ -246,9 +246,10 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         const updatedSides = [...sides];
         updatedSides[index].lengthInFeet = value;
 
-        if (/^(?:[1-9][0-9]*)(?:\.\d*)?$/.test(value)) {
-            updatedSides[index].lengthInMeter = feetToMeter(value);
-        } else if (value === '') {
+        if (value !== '') {
+            const meters = (parseFloat(value) * 0.3048).toFixed(1); // 1 decimal
+            updatedSides[index].lengthInMeter = meters;
+        } else {
             updatedSides[index].lengthInMeter = '';
         }
 
@@ -258,14 +259,16 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         const updatedSides = [...sides];
         updatedSides[index].lengthInMeter = value;
 
-        if (/^(?:[1-9][0-9]*)(?:\.\d*)?$/.test(value)) {
-            updatedSides[index].lengthInFeet = meterToFeet(value);
-        } else if (value === '') {
+        if (value !== '') {
+            const feet = Math.round(parseFloat(value) / 0.3048).toString(); // integer
+            updatedSides[index].lengthInFeet = feet;
+        } else {
             updatedSides[index].lengthInFeet = '';
         }
 
         setSides(updatedSides);
     };
+
     const handleRoadFacingChange = (index, value) => {
         const updatedSides = [...sides];
         updatedSides[index].roadFacing = value;
@@ -351,8 +354,8 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
     };
 
     //north-south feet or meter calculation function
-const feetToMeter = (feet) => (feet ? (parseFloat(feet) * 0.3048).toFixed(1) : '');
-const meterToFeet = (meter) => (meter ? Math.round(parseFloat(meter) / 0.3048) : '');
+    const feetToMeter = (feet) => (feet ? (parseFloat(feet) * 0.3048).toFixed(1) : '');
+    const meterToFeet = (meter) => (meter ? Math.round(parseFloat(meter) / 0.3048) : '');
 
     // North-South feet change handler
     const handleNorthsouthFeetChange = (e) => {
@@ -532,6 +535,20 @@ const meterToFeet = (meter) => (meter ? Math.round(parseFloat(meter) / 0.3048) :
             if (!firstErrorField) firstErrorField = longitudeRef;
             isValid = false;
         }
+        // Zone Validation
+        if (!selectedZone || isNaN(selectedZone)) {
+            setZoneError('Please select a zone');
+            if (!firstErrorField) firstErrorField = zoneRef;
+            isValid = false;
+        }
+
+        // Ward Validation
+        if (!selectedWard || isNaN(selectedWard)) {
+            setWardError('Please select a ward');
+            if (!firstErrorField) firstErrorField = wardRef;
+            isValid = false;
+        }
+
         if (firstErrorField?.current) {
             firstErrorField.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
             firstErrorField.current.focus?.();
@@ -850,7 +867,19 @@ const meterToFeet = (meter) => (meter ? Math.round(parseFloat(meter) / 0.3048) :
             isValid = false;
         }
 
+        // Zone Validation
+        if (!selectedZone || isNaN(selectedZone)) {
+            setZoneError('Please select a zone');
+            if (!firstErrorField) firstErrorField = zoneRef;
+            isValid = false;
+        }
 
+        // Ward Validation
+        if (!selectedWard || isNaN(selectedWard)) {
+            setWardError('Please select a ward');
+            if (!firstErrorField) firstErrorField = wardRef;
+            isValid = false;
+        }
 
 
         if (firstErrorField?.current) {
@@ -920,32 +949,38 @@ const meterToFeet = (meter) => (meter ? Math.round(parseFloat(meter) / 0.3048) :
     const handleSqFtChange = (e) => {
         const value = e.target.value;
 
-        // Allow only numbers and optional decimal point
-        const numericValue = value.replace(/[^0-9.]/g, '');
+        // Allow only whole numbers
+        const numericValue = value.replace(/[^0-9]/g, '');
 
         setIrregularAreaSqFt(numericValue);
 
         if (!isNaN(numericValue) && numericValue !== '') {
-            const sqm = (parseFloat(numericValue) * 0.092903).toFixed(2);
+            const sqm = (parseFloat(numericValue) * 0.092903).toFixed(1); // round to 1 decimal
             setIrregularAreaSqM(sqm);
         } else {
             setIrregularAreaSqM('');
         }
     };
+
     const handleSqMChange = (e) => {
         const value = e.target.value;
 
+        // Allow numbers with optional 1 decimal place
         const numericValue = value.replace(/[^0-9.]/g, '');
 
-        setIrregularAreaSqM(numericValue);
+        // Allow max 1 digit after decimal
+        if (/^\d*(\.\d?)?$/.test(numericValue)) {
+            setIrregularAreaSqM(numericValue);
 
-        if (!isNaN(numericValue) && numericValue !== '') {
-            const sqft = (parseFloat(numericValue) * 10.7639).toFixed(2);
-            setIrregularAreaSqFt(sqft);
-        } else {
-            setIrregularAreaSqFt('');
+            if (!isNaN(numericValue) && numericValue !== '') {
+                const sqft = Math.round(parseFloat(numericValue) * 10.7639).toString(); // round to integer
+                setIrregularAreaSqFt(sqft);
+            } else {
+                setIrregularAreaSqFt('');
+            }
         }
     };
+
 
 
     const totalSitesCount = Number(layoutSiteCount);
@@ -1227,9 +1262,25 @@ const meterToFeet = (meter) => (meter ? Math.round(parseFloat(meter) / 0.3048) :
     const [wardOptions, setWardOptions] = useState([]);
     const [selectedZone, setSelectedZone] = useState('');
     const [selectedWard, setSelectedWard] = useState('');
-
+    const [zoneError, setZoneError] = useState('');
+    const [wardError, setWardError] = useState('');
+    const zoneRef = useRef(null);
+    const wardRef = useRef(null);
 
     useEffect(() => {
+        const autocomplete = new window.google.maps.places.Autocomplete(searchInputRef.current);
+
+        // Wait for the pac-container to be created
+        setTimeout(() => {
+            const pacContainer = document.querySelector('.pac-container');
+            if (pacContainer && searchInputRef.current) {
+                const inputRect = searchInputRef.current.getBoundingClientRect();
+                pacContainer.style.width = inputRect.width + "px";
+                pacContainer.style.left = inputRect.left + "px";
+            }
+        }, 300);
+
+
         const initMap = () => {
             const center = { lat: 12.9716, lng: 77.5946 };
 
@@ -1388,7 +1439,11 @@ const meterToFeet = (meter) => (meter ? Math.round(parseFloat(meter) / 0.3048) :
         const lon = location.lng();
         setLatitude(lat.toFixed(6));
         setLongitude(lon.toFixed(6));
-        setResultType(`${title} ${formatted_address}`);
+        setResultType(
+            formatted_address
+                ? `Selected address : ${formatted_address}`
+                : title
+        );
 
         // 🔁 Fetch ward & zone
         getWardAndZoneData(lat, lon);
@@ -2215,7 +2270,7 @@ const meterToFeet = (meter) => (meter ? Math.round(parseFloat(meter) / 0.3048) :
                                                         type="text"
                                                         className="form-control"
                                                         placeholder="Area"
-                                                        value={regularAreaSqFt}
+                                                        value={regularAreaSqFt ? parseInt(regularAreaSqFt) : ''}
                                                         readOnly
                                                     />
                                                     <span className="input-group-text">sq.ft</span>
@@ -2230,7 +2285,7 @@ const meterToFeet = (meter) => (meter ? Math.round(parseFloat(meter) / 0.3048) :
                                                         type="text"
                                                         className="form-control"
                                                         placeholder="Area"
-                                                        value={regularAreaSqM}
+                                                        value={regularAreaSqM ? parseFloat(regularAreaSqM).toFixed(1) : ''}
                                                         readOnly
                                                     />
                                                     <span className="input-group-text">sq.mtr</span>
@@ -2484,9 +2539,9 @@ const meterToFeet = (meter) => (meter ? Math.round(parseFloat(meter) / 0.3048) :
                                                             value={side.lengthInFeet}
                                                             onChange={(e) => {
                                                                 const value = e.target.value;
-                                                                if (/^(?:[1-9][0-9]*)(?:\.\d*)?$/.test(value) || value === "") {
-                                                                    handleLengthInFeetChange(index, value);
-                                                                }
+                                                                // Allow only whole numbers
+                                                                const numericValue = value.replace(/[^0-9]/g, '');
+                                                                handleLengthInFeetChange(index, numericValue);
                                                             }}
                                                         />
                                                         <span className="input-group-text">feet</span>
@@ -2509,8 +2564,10 @@ const meterToFeet = (meter) => (meter ? Math.round(parseFloat(meter) / 0.3048) :
                                                             value={side.lengthInMeter}
                                                             onChange={(e) => {
                                                                 const value = e.target.value;
-                                                                if (/^(?:[1-9][0-9]*)(?:\.\d*)?$/.test(value) || value === "") {
-                                                                    handleLengthInMeterChange(index, value);
+                                                                // Allow numbers with at most 1 digit after decimal
+                                                                const numericValue = value.replace(/[^0-9.]/g, '');
+                                                                if (/^\d*(\.\d?)?$/.test(numericValue)) {
+                                                                    handleLengthInMeterChange(index, numericValue);
                                                                 }
                                                             }}
                                                         />
@@ -2561,9 +2618,11 @@ const meterToFeet = (meter) => (meter ? Math.round(parseFloat(meter) / 0.3048) :
                                                 type="tel"
                                                 className="form-control"
                                                 placeholder="Area"
-                                                value={irregularAreaSqFt} ref={irregular_AreaSqFtref}
+                                                value={irregularAreaSqFt ? parseInt(irregularAreaSqFt) : ''}
                                                 onChange={handleSqFtChange}
+                                                ref={irregular_AreaSqFtref}
                                             />
+
                                             <span className="input-group-text">sq.ft</span>
                                         </div>
                                         {irregularAreaSqft_sqM_error && <small className='text-danger'>{irregularAreaSqft_sqM_error}</small>}
@@ -2580,8 +2639,9 @@ const meterToFeet = (meter) => (meter ? Math.round(parseFloat(meter) / 0.3048) :
                                                 type="tel"
                                                 className="form-control"
                                                 placeholder="Area"
-                                                value={irregularAreaSqM}
-                                                onChange={handleSqMChange} ref={irregular_AreaSqFtref}
+                                                value={irregularAreaSqM ? parseFloat(irregularAreaSqM).toFixed(1) : ''}
+                                                onChange={handleSqMChange}
+                                                ref={irregular_AreaSqFtref}
                                             />
                                             <span className="input-group-text">sq.mtr</span>
                                         </div>
@@ -2598,12 +2658,12 @@ const meterToFeet = (meter) => (meter ? Math.round(parseFloat(meter) / 0.3048) :
                                                             className="form-check-input me-2 radioStyle"
                                                             name="cornerSite"
                                                             value="yes"
-                                                            checked={irregularcornerSite === "yes"}
+                                                            checked={irregularcornerSite === true}
                                                             ref={irregular_cornerSiteref}
                                                             onChange={() => {
-                                                                setIrregularCornerSite("yes");
+                                                                setIrregularCornerSite(true);
                                                                 setIrregularCornerSiteError('');
-                                                            }}
+                                                            }} 
                                                         />
                                                             Yes</label>
                                                     </div>
@@ -2615,10 +2675,10 @@ const meterToFeet = (meter) => (meter ? Math.round(parseFloat(meter) / 0.3048) :
                                                             className="form-check-input me-2 radioStyle"
                                                             name="cornerSite"
                                                             value="no"
-                                                            checked={irregularcornerSite === "no"}
+                                                            checked={irregularcornerSite === false}
                                                             ref={irregular_cornerSiteref}
                                                             onChange={() => {
-                                                                setIrregularCornerSite("no");
+                                                                setIrregularCornerSite(false);
                                                                 setIrregularCornerSiteError('');
                                                             }}
                                                         />
@@ -2835,13 +2895,16 @@ const meterToFeet = (meter) => (meter ? Math.round(parseFloat(meter) / 0.3048) :
                                                 .map(z => ({ label: z.wardName, value: z.wardId }));
                                             setWardOptions(wards);
                                             setSelectedWard('');
+                                            setZoneError('');
                                         }}
+                                        ref={zoneRef}
                                     >
                                         <option value="">Select Zone</option>
                                         {zoneOptions.map(opt => (
                                             <option key={opt.value} value={opt.value}>{opt.label}</option>
                                         ))}
                                     </select>
+                                    {zoneError && <div className="text-danger">{zoneError}</div>}
 
                                 </div>
                                 {/* ward name */}
@@ -2850,13 +2913,18 @@ const meterToFeet = (meter) => (meter ? Math.round(parseFloat(meter) / 0.3048) :
                                     <select
                                         className="form-select"
                                         value={selectedWard}
-                                        onChange={(e) => setSelectedWard(parseInt(e.target.value))}
+                                        onChange={(e) => {
+                                            setSelectedWard(parseInt(e.target.value));
+                                            setWardError('');
+                                        }}
+                                        ref={wardRef}
                                     >
                                         <option value="">Select Ward</option>
                                         {wardOptions.map(opt => (
                                             <option key={opt.value} value={opt.value}>{opt.label}</option>
                                         ))}
                                     </select>
+                                    {wardError && <div className="text-danger">{wardError}</div>}
 
                                 </div>
 

@@ -32,7 +32,7 @@ const ReleaseSelection = () => {
   const [selectedValue, setSelectedValue] = useState('');
   const location = useLocation();
   const { LKRS_ID, createdBy, createdName, roleID, display_LKRS_ID } = location.state || {};
-
+  
   const [releaseData, setReleaseData] = useState([]); // Data for the "Release Table"
   const [releasedData, setReleasedData] = useState([]); // Data for the "Already Released Table"
   const [selectedRows, setSelectedRows] = useState([]);
@@ -2567,7 +2567,7 @@ const ReleaseSelection = () => {
             site_Rels_UpdatedBy: createdBy,
             site_Rels_UpdatedName: createdName,
             site_Rels_UpdatedRole: roleID,
-            sitE_RELS_DOCUMENT_ID: releaseOrderDocID
+            sitE_RELS_DOCUMENT_ID: releaseOrderDocID || "0",
           };
 
           const response = await deleteReleaseInfo(deletePayload);
@@ -3247,6 +3247,11 @@ const ReleaseSelection = () => {
                         {isEKYCVerified && (
                           <div className="mb-2 text-success font-weight-bold">
                             eKYC Verified!
+                          </div>
+                        )}
+                        {!isEKYCVerified && (
+                          <div className="mb-2 text-danger font-weight-bold">
+                            eKYC Failed!
                           </div>
                         )}
                       </div>

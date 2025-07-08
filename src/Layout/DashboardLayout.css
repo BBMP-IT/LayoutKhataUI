@@ -16463,3 +16463,15 @@
   clip-path: polygon(0% 0%, 100% 0%, 90% 100%, 0% 100%);
   z-index: 1;
 }
+
+
+.pac-container {
+  z-index: 1051 !important; /* Above modals and dropdowns */
+  width: auto !important;
+  min-width: 100% !important;
+  box-sizing: border-box;
+}
+
+.autocomplete-container {
+  position: relative;
+}

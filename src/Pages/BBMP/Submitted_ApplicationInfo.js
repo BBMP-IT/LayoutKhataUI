@@ -231,36 +231,36 @@ const BBMP_SubmittedInfo = () => {
             center: true,
             width: '200px',
         },
-        {
-            name: `Uploaded DC Conversion File`,
-            cell: row => {
-                if (row.DCFile) {
-                    const blob = base64ToBlob(row.DCFile);
+        // {
+        //     name: `Uploaded DC Conversion File`,
+        //     cell: row => {
+        //         if (row.DCFile) {
+        //             const blob = base64ToBlob(row.DCFile);
 
-                    if (blob) {
-                        const fileUrl = URL.createObjectURL(blob);
-                        return (
-                            <a
-                                href={fileUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="stableBlueLink"
-                                onClick={() => {
-                                    setTimeout(() => URL.revokeObjectURL(fileUrl), 1000);
-                                }}
-                            >
-                                View File
-                            </a>
-                        );
-                    } else {
-                        return 'Invalid file';
-                    }
-                } else {
-                    return 'No file';
-                }
-            },
-            center: true,
-        },
+        //             if (blob) {
+        //                 const fileUrl = URL.createObjectURL(blob);
+        //                 return (
+        //                     <a
+        //                         href={fileUrl}
+        //                         target="_blank"
+        //                         rel="noopener noreferrer"
+        //                         className="stableBlueLink"
+        //                         onClick={() => {
+        //                             setTimeout(() => URL.revokeObjectURL(fileUrl), 1000);
+        //                         }}
+        //                     >
+        //                         View File
+        //                     </a>
+        //                 );
+        //             } else {
+        //                 return 'Invalid file';
+        //             }
+        //         } else {
+        //             return 'No file';
+        //         }
+        //     },
+        //     center: true,
+        // },
 
 
     ];
@@ -506,12 +506,12 @@ const BBMP_SubmittedInfo = () => {
             sortable: true,
             center: true,
         },
-        {
-            name: "Release Type",
-            selector: row => row.releaseType,
-            center: true,
-            sortable: true,
-        },
+        // {
+        //     name: "Release Type",
+        //     selector: row => row.releaseType,
+        //     center: true,
+        //     sortable: true,
+        // },
     ];
 
     const approval_columns = [
@@ -751,8 +751,13 @@ const BBMP_SubmittedInfo = () => {
 
             if (response.length >= 0) {
                 setAllSites(response); //  Update state with API data
+                console.table("Site released", response);
 
-
+                if (response.every(site => site.sitE_IS_SITE_RELEASED === true)) {
+                    setShouldShowReleaseButton(false); // hide button
+                } else {
+                    setShouldShowReleaseButton(true); // show button
+                }
             } else {
                 Swal.fire({
                     text: response.responseMessage,
@@ -885,6 +890,7 @@ const BBMP_SubmittedInfo = () => {
     const [isRegistered, setIsRegistered] = useState(false);
     const [deedNumber, setDeedNumber] = useState("");
     const [deedNoURL, setDeedNoURL] = useState(null);
+    const [shouldShowReleaseButton, setShouldShowReleaseButton] = useState(true);
 
 
     const fetchJDAInfo = async (localLKRSID) => {
@@ -1014,9 +1020,13 @@ const BBMP_SubmittedInfo = () => {
                                     </Link>
                                     <div className='row'>
                                         <div className='col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10 mt-3'></div>
-                                        <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-3'>
-                                            <button className='btn btn-success btn-block' onClick={final_Save_Release}>Proceed to Release</button>
-                                        </div>
+                                        {shouldShowReleaseButton && (
+                                            <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-3'>
+                                                <button className='btn btn-success btn-block' onClick={final_Save_Release}>
+                                                    Proceed to Release
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
 
 
@@ -1596,117 +1606,117 @@ const BBMP_SubmittedInfo = () => {
                                             </>
                                         )}
                                         {/* Owner EKYC */}
-                                         <div className='row'>
-                                <div className='col-12'>
-                                    <h5>Owner / Owner Representative EKYC Details</h5>
-                                    <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
-                                        <thead className="table-light">
-                                            <tr>
-                                                <th>ಫೋಟೋ / Photo</th>
-                                                <th>ಮಾಲೀಕರ ಹೆಸರು / Owner Name</th>
-                                                <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>
-                                                <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhar Number</th>
-                                                <th>ಲಿಂಗ / Gender</th>
-                                                <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th>
-                                                <th>ವಿಳಾಸ / Address</th>
-                                                <th>ಇಕೆವೈಸಿ ಸ್ಥಿತಿ / EKYC Status</th>
-                                                <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {ownerDataList
-                                                .filter(owner => owner.owN_AADHAARVERISTATUS === "Success")
-                                                .map((owner, index) => {
-                                                    let parsedAadhaar = {};
-                                                    try {
-                                                        parsedAadhaar = JSON.parse(owner.owN_AADHAAR_RESPONSE).ekycResponse || {};
-                                                    } catch (err) {
-                                                        console.warn("Invalid Aadhaar JSON for owner:", owner.owN_NAME_EN);
-                                                    }
-
-                                                    return (
-                                                        <tr key={index}>
-                                                            <td style={{ textAlign: 'center' }}>
-                                                                <img src={usericon} alt="Owner" width="50" height="50" />
-                                                            </td>
-                                                            <td style={{ textAlign: 'center' }}>{owner.owN_NAME_EN || 'N/A'}</td>
-                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.ownerNameEng || 'N/A'}</td>
-                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.maskedAadhaar || 'N/A'}</td>
-                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.gender || 'N/A'}</td>
-                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.dateOfBirth || 'N/A'}</td>
-                                                            <td style={{ textAlign: 'center' }}>{parsedAadhaar.addressEng || 'N/A'}</td>
-                                                            <td style={{ textAlign: 'center' }}>Verified</td>
-                                                            <td style={{ textAlign: 'center' }}>
-                                                                {owner.owN_NAMEMATCHSCORE > 80 ? 'Matched' : 'Not Matched'}
-                                                            </td>
+                                        <div className='row'>
+                                            <div className='col-12'>
+                                                <h5>Owner / Owner Representative EKYC Details</h5>
+                                                <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
+                                                    <thead className="table-light">
+                                                        <tr>
+                                                            <th>ಫೋಟೋ / Photo</th>
+                                                            <th>ಮಾಲೀಕರ ಹೆಸರು / Owner Name</th>
+                                                            <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>
+                                                            <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhar Number</th>
+                                                            <th>ಲಿಂಗ / Gender</th>
+                                                            <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th>
+                                                            <th>ವಿಳಾಸ / Address</th>
+                                                            <th>ಇಕೆವೈಸಿ ಸ್ಥಿತಿ / EKYC Status</th>
+                                                            <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th>
                                                         </tr>
-                                                    );
-                                                })}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
+                                                    </thead>
+                                                    <tbody>
+                                                        {ownerDataList
+                                                            .filter(owner => owner.owN_AADHAARVERISTATUS === "Success")
+                                                            .map((owner, index) => {
+                                                                let parsedAadhaar = {};
+                                                                try {
+                                                                    parsedAadhaar = JSON.parse(owner.owN_AADHAAR_RESPONSE).ekycResponse || {};
+                                                                } catch (err) {
+                                                                    console.warn("Invalid Aadhaar JSON for owner:", owner.owN_NAME_EN);
+                                                                }
 
-                            {/* JDA EKYC */}
+                                                                return (
+                                                                    <tr key={index}>
+                                                                        <td style={{ textAlign: 'center' }}>
+                                                                            <img src={usericon} alt="Owner" width="50" height="50" />
+                                                                        </td>
+                                                                        <td style={{ textAlign: 'center' }}>{owner.owN_NAME_EN || 'N/A'}</td>
+                                                                        <td style={{ textAlign: 'center' }}>{parsedAadhaar.ownerNameEng || 'N/A'}</td>
+                                                                        <td style={{ textAlign: 'center' }}>{parsedAadhaar.maskedAadhaar || 'N/A'}</td>
+                                                                        <td style={{ textAlign: 'center' }}>{parsedAadhaar.gender || 'N/A'}</td>
+                                                                        <td style={{ textAlign: 'center' }}>{parsedAadhaar.dateOfBirth || 'N/A'}</td>
+                                                                        <td style={{ textAlign: 'center' }}>{parsedAadhaar.addressEng || 'N/A'}</td>
+                                                                        <td style={{ textAlign: 'center' }}>Verified</td>
+                                                                        <td style={{ textAlign: 'center' }}>
+                                                                            {owner.owN_NAMEMATCHSCORE > 80 ? 'Matched' : 'Not Matched'}
+                                                                        </td>
+                                                                    </tr>
+                                                                );
+                                                            })}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        {/* JDA EKYC */}
 
 
 
-                            {ownerEKYCDataList.length > 0 && (
-                                <div className="col-12">
-                                    <h5>JDA / JDA Representative EKYC Details</h5>
-                                    <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
-                                        <thead className="table-light">
-                                            <tr>
-                                                <th>ಫೋಟೋ / Photo</th>
-                                                <th>ಜೆಡಿಎ ಹೆಸರು / JDA Name</th>
-                                                <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>
-                                                <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhar Number</th>
-                                                <th>ಲಿಂಗ / Gender</th> {/* New column */}
-                                                <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th> {/* New column */}
-                                                <th>ವಿಳಾಸ / Address</th> {/* New column */}
-                                                <th>ಇಕೆವೈಸಿ ಸ್ಥಿತಿ / EKYC Status</th> {/* New column */}
-                                                <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th> {/* New column */}
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {ownerEKYCDataList.map((owner, index) => {
-                                                let aadhaarResponse = {};
-                                                try {
-                                                    aadhaarResponse = JSON.parse(owner.jdaekyC_AADHAAR_RESPONSE || '{}').ekycResponse || {};
-                                                } catch (e) {
-                                                    console.error("Error parsing AADHAAR_RESPONSE:", e);
-                                                }
+                                        {ownerEKYCDataList.length > 0 && (
+                                            <div className="col-12">
+                                                <h5>JDA / JDA Representative EKYC Details</h5>
+                                                <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
+                                                    <thead className="table-light">
+                                                        <tr>
+                                                            <th>ಫೋಟೋ / Photo</th>
+                                                            <th>ಜೆಡಿಎ ಹೆಸರು / JDA Name</th>
+                                                            <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>
+                                                            <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhar Number</th>
+                                                            <th>ಲಿಂಗ / Gender</th> {/* New column */}
+                                                            <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th> {/* New column */}
+                                                            <th>ವಿಳಾಸ / Address</th> {/* New column */}
+                                                            <th>ಇಕೆವೈಸಿ ಸ್ಥಿತಿ / EKYC Status</th> {/* New column */}
+                                                            <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th> {/* New column */}
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {ownerEKYCDataList.map((owner, index) => {
+                                                            let aadhaarResponse = {};
+                                                            try {
+                                                                aadhaarResponse = JSON.parse(owner.jdaekyC_AADHAAR_RESPONSE || '{}').ekycResponse || {};
+                                                            } catch (e) {
+                                                                console.error("Error parsing AADHAAR_RESPONSE:", e);
+                                                            }
 
-                                                const nameMatchStatus = parseFloat(owner.jdAekyc_NameMatchScore) > 60 ? 'Name Match Successful' : 'Not Matched';
-                                                const ekycStatus = aadhaarResponse.maskedAadhaar ? 'Verified' : 'Not Verified'; // Assuming if maskedAadhaar exists, EKYC is complete
+                                                            const nameMatchStatus = parseFloat(owner.jdAekyc_NameMatchScore) > 60 ? 'Name Match Successful' : 'Not Matched';
+                                                            const ekycStatus = aadhaarResponse.maskedAadhaar ? 'Verified' : 'Not Verified'; // Assuming if maskedAadhaar exists, EKYC is complete
 
-                                                return (
-                                                    <tr key={index}>
-                                                        <td style={{ textAlign: 'center' }}><img src={usericon} alt="Owner" width="50" height="50" /></td>
+                                                            return (
+                                                                <tr key={index}>
+                                                                    <td style={{ textAlign: 'center' }}><img src={usericon} alt="Owner" width="50" height="50" /></td>
 
-                                                        <td style={{ textAlign: 'center' }}>{owner.jdAekyc_JDA_Name || 'N/A'}</td>
-                                                        <td style={{ textAlign: 'center' }}>{aadhaarResponse.ownerNameEng || 'N/A'}</td>
-                                                        <td style={{ textAlign: 'center' }}>{owner.jdAekyc_AadhaarNumber || 'N/A'}</td>
-                                                        <td style={{ textAlign: 'center' }}>{aadhaarResponse.gender || 'N/A'}</td>
-                                                        <td style={{ textAlign: 'center' }}>{aadhaarResponse.dateOfBirth || 'N/A'}</td>
-                                                        <td style={{ textAlign: 'center' }}>{aadhaarResponse.addressEng || 'N/A'}</td>
+                                                                    <td style={{ textAlign: 'center' }}>{owner.jdAekyc_JDA_Name || 'N/A'}</td>
+                                                                    <td style={{ textAlign: 'center' }}>{aadhaarResponse.ownerNameEng || 'N/A'}</td>
+                                                                    <td style={{ textAlign: 'center' }}>{owner.jdAekyc_AadhaarNumber || 'N/A'}</td>
+                                                                    <td style={{ textAlign: 'center' }}>{aadhaarResponse.gender || 'N/A'}</td>
+                                                                    <td style={{ textAlign: 'center' }}>{aadhaarResponse.dateOfBirth || 'N/A'}</td>
+                                                                    <td style={{ textAlign: 'center' }}>{aadhaarResponse.addressEng || 'N/A'}</td>
 
-                                                        {/*                                                
+                                                                    {/*                                                
                                                 <td style={{ textAlign: 'center' }}>
                                                     {aadhaarResponse.photoContent ? <img src={`data:image/jpeg;base64,${aadhaarResponse.photoContent}`} alt="Aadhaar Photo" style={{ width: '50px', height: '50px' }} /> : 'No Photo'}
                                                 </td> */}
 
 
 
-                                                        <td style={{ textAlign: 'center' }}>{ekycStatus}</td>
-                                                        <td style={{ textAlign: 'center' }}>{nameMatchStatus}</td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
+                                                                    <td style={{ textAlign: 'center' }}>{ekycStatus}</td>
+                                                                    <td style={{ textAlign: 'center' }}>{nameMatchStatus}</td>
+                                                                </tr>
+                                                            );
+                                                        })}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -1728,7 +1738,6 @@ const Preview_siteDetailsTable = ({ data, setData, totalSitesCount, }) => {
 
     const columns = React.useMemo(
         () => [
-
             {
                 Header: "S.No",
                 id: "serialNo",
@@ -1791,7 +1800,6 @@ const Preview_siteDetailsTable = ({ data, setData, totalSitesCount, }) => {
 
                 },
             },
-
             {
                 Header: "Is Released",
                 accessor: (row) => {
@@ -1856,7 +1864,7 @@ const Preview_siteDetailsTable = ({ data, setData, totalSitesCount, }) => {
         {
             columns,
             data,
-            initialState: { pageIndex: 0, pageSize: 5 },
+            initialState: { pageIndex: 0, pageSize: 10 },
         },
         usePagination
     );
@@ -1978,7 +1986,7 @@ const Preview_siteDetailsTable = ({ data, setData, totalSitesCount, }) => {
 
                     <div>
                         <select value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))} style={{ padding: "6px 10px", borderRadius: "6px", border: "1px solid #ccc" }}>
-                            {[5, 10, 20, 50].map(size => (
+                            {[10, 20, 50, 100, 500, 1000].map(size => (
                                 <option key={size} value={size}>
                                     Show {size}
                                 </option>
