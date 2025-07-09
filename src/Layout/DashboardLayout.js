@@ -139,6 +139,7 @@ const DashboardLayout = ({ children }) => {
   };
 
 
+
   return (
     <div className="App">
       <Toaster toastOptions={{ duration: 4000, style: { fontSize: '14px', padding: '16px 24px', minWidth: '300px', textAlign: 'center', }, }} position="bottom-right" />
@@ -333,7 +334,7 @@ const DashboardLayout = ({ children }) => {
                     </a>
                   </li>
 
-                  <li className="nav-item dropdown">
+                  {/* <li className="nav-item dropdown">
                     <a
                       href="#"
                       className={`nav-link dropdown-toggle ${isDropdownOpen ? "show" : ""}`}
@@ -374,7 +375,7 @@ const DashboardLayout = ({ children }) => {
                         </a>
                       </li>
                     </ul>
-                  </li>
+                  </li> */}
                   <li className="nav-item dropdown">
                     <a
                       href="#"
@@ -393,12 +394,12 @@ const DashboardLayout = ({ children }) => {
                       </li>
                       <li>
                         <a className="dropdown-item" href="/LayoutForm">
-                         Enter Layout plan submitted
+                         Enter Layout Plan Submitted
                         </a>
                       </li>
                        <li>
                         <a className="dropdown-item" href="/Release">
-                          Site wise NewKhata as per release
+                          Site wise NewKhata as per Release
                         </a>
                       </li>
                        

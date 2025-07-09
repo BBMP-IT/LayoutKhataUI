@@ -349,6 +349,12 @@ const formatDateForAPI = (dateStr) => {
             width: '80px',
             center: true,
         },
+         {
+            name: "Survey Number",
+            selector: row => row.surveyno,
+            sortable: true,
+            center: true,
+        },
         {
             name: "DC Conversion Number",
             selector: row => row.layoutDCNumber,

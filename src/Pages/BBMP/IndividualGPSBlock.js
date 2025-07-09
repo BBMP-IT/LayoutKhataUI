@@ -692,6 +692,13 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
     const sideRefs = useRef([]);
 
 
+    const [roadAreaSqFt, setRoadAreaSqFt] = useState('');
+    const [roadAreaSqM, setRoadAreaSqM] = useState('');
+    const [roadAreaSqft_sqM_error, setRoadAreaSqft_sqM_error] = useState('');
+    const road_AreaSqFtref = useRef(null);
+
+
+
     useEffect(() => {
         sideRefs.current = sides.map((_, i) => sideRefs.current[i] ?? React.createRef());
     }, [sides]);
@@ -977,6 +984,42 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                 setIrregularAreaSqFt(sqft);
             } else {
                 setIrregularAreaSqFt('');
+            }
+        }
+    };
+
+
+    const handleRoadSqFtChange = (e) => {
+        const value = e.target.value;
+
+        // Allow only whole numbers
+        const numericValue = value.replace(/[^0-9]/g, '');
+
+        setRoadAreaSqFt(numericValue);
+
+        if (!isNaN(numericValue) && numericValue !== '') {
+            const sqm = (parseFloat(numericValue) * 0.092903).toFixed(1); // round to 1 decimal
+            setRoadAreaSqM(sqm);
+        } else {
+            setRoadAreaSqM('');
+        }
+    };
+
+    const handleRoadSqMChange = (e) => {
+        const value = e.target.value;
+
+        // Allow numbers with optional 1 decimal place
+        const numericValue = value.replace(/[^0-9.]/g, '');
+
+        // Allow max 1 digit after decimal
+        if (/^\d*(\.\d?)?$/.test(numericValue)) {
+            setRoadAreaSqM(numericValue);
+
+            if (!isNaN(numericValue) && numericValue !== '') {
+                const sqft = Math.round(parseFloat(numericValue) * 10.7639).toString(); // round to integer
+                setRoadAreaSqFt(sqft);
+            } else {
+                setRoadAreaSqFt('');
             }
         }
     };
@@ -1898,6 +1941,166 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         handleFetchPrevious(e);
     };
 
+    const [deedNumber, setDeedNumber] = useState("");
+    const [deedError, setDeedError] = useState('');
+    const [showViewDeedButton, setShowViewDeedButton] = useState(false);
+    const [isDeedSectionDisabled, setIsDeedSectionDisabled] = useState(false);
+    const [deedFetchSuccess, setDeedFetchSuccess] = useState(null); // null | true | false
+    const [uploadedDeedFile, setUploadedDeedFile] = useState(null);
+    const [uploadError, setUploadError] = useState('');
+
+    const validateDeedNumber = (value) => {
+        const regex = /^[A-Z]+-([1-9][0-9]*)-\d+-\d{4}-\d{2}$/;
+        if (!regex.test(value)) {
+            setDeedError('Invalid Deed Number format');
+            return false;
+        }
+        setDeedError('');
+        return true;
+    };
+
+    const handleDeedChange = (e) => {
+        setDeedNumber(e.target.value.toUpperCase());
+        validateDeedNumber(e.target.value);
+    };
+
+    const handleDeed_FetchDetails = async () => {
+        const deedNumberPattern = /^[A-Z0-9-/]+$/;
+        if (!deedNumber) {
+            setDeedError('Deed Number is required');
+            return;
+        }
+        if (!deedNumberPattern.test(deedNumber)) {
+            setDeedError('Only uppercase letters, numbers, slash and hyphens are allowed');
+            return;
+        }
+        if (/^0/.test(deedNumber)) {
+            setDeedError('Deed Number cannot start with zero');
+            return;
+        }
+        if (/^0+$/.test(deedNumber.replace(/-/g, ''))) {
+            setDeedError('Deed Number cannot be all zeros');
+            return;
+        }
+        setDeedError('');
+
+        try {
+            start_loader();
+            const payload = {
+                finalRegNumber: deedNumber,
+                lkrsid: localLKRSID,
+            }
+            const response = await fetchDeedDetails(payload);
+
+            if (
+                response.responseStatus === true &&
+                response.json
+            ) {
+                const deedData = JSON.parse(response.json);
+                setShowViewDeedButton(true);
+                setIsDeedSectionDisabled(true); // ✅ Disable input + button
+                setDeedFetchSuccess(true);
+                Swal.fire({
+                    title: response.responseMessage,
+                    icon: "success",
+                    confirmButtonText: "OK",
+                });
+            } else {
+                Swal.fire({
+                    text: response.responseMessage,
+                    icon: "error",
+                    confirmButtonText: "OK",
+                });
+                setDeedFetchSuccess(false);
+                 setIsDeedSectionDisabled(true);
+                setShowViewDeedButton(false);
+            }
+        } catch (error) {
+            console.error("Failed to insert data:", error);
+
+        } finally {
+            stop_loader();
+        }
+    };
+    //view Deed
+    const handleViewDeed = async () => {
+        let newTab = window.open('', '_blank'); // Open early to avoid popup block
+
+        if (!newTab) {
+            Swal.fire({
+                text: "Pop-up blocked. Please allow pop-ups to view the document.",
+                icon: "error",
+                confirmButtonText: "OK",
+            });
+            return;
+        }
+
+        try {
+            start_loader();
+
+            const payload = {
+                finalRegNumber: deedNumber,
+                lkrsid: localLKRSID,
+            };
+
+            const response = await fetchDeedDocDetails(payload);
+
+            if (response.responseStatus === true && response.base64) {
+                const binary = atob(response.base64.replace(/\s/g, ''));
+                const len = binary.length;
+                const buffer = new Uint8Array(len);
+
+                for (let i = 0; i < len; i++) {
+                    buffer[i] = binary.charCodeAt(i);
+                }
+
+                const blob = new Blob([buffer], { type: 'application/pdf' });
+                const pdfUrl = URL.createObjectURL(blob);
+
+                // Redirect the already opened tab to the blob URL
+                newTab.location.href = pdfUrl;
+
+                Swal.fire({
+                    title: response.responseMessage,
+                    icon: "success",
+                    confirmButtonText: "OK",
+                });
+                stop_loader();
+            } else {
+                stop_loader();
+                newTab.close(); // Close the tab if the request fails
+                Swal.fire({
+                    text: response.responseMessage,
+                    icon: "error",
+                    confirmButtonText: "OK",
+                });
+                setShowViewDeedButton(false);
+            }
+        } catch (error) {
+            stop_loader();
+            newTab.close(); // Close tab on error
+            console.error("Failed to fetch deed data:", error);
+
+        } finally {
+            stop_loader();
+        }
+    };
+
+
+    const handleDeedUpload = async () => {
+    if (!uploadedDeedFile) {
+        setUploadError("Please upload a deed document");
+        return;
+    }
+
+    if (uploadedDeedFile.type !== "application/pdf") {
+        setUploadError("Only PDF files are allowed");
+        return;
+    }
+
+   
+};
+
 
 
     return (
@@ -1962,6 +2165,71 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
                                 </div>
                             </div>
+                            {/* Deed section starts */}
+                            <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6" >
+                                <label className='form-label'>Enter Relinquishment Deed Number (For park, open space, road + Civic Amenity) <span className='mandatory_color'>*</span></label>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="Enter Relinquishment Deed Number"
+                                    value={deedNumber}
+                                    onChange={handleDeedChange} maxLength={50} disabled={isDeedSectionDisabled}
+                                />
+                                {deedError && <div className="text-danger">{deedError}</div>}
+                            </div>
+                            <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-3">
+                                <div className="form-group ">
+                                    <label> </label>
+                                    <button className="btn btn-primary btn-block" onClick={handleDeed_FetchDetails} disabled={isDeedSectionDisabled}>
+                                        Fetch Deed
+                                    </button>
+                                </div>
+                            </div>
+                            <div className='row'>
+                                {showViewDeedButton && (<>
+                                    <div className="text-success">
+                                        <strong>Deed Check successfully <i className="fa fa-check-circle"></i></strong>
+                                    </div>
+                                    <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 ">
+
+                                        <div className="form-group">
+
+                                            <button className="btn btn-warning btn-block" onClick={handleViewDeed} >
+                                                View Deed
+                                            </button>
+                                        </div>
+
+                                    </div>
+                                </>)}
+                                {/* deed is failed  */}
+                                {deedFetchSuccess === false && (
+                                    <div className="row mt-3">
+                                        <strong className='text-danger'>Deed Check Failed <i className="fa fa-times-circle"></i></strong>
+                                        <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                                            <label className="form-label">Upload Relinquishment Deed Document <span className="mandatory_color">*</span></label>
+                                            <input
+                                                type="file"
+                                                accept="application/pdf"
+                                                className="form-control"
+                                                onChange={(e) => setUploadedDeedFile(e.target.files[0])}
+                                            />
+                                            {uploadError && <div className="text-danger">{uploadError}</div>}
+                                        </div>
+                                        <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-4">
+                                            <label className="form-label"></label>
+                                            <button
+                                                className="btn btn-success btn-block"
+                                                onClick={handleDeedUpload}
+                                            >
+                                                Save Deed
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                            </div>
+                            {/* Deed section ends */}
+
                             <div className='col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10 mb-3' hidden></div>
                             <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mb-3' hidden>
                                 <div className="form-group mt-2">
@@ -1986,314 +2254,716 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
 
                         <div className="row mt-4">
-                            <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 mb-3">
-                                <div className="row ">
-                                    <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 ">
-                                        <div className="form-check">
-                                            <label className="form-check-label fw-bold"><input className="form-check-input me-2 radioStyle"
-                                                type="radio"
-                                                value="regular"
-                                                checked={shape === "regular"}
-                                                onChange={() => setShape("regular")}
-                                            />
-                                                Regular Shape</label>
-                                        </div>
-                                    </div>
-                                    <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 ">
-                                        <div className="form-check">
-                                            <label className="form-check-label fw-bold"><input className="form-check-input me-2 radioStyle"
-                                                type="radio"
-                                                value="irregular"
-                                                checked={shape === "irregular"}
-                                                onChange={() => setShape("irregular")}
-                                            />
-                                                Irregular Shape</label>
-                                        </div>
-                                    </div>
+                            <div className="col-0 col-sm-0 col-md-2 col-lg-2 col-xl-2"></div>
+
+                            {/* Type of Site Dropdown */}
+                            <div className="col-12 col-sm-12 col-md-8 col-lg-8 col-xl-8">
+                                <label className="form-label">Type of Site <span className='mandatory_color'>*</span></label>
+                                <div className="d-flex align-items-center gap-3">
+                                    <select
+                                        className="form-select"
+                                        value={siteType}
+                                        ref={siteTypeRef}
+                                        onChange={(e) => {
+                                            setSiteType(e.target.value);
+                                            if (e.target.value !== '') {
+                                                setSiteTypeError('');
+                                            }
+                                        }}
+                                    >
+                                        <option value="">Select Site Type</option>
+                                        <option value="1">Civic Amenity</option>
+                                        <option value="2">Commercial</option>
+                                        <option value="3">Industrial</option>
+                                        <option value="4">Park</option>
+                                        <option value="5">Residential</option>
+                                        <option value="8">Road</option>
+                                        <option value="6">Sump</option>
+                                        <option value="7">Utility</option>
+                                    </select>
+
                                 </div>
+                                {siteTypeError && (
+                                    <small className="text-danger">{siteTypeError}</small>
+                                )}
                             </div>
-                        </div>
 
-                        {shape === "regular" && (
-                            <div className="container mt-3">
-                                {/* Conditionally render the Fetch Previous checkbox with custom styling */}
-                                {allSites.length > 0 && (
-                                    <div className="row">
-                                        <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
-                                            <div className="form-check">
+
+
+                            <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 mb-3">
+                                <br />
+                                {siteType === '8' && (
+                                    <div className='row'>
+                                        <div className="col-12 col-sm-12 col-md-5 col-lg-5 col-xl-5 mb-5">
+                                            <label className="form-label">Area <span className='mandatory_color'>*</span></label>
+                                            <div className="input-group">
                                                 <input
-                                                    type="checkbox"
-                                                    id="fetchPrevious"
-                                                    className="form-check-input custom-checkbox"
-                                                    checked={isChecked}
-                                                    onChange={handleCheckboxAndPrefillSite}
-
+                                                    type="tel"
+                                                    className="form-control"
+                                                    placeholder="Area"
+                                                    value={roadAreaSqFt ? parseInt(roadAreaSqFt) : ''}
+                                                    onChange={handleRoadSqFtChange}
+                                                    ref={road_AreaSqFtref}
                                                 />
-                                                <label className="form-check-label custom-label" htmlFor="fetchPrevious">
-                                                    Same as Previous site details
-                                                </label>
+
+                                                <span className="input-group-text">sq.ft</span>
+                                            </div>
+                                            {roadAreaSqft_sqM_error && <small className='text-danger'>{roadAreaSqft_sqM_error}</small>}
+                                        </div>
+                                        <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mb-3 text-center">
+                                            <div className="form-group "><br />
+                                                <label className="form-label fw-bold">or</label>
+                                            </div>
+                                        </div>
+                                        <div className="col-12 col-sm-12 col-md-5 col-lg-5 col-xl-5 mb-5">
+                                            <label className="form-label">&nbsp;</label>
+                                            <div className="input-group">
+                                                <input
+                                                    type="tel"
+                                                    className="form-control"
+                                                    placeholder="Area"
+                                                    value={roadAreaSqM ? parseFloat(roadAreaSqM).toFixed(1) : ''}
+                                                    onChange={handleRoadSqMChange}
+                                                    ref={road_AreaSqFtref}
+                                                />
+                                                <span className="input-group-text">sq.mtr</span>
                                             </div>
                                         </div>
                                     </div>
                                 )}
-
-
-
-                                <div className="row align-items-center mb-3 mt-4">
-                                    {/* Site Number */}
-                                    <div className='col-md-6'>
-                                        <div className="form-group mt-2">
-                                            <label className='form-label'>
-                                                Site Number <span className='mandatory_color'>*</span>
-                                            </label>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                placeholder="Enter site number"
-                                                value={regular_siteNumber}
-                                                maxLength={15}
-                                                ref={siteNumberRef}
-                                                onChange={handleRegular_SiteNumberChange}
-                                            />
-                                            {regular_siteNumberError && (
-                                                <small className="text-danger">{regular_siteNumberError}</small>
-                                            )}
+                                {siteType !== '8' && (
+                                    <div className="row ">
+                                        <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 ">
+                                            <div className="form-check">
+                                                <label className="form-check-label fw-bold"><input className="form-check-input me-2 radioStyle"
+                                                    type="radio"
+                                                    value="regular"
+                                                    checked={shape === "regular"}
+                                                    onChange={() => setShape("regular")}
+                                                />
+                                                    Regular Shape</label>
+                                            </div>
+                                        </div>
+                                        <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 ">
+                                            <div className="form-check">
+                                                <label className="form-check-label fw-bold"><input className="form-check-input me-2 radioStyle"
+                                                    type="radio"
+                                                    value="irregular"
+                                                    checked={shape === "irregular"}
+                                                    onChange={() => setShape("irregular")}
+                                                />
+                                                    Irregular Shape</label>
+                                            </div>
                                         </div>
                                     </div>
-                                    {/* Block/Area */}
-                                    <div className='col-md-6'>
-                                        <div className="form-group mt-2">
-                                            <label className='form-label'>Block/Area <span className='mandatory_color'>*</span></label>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                placeholder="Enter block/area"
-                                                value={blockArea}
-                                                ref={blockAreaRef}
-                                                onChange={handleRegular_BlockAreaChange}
-                                            />
-                                            {blockAreaError && (
-                                                <small className="text-danger">{blockAreaError}</small>
-                                            )}
+                                )}
+                            </div>
+                        </div>
+                        {siteType !== '8' && (<>
+                            {shape === "regular" && (
+                                <div className="container mt-3">
+                                    {/* Conditionally render the Fetch Previous checkbox with custom styling */}
+                                    {allSites.length > 0 && (
+                                        <div className="row">
+                                            <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+                                                <div className="form-check">
+                                                    <input
+                                                        type="checkbox"
+                                                        id="fetchPrevious"
+                                                        className="form-check-input custom-checkbox"
+                                                        checked={isChecked}
+                                                        onChange={handleCheckboxAndPrefillSite}
+
+                                                    />
+                                                    <label className="form-check-label custom-label" htmlFor="fetchPrevious">
+                                                        Same as Previous site details
+                                                    </label>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
 
-                                    <div className="container ">
-                                        <h4 className="mb-4">Enter Side Details</h4>
-                                        {/* East-west side length */}
-                                        <div className='row mb-3'>
 
-                                            <div className='col-12 col-sm-12 col-md-12 col-lg-2 col-xl-2 mb-3'>
-                                                <label className="form-label fw-bold ">East-West side Length  <span className='mandatory_color'>*</span></label>
+
+                                    <div className="row align-items-center mb-3 mt-4">
+                                        {/* Site Number */}
+                                        <div className='col-md-6'>
+                                            <div className="form-group mt-2">
+                                                <label className='form-label'>
+                                                    Site Number <span className='mandatory_color'>*</span>
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    className="form-control"
+                                                    placeholder="Enter site number"
+                                                    value={regular_siteNumber}
+                                                    maxLength={15}
+                                                    ref={siteNumberRef}
+                                                    onChange={handleRegular_SiteNumberChange}
+                                                />
+                                                {regular_siteNumberError && (
+                                                    <small className="text-danger">{regular_siteNumberError}</small>
+                                                )}
                                             </div>
-                                            <div className="col-12 col-sm-12 col-md-5 col-lg-3 col-xl-3 mb-3">
-                                                <div className="form-group">
+                                        </div>
+                                        {/* Block/Area */}
+                                        <div className='col-md-6'>
+                                            <div className="form-group mt-2">
+                                                <label className='form-label'>Block/Area <span className='mandatory_color'>*</span></label>
+                                                <input
+                                                    type="text"
+                                                    className="form-control"
+                                                    placeholder="Enter block/area"
+                                                    value={blockArea}
+                                                    ref={blockAreaRef}
+                                                    onChange={handleRegular_BlockAreaChange}
+                                                />
+                                                {blockAreaError && (
+                                                    <small className="text-danger">{blockAreaError}</small>
+                                                )}
+                                            </div>
+                                        </div>
 
-                                                    <div className="input-group">
-                                                        <input
-                                                            type="tel"
-                                                            className="form-control"
-                                                            placeholder="Enter the east-west side length"
-                                                            value={eastwestFeet}
-                                                            ref={eastwestFeetRef}
-                                                            maxLength={10}
-                                                            onChange={handleEastwestFeetChange}
-                                                        />
-                                                        <span className="input-group-text">Feet</span>
+                                        <div className="container ">
+                                            <h4 className="mb-4">Enter Side Details</h4>
+                                            {/* East-west side length */}
+                                            <div className='row mb-3'>
 
-                                                    </div>{eastwestError && <div className="text-danger">{eastwestError}</div>}
+                                                <div className='col-12 col-sm-12 col-md-12 col-lg-2 col-xl-2 mb-3'>
+                                                    <label className="form-label fw-bold ">East-West side Length  <span className='mandatory_color'>*</span></label>
+                                                </div>
+                                                <div className="col-12 col-sm-12 col-md-5 col-lg-3 col-xl-3 mb-3">
+                                                    <div className="form-group">
+
+                                                        <div className="input-group">
+                                                            <input
+                                                                type="tel"
+                                                                className="form-control"
+                                                                placeholder="Enter the east-west side length"
+                                                                value={eastwestFeet}
+                                                                ref={eastwestFeetRef}
+                                                                maxLength={10}
+                                                                onChange={handleEastwestFeetChange}
+                                                            />
+                                                            <span className="input-group-text">Feet</span>
+
+                                                        </div>{eastwestError && <div className="text-danger">{eastwestError}</div>}
+                                                    </div>
+                                                </div>
+                                                <div className="col-6 col-sm-6 col-md-2 col-lg-1 col-xl-1 mb-3 text-center">
+                                                    <div className="form-group ">
+                                                        <label className="form-label fw-bold">Or</label>
+                                                    </div>
+                                                </div>
+                                                <div className="col-12 col-sm-12 col-md-5 col-lg-3 col-xl-3 mb-3">
+                                                    <div className="form-group">
+
+                                                        <div className="input-group">
+                                                            <input
+                                                                type="tel"
+                                                                className="form-control"
+                                                                placeholder="Enter the east-west side length"
+                                                                value={eastwestMeter}
+                                                                maxLength={10}
+                                                                ref={eastwestFeetRef}
+                                                                onChange={handleEastwestMeterChange}
+                                                            />
+                                                            <span className="input-group-text">Meter</span>
+
+                                                        </div>
+                                                        {eastwestError && <div className="text-danger">{eastwestError}</div>}
+                                                    </div>
+                                                </div>
+                                                <div className="col-6 col-sm-6 col-md-6 col-lg-1 col-xl-1 mb-3">
+                                                    <div className="form-group ">
+                                                        <label className="form-label fw-bold">Road Facing  <span className='mandatory_color'>*</span></label>
+                                                    </div>
+                                                </div>
+                                                <div className="col-6 col-sm-6 col-md-6 col-lg-2 col-xl-2 mb-3">
+                                                    <div className="form-group ">
+                                                        <div className="d-flex align-items-center gap-3">
+                                                            <div className="form-check">
+                                                                <label className="form-check-label">
+                                                                    <input
+                                                                        type="radio"
+                                                                        className="form-check-input me-2 radioStyle"
+                                                                        name="roadFacingEastWest"  // Updated name
+                                                                        checked={side1RoadFacing === true}
+                                                                        ref={side1RoadRef}
+                                                                        onChange={() => {
+                                                                            setSide1RoadFacing(true);
+                                                                            setSide1RoadError('');
+                                                                        }}
+                                                                    />
+                                                                    Yes</label>
+                                                            </div>
+                                                            <div className="form-check">
+                                                                <label className="form-check-label">
+                                                                    <input
+                                                                        type="radio"
+                                                                        className="form-check-input me-2 radioStyle"
+                                                                        name="roadFacingEastWest"  // Updated name
+                                                                        ref={side1RoadRef}
+                                                                        checked={side1RoadFacing === false}
+                                                                        onChange={() => {
+                                                                            setSide1RoadFacing(false);
+                                                                            setSide1RoadError('');
+                                                                        }}
+                                                                    />
+                                                                    No</label>
+                                                            </div>
+                                                        </div>
+                                                        {side1RoadError && <div className="text-danger">{side1RoadError}</div>}
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="col-6 col-sm-6 col-md-2 col-lg-1 col-xl-1 mb-3 text-center">
-                                                <div className="form-group ">
-                                                    <label className="form-label fw-bold">Or</label>
-                                                </div>
-                                            </div>
-                                            <div className="col-12 col-sm-12 col-md-5 col-lg-3 col-xl-3 mb-3">
-                                                <div className="form-group">
+                                            {/* North-South side length */}
+                                            <div className='row mb-3'>
 
-                                                    <div className="input-group">
-                                                        <input
-                                                            type="tel"
-                                                            className="form-control"
-                                                            placeholder="Enter the east-west side length"
-                                                            value={eastwestMeter}
-                                                            maxLength={10}
-                                                            ref={eastwestFeetRef}
-                                                            onChange={handleEastwestMeterChange}
-                                                        />
-                                                        <span className="input-group-text">Meter</span>
+                                                <div className='col-12 col-sm-12 col-md-12 col-lg-2 col-xl-2 mb-3'>
+                                                    <label className="form-label fw-bold ">North-South side Length  <span className='mandatory_color'>*</span></label>
+                                                </div>
+                                                <div className="col-12 col-sm-12 col-md-5 col-lg-3 col-xl-3 mb-3">
+                                                    <div className="form-group">
+
+                                                        <div className="input-group">
+                                                            <input
+                                                                type="tel"
+                                                                className="form-control"
+                                                                placeholder="Enter the north-south side length"
+                                                                value={northsouthFeet}
+                                                                maxLength={10}
+                                                                ref={northsouthFeetRef}
+                                                                onChange={handleNorthsouthFeetChange}
+                                                            />
+                                                            <span className="input-group-text">feet</span>
+                                                        </div>{northsouthError && <div className="text-danger">{northsouthError}</div>}
+                                                    </div>
+                                                </div>
+                                                <div className="col-6 col-sm-6 col-md-2 col-lg-1 col-xl-1 mb-3 text-center">
+                                                    <div className="form-group ">
+                                                        <label className="form-label fw-bold">Or</label>
 
                                                     </div>
-                                                    {eastwestError && <div className="text-danger">{eastwestError}</div>}
                                                 </div>
-                                            </div>
-                                            <div className="col-6 col-sm-6 col-md-6 col-lg-1 col-xl-1 mb-3">
-                                                <div className="form-group ">
-                                                    <label className="form-label fw-bold">Road Facing  <span className='mandatory_color'>*</span></label>
+                                                <div className="col-12 col-sm-12 col-md-5 col-lg-3 col-xl-3 mb-3">
+                                                    <div className="form-group">
+
+                                                        <div className="input-group">
+                                                            <input
+                                                                type="tel"
+                                                                className="form-control"
+                                                                placeholder="Enter the north-south side length"
+                                                                value={northsouthMeter}
+                                                                ref={northsouthFeetRef}
+                                                                maxLength={10}
+                                                                onChange={handleNorthsouthMeterChange}
+                                                            />
+                                                            <span className="input-group-text">Meter</span>
+                                                        </div>
+                                                        {northsouthError && <div className="text-danger">{northsouthError}</div>}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div className="col-6 col-sm-6 col-md-6 col-lg-2 col-xl-2 mb-3">
-                                                <div className="form-group ">
-                                                    <div className="d-flex align-items-center gap-3">
-                                                        <div className="form-check">
-                                                            <label className="form-check-label">
-                                                                <input
+                                                <div className="col-6 col-sm-6 col-md-6 col-lg-1 col-xl-1 mb-3">
+                                                    <div className="form-group ">
+                                                        <label className="form-label fw-bold">Road Facing  <span className='mandatory_color'>*</span></label>
+                                                    </div>
+                                                </div>
+                                                <div className="col-6 col-sm-6 col-md-6 col-lg-2 col-xl-2 mb-3">
+                                                    <div className="form-group ">
+                                                        <div className="d-flex align-items-center gap-3">
+                                                            <div className="form-check">
+                                                                <label className="form-check-label"><input
                                                                     type="radio"
                                                                     className="form-check-input me-2 radioStyle"
-                                                                    name="roadFacingEastWest"  // Updated name
-                                                                    checked={side1RoadFacing === true}
-                                                                    ref={side1RoadRef}
+                                                                    name="roadFacingNorthSouth"  // Updated name
+                                                                    checked={side2RoadFacing === true}
+                                                                    ref={side2RoadRef}
                                                                     onChange={() => {
-                                                                        setSide1RoadFacing(true);
-                                                                        setSide1RoadError('');
+                                                                        setSide2RoadFacing(true);
+                                                                        setSide2RoadError('');
                                                                     }}
                                                                 />
-                                                                Yes</label>
-                                                        </div>
-                                                        <div className="form-check">
-                                                            <label className="form-check-label">
-                                                                <input
+                                                                    Yes</label>
+                                                            </div>
+                                                            <div className="form-check">
+                                                                <label className="form-check-label"><input
                                                                     type="radio"
                                                                     className="form-check-input me-2 radioStyle"
-                                                                    name="roadFacingEastWest"  // Updated name
-                                                                    ref={side1RoadRef}
-                                                                    checked={side1RoadFacing === false}
+                                                                    name="roadFacingNorthSouth"  // Updated name
+                                                                    checked={side2RoadFacing === false}
+                                                                    ref={side2RoadRef}
                                                                     onChange={() => {
-                                                                        setSide1RoadFacing(false);
-                                                                        setSide1RoadError('');
+                                                                        setSide2RoadFacing(false);
+                                                                        setSide2RoadError('');
                                                                     }}
                                                                 />
-                                                                No</label>
+                                                                    No</label>
+                                                            </div>
                                                         </div>
+                                                        {side2RoadError && <div className="text-danger">{side2RoadError}</div>}
                                                     </div>
-                                                    {side1RoadError && <div className="text-danger">{side1RoadError}</div>}
                                                 </div>
                                             </div>
                                         </div>
-                                        {/* North-South side length */}
-                                        <div className='row mb-3'>
-
-                                            <div className='col-12 col-sm-12 col-md-12 col-lg-2 col-xl-2 mb-3'>
-                                                <label className="form-label fw-bold ">North-South side Length  <span className='mandatory_color'>*</span></label>
-                                            </div>
-                                            <div className="col-12 col-sm-12 col-md-5 col-lg-3 col-xl-3 mb-3">
-                                                <div className="form-group">
-
+                                        <div className="row align-items-center mb-3">
+                                            {/* Area */}
+                                            <div className="col-12 col-sm-12 col-md-6 col-lg-3 col-xl-3 mb-3">
+                                                <label className="form-label">Area <span className='mandatory_color'>*</span></label>
+                                                <div className="input-group">
                                                     <div className="input-group">
                                                         <input
-                                                            type="tel"
+                                                            type="text"
                                                             className="form-control"
-                                                            placeholder="Enter the north-south side length"
-                                                            value={northsouthFeet}
-                                                            maxLength={10}
-                                                            ref={northsouthFeetRef}
-                                                            onChange={handleNorthsouthFeetChange}
+                                                            placeholder="Area"
+                                                            value={regularAreaSqFt ? parseInt(regularAreaSqFt) : ''}
+                                                            readOnly
                                                         />
-                                                        <span className="input-group-text">feet</span>
-                                                    </div>{northsouthError && <div className="text-danger">{northsouthError}</div>}
+                                                        <span className="input-group-text">sq.ft</span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="col-6 col-sm-6 col-md-2 col-lg-1 col-xl-1 mb-3 text-center">
-                                                <div className="form-group ">
-                                                    <label className="form-label fw-bold">Or</label>
-
-                                                </div>
-                                            </div>
-                                            <div className="col-12 col-sm-12 col-md-5 col-lg-3 col-xl-3 mb-3">
-                                                <div className="form-group">
-
+                                            <div className="col-12 col-sm-12 col-md-6 col-lg-3 col-xl-3 mb-3">
+                                                <label className="form-label">&nbsp;</label>
+                                                <div className="input-group">
                                                     <div className="input-group">
                                                         <input
-                                                            type="tel"
+                                                            type="text"
                                                             className="form-control"
-                                                            placeholder="Enter the north-south side length"
-                                                            value={northsouthMeter}
-                                                            ref={northsouthFeetRef}
-                                                            maxLength={10}
-                                                            onChange={handleNorthsouthMeterChange}
+                                                            placeholder="Area"
+                                                            value={regularAreaSqM ? parseFloat(regularAreaSqM).toFixed(1) : ''}
+                                                            readOnly
                                                         />
-                                                        <span className="input-group-text">Meter</span>
+                                                        <span className="input-group-text">sq.mtr</span>
                                                     </div>
-                                                    {northsouthError && <div className="text-danger">{northsouthError}</div>}
                                                 </div>
                                             </div>
-                                            <div className="col-6 col-sm-6 col-md-6 col-lg-1 col-xl-1 mb-3">
-                                                <div className="form-group ">
-                                                    <label className="form-label fw-bold">Road Facing  <span className='mandatory_color'>*</span></label>
-                                                </div>
-                                            </div>
-                                            <div className="col-6 col-sm-6 col-md-6 col-lg-2 col-xl-2 mb-3">
-                                                <div className="form-group ">
-                                                    <div className="d-flex align-items-center gap-3">
-                                                        <div className="form-check">
-                                                            <label className="form-check-label"><input
-                                                                type="radio"
-                                                                className="form-check-input me-2 radioStyle"
-                                                                name="roadFacingNorthSouth"  // Updated name
-                                                                checked={side2RoadFacing === true}
-                                                                ref={side2RoadRef}
-                                                                onChange={() => {
-                                                                    setSide2RoadFacing(true);
-                                                                    setSide2RoadError('');
-                                                                }}
-                                                            />
-                                                                Yes</label>
+                                            {/* Corner Site */}
+                                            <div className="col-12 col-sm-12 col-md-6 col-lg-3 col-xl-3 mb-3">
+                                                <label className="form-label fw-bold">Corner Site <span className='mandatory_color'>*</span></label>
+                                                <div className="d-flex align-items-center gap-3 text-center">
+                                                    <div className="row w-100">
+                                                        <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 ">
+                                                            <div className="form-check">
+                                                                <label className="form-check-label"><input
+                                                                    type="radio"
+                                                                    className="form-check-input me-2 radioStyle"
+                                                                    name="cornerSite"
+                                                                    value="yes"
+                                                                    checked={cornerSite === true}
+                                                                    ref={cornerSiteRef}
+                                                                    onChange={() => {
+                                                                        setCornerSite(true);
+                                                                        setCornerSiteError('');
+                                                                    }}
+                                                                />
+
+                                                                    Yes</label>
+                                                            </div>
                                                         </div>
-                                                        <div className="form-check">
-                                                            <label className="form-check-label"><input
-                                                                type="radio"
-                                                                className="form-check-input me-2 radioStyle"
-                                                                name="roadFacingNorthSouth"  // Updated name
-                                                                checked={side2RoadFacing === false}
-                                                                ref={side2RoadRef}
-                                                                onChange={() => {
-                                                                    setSide2RoadFacing(false);
-                                                                    setSide2RoadError('');
-                                                                }}
-                                                            />
-                                                                No</label>
+                                                        <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 ">
+                                                            <div className="form-check">
+                                                                <label className="form-check-label"><input
+                                                                    type="radio"
+                                                                    className="form-check-input me-2 radioStyle"
+                                                                    name="cornerSite"
+                                                                    value="no"
+                                                                    ref={cornerSiteRef}
+                                                                    checked={cornerSite === false}
+                                                                    onChange={() => {
+                                                                        setCornerSite(false);
+                                                                        setCornerSiteError('');
+                                                                    }}
+                                                                />
+                                                                    No</label>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                    {side2RoadError && <div className="text-danger">{side2RoadError}</div>}
                                                 </div>
+                                                {cornerSiteError && <div className="text-danger">{cornerSiteError}</div>}
+                                            </div>
+
+                                            {/* Chak Bandi details */}
+                                            <h5 className='mt-5'>Chakbandi Details</h5>
+                                            <div className="col-12 col-sm-12 col-md-6 col-lg-3 col-xl-3 mt-3">
+                                                <label className="form-label">East <span className='mandatory_color'>*</span></label>
+                                                <div className="input-group">
+                                                    <input
+                                                        type="text"
+                                                        className="form-control" placeholder='Enter the chakbandi east side details'
+                                                        value={chakbandiEast}
+                                                        ref={chakbandiEastRef}
+                                                        onChange={(e) => {
+                                                            const value = e.target.value;
+                                                            if (/^[a-zA-Z0-9.,\/\\#\s]*$/.test(value)) {
+                                                                setChakbandiEast(value);
+                                                                setChakbandiEastError("");
+                                                            } else {
+                                                                setChakbandiEastError("Only letters, numbers, space and . , / \\ # are allowed");
+                                                            }
+                                                        }}
+                                                    />
+                                                </div>
+                                                {chakbandiEastError && (
+                                                    <small className="text-danger">{chakbandiEastError}</small>
+                                                )}
+                                            </div>
+                                            <div className="col-12 col-sm-12 col-md-6 col-lg-3 col-xl-3 mt-3">
+                                                <label className="form-label">West <span className='mandatory_color'>*</span></label>
+                                                <div className="input-group">
+
+                                                    <input
+                                                        type="text"
+                                                        className="form-control" placeholder='Enter the chakbandi west side details'
+                                                        value={chakbandiWest}
+                                                        ref={chakbandiWestRef}
+                                                        onChange={(e) => {
+                                                            const value = e.target.value;
+                                                            if (/^[a-zA-Z0-9.,\/\\#\s]*$/.test(value)) {
+                                                                setChakbandiWest(value);
+                                                                setChakbandiWestError("");
+                                                            } else {
+                                                                setChakbandiWestError("Only letters, numbers, space and . , / \\ # are allowed");
+                                                            }
+                                                        }}
+                                                    />
+                                                </div>
+                                                {chakbandiWestError && (
+                                                    <small className="text-danger">{chakbandiWestError}</small>
+                                                )}
+                                            </div>
+                                            <div className="col-12 col-sm-12 col-md-6 col-lg-3 col-xl-3 mt-3">
+                                                <label className="form-label">South <span className='mandatory_color'>*</span></label>
+                                                <div className="input-group">
+                                                    <input
+                                                        type="text"
+                                                        className="form-control" placeholder='Enter the chakbandi south side details'
+                                                        value={chakbandiSouth}
+                                                        ref={chakbandiSouthRef}
+                                                        onChange={(e) => {
+                                                            const value = e.target.value;
+                                                            if (/^[a-zA-Z0-9.,\/\\#\s]*$/.test(value)) {
+                                                                setChakbandiSouth(value);
+                                                                setChakbandiSouthError("");
+                                                            } else {
+                                                                setChakbandiSouthError("Only letters, numbers, space and . , / \\ # are allowed");
+                                                            }
+                                                        }}
+                                                    />
+                                                </div>
+                                                {chakbandiSouthError && (
+                                                    <small className="text-danger">{chakbandiSouthError}</small>
+                                                )}
+                                            </div>
+                                            <div className="col-12 col-sm-12 col-md-6 col-lg-3 col-xl-3 mt-3">
+                                                <label className="form-label">North <span className='mandatory_color'>*</span></label>
+                                                <div className="input-group">
+
+                                                    <input
+                                                        type="text"
+                                                        className="form-control" placeholder='Enter the chakbandi north side details'
+                                                        value={chakbandiNorth}
+                                                        ref={chakbandiNorthRef}
+                                                        onChange={(e) => {
+                                                            const value = e.target.value;
+                                                            if (/^[a-zA-Z0-9.,\/\\#\s]*$/.test(value)) {
+                                                                setChakbandiNorth(value);
+                                                                setChakbandiNorthError("");
+                                                            } else {
+                                                                setChakbandiNorthError("Only letters, numbers, space and . , / \\ # are allowed");
+                                                            }
+                                                        }}
+                                                    />
+                                                </div>
+                                                {chakbandiNorthError && (
+                                                    <small className="text-danger">{chakbandiNorthError}</small>
+                                                )}
                                             </div>
                                         </div>
+
                                     </div>
+
+                                </div>
+                            )}
+                            {shape === "irregular" && (
+                                <div className="container mt-3">
                                     <div className="row align-items-center mb-3">
-                                        {/* Area */}
-                                        <div className="col-12 col-sm-12 col-md-6 col-lg-3 col-xl-3 mb-3">
+                                        {/* Site Number */}
+                                        <div className='col-md-6'>
+                                            <div className="form-group mt-2">
+                                                <label className='form-label'>
+                                                    Site / Plot No <span className='mandatory_color'>*</span>
+                                                </label>
+                                                <input
+                                                    type="text" ref={irregular_siteNoref}
+                                                    className="form-control"
+                                                    placeholder="Enter Site / Plot number"
+                                                    value={irregular_siteNumber}
+                                                    maxLength={15}
+                                                    onChange={handleirRegular_SiteNumberChange}
+                                                />
+                                                {irregular_siteNumberError && (
+                                                    <small className="text-danger">{irregular_siteNumberError}</small>
+                                                )}
+                                            </div>
+                                        </div>
+                                        {/* Block/Area */}
+                                        <div className='col-md-6'>
+                                            <div className="form-group mt-2">
+                                                <label className='form-label'>Block/Area <span className='mandatory_color'>*</span></label>
+                                                <input type="text"
+                                                    className="form-control"
+                                                    maxLength={100}
+                                                    placeholder="Enter block/area"
+                                                    value={irregular_blockArea}
+                                                    onChange={handleirRegular_BlockAreaChange}
+                                                    ref={irregular_blockArearef} />
+                                            </div>{irregular_blockAreaError && <p style={{ color: 'red' }}>{irregular_blockAreaError}</p>}
+                                        </div>
+                                        {/* No of sides of the sites or plot */}
+                                        <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 ">
+                                            <div className="form-group mt-2">
+                                                <label className="form-label">No of sides of the site / plot <small style={{ color: 'gray' }}>(Can add a minimum of 3 sides and a maximum of 9 sides only.)</small><span className='mandatory_color'>*</span></label>
+                                                <input
+                                                    type="text"
+                                                    className="form-control"
+                                                    placeholder="Enter no of sides"
+                                                    value={numSides}
+                                                    onChange={handleNumSidesChange}
+                                                    maxLength="1" ref={irregularnumsidesref}
+                                                />{numSidesError && <small className="text-danger">{numSidesError}</small>}
+
+                                            </div>
+
+                                        </div>
+                                        <div className=" mt-3">
+                                            {sides.map((side, index) => (
+                                                <div key={side.id} className='row'>
+
+                                                    {/* Label */}
+                                                    <div className='col-6 col-sm-6 col-md-2 col-lg-2 col-xl-2'>
+                                                        <label className="form-label fw-bold">Side {side.id} Length <span className='mandatory_color'>*</span></label>
+                                                    </div>
+                                                    {/* Feet input */}
+                                                    <div className="col-6 col-sm-6 col-md-3 col-lg-3 col-xl-3">
+                                                        <div className="input-group">
+                                                            <input
+                                                                type="tel"
+                                                                className="form-control"
+                                                                ref={sideRefs.current[index]}
+                                                                placeholder={`Enter the side ${side.id} Length`}
+                                                                value={side.lengthInFeet}
+                                                                onChange={(e) => {
+                                                                    const value = e.target.value;
+                                                                    // Allow only whole numbers
+                                                                    const numericValue = value.replace(/[^0-9]/g, '');
+                                                                    handleLengthInFeetChange(index, numericValue);
+                                                                }}
+                                                            />
+                                                            <span className="input-group-text">feet</span>
+                                                        </div>
+                                                        {sideErrors[index] && sideErrors[index].length !== '' && (
+                                                            <div className="text-danger mt-1">{sideErrors[index].length}</div>
+                                                        )}
+                                                    </div>
+                                                    {/* "or" label */}
+                                                    <div className="col-12 col-sm-12 col-md-1 col-lg-1 col-xl-1  text-center">
+                                                        <label className="form-label fw-bold">or</label>
+                                                    </div>
+
+                                                    {/* Meter input */}
+                                                    <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3 ">
+                                                        <div className="input-group">
+                                                            <input
+                                                                type="tel"
+                                                                className="form-control" placeholder={`Enter the side ${side.id} Length`}
+                                                                value={side.lengthInMeter}
+                                                                onChange={(e) => {
+                                                                    const value = e.target.value;
+                                                                    // Allow numbers with at most 1 digit after decimal
+                                                                    const numericValue = value.replace(/[^0-9.]/g, '');
+                                                                    if (/^\d*(\.\d?)?$/.test(numericValue)) {
+                                                                        handleLengthInMeterChange(index, numericValue);
+                                                                    }
+                                                                }}
+                                                            />
+                                                            <span className="input-group-text">meter</span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Road Facing */}
+                                                    <div className="col-6 col-sm-6 col-md-1 col-lg-1 col-xl-1 mb-3">
+                                                        <label className="form-label fw-bold">Road Facing <span className='mandatory_color'>*</span></label>
+                                                    </div>
+                                                    <div className="col-6 col-sm-6 col-md-2 col-lg-2 col-xl-2 mb-3">
+                                                        <div className="d-flex gap-2">
+                                                            <div className="form-check">
+                                                                <label className="form-check-label"><input
+                                                                    type="radio"
+                                                                    className="form-check-input"
+                                                                    name={`roadFacing${side.id}`}
+                                                                    checked={side.roadFacing === true}
+                                                                    onChange={() => handleRoadFacingChange(index, true)}
+                                                                />
+                                                                    Yes</label>
+                                                            </div>
+                                                            <div className="form-check">
+                                                                <label className="form-check-label"><input
+                                                                    type="radio"
+                                                                    className="form-check-input"
+                                                                    name={`roadFacing${side.id}`}
+                                                                    checked={side.roadFacing === false}
+                                                                    onChange={() => handleRoadFacingChange(index, false)}
+                                                                />
+                                                                    No</label>
+                                                            </div>
+                                                        </div>
+                                                        {sideErrors[index] && sideErrors[index].roadFacing !== '' && (
+                                                            <div className="text-danger mt-1">{sideErrors[index].roadFacing}</div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
+
+                                        </div>
+                                        {/* Area of site / plot */}
+                                        <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
                                             <label className="form-label">Area <span className='mandatory_color'>*</span></label>
                                             <div className="input-group">
-                                                <div className="input-group">
-                                                    <input
-                                                        type="text"
-                                                        className="form-control"
-                                                        placeholder="Area"
-                                                        value={regularAreaSqFt ? parseInt(regularAreaSqFt) : ''}
-                                                        readOnly
-                                                    />
-                                                    <span className="input-group-text">sq.ft</span>
-                                                </div>
+                                                <input
+                                                    type="tel"
+                                                    className="form-control"
+                                                    placeholder="Area"
+                                                    value={irregularAreaSqFt ? parseInt(irregularAreaSqFt) : ''}
+                                                    onChange={handleSqFtChange}
+                                                    ref={irregular_AreaSqFtref}
+                                                />
+
+                                                <span className="input-group-text">sq.ft</span>
+                                            </div>
+                                            {irregularAreaSqft_sqM_error && <small className='text-danger'>{irregularAreaSqft_sqM_error}</small>}
+                                        </div>
+                                        <div className="col-12 col-sm-12 col-md-1 col-lg-1 col-xl-1 mb-3 text-center">
+                                            <div className="form-group "><br />
+                                                <label className="form-label fw-bold">or</label>
                                             </div>
                                         </div>
-                                        <div className="col-12 col-sm-12 col-md-6 col-lg-3 col-xl-3 mb-3">
+                                        <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
                                             <label className="form-label">&nbsp;</label>
                                             <div className="input-group">
-                                                <div className="input-group">
-                                                    <input
-                                                        type="text"
-                                                        className="form-control"
-                                                        placeholder="Area"
-                                                        value={regularAreaSqM ? parseFloat(regularAreaSqM).toFixed(1) : ''}
-                                                        readOnly
-                                                    />
-                                                    <span className="input-group-text">sq.mtr</span>
-                                                </div>
+                                                <input
+                                                    type="tel"
+                                                    className="form-control"
+                                                    placeholder="Area"
+                                                    value={irregularAreaSqM ? parseFloat(irregularAreaSqM).toFixed(1) : ''}
+                                                    onChange={handleSqMChange}
+                                                    ref={irregular_AreaSqFtref}
+                                                />
+                                                <span className="input-group-text">sq.mtr</span>
                                             </div>
                                         </div>
                                         {/* Corner Site */}
-                                        <div className="col-12 col-sm-12 col-md-6 col-lg-3 col-xl-3 mb-3">
+                                        <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mb-3">
                                             <label className="form-label fw-bold">Corner Site <span className='mandatory_color'>*</span></label>
                                             <div className="d-flex align-items-center gap-3 text-center">
                                                 <div className="row w-100">
@@ -2304,14 +2974,13 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                                                                 className="form-check-input me-2 radioStyle"
                                                                 name="cornerSite"
                                                                 value="yes"
-                                                                checked={cornerSite === true}
-                                                                ref={cornerSiteRef}
+                                                                checked={irregularcornerSite === true}
+                                                                ref={irregular_cornerSiteref}
                                                                 onChange={() => {
-                                                                    setCornerSite(true);
-                                                                    setCornerSiteError('');
+                                                                    setIrregularCornerSite(true);
+                                                                    setIrregularCornerSiteError('');
                                                                 }}
                                                             />
-
                                                                 Yes</label>
                                                         </div>
                                                     </div>
@@ -2322,11 +2991,11 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                                                                 className="form-check-input me-2 radioStyle"
                                                                 name="cornerSite"
                                                                 value="no"
-                                                                ref={cornerSiteRef}
-                                                                checked={cornerSite === false}
+                                                                checked={irregularcornerSite === false}
+                                                                ref={irregular_cornerSiteref}
                                                                 onChange={() => {
-                                                                    setCornerSite(false);
-                                                                    setCornerSiteError('');
+                                                                    setIrregularCornerSite(false);
+                                                                    setIrregularCornerSiteError('');
                                                                 }}
                                                             />
                                                                 No</label>
@@ -2334,489 +3003,108 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                                                     </div>
                                                 </div>
                                             </div>
-                                            {cornerSiteError && <div className="text-danger">{cornerSiteError}</div>}
+                                            {irregularcornerSiteError && <div className="text-danger">{irregularcornerSiteError}</div>}
                                         </div>
-                                        {/* Type of Site Dropdown */}
-                                        <div className="col-12 col-sm-12 col-md-6 col-lg-3 col-xl-3">
-                                            <label className="form-label">Type of Site <span className='mandatory_color'>*</span></label>
-                                            <div className="d-flex align-items-center gap-3">
-                                                <select
-                                                    className="form-select"
-                                                    value={siteType}
-                                                    ref={siteTypeRef}
-                                                    onChange={(e) => {
-                                                        setSiteType(e.target.value);
-                                                        if (e.target.value !== '') {
-                                                            setSiteTypeError('');
-                                                        }
-                                                    }}
-                                                >
-                                                    <option value="">Select Site Type</option>
-                                                    <option value="1">Civic Amenity</option>
-                                                    <option value="2">Commercial</option>
-                                                    <option value="3">Industrial</option>
-                                                    <option value="4">Park</option>
-                                                    <option value="5">Residential</option>
-                                                    <option value="8">Road</option>
-                                                    <option value="6">Sump</option>
-                                                    <option value="7">Utility</option>
-                                                </select>
 
-                                            </div>
-                                            {siteTypeError && (
-                                                <small className="text-danger">{siteTypeError}</small>
-                                            )}
-                                        </div>
-                                        {/* Chak Bandi details */}
+
                                         <h5 className='mt-5'>Chakbandi Details</h5>
-                                        <div className="col-12 col-sm-12 col-md-6 col-lg-3 col-xl-3 mt-3">
+                                        {/* Chak Bandi details */}
+                                        <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mt-3">
                                             <label className="form-label">East <span className='mandatory_color'>*</span></label>
                                             <div className="input-group">
                                                 <input
                                                     type="text"
                                                     className="form-control" placeholder='Enter the chakbandi east side details'
-                                                    value={chakbandiEast}
-                                                    ref={chakbandiEastRef}
+                                                    value={irregularchakbandiEast}
+                                                    ref={irregular_chakbandiEastref}
                                                     onChange={(e) => {
                                                         const value = e.target.value;
                                                         if (/^[a-zA-Z0-9.,\/\\#\s]*$/.test(value)) {
-                                                            setChakbandiEast(value);
-                                                            setChakbandiEastError("");
+                                                            setIrregularChakbandiEast(value);
+                                                            setIrregularChakbandiEastError("");
                                                         } else {
-                                                            setChakbandiEastError("Only letters, numbers, space and . , / \\ # are allowed");
+                                                            setIrregularChakbandiEastError("Only letters, numbers, space and . , / \\ # are allowed");
                                                         }
                                                     }}
                                                 />
                                             </div>
-                                            {chakbandiEastError && (
-                                                <small className="text-danger">{chakbandiEastError}</small>
+                                            {irregularchakbandiEastError && (
+                                                <small className="text-danger">{irregularchakbandiEastError}</small>
                                             )}
                                         </div>
-                                        <div className="col-12 col-sm-12 col-md-6 col-lg-3 col-xl-3 mt-3">
+                                        <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mt-3">
                                             <label className="form-label">West <span className='mandatory_color'>*</span></label>
                                             <div className="input-group">
-
                                                 <input
                                                     type="text"
-                                                    className="form-control" placeholder='Enter the chakbandi west side details'
-                                                    value={chakbandiWest}
-                                                    ref={chakbandiWestRef}
+                                                    className="form-control" placeholder='Enter the chakbandi West side details'
+                                                    value={irregularchakbandiWest}
+                                                    ref={irregular_chakbandiWestref}
                                                     onChange={(e) => {
                                                         const value = e.target.value;
                                                         if (/^[a-zA-Z0-9.,\/\\#\s]*$/.test(value)) {
-                                                            setChakbandiWest(value);
-                                                            setChakbandiWestError("");
+                                                            setIrregularChakbandiWest(value);
+                                                            setIrregularChakbandiWestError("");
                                                         } else {
-                                                            setChakbandiWestError("Only letters, numbers, space and . , / \\ # are allowed");
+                                                            setIrregularChakbandiWestError("Only letters, numbers, space and . , / \\ # are allowed");
                                                         }
                                                     }}
                                                 />
                                             </div>
-                                            {chakbandiWestError && (
-                                                <small className="text-danger">{chakbandiWestError}</small>
+                                            {irregularchakbandiWestError && (
+                                                <small className="text-danger">{irregularchakbandiWestError}</small>
                                             )}
                                         </div>
-                                        <div className="col-12 col-sm-12 col-md-6 col-lg-3 col-xl-3 mt-3">
+                                        <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mt-3">
+                                            <label className="form-label">North <span className='mandatory_color'>*</span></label>
+                                            <div className="input-group">
+                                                <input
+                                                    type="text"
+                                                    className="form-control" placeholder='Enter the chakbandi North side details'
+                                                    value={irregularchakbandiNorth}
+                                                    ref={irregular_chakbandiNorthref}
+                                                    onChange={(e) => {
+                                                        const value = e.target.value;
+                                                        if (/^[a-zA-Z0-9.,\/\\#\s]*$/.test(value)) {
+                                                            setIrregularChakbandiNorth(value);
+                                                            setIrregularChakbandiNorthError("");
+                                                        } else {
+                                                            setIrregularChakbandiNorthError("Only letters, numbers, space and . , / \\ # are allowed");
+                                                        }
+                                                    }}
+                                                />
+                                            </div>
+                                            {irregularchakbandiNorthError && (
+                                                <small className="text-danger">{irregularchakbandiNorthError}</small>
+                                            )}
+                                        </div>
+                                        <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mt-3">
                                             <label className="form-label">South <span className='mandatory_color'>*</span></label>
                                             <div className="input-group">
                                                 <input
                                                     type="text"
                                                     className="form-control" placeholder='Enter the chakbandi south side details'
-                                                    value={chakbandiSouth}
-                                                    ref={chakbandiSouthRef}
+                                                    value={irregularchakbandiSouth}
+                                                    ref={irregular_chakbandiSouthref}
                                                     onChange={(e) => {
                                                         const value = e.target.value;
                                                         if (/^[a-zA-Z0-9.,\/\\#\s]*$/.test(value)) {
-                                                            setChakbandiSouth(value);
-                                                            setChakbandiSouthError("");
+                                                            setIrregularChakbandiSouth(value);
+                                                            setIrregularChakbandiSouthError("");
                                                         } else {
-                                                            setChakbandiSouthError("Only letters, numbers, space and . , / \\ # are allowed");
+                                                            setIrregularChakbandiSouthError("Only letters, numbers, space and . , / \\ # are allowed");
                                                         }
                                                     }}
                                                 />
                                             </div>
-                                            {chakbandiSouthError && (
-                                                <small className="text-danger">{chakbandiSouthError}</small>
+                                            {irregularchakbandiSouthError && (
+                                                <small className="text-danger">{irregularchakbandiSouthError}</small>
                                             )}
                                         </div>
-                                        <div className="col-12 col-sm-12 col-md-6 col-lg-3 col-xl-3 mt-3">
-                                            <label className="form-label">North <span className='mandatory_color'>*</span></label>
-                                            <div className="input-group">
-
-                                                <input
-                                                    type="text"
-                                                    className="form-control" placeholder='Enter the chakbandi north side details'
-                                                    value={chakbandiNorth}
-                                                    ref={chakbandiNorthRef}
-                                                    onChange={(e) => {
-                                                        const value = e.target.value;
-                                                        if (/^[a-zA-Z0-9.,\/\\#\s]*$/.test(value)) {
-                                                            setChakbandiNorth(value);
-                                                            setChakbandiNorthError("");
-                                                        } else {
-                                                            setChakbandiNorthError("Only letters, numbers, space and . , / \\ # are allowed");
-                                                        }
-                                                    }}
-                                                />
-                                            </div>
-                                            {chakbandiNorthError && (
-                                                <small className="text-danger">{chakbandiNorthError}</small>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                </div>
-
-                            </div>
-                        )}
-                        {shape === "irregular" && (
-                            <div className="container mt-3">
-                                <div className="row align-items-center mb-3">
-                                    {/* Site Number */}
-                                    <div className='col-md-6'>
-                                        <div className="form-group mt-2">
-                                            <label className='form-label'>
-                                                Site / Plot No <span className='mandatory_color'>*</span>
-                                            </label>
-                                            <input
-                                                type="text" ref={irregular_siteNoref}
-                                                className="form-control"
-                                                placeholder="Enter Site / Plot number"
-                                                value={irregular_siteNumber}
-                                                maxLength={15}
-                                                onChange={handleirRegular_SiteNumberChange}
-                                            />
-                                            {irregular_siteNumberError && (
-                                                <small className="text-danger">{irregular_siteNumberError}</small>
-                                            )}
-                                        </div>
-                                    </div>
-                                    {/* Block/Area */}
-                                    <div className='col-md-6'>
-                                        <div className="form-group mt-2">
-                                            <label className='form-label'>Block/Area <span className='mandatory_color'>*</span></label>
-                                            <input type="text"
-                                                className="form-control"
-                                                maxLength={100}
-                                                placeholder="Enter block/area"
-                                                value={irregular_blockArea}
-                                                onChange={handleirRegular_BlockAreaChange}
-                                                ref={irregular_blockArearef} />
-                                        </div>{irregular_blockAreaError && <p style={{ color: 'red' }}>{irregular_blockAreaError}</p>}
-                                    </div>
-                                    {/* No of sides of the sites or plot */}
-                                    <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 ">
-                                        <div className="form-group mt-2">
-                                            <label className="form-label">No of sides of the site / plot <small style={{ color: 'gray' }}>(Can add a minimum of 3 sides and a maximum of 9 sides only.)</small><span className='mandatory_color'>*</span></label>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                placeholder="Enter no of sides"
-                                                value={numSides}
-                                                onChange={handleNumSidesChange}
-                                                maxLength="1" ref={irregularnumsidesref}
-                                            />{numSidesError && <small className="text-danger">{numSidesError}</small>}
-
-                                        </div>
-
-                                    </div>
-                                    <div className=" mt-3">
-                                        {sides.map((side, index) => (
-                                            <div key={side.id} className='row'>
-
-                                                {/* Label */}
-                                                <div className='col-6 col-sm-6 col-md-2 col-lg-2 col-xl-2'>
-                                                    <label className="form-label fw-bold">Side {side.id} Length <span className='mandatory_color'>*</span></label>
-                                                </div>
-                                                {/* Feet input */}
-                                                <div className="col-6 col-sm-6 col-md-3 col-lg-3 col-xl-3">
-                                                    <div className="input-group">
-                                                        <input
-                                                            type="tel"
-                                                            className="form-control"
-                                                            ref={sideRefs.current[index]}
-                                                            placeholder={`Enter the side ${side.id} Length`}
-                                                            value={side.lengthInFeet}
-                                                            onChange={(e) => {
-                                                                const value = e.target.value;
-                                                                // Allow only whole numbers
-                                                                const numericValue = value.replace(/[^0-9]/g, '');
-                                                                handleLengthInFeetChange(index, numericValue);
-                                                            }}
-                                                        />
-                                                        <span className="input-group-text">feet</span>
-                                                    </div>
-                                                    {sideErrors[index] && sideErrors[index].length !== '' && (
-                                                        <div className="text-danger mt-1">{sideErrors[index].length}</div>
-                                                    )}
-                                                </div>
-                                                {/* "or" label */}
-                                                <div className="col-12 col-sm-12 col-md-1 col-lg-1 col-xl-1  text-center">
-                                                    <label className="form-label fw-bold">or</label>
-                                                </div>
-
-                                                {/* Meter input */}
-                                                <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3 ">
-                                                    <div className="input-group">
-                                                        <input
-                                                            type="tel"
-                                                            className="form-control" placeholder={`Enter the side ${side.id} Length`}
-                                                            value={side.lengthInMeter}
-                                                            onChange={(e) => {
-                                                                const value = e.target.value;
-                                                                // Allow numbers with at most 1 digit after decimal
-                                                                const numericValue = value.replace(/[^0-9.]/g, '');
-                                                                if (/^\d*(\.\d?)?$/.test(numericValue)) {
-                                                                    handleLengthInMeterChange(index, numericValue);
-                                                                }
-                                                            }}
-                                                        />
-                                                        <span className="input-group-text">meter</span>
-                                                    </div>
-                                                </div>
-
-                                                {/* Road Facing */}
-                                                <div className="col-6 col-sm-6 col-md-1 col-lg-1 col-xl-1 mb-3">
-                                                    <label className="form-label fw-bold">Road Facing <span className='mandatory_color'>*</span></label>
-                                                </div>
-                                                <div className="col-6 col-sm-6 col-md-2 col-lg-2 col-xl-2 mb-3">
-                                                    <div className="d-flex gap-2">
-                                                        <div className="form-check">
-                                                            <label className="form-check-label"><input
-                                                                type="radio"
-                                                                className="form-check-input"
-                                                                name={`roadFacing${side.id}`}
-                                                                checked={side.roadFacing === true}
-                                                                onChange={() => handleRoadFacingChange(index, true)}
-                                                            />
-                                                                Yes</label>
-                                                        </div>
-                                                        <div className="form-check">
-                                                            <label className="form-check-label"><input
-                                                                type="radio"
-                                                                className="form-check-input"
-                                                                name={`roadFacing${side.id}`}
-                                                                checked={side.roadFacing === false}
-                                                                onChange={() => handleRoadFacingChange(index, false)}
-                                                            />
-                                                                No</label>
-                                                        </div>
-                                                    </div>
-                                                    {sideErrors[index] && sideErrors[index].roadFacing !== '' && (
-                                                        <div className="text-danger mt-1">{sideErrors[index].roadFacing}</div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        ))}
-
-                                    </div>
-                                    {/* Area of site / plot */}
-                                    <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
-                                        <label className="form-label">Area <span className='mandatory_color'>*</span></label>
-                                        <div className="input-group">
-                                            <input
-                                                type="tel"
-                                                className="form-control"
-                                                placeholder="Area"
-                                                value={irregularAreaSqFt ? parseInt(irregularAreaSqFt) : ''}
-                                                onChange={handleSqFtChange}
-                                                ref={irregular_AreaSqFtref}
-                                            />
-
-                                            <span className="input-group-text">sq.ft</span>
-                                        </div>
-                                        {irregularAreaSqft_sqM_error && <small className='text-danger'>{irregularAreaSqft_sqM_error}</small>}
-                                    </div>
-                                    <div className="col-12 col-sm-12 col-md-1 col-lg-1 col-xl-1 mb-3 text-center">
-                                        <div className="form-group "><br />
-                                            <label className="form-label fw-bold">or</label>
-                                        </div>
-                                    </div>
-                                    <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
-                                        <label className="form-label">&nbsp;</label>
-                                        <div className="input-group">
-                                            <input
-                                                type="tel"
-                                                className="form-control"
-                                                placeholder="Area"
-                                                value={irregularAreaSqM ? parseFloat(irregularAreaSqM).toFixed(1) : ''}
-                                                onChange={handleSqMChange}
-                                                ref={irregular_AreaSqFtref}
-                                            />
-                                            <span className="input-group-text">sq.mtr</span>
-                                        </div>
-                                    </div>
-                                    {/* Corner Site */}
-                                    <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mb-3">
-                                        <label className="form-label fw-bold">Corner Site <span className='mandatory_color'>*</span></label>
-                                        <div className="d-flex align-items-center gap-3 text-center">
-                                            <div className="row w-100">
-                                                <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 ">
-                                                    <div className="form-check">
-                                                        <label className="form-check-label"><input
-                                                            type="radio"
-                                                            className="form-check-input me-2 radioStyle"
-                                                            name="cornerSite"
-                                                            value="yes"
-                                                            checked={irregularcornerSite === true}
-                                                            ref={irregular_cornerSiteref}
-                                                            onChange={() => {
-                                                                setIrregularCornerSite(true);
-                                                                setIrregularCornerSiteError('');
-                                                            }} 
-                                                        />
-                                                            Yes</label>
-                                                    </div>
-                                                </div>
-                                                <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 ">
-                                                    <div className="form-check">
-                                                        <label className="form-check-label"><input
-                                                            type="radio"
-                                                            className="form-check-input me-2 radioStyle"
-                                                            name="cornerSite"
-                                                            value="no"
-                                                            checked={irregularcornerSite === false}
-                                                            ref={irregular_cornerSiteref}
-                                                            onChange={() => {
-                                                                setIrregularCornerSite(false);
-                                                                setIrregularCornerSiteError('');
-                                                            }}
-                                                        />
-                                                            No</label>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        {irregularcornerSiteError && <div className="text-danger">{irregularcornerSiteError}</div>}
-                                    </div>
-                                    {/* Type of Site Dropdown */}
-                                    <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
-                                        <label className="form-label">Type of Site <span className='mandatory_color'>*</span></label>
-                                        <div className="d-flex align-items-center gap-3">
-                                            <select
-                                                className="form-select"
-                                                value={irregularsiteType}
-                                                ref={irregular_siteTyperef}
-                                                onChange={(e) => {
-                                                    setIrregularsiteType(e.target.value);
-                                                    if (e.target.value !== '') {
-                                                        setIrregularsiteTypeError('');
-                                                    }
-                                                }}
-                                            >
-                                                <option value="">Select Site Type</option>
-                                                <option value="1">Civic Amenity</option>
-                                                <option value="2">Commercial</option>
-                                                <option value="3">Industrial</option>
-                                                <option value="4">Park</option>
-                                                <option value="5">Residential</option>
-                                                <option value="8">Road</option>
-                                                <option value="6">Sump</option>
-                                                <option value="7">Utility</option>
-                                            </select>
-
-                                        </div>
-                                        {irregularsiteTypeError && (
-                                            <small className="text-danger">{irregularsiteTypeError}</small>
-                                        )}
-                                    </div>
-
-                                    <h5 className='mt-5'>Chakbandi Details</h5>
-                                    {/* Chak Bandi details */}
-                                    <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mt-3">
-                                        <label className="form-label">East <span className='mandatory_color'>*</span></label>
-                                        <div className="input-group">
-                                            <input
-                                                type="text"
-                                                className="form-control" placeholder='Enter the chakbandi east side details'
-                                                value={irregularchakbandiEast}
-                                                ref={irregular_chakbandiEastref}
-                                                onChange={(e) => {
-                                                    const value = e.target.value;
-                                                    if (/^[a-zA-Z0-9.,\/\\#\s]*$/.test(value)) {
-                                                        setIrregularChakbandiEast(value);
-                                                        setIrregularChakbandiEastError("");
-                                                    } else {
-                                                        setIrregularChakbandiEastError("Only letters, numbers, space and . , / \\ # are allowed");
-                                                    }
-                                                }}
-                                            />
-                                        </div>
-                                        {irregularchakbandiEastError && (
-                                            <small className="text-danger">{irregularchakbandiEastError}</small>
-                                        )}
-                                    </div>
-                                    <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mt-3">
-                                        <label className="form-label">West <span className='mandatory_color'>*</span></label>
-                                        <div className="input-group">
-                                            <input
-                                                type="text"
-                                                className="form-control" placeholder='Enter the chakbandi West side details'
-                                                value={irregularchakbandiWest}
-                                                ref={irregular_chakbandiWestref}
-                                                onChange={(e) => {
-                                                    const value = e.target.value;
-                                                    if (/^[a-zA-Z0-9.,\/\\#\s]*$/.test(value)) {
-                                                        setIrregularChakbandiWest(value);
-                                                        setIrregularChakbandiWestError("");
-                                                    } else {
-                                                        setIrregularChakbandiWestError("Only letters, numbers, space and . , / \\ # are allowed");
-                                                    }
-                                                }}
-                                            />
-                                        </div>
-                                        {irregularchakbandiWestError && (
-                                            <small className="text-danger">{irregularchakbandiWestError}</small>
-                                        )}
-                                    </div>
-                                    <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mt-3">
-                                        <label className="form-label">North <span className='mandatory_color'>*</span></label>
-                                        <div className="input-group">
-                                            <input
-                                                type="text"
-                                                className="form-control" placeholder='Enter the chakbandi North side details'
-                                                value={irregularchakbandiNorth}
-                                                ref={irregular_chakbandiNorthref}
-                                                onChange={(e) => {
-                                                    const value = e.target.value;
-                                                    if (/^[a-zA-Z0-9.,\/\\#\s]*$/.test(value)) {
-                                                        setIrregularChakbandiNorth(value);
-                                                        setIrregularChakbandiNorthError("");
-                                                    } else {
-                                                        setIrregularChakbandiNorthError("Only letters, numbers, space and . , / \\ # are allowed");
-                                                    }
-                                                }}
-                                            />
-                                        </div>
-                                        {irregularchakbandiNorthError && (
-                                            <small className="text-danger">{irregularchakbandiNorthError}</small>
-                                        )}
-                                    </div>
-                                    <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mt-3">
-                                        <label className="form-label">South <span className='mandatory_color'>*</span></label>
-                                        <div className="input-group">
-                                            <input
-                                                type="text"
-                                                className="form-control" placeholder='Enter the chakbandi south side details'
-                                                value={irregularchakbandiSouth}
-                                                ref={irregular_chakbandiSouthref}
-                                                onChange={(e) => {
-                                                    const value = e.target.value;
-                                                    if (/^[a-zA-Z0-9.,\/\\#\s]*$/.test(value)) {
-                                                        setIrregularChakbandiSouth(value);
-                                                        setIrregularChakbandiSouthError("");
-                                                    } else {
-                                                        setIrregularChakbandiSouthError("Only letters, numbers, space and . , / \\ # are allowed");
-                                                    }
-                                                }}
-                                            />
-                                        </div>
-                                        {irregularchakbandiSouthError && (
-                                            <small className="text-danger">{irregularchakbandiSouthError}</small>
-                                        )}
                                     </div>
                                 </div>
-                            </div>
+                            )}
+                        </>
                         )}
                     </fieldset>
                 </div>
@@ -2859,7 +3147,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
                                 {/* Latitude */}
                                 <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6   text-center mb-2">
-                                    <label className='form-label'>latitude</label>  <input
+                                    <label className='form-label'>Latitude</label>  <input
                                         type="text"
                                         className="form-control text-center text-success"
                                         value={latitude}
@@ -2883,7 +3171,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                                 </div>
                                 {/* Zone name */}
                                 <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mb-3">
-                                    <label className="form-label">Zones Name</label>
+                                    <label className="form-label">Zone Name</label>
                                     <select
                                         className="form-select"
                                         value={selectedZone}
@@ -2909,7 +3197,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                                 </div>
                                 {/* ward name */}
                                 <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mb-3">
-                                    <label className="form-label">Wards Name</label>
+                                    <label className="form-label">Ward Name</label>
                                     <select
                                         className="form-select"
                                         value={selectedWard}
