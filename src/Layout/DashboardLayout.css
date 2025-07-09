@@ -3782,7 +3782,7 @@
     position: fixed;
     top: 155px; 
     width: 100%;
-    z-index: 1000;
+    z-index: 1040;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -3857,7 +3857,7 @@
     padding-left: 0;
     margin-bottom: 0;
     list-style: none;
-    width: 1000px;
+    width: 1200px;
   }
   
   .navbar-nav .nav-link {
@@ -9568,7 +9568,7 @@
     position: fixed; /* Fix the header */
     top: 0;
     width: 100%;
-    z-index: 500;
+    z-index:1030;
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
     background: linear-gradient(45deg, #023e8a, #0077b6);

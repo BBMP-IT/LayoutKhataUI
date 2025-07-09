@@ -1725,7 +1725,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             sitE_SHAPETYPE: isRegular ? "Regular" : "Irregular",
             sitE_NO: isRegular ? regular_siteNumber : irregular_siteNumber,
             sitE_AREA: isRegular ? blockArea : irregular_blockArea,
-            sitE_TYPEID: isRegular ? siteType : irregularsiteType,
+            sitE_TYPEID: isRegular ? siteType : siteType,
             sitE_AREAINSQFT: isRegular ? regularAreaSqFt : irregularAreaSqFt,
             sitE_AREAINSQMT: isRegular ? regularAreaSqM : irregularAreaSqM,
             sitE_LATITUDE: latitude,
@@ -1841,7 +1841,11 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         const storedSiteCount = sessionStorage.getItem("NUMBEROFSITES");
         if (storedSiteCount) {
             setLayoutSiteCount(storedSiteCount);
-            setIsReadOnly(true);     // Make input and Save button readonly/disabled
+            setIsReadOnly(true);     
+            setShowEditBtn(true);
+        }else{
+            setLayoutSiteCount("0");
+            setIsReadOnly(true);     
             setShowEditBtn(true);
         }
         try {

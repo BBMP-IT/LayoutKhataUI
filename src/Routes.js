@@ -63,7 +63,7 @@ import ReleaseDashboard from './Pages/BBMP/ReleaseDashboard';
 import Endorsement from './Pages/BBMP/Endorsement';
 
 import BBMP_Home from './Pages/BBMP/BBMP_HomePage';
-
+import BBMP_HP from './Pages/BBMP/BBMP_HP';
 
 const AppRoutes = () => {
 
@@ -79,6 +79,8 @@ const AppRoutes = () => {
       
             <Route path="/Login" element={<BBMPLogin />} />
             <Route path="/" element={<BBMP_Home/>}/>
+            <Route path='/home' element={<BBMP_HP/>}/>
+
             {/* Protected Routes */}
             <Route path="/homePage" element={<ProtectedRoute element={<BBMP_Homepage />} />} />
             <Route path="/LayoutForm" element={<ProtectedRoute element={<BBMP_LayoutForm />} />} />

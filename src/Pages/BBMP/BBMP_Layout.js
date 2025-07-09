@@ -111,6 +111,16 @@ const BBMP_LayoutForm = () => {
     const RoleID = "user";
 
     useEffect(() => {
+        if (loading) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'auto';
+        }
+    }, [loading]);
+
+
+
+    useEffect(() => {
 
         // generate_Token();
         sessionStorage.setItem('createdBy', CreatedBy);
@@ -163,7 +173,7 @@ const BBMP_LayoutForm = () => {
                 } else if (response.lkrS_LANDTYPE === "khata") {
                     setSelectedLandType("bbmpKhata");
                     setLandDetails("khata");
-                    
+
                 }
 
                 stop_loader();
@@ -286,21 +296,21 @@ const BBMP_LayoutForm = () => {
                                 isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsApprovalSectionSaved={setIsApprovalSectionSaved}
                                 setIsReleaseSectionSaved={setIsReleaseSectionSaved} setTotalNoofsites={setTotalNoofsites} />
 
-                             
+                            {totalNoofsites > 0 && (
                                 <IndividualGPSBlock areaSqft={areaSqft} LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID} totalNoofsites={totalNoofsites}
-                                isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsSitesSectionSaved={setIsSitesSectionSaved} ownerName={ownerName} />
-                            
+                                    isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsSitesSectionSaved={setIsSitesSectionSaved} ownerName={ownerName} />
+                            )}
                             <ECDetailsBlock LKRS_ID={LKRS_ID} isRTCSectionSaved={isRTCSectionSaved} ownerName={ownerName} isEPIDSectionSaved={isEPIDSectionSaved} setIsECSectionSaved={setIsECSectionSaved}
-                                 landDetails={landDetails} setValidate_OwnerDataList={setValidate_OwnerDataList} setIsOwnerEKYCSectionSaved={setIsOwnerEKYCSectionSaved} setIsJDAEKYCSectionSaved={setIsJDAEKYCSectionSaved} />
+                                landDetails={landDetails} setValidate_OwnerDataList={setValidate_OwnerDataList} setIsOwnerEKYCSectionSaved={setIsOwnerEKYCSectionSaved} setIsJDAEKYCSectionSaved={setIsJDAEKYCSectionSaved} />
 
                             <DeclarationBlock LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID} display_LKRS_ID={display_LKRS_ID} isRTCSectionSaved={isRTCSectionSaved}
                                 isEPIDSectionSaved={isEPIDSectionSaved} isApprovalSectionSaved={isApprovalSectionSaved} isReleaseSectionSaved={isReleaseSectionSaved} validate_ownerDataList={validate_ownerDataList}
                                 isSitesSectionSaved={isSitesSectionSaved} isECSectionSaved={isECSectionSaved} isJDAEKYCSectionSaved={isJDAEKYCSectionSaved} isOwnerEKYCSectionSaved={isOwnerEKYCSectionSaved} />
                         </div>
-
                     </div>
                 </div>
             </DashboardLayout>
+
         </>
     );
 }
@@ -556,7 +566,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
             setSurnocEnabled(true);
             setHissaEnabled(false);
         } catch (err) {
-            
+
             console.error("Failed to fetch Hissa data", err);
         } finally {
             stop_loader();
@@ -807,7 +817,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                 suR_CREATEDROLE: roleID
             }))
         };
-       
+
 
         try {
             start_loader();
@@ -977,34 +987,34 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
     // const handleRemoveRTC = (indexToRemove) => {
     //     setRtcAddedData(prev => prev.filter((_, index) => index !== indexToRemove));
     // };
-const handleRemoveRTC = (rowToRemove) => {
-    Swal.fire({
-        title: "Are you sure?",
-        text: "This will remove only the selected owner record!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Yes, delete",
-        cancelButtonText: "Cancel",
-        confirmButtonColor: "#d33"
-    }).then((result) => {
-        if (result.isConfirmed) {
-            setRtcAddedData(prev =>
-                prev.filter(item =>
-                    !(
-                        item.survey_no === rowToRemove.survey_no &&
-                        item.surnoc === rowToRemove.surnoc &&
-                        item.hissa_no === rowToRemove.hissa_no &&
-                        item.owner === rowToRemove.owner &&
-                        item.father === rowToRemove.father &&
-                        item.owner_no === rowToRemove.owner_no &&
-                        item.main_owner_no === rowToRemove.main_owner_no
+    const handleRemoveRTC = (rowToRemove) => {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "This will remove only the selected owner record!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, delete",
+            cancelButtonText: "Cancel",
+            confirmButtonColor: "#d33"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                setRtcAddedData(prev =>
+                    prev.filter(item =>
+                        !(
+                            item.survey_no === rowToRemove.survey_no &&
+                            item.surnoc === rowToRemove.surnoc &&
+                            item.hissa_no === rowToRemove.hissa_no &&
+                            item.owner === rowToRemove.owner &&
+                            item.father === rowToRemove.father &&
+                            item.owner_no === rowToRemove.owner_no &&
+                            item.main_owner_no === rowToRemove.main_owner_no
+                        )
                     )
-                )
-            );
-            toast.success("Selected owner record removed!");
-        }
-    });
-};
+                );
+                toast.success("Selected owner record removed!");
+            }
+        });
+    };
 
 
     const handleView = () => {
@@ -1279,6 +1289,7 @@ const handleRemoveRTC = (rowToRemove) => {
                     </div>
                 )}
 
+
                 <hr />
                 {/* Added RTC Table */}
                 {combinedData.length > 0 && (
@@ -1414,6 +1425,37 @@ const handleRemoveRTC = (rowToRemove) => {
 
     );
 };
+
+
+const CustomModal = ({ show, onClose }) => {
+    if (!show) return null;
+
+    return (
+        <>
+            <div className="modal-backdrop fade show"></div>
+            <div className="modal d-block" tabIndex="-1" role="dialog">
+                <div className="modal-dialog" role="document">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h5 className="modal-title">Example Modal</h5>
+                            <button type="button" className="btn-close" onClick={onClose}></button>
+                        </div>
+                        <div className="modal-body">
+                            <p>This content appears above the navbar now!</p>
+                        </div>
+                        <div className="modal-footer">
+                            <button className="btn btn-secondary" onClick={onClose}>
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </>
+    );
+};
+
+
 //BBMP khata section
 const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, setDisplay_LKRS_ID, setIsEPIDSectionSaved, setOwnerName }) => {
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
@@ -2018,7 +2060,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                 khatA_CREATEDBY: createdBy,
                 khatA_CREATEDNAME: createdName,
                 khatA_CREATEDROLE: roleID,
-               khatA_DEED: epid_fetchedData?.KaveriRegistrationNumber?.[0]?.kaveriRegistrationNumber,
+                khatA_DEED: epid_fetchedData?.KaveriRegistrationNumber?.[0]?.kaveriRegistrationNumber,
                 khatA_EC: epid_fetchedData?.KaveriRegistrationNumber?.[0]?.kaveriECNumber,
             },
             khatA_OWNER_DETAILS: epid_fetchedData?.OwnerDetails.map(owner => ({

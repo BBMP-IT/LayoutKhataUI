@@ -138,6 +138,19 @@ const DashboardLayout = ({ children }) => {
     });
   };
 
+  const [isDropdownOneOpen, setIsDropdownOneOpen] = useState(false);
+  const [isDropdownTwoOpen, setIsDropdownTwoOpen] = useState(false);
+
+  const toggleDropdownOne = () => {
+    setIsDropdownOneOpen(!isDropdownOneOpen);
+    setIsDropdownTwoOpen(false); // close the other one
+  };
+
+  const toggleDropdownTwo = () => {
+    setIsDropdownTwoOpen(!isDropdownTwoOpen);
+    setIsDropdownOneOpen(false); // close the other one
+  };
+
 
 
   return (
@@ -334,17 +347,17 @@ const DashboardLayout = ({ children }) => {
                     </a>
                   </li>
 
-                  {/* <li className="nav-item dropdown">
+                  <li className="nav-item dropdown">
                     <a
                       href="#"
-                      className={`nav-link dropdown-toggle ${isDropdownOpen ? "show" : ""}`}
+                      className={`nav-link dropdown-toggle ${isDropdownOneOpen ? "show" : ""}`}
                       role="button"
-                      onClick={toggleDropdown} // Toggle on click
-                      aria-expanded={isDropdownOpen}
+                      onClick={toggleDropdownOne}
+                      aria-expanded={isDropdownOneOpen}
                     >
                       <i className="fa fa-box"></i>&nbsp; {t("translation.thingstoknow.title")}
                     </a>
-                    <ul className={`dropdown-menu ${isDropdownOpen ? "show" : ""}`}>
+                    <ul className={`dropdown-menu ${isDropdownOneOpen ? "show" : ""}`}>
                       <li className="dropdown-submenu">
                         <a className="dropdown-item dropdown-toggle" href="#">
                           {t("translation.thingstoknow.subdropdown.dropdown1")}
@@ -375,18 +388,18 @@ const DashboardLayout = ({ children }) => {
                         </a>
                       </li>
                     </ul>
-                  </li> */}
+                 </li>
                   <li className="nav-item dropdown">
                     <a
                       href="#"
-                      className={`nav-link dropdown-toggle ${isDropdownOpen ? "show" : ""}`}
+                      className={`nav-link dropdown-toggle ${isDropdownTwoOpen ? "show" : ""}`}
                       role="button"
-                      onClick={toggleDropdown} // Toggle on click
-                      aria-expanded={isDropdownOpen}
+                      onClick={toggleDropdownTwo}
+                      aria-expanded={isDropdownTwoOpen}
                     >
                       <i className="fa fa-box"></i>&nbsp; Layout Khata
                     </a>
-                    <ul className={`dropdown-menu ${isDropdownOpen ? "show" : ""}`}>
+                    <ul className={`dropdown-menu ${isDropdownTwoOpen ? "show" : ""}`}>
                       <li>
                         <a className="dropdown-item" href="/LayoutDashboard">
                           Dashboard
@@ -394,22 +407,17 @@ const DashboardLayout = ({ children }) => {
                       </li>
                       <li>
                         <a className="dropdown-item" href="/LayoutForm">
-                         Enter Layout Plan Submitted
+                          Enter Layout Plan Submitted
                         </a>
                       </li>
-                       <li>
+                      <li>
                         <a className="dropdown-item" href="/Release">
                           Site wise NewKhata as per Release
                         </a>
                       </li>
-                       
                     </ul>
                   </li>
-                
-
-
                 </ul>
-
                 {/* logout */}
                 <div className="d-flex align-items-center">
                   <button
