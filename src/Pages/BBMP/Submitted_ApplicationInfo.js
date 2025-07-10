@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useContext } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import ReactDOM from 'react-dom';
-import DashboardLayout from '../../Layout/DashboardLayout';
+import DashboardLayout, { LoaderContext }  from '../../Layout/DashboardLayout';
 import { useTranslation } from "react-i18next";
 import i18n from "../../localization/i18n";
 import SAS_Sample from '../../assets/Sample_SAS_APPLICATIONNO.jpeg';
@@ -38,7 +38,8 @@ export const useLoader = () => {
 };
 
 const BBMP_SubmittedInfo = () => {
-    const { loading, start_loader, stop_loader } = useLoader();
+    // const { loading, start_loader, stop_loader } = useLoader();
+    const { loading, start_loader, stop_loader } = useContext(LoaderContext);
     const { t, i18n } = useTranslation();
     const location = useLocation();
     const navigate = useNavigate();
@@ -997,12 +998,11 @@ const BBMP_SubmittedInfo = () => {
     };
     return (
         <>
-            {loading && <Loader />}
+            {/* {loading && <Loader />}
             <DashboardLayout>
-
-                <button className='btn btn-block' onClick={fetch_details} ref={buttonRef} hidden>Click me</button>
-                <div className={`layout-form-container ${loading ? 'no-interaction' : ''}`}>
+                <div className={`layout-form-container ${loading ? 'no-interaction' : ''}`}> */}
                     <div className="my-3 my-md-5">
+                        <button className='btn btn-block' onClick={fetch_details} ref={buttonRef} hidden>Click me</button>
                         <div className="container mt-6">
                             <div className="card">
                                 <div className="card-header layout_btn_color" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1723,8 +1723,8 @@ const BBMP_SubmittedInfo = () => {
                         </div>
 
                     </div>
-                </div>
-            </DashboardLayout>
+                {/* </div>
+            </DashboardLayout> */}
         </>
     );
 }

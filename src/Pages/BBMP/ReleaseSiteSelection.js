@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import DashboardLayout from '../../Layout/DashboardLayout';
+import React, { useState, useEffect, useRef, useContext } from 'react';
+import DashboardLayout, { LoaderContext }  from '../../Layout/DashboardLayout';
 import Loader from "../../Layout/Loader";
 import DataTable from 'react-data-table-component';
 import '../../Styles/CSS/ReleaseSiteSelection.css';
@@ -28,7 +28,10 @@ export const useLoader = () => {
 const ReleaseSelection = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-  const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
+  // const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
+  
+   const { loading, start_loader, stop_loader } = useContext(LoaderContext);
+
   const [selectedValue, setSelectedValue] = useState('');
   const location = useLocation();
   const { LKRS_ID, createdBy, createdName, roleID, display_LKRS_ID } = location.state || {};
@@ -2921,9 +2924,9 @@ const ReleaseSelection = () => {
     navigate("/LayoutDashboard");
   };
   return (
-    <DashboardLayout>
-      <div className={`layout-form-container ${loading ? 'no-interaction' : ''}`}>
-        {loading && <Loader />}
+    // <DashboardLayout>
+    //   <div className={`layout-form-container ${loading ? 'no-interaction' : ''}`}>
+    //     {loading && <Loader />}
         <div className="my-3 my-md-5">
           <div className="container mt-5">
 
@@ -3870,8 +3873,8 @@ const ReleaseSelection = () => {
             )}
           </div>
         </div>
-      </div>
-    </DashboardLayout>
+    //   </div>
+    // </DashboardLayout>
   );
 };
 

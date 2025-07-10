@@ -327,9 +327,10 @@ const { UseLogin } = useAuth();
 
 
     return (
-        <DashboardLayout>
-            {loading && <Loader />}
-            {/* Only visible on mobile and tablet */}
+        // <DashboardLayout>
+        //     {loading && <Loader />}
+          
+            <div className="container mt-4">
             <div className="d-block d-md-none">
                 <div className="d-flex flex-wrap justify-content-center text-center align-items-center gap-3 px-2">
 
@@ -604,7 +605,8 @@ const { UseLogin } = useAuth();
                     </div>
                 </div>
             </section>
-        </DashboardLayout>
+            </div>
+        // {/* </DashboardLayout> */}
 
     );
 };

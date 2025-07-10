@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useContext  } from 'react';
 import ReactDOM from 'react-dom';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import DashboardLayout from '../../Layout/DashboardLayout';
+import DashboardLayout, { LoaderContext }  from '../../Layout/DashboardLayout';
 import { useTranslation } from "react-i18next";
 import i18n from "../../localization/i18n";
 import SAS_Sample from '../../assets/Sample_SAS_APPLICATIONNO.jpeg';
@@ -49,12 +49,21 @@ export const useLoader = () => {
 
 
 const BBMP_LayoutForm = () => {
+    
+   const { loading, start_loader, stop_loader } = useContext(LoaderContext);
+    
     const navigate = useNavigate();
-    const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
+    // const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
     const [zoomLevel] = useState(0.9);
     const [newLanguage, setNewLanguage] = useState(sessionStorage.getItem('selectedLanguage'));
     const location = useLocation();
     const { LKRSID, DISPLAYLKRSID } = location.state || {};
+
+useEffect(() => {
+    start_loader(); // test
+    setTimeout(() => stop_loader(), 3000); // simulate load
+  }, []);
+
 
     const [siteData, setSiteData] = useState([]);
     const [gpsData, setGpsData] = useState({});
@@ -111,13 +120,6 @@ const BBMP_LayoutForm = () => {
     const CreatedName = "username";
     const RoleID = "user";
 
-    useEffect(() => {
-        if (loading) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'auto';
-        }
-    }, [loading]);
 
 
 
@@ -195,9 +197,9 @@ const BBMP_LayoutForm = () => {
         <>
             
 
-            <DashboardLayout>
-            {loading && <Loader />}
-                <div className={`layout-form-container ${loading ? 'no-interaction' : ''}`}>
+            {/* <DashboardLayout> */}
+            {/* {loading && <Loader />}
+                <div className={`layout-form-container ${loading ? 'no-interaction' : ''}`}> */}
                     <div className="my-3 my-md-5">
                         <div className="container mt-6">
                             <button
@@ -309,8 +311,8 @@ const BBMP_LayoutForm = () => {
                                 isSitesSectionSaved={isSitesSectionSaved} isECSectionSaved={isECSectionSaved} isJDAEKYCSectionSaved={isJDAEKYCSectionSaved} isOwnerEKYCSectionSaved={isOwnerEKYCSectionSaved} />
                         </div>
                     </div>
-                </div>
-            </DashboardLayout>
+                {/* </div> */}
+            {/* </DashboardLayout> */}
 
         </>
     );
@@ -318,7 +320,9 @@ const BBMP_LayoutForm = () => {
 //No BBMP Khata section
 const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, setDisplay_LKRS_ID, setIsRTCSectionSaved, setOwnerName }) => {
 
-    const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
+    const { loading, start_loader, stop_loader } = useContext(LoaderContext);
+
+    // const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
     const [language, setLanguage] = useState(sessionStorage.getItem("selectedLanguage"));
     const { t, i18n } = useTranslation();
     const [districts, setDistricts] = useState([]);
@@ -1163,8 +1167,8 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
 const [showModal, setShowModal] = useState(false);
 
     return (
-        <div className={`layout-form-container ${loading ? 'no-interaction' : ''}`}>
-            {loading && <Loader />}
+        // <div className={`layout-form-container ${loading ? 'no-interaction' : ''}`}>
+        //     {loading && <Loader />}
             <div className='row mt-5'>
 
                 <button className='btn btn-block' onClick={fetch_details} ref={buttonRef} hidden>Click me</button>
@@ -1503,7 +1507,7 @@ const [showModal, setShowModal] = useState(false);
                     </div>
                 )}
 
-            </div>
+            {/* </div> */}
         </div>
 
     );
@@ -1533,7 +1537,11 @@ const styles = {
 
 //BBMP khata section
 const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, setDisplay_LKRS_ID, setIsEPIDSectionSaved, setOwnerName }) => {
-    const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
+    // const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
+
+    const { loading, start_loader, stop_loader } = useContext(LoaderContext);
+
+
     const [epidNumber, setEpidNumber] = useState("");
 
     const epidNoRef = useRef(null);
@@ -2239,7 +2247,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
 
     return (
         <div className="row g-3">
-            {loading && <Loader />}
+           
             <button className='btn btn-block' onClick={handleGetLKRSID} ref={buttonRef} hidden>Click me</button>
             <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4  mt-3">
                 <div className="form-group mt-2">

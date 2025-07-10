@@ -61,10 +61,10 @@ import ProtectedRoute from './ProtectedRoute';
 import ReleaseEKYCResultHandler from './Pages/BBMP/Release_EKYC_Preview';
 import ReleaseDashboard from './Pages/BBMP/ReleaseDashboard';
 import Endorsement from './Pages/BBMP/Endorsement';
-
+import Acknowledgement from './Pages/BBMP/Acknowledgement';
 import BBMP_Home from './Pages/BBMP/BBMP_HomePage';
 import BBMP_HP from './Pages/BBMP/BBMP_HP';
-
+import DashboardLayout from './Layout/DashboardLayout';
 const AppRoutes = () => {
 
   return (
@@ -77,21 +77,21 @@ const AppRoutes = () => {
           {/* <Breadcrumbs /> */}
           <Routes>
       
-            <Route path="/Login" element={<BBMPLogin />} />
+            <Route path="/Login" element={<DashboardLayout><BBMPLogin /></DashboardLayout>} />
             <Route path="/" element={<BBMP_Home/>}/>
             {/* <Route path='/home' element={<BBMP_HP/>}/> */}
 
             {/* Protected Routes */}
-            <Route path="/homePage" element={<ProtectedRoute element={<BBMP_Homepage />} />} />
-            <Route path="/LayoutForm" element={<ProtectedRoute element={<BBMP_LayoutForm />} />} />
-            <Route path="/LayoutDashboard" element={<ProtectedRoute element={<BBMP_Layout_Dashboard />} />} />
-            <Route path="/Release" element={<ProtectedRoute element={<ReleaseSelection />} />} />
+            <Route path="/homePage" element={<ProtectedRoute element={<DashboardLayout><BBMP_Homepage /></DashboardLayout>} />} />
+            <Route path="/LayoutForm" element={<ProtectedRoute element={ <DashboardLayout><BBMP_LayoutForm /></DashboardLayout>} />} />
+            <Route path="/LayoutDashboard" element={<ProtectedRoute element={<DashboardLayout><BBMP_Layout_Dashboard /></DashboardLayout>} />} />
+            <Route path="/Release" element={<ProtectedRoute element={<DashboardLayout><ReleaseSelection /></DashboardLayout>} />} />
             <Route path="/EKYCResponse" element={<ProtectedRoute element={<EKYCResultHandler />} />} />
             <Route path="/ReleaseEKYCResponse" element={<ProtectedRoute element={<ReleaseEKYCResultHandler />} />} />
-            <Route path="/Info" element={<ProtectedRoute element={<BBMP_SubmittedInfo />} />} />
-            <Route path='/ReleaseDashboard' element={<ProtectedRoute element={<ReleaseDashboard/>}/>}/>
+            <Route path="/Info" element={<ProtectedRoute element={<DashboardLayout><BBMP_SubmittedInfo /></DashboardLayout>} />} />
+            <Route path='/ReleaseDashboard' element={<ProtectedRoute element={<DashboardLayout><ReleaseDashboard/></DashboardLayout>}/>}/>
             <Route path='/Endorsement' element={<ProtectedRoute element={<Endorsement/>}/>}/>
-
+            <Route path='/Acknowledgement' element={<ProtectedRoute element={<Acknowledgement />}/>} />
 
             <Route path="/tax_Details" element={<BBMP_TaxDetails />} />
             <Route path="/login" element={<Login />} />

@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DataTable from "react-data-table-component";
-import DashboardLayout from '../../Layout/DashboardLayout';
+import DashboardLayout, { LoaderContext } from '../../Layout/DashboardLayout';
 import Loader from "../../Layout/Loader";
 import '../../Styles/CSS/LDashboard.css';
 import Swal from "sweetalert2";
@@ -21,7 +21,10 @@ export const useLoader = () => {
 
 const BBMP_Layout_Dashboard = () => {
   const navigate = useNavigate();
-  const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
+  // const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
+
+  const { loading, start_loader, stop_loader } = useContext(LoaderContext);
+
   const [records, setRecords] = useState([]);
   const [selectedLevel, setSelectedLevel] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
@@ -73,6 +76,20 @@ const BBMP_Layout_Dashboard = () => {
     sessionStorage.setItem('LKRSID', lkrS_ID);
     sessionStorage.setItem('display_LKRSID', lkrS_DISPLAYLKRSID);
     navigate("/Endorsement", {
+      state: {
+        LKRS_ID: lkrS_ID,
+        display_LKRS_ID: lkrS_DISPLAYLKRSID,
+      },
+    });
+  };
+
+    //Endorsement information redirection
+  const handleAcknowledgementClick = (lkrS_ID, lkrS_DISPLAYLKRSID) => {
+    sessionStorage.removeItem('LKRSID');
+    sessionStorage.removeItem('display_LKRSID');
+    sessionStorage.setItem('LKRSID', lkrS_ID);
+    sessionStorage.setItem('display_LKRSID', lkrS_DISPLAYLKRSID);
+    navigate("/Acknowledgement", {
       state: {
         LKRS_ID: lkrS_ID,
         display_LKRS_ID: lkrS_DISPLAYLKRSID,
@@ -181,7 +198,7 @@ const BBMP_Layout_Dashboard = () => {
             <button
               className="btn btn-danger btn-sm"
               onClick={() => handleEditClick(row.lkrS_ID, row.lkrS_DISPLAYID)}
-               title="Edit"
+              title="Edit"
             >
               <i className="fa fa-pencil"></i>
             </button>
@@ -197,7 +214,7 @@ const BBMP_Layout_Dashboard = () => {
                 title="View Submitted Info"
                 onClick={() => handleSubmittedInfoClick(row.lkrS_ID, row.lkrS_DISPLAYID)}
               >
-                <i className="fa fa-file-alt"></i> 
+                <i className="fa fa-file-alt"></i>
               </button>
 
               <button
@@ -214,12 +231,22 @@ const BBMP_Layout_Dashboard = () => {
           );
         } else if (row.lkrS_APPSTATUS === 9) {
           return (
-            <button
-              className="btn btn-primary btn-sm"
-              onClick={() => handleReleaseClick(row.lkrS_ID, row.lkrS_DISPLAYID)}
-            >
-              Site Release
-            </button>
+            <div style={{ display: 'flex', flexDirection: 'row', gap: '6px', alignItems: 'center' }}>
+
+              <button
+                className="btn btn-primary btn-sm"
+                onClick={() => handleReleaseClick(row.lkrS_ID, row.lkrS_DISPLAYID)}
+              >
+                Site Release
+              </button>
+              <button
+                className="btn btn-warning btn-sm"
+                onClick={() => handleAcknowledgementClick(row.lkrS_ID, row.lkrS_DISPLAYID)}
+                title="View Acknowledgement"
+              >
+               <i className="fa fa-file-text"></i>
+              </button>
+            </div>
           );
         }
         return null;
@@ -377,154 +404,154 @@ const BBMP_Layout_Dashboard = () => {
 
 
   return (
-    <DashboardLayout>
-      <div className={`layout-form-container ${loading ? 'no-interaction' : ''}`}>
-        {loading && <Loader />}
-        <div className="container pt-4 pb-4">
+    // <DashboardLayout>
+    //   <div className={`layout-form-container ${loading ? 'no-interaction' : ''}`}>
+    //     {loading && <Loader />}
+    <div className="container pt-4 pb-4">
 
-          {/* Dashboard Cards */}
-          <div className="row">
-            <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
-              <div className="bg-white shadow-md rounded-lg p-4 border border-transparent hover:border-blue-500 transition-all duration-300" style={{ borderRadius: '0.8rem' }}>
-                <center>
-                  <h3 className="mb-2 text-black">Create New Request</h3>
-                  <button
-                    className="mt-4 px-4 py-2 bg-blue-600 text-primary rounded hover:bg-blue-600" onClick={handleClick}
-                  >
-                    <i className="fa fa-plus"></i>
-                  </button>
-                </center>
-              </div>
-            </div>
-            <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
-              <div className="bg-white shadow-md rounded-lg p-4 border border-transparent hover:border-blue-500 transition-all duration-300" style={{ borderRadius: '0.8rem' }}>
-                <center>
-                  <h3 className="mb-2 text-black">Completed ({dashboardData.completedCount}) </h3>
-                  <i className="fa fa-check-circle mt-4 px-4 py-2 bg-blue-600 text-success rounded hover:bg-blue-600" style={{ fontSize: '30px' }}></i>
-                </center>
-              </div>
-            </div>
-            <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
-              <div className="bg-white shadow-md rounded-lg p-4 border border-transparent hover:border-blue-500 transition-all duration-300" style={{ borderRadius: '0.8rem' }}>
-                <center>
-                  <h3 className="mb-2 text-black">Submitted ({dashboardData.submittedCount}) </h3>
-                  <i className="fa fa-clock mt-4 px-4 py-2 bg-blue-600 text-warning rounded hover:bg-blue-600" style={{ fontSize: '30px' }}></i>
-                </center>
-              </div>
-            </div>
-            <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
-              <div className="bg-white shadow-md rounded-lg p-4 border border-transparent hover:border-blue-500 transition-all duration-300" style={{ borderRadius: '0.8rem' }}>
-                <center>
-                  <h3 className="mb-2 text-black">Incomplete ({dashboardData.incompletedCount})</h3>
-                  <i className="fa fa-recycle mt-4 px-4 py-2 bg-blue-600 text-danger rounded hover:bg-blue-600" style={{ fontSize: '30px' }}></i>
-                </center>
-              </div>
-            </div>
+      {/* Dashboard Cards */}
+      <div className="row">
+        <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
+          <div className="bg-white shadow-md rounded-lg p-4 border border-transparent hover:border-blue-500 transition-all duration-300" style={{ borderRadius: '0.8rem' }}>
+            <center>
+              <h3 className="mb-2 text-black">Create New Request</h3>
+              <button
+                className="mt-4 px-4 py-2 bg-blue-600 text-primary rounded hover:bg-blue-600" onClick={handleClick}
+              >
+                <i className="fa fa-plus"></i>
+              </button>
+            </center>
           </div>
-          <br />
-          <div className="card shadow-sm mb-4">
-            <div className="card-header bg-light">
-              <h5 className="mb-0 " style={{ color: '#fff' }}>Dashboard</h5>
-            </div>
-            <div className="card-body" style={{ overflowX: 'auto' }}>
-
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' }}>
-                <DataTable
-                  title={
-                    <div className="text-center">
-                      <div className="row">
-                        <div className="col-3">
-                          <div className="form-check">
-                            <label className="form-check-label fs-6">
-                              <input
-                                className="form-check-input"
-                                type="radio"
-                                name="levelOptions"
-                                value="1"
-                                checked={selectedLevel === 1}
-                                onChange={() => handleLevelChange(1)}
-                              />
-                              All ({dashboardData.allCount})
-                            </label>
-                          </div>
-                        </div>
-                        <div className="col-3">
-                          <div className="form-check">
-                            <label className="form-check-label fs-6">
-                              <input
-                                className="form-check-input"
-                                type="radio"
-                                name="levelOptions"
-                                value="4"
-                                checked={selectedLevel === 4}
-                                onChange={() => handleLevelChange(4)}
-                              />
-                              Completed ({dashboardData.completedCount})
-                            </label>
-                          </div>
-                        </div>
-                        <div className="col-3">
-                          <div className="form-check">
-                            <label className="form-check-label fs-6">
-                              <input
-                                className="form-check-input"
-                                type="radio"
-                                name="levelOptions"
-                                value="3"
-                                checked={selectedLevel === 3}
-                                onChange={() => handleLevelChange(3)}
-                              />
-                              Submitted ({dashboardData.submittedCount})
-                            </label>
-                          </div>
-                        </div>
-                        <div className="col-3">
-                          <div className="form-check">
-                            <label className="form-check-label fs-6">
-                              <input
-                                className="form-check-input"
-                                type="radio"
-                                name="levelOptions"
-                                value="2"
-                                checked={selectedLevel === 2}
-                                onChange={() => handleLevelChange(2)}
-                              />
-                              Incomplete ({dashboardData.incompletedCount})
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  }
-                  columns={columns}
-                  data={records}
-                  responsive
-                  pagination
-                  customStyles={customStyles}
-                  paginationServer={false}
-                  paginationDefaultPage={currentPage}
-                  paginationPerPage={rowsPerPage}
-                  onChangePage={(page) => setCurrentPage(page)}
-                  onChangeRowsPerPage={(newPerPage, page) => {
-                    setRowsPerPage(newPerPage);
-                    setCurrentPage(page);
-                  }}
-                  highlightOnHover
-                  striped
-                />
-              </div>
-            </div>
+        </div>
+        <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
+          <div className="bg-white shadow-md rounded-lg p-4 border border-transparent hover:border-blue-500 transition-all duration-300" style={{ borderRadius: '0.8rem' }}>
+            <center>
+              <h3 className="mb-2 text-black">Completed ({dashboardData.completedCount}) </h3>
+              <i className="fa fa-check-circle mt-4 px-4 py-2 bg-blue-600 text-success rounded hover:bg-blue-600" style={{ fontSize: '30px' }}></i>
+            </center>
           </div>
-
-
-
-
-
-
-
+        </div>
+        <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
+          <div className="bg-white shadow-md rounded-lg p-4 border border-transparent hover:border-blue-500 transition-all duration-300" style={{ borderRadius: '0.8rem' }}>
+            <center>
+              <h3 className="mb-2 text-black">Submitted ({dashboardData.submittedCount}) </h3>
+              <i className="fa fa-clock mt-4 px-4 py-2 bg-blue-600 text-warning rounded hover:bg-blue-600" style={{ fontSize: '30px' }}></i>
+            </center>
+          </div>
+        </div>
+        <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
+          <div className="bg-white shadow-md rounded-lg p-4 border border-transparent hover:border-blue-500 transition-all duration-300" style={{ borderRadius: '0.8rem' }}>
+            <center>
+              <h3 className="mb-2 text-black">Incomplete ({dashboardData.incompletedCount})</h3>
+              <i className="fa fa-recycle mt-4 px-4 py-2 bg-blue-600 text-danger rounded hover:bg-blue-600" style={{ fontSize: '30px' }}></i>
+            </center>
+          </div>
         </div>
       </div>
-    </DashboardLayout>
+      <br />
+      <div className="card shadow-sm mb-4">
+        <div className="card-header bg-light">
+          <h5 className="mb-0 " style={{ color: '#fff' }}>Dashboard</h5>
+        </div>
+        <div className="card-body" style={{ overflowX: 'auto' }}>
+
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' }}>
+            <DataTable
+              title={
+                <div className="text-center">
+                  <div className="row">
+                    <div className="col-3">
+                      <div className="form-check">
+                        <label className="form-check-label fs-6">
+                          <input
+                            className="form-check-input"
+                            type="radio"
+                            name="levelOptions"
+                            value="1"
+                            checked={selectedLevel === 1}
+                            onChange={() => handleLevelChange(1)}
+                          />
+                          All ({dashboardData.allCount})
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-3">
+                      <div className="form-check">
+                        <label className="form-check-label fs-6">
+                          <input
+                            className="form-check-input"
+                            type="radio"
+                            name="levelOptions"
+                            value="4"
+                            checked={selectedLevel === 4}
+                            onChange={() => handleLevelChange(4)}
+                          />
+                          Completed ({dashboardData.completedCount})
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-3">
+                      <div className="form-check">
+                        <label className="form-check-label fs-6">
+                          <input
+                            className="form-check-input"
+                            type="radio"
+                            name="levelOptions"
+                            value="3"
+                            checked={selectedLevel === 3}
+                            onChange={() => handleLevelChange(3)}
+                          />
+                          Submitted ({dashboardData.submittedCount})
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-3">
+                      <div className="form-check">
+                        <label className="form-check-label fs-6">
+                          <input
+                            className="form-check-input"
+                            type="radio"
+                            name="levelOptions"
+                            value="2"
+                            checked={selectedLevel === 2}
+                            onChange={() => handleLevelChange(2)}
+                          />
+                          Incomplete ({dashboardData.incompletedCount})
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+              columns={columns}
+              data={records}
+              responsive
+              pagination
+              customStyles={customStyles}
+              paginationServer={false}
+              paginationDefaultPage={currentPage}
+              paginationPerPage={rowsPerPage}
+              onChangePage={(page) => setCurrentPage(page)}
+              onChangeRowsPerPage={(newPerPage, page) => {
+                setRowsPerPage(newPerPage);
+                setCurrentPage(page);
+              }}
+              highlightOnHover
+              striped
+            />
+          </div>
+        </div>
+      </div>
+
+
+
+
+
+
+
+    </div>
+    //   </div>
+    // </DashboardLayout>
   );
 };
 

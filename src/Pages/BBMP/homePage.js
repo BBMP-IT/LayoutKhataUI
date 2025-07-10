@@ -1,20 +1,22 @@
-import React, { useEffect, useState, useRef } from 'react';
-import DashboardLayout from '../../Layout/DashboardLayout';
+import React, { useEffect, useState, useRef, useContext } from 'react';
+import DashboardLayout, { LoaderContext }  from '../../Layout/DashboardLayout';
 import Loader from '../../Layout/Loader';
 
 const BBMP_Homepage = () => {
- const [loading, setLoading] = useState(false);
-   const start_loader = () => {
-    setLoading(true);  
-  };
+//  const [loading, setLoading] = useState(false);
+//    const start_loader = () => {
+//     setLoading(true);  
+//   };
 
-  const stop_loader = () => {
-    setLoading(false); 
-  };
+//   const stop_loader = () => {
+//     setLoading(false); 
+//   };
+
+ const { loading, start_loader, stop_loader } = useContext(LoaderContext);
 
     return (
-        <DashboardLayout>
-             {loading && <Loader />}
+        // <DashboardLayout>
+        //      {loading && <Loader />}
             <div className="container mt-4">
                 <div className="card shadow-sm">
                     <div className="card-header btn_color text-white">
@@ -42,7 +44,7 @@ const BBMP_Homepage = () => {
                     </div>
                 </div>
             </div>
-        </DashboardLayout>
+        // </DashboardLayout>
     );
 }
 
