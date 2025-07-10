@@ -67,8 +67,8 @@ const Endorsement = () => {
             <div style={{ display: "flex", justifyContent: "center", alignItems: "center", borderBottom: "2px solid black", paddingBottom: 10, marginBottom: 20 }}>
               <img src={bbmpLogo} alt="BBMP Logo" style={{ height: 80, marginRight: 20 }} />
               <div>
-                <h1 style={{ margin: 0, fontSize: 24, textAlign: "center" }}>Bruhat Bengaluru Mahanagara Palike</h1>
-                <h3 style={{ margin: 0, fontSize: 20, textAlign: "center", fontWeight: "bold" }}>ENDORSEMENT</h3>
+                <h1 style={{ margin: 0, fontSize: 24, textAlign: "center" }}>Bruhat Bengaluru Mahanagara Palike</h1><br/>
+                <h4 style={{ margin: 0, fontSize: 20, textAlign: "center", fontWeight: "bold" }}>ENDORSEMENT</h4>
               </div>
             </div>
 

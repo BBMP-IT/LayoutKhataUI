@@ -480,7 +480,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                                 const totalSites = item.lkrS_NUMBEROFSITES;
 
                                 setTotalNoofsites(totalSites);
-                                sessionStorage.setItem('totalNoOfSites', totalSites);
+                                sessionStorage.setItem('totalNoOfSite', totalSites);
 
                                 return {
                                     layoutApprovalNumber: item.apr_Approval_No,

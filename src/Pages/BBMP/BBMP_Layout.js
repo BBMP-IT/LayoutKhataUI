@@ -37,6 +37,7 @@ import usericon from '../../assets/usericon.png';
 import { Cookie, Stop } from '@mui/icons-material';
 import { responsiveProperty } from '@mui/material/styles/cssUtils';
 
+
 export const useLoader = () => {
     const [loading, setLoading] = useState(false);
 
@@ -192,10 +193,10 @@ const BBMP_LayoutForm = () => {
     };
     return (
         <>
-            {loading && <Loader />}
+            
 
             <DashboardLayout>
-
+            {loading && <Loader />}
                 <div className={`layout-form-container ${loading ? 'no-interaction' : ''}`}>
                     <div className="my-3 my-md-5">
                         <div className="container mt-6">
@@ -296,10 +297,10 @@ const BBMP_LayoutForm = () => {
                                 isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsApprovalSectionSaved={setIsApprovalSectionSaved}
                                 setIsReleaseSectionSaved={setIsReleaseSectionSaved} setTotalNoofsites={setTotalNoofsites} />
 
-                            {totalNoofsites > 0 && (
+                            {/* {totalNoofsites > 0 && ( */}
                                 <IndividualGPSBlock areaSqft={areaSqft} LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID} totalNoofsites={totalNoofsites}
                                     isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsSitesSectionSaved={setIsSitesSectionSaved} ownerName={ownerName} />
-                            )}
+                            {/* )} */}
                             <ECDetailsBlock LKRS_ID={LKRS_ID} isRTCSectionSaved={isRTCSectionSaved} ownerName={ownerName} isEPIDSectionSaved={isEPIDSectionSaved} setIsECSectionSaved={setIsECSectionSaved}
                                 landDetails={landDetails} setValidate_OwnerDataList={setValidate_OwnerDataList} setIsOwnerEKYCSectionSaved={setIsOwnerEKYCSectionSaved} setIsJDAEKYCSectionSaved={setIsJDAEKYCSectionSaved} />
 
@@ -640,14 +641,10 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
     };
     //final RTC details table
     const tableRTCRef = useRef(null);
-    //     const handleViewRTC = (item) => {
-    //     // Check if the clicked owner is main owner
-    //     const isMainOwner = item.ext_acre !== 0 || item.ext_gunta !== 0 || item.ext_fgunta !== 0;
-
-    //     // Filter all owners that belong to the same main_owner_no
-    //     const ownersToAdd = isMainOwner
-    //         ? data.filter(o => o.main_owner_no === item.main_owner_no)
-    //         : [item];  // If joint owner clicked, just add that owner
+   
+    // const handleViewRTC = (item) => {
+    //     // Always get all owners related to the same main_owner_no
+    //     const ownersToAdd = data.filter(o => o.main_owner_no === item.main_owner_no);
 
     //     // Remove duplicates
     //     const newOwners = ownersToAdd.filter((ownerItem) => {
@@ -657,7 +654,8 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
     //                 data.surnoc === ownerItem.surnoc &&
     //                 data.hissa_no === ownerItem.hissa_no &&
     //                 data.owner === ownerItem.owner &&
-    //                 data.father === ownerItem.father
+    //                 data.father === ownerItem.father &&
+    //                 data.owner_no === ownerItem.owner_no
     //         );
     //     });
 
@@ -683,7 +681,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
     //         villageCode: selectedVillageObj.villagE_CODE || ''
     //     };
 
-    //     // Add new owners
+    //     // Add new owners with location
     //     const ownersWithLocation = newOwners.map(o => ({
     //         ...o,
     //         ...locationData
@@ -700,65 +698,124 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
     //         });
     //     }, 300);
     // };
-    const handleViewRTC = (item) => {
-        // Always get all owners related to the same main_owner_no
-        const ownersToAdd = data.filter(o => o.main_owner_no === item.main_owner_no);
-
-        // Remove duplicates
-        const newOwners = ownersToAdd.filter((ownerItem) => {
-            return !rtcAddedData.some(
-                (data) =>
-                    data.survey_no === ownerItem.survey_no &&
-                    data.surnoc === ownerItem.surnoc &&
-                    data.hissa_no === ownerItem.hissa_no &&
-                    data.owner === ownerItem.owner &&
-                    data.father === ownerItem.father &&
-                    data.owner_no === ownerItem.owner_no
-            );
-        });
-
-        if (newOwners.length === 0) {
-            Swal.fire("Duplicate!", "All selected records already exist in the table.", "warning");
-            return;
-        }
-
-        // Prepare location data
-        const selectedDistrictObj = districts.find(d => String(d.districT_CODE) === String(selectedDistrict)) || {};
-        const selectedTalukObj = taluks.find(t => String(t.talukA_CODE) === String(selectedTaluk)) || {};
-        const selectedHobliObj = hoblis.find(h => String(h.hoblI_CODE) === String(selectedHobli)) || {};
-        const selectedVillageObj = villages.find(v => String(v.villagE_CODE) === String(selectedVillage)) || {};
-
-        const locationData = {
-            district: selectedDistrictObj.districT_NAME || '',
-            districtCode: selectedDistrictObj.districT_CODE || '',
-            taluk: selectedTalukObj.displayName || '',
-            talukCode: selectedTalukObj.talukA_CODE || '',
-            hobli: selectedHobliObj.displayName || '',
-            hobliCode: selectedHobliObj.hoblI_CODE || '',
-            village: selectedVillageObj.displayName || '',
-            villageCode: selectedVillageObj.villagE_CODE || ''
-        };
-
-        // Add new owners with location
-        const ownersWithLocation = newOwners.map(o => ({
-            ...o,
-            ...locationData
-        }));
-
-        setRtcAddedData(prev => [...prev, ...ownersWithLocation]);
-
-        toast.success(`${ownersWithLocation.length} record(s) added!`);
-
-        setTimeout(() => {
-            tableRTCRef.current?.scrollIntoView({
-                behavior: 'smooth',
-                block: 'nearest',
-            });
-        }, 300);
-    };
 
 
     //First block save API
+    
+    const handleViewRTC = async (item) => {
+  const ownersToAdd = data.filter(o => o.main_owner_no === item.main_owner_no);
+
+  const newOwners = ownersToAdd.filter((ownerItem) => {
+    return !rtcAddedData.some(
+      (data) =>
+        data.survey_no === ownerItem.survey_no &&
+        data.surnoc === ownerItem.surnoc &&
+        data.hissa_no === ownerItem.hissa_no &&
+        data.owner === ownerItem.owner &&
+        data.father === ownerItem.father &&
+        data.owner_no === ownerItem.owner_no
+    );
+  });
+
+  if (newOwners.length === 0) {
+    Swal.fire('Duplicate!', 'All selected records already exist in the table.', 'warning');
+    return;
+  }
+
+  const { value: formValues } = await Swal.fire({
+    title: `Survey Number/Surnoc/Hissa No: ${item.survey_no}/${item.surnoc}/${item.hissa_no}`,
+    html: `
+      <div style="margin-top: 20px;">
+        <div class="row">
+          <div class="col-md-3">
+            <label class="form-label mt-4" style="text-align: left;">Total Extent</label>
+          </div>
+
+          <div class="col-md-3">
+            <input type="tel" class="form-control" id="total_acre" placeholder="Acre" />
+          </div>
+
+          <div class="col-md-3">
+            <input type="tel" class="form-control" id="total_gunta" placeholder="Gunta" />
+          </div>
+
+          <div class="col-md-3">
+            <input type="tel" class="form-control" id="total_fgunta" placeholder="FGunta" />
+          </div>
+
+          <div class="col-md-3 mt-4">
+            <label class="form-label" style="text-align: left;">BDA Approved Extent</label>
+          </div>
+
+          <div class="col-md-3">
+            <input type="tel" class="form-control" id="bda_acre" placeholder="Acre" />
+          </div>
+
+          <div class="col-md-3">
+            <input type="tel" class="form-control" id="bda_gunta" placeholder="Gunta" />
+          </div>
+
+          <div class="col-md-3">
+            <input type="tel" class="form-control" id="bda_fgunta" placeholder="FGunta" />
+          </div>
+        </div>
+      </div>
+    `,
+    showCancelButton: true,
+    confirmButtonText: 'Save',
+    cancelButtonText: 'Cancel',
+    customClass: {
+      popup: 'swal2-xl'
+    },
+    focusConfirm: false,
+    preConfirm: () => {
+      return {
+        totalAcre: document.getElementById('total_acre')?.value,
+        totalGunta: document.getElementById('total_gunta')?.value,
+        totalFGunta: document.getElementById('total_fgunta')?.value,
+        bdaAcre: document.getElementById('bda_acre')?.value,
+        bdaGunta: document.getElementById('bda_gunta')?.value,
+        bdaFGunta: document.getElementById('bda_fgunta')?.value
+      };
+    }
+  });
+
+  if (formValues) {
+    const selectedDistrictObj = districts.find(d => String(d.districT_CODE) === String(selectedDistrict)) || {};
+    const selectedTalukObj = taluks.find(t => String(t.talukA_CODE) === String(selectedTaluk)) || {};
+    const selectedHobliObj = hoblis.find(h => String(h.hoblI_CODE) === String(selectedHobli)) || {};
+    const selectedVillageObj = villages.find(v => String(v.villagE_CODE) === String(selectedVillage)) || {};
+
+    const locationData = {
+      district: selectedDistrictObj.districT_NAME || '',
+      districtCode: selectedDistrictObj.districT_CODE || '',
+      taluk: selectedTalukObj.displayName || '',
+      talukCode: selectedTalukObj.talukA_CODE || '',
+      hobli: selectedHobliObj.displayName || '',
+      hobliCode: selectedHobliObj.hoblI_CODE || '',
+      village: selectedVillageObj.displayName || '',
+      villageCode: selectedVillageObj.villagE_CODE || '',
+      ...formValues
+    };
+
+    const ownersWithLocation = newOwners.map(o => ({
+      ...o,
+      ...locationData
+    }));
+
+    setRtcAddedData(prev => [...prev, ...ownersWithLocation]);
+
+    toast.success(`${ownersWithLocation.length} record(s) added!`);
+
+    setTimeout(() => {
+      tableRTCRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      });
+    }, 300);
+  }
+};
+    
     const handleSaveRTC = async () => {
         if (rtcAddedData.length === 0) {
             Swal.fire("No Data", "Please add at least one record before saving.", "warning");
@@ -1103,7 +1160,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
             setErrors(prev => ({ ...prev, file: '' }));
         }
     };
-
+const [showModal, setShowModal] = useState(false);
 
     return (
         <div className={`layout-form-container ${loading ? 'no-interaction' : ''}`}>
@@ -1288,6 +1345,32 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                         </div>
                     </div>
                 )}
+                <div>
+      {/* Button to open modal */}
+      <button onClick={() => setShowModal(true)}>Open Modal</button>
+
+      {/* Modal */}
+      {showModal && (
+        <div style={styles.overlay}>
+          <div style={styles.modal}>
+            <h2>Modal Title</h2>
+            <p>This is a modal popup!</p>
+            <p>This is a modal popup!</p>
+            <p>This is a modal popup!</p>
+            <p>This is a modal popup!</p>
+            <p>This is a modal popup!</p>
+            <p>This is a modal popup!</p>
+            <p>This is a modal popup!</p>
+            <p>This is a modal popup!</p>
+            <p>This is a modal popup!</p>
+            <p>This is a modal popup!</p>
+            <p>This is a modal popup!</p>
+            <p>This is a modal popup!</p>
+            <button onClick={() => setShowModal(false)}>Close</button>
+          </div>
+        </div>
+      )}
+    </div>
 
 
                 <hr />
@@ -1426,35 +1509,27 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
     );
 };
 
-
-const CustomModal = ({ show, onClose }) => {
-    if (!show) return null;
-
-    return (
-        <>
-            <div className="modal-backdrop fade show"></div>
-            <div className="modal d-block" tabIndex="-1" role="dialog">
-                <div className="modal-dialog" role="document">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h5 className="modal-title">Example Modal</h5>
-                            <button type="button" className="btn-close" onClick={onClose}></button>
-                        </div>
-                        <div className="modal-body">
-                            <p>This content appears above the navbar now!</p>
-                        </div>
-                        <div className="modal-footer">
-                            <button className="btn btn-secondary" onClick={onClose}>
-                                Close
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </>
-    );
+const styles = {
+  overlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100vw',
+    height: '100vh',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  modal: {
+    background: '#fff',
+    padding: '20px',
+    borderRadius: '8px',
+    minWidth: '300px',
+    textAlign: 'center',
+  },
 };
-
 
 //BBMP khata section
 const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, setDisplay_LKRS_ID, setIsEPIDSectionSaved, setOwnerName }) => {

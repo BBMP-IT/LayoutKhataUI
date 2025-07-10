@@ -1838,13 +1838,9 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
     const fetchSiteDetails = async (LKRS_ID) => {
 
-        const storedSiteCount = sessionStorage.getItem("NUMBEROFSITES");
+        const storedSiteCount = sessionStorage.getItem("totalNoOfSite");
         if (storedSiteCount) {
             setLayoutSiteCount(storedSiteCount);
-            setIsReadOnly(true);     
-            setShowEditBtn(true);
-        }else{
-            setLayoutSiteCount("0");
             setIsReadOnly(true);     
             setShowEditBtn(true);
         }

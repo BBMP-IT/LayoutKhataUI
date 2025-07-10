@@ -17,7 +17,7 @@ import Swal from "sweetalert2";
 import { useAuth } from "../AuthContext";
 
 
-const DashboardLayout = ({ children }) => {
+const Header = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const isEnglish = i18n.language === 'kn';
@@ -156,7 +156,6 @@ const DashboardLayout = ({ children }) => {
   return (
     <div className="App">
       <Toaster toastOptions={{ duration: 4000, style: { fontSize: '14px', padding: '16px 24px', minWidth: '300px', textAlign: 'center', }, }} position="bottom-right" />
-      
       <div className="page">
         <div className="page-main">
 
@@ -465,89 +464,9 @@ const DashboardLayout = ({ children }) => {
 
 
 
-          <main>{children}</main>
+          {/* <main>{children}</main> */}
 
-          {/* <FloatingButton onClick={handleClick} /> */}
-          <section id="contact">
-            <div className="container">
-              <div className="row" data-aos="fade-up">
-                <div className="col-lg-4 col-md-4 col-sm-12 col-12">
-                  <div className="contact-about">
-                    <h6 className='line_style'>Layout Khata</h6>
-                    <div className="footer-title-line"></div>
-                    <div className="social-links">
-                      {/* <img src={bbmplogo} alt="" width="130" height="90" /><br /><br /> */}
-                      {/* <img src={digital_logo} alt="" width="250" height="90" /><br /><br /> */}
-                      <a href="#" className="twitter"><i className="fab fa-twitter"></i></a>
-                      <a href="#" className="facebook"><i className="fab fa-facebook"></i></a>
-                      <a href="#" className="instagram"><i className="fab fa-instagram"></i></a>
-                      <a href="#" className="google-plus"><i className="fab fa-google-plus"></i></a>
-                      <a href="#" className="linkedin"><i className="fab fa-linkedin"></i></a>
-                    </div>
-
-                  </div>
-                </div>
-
-                <div className="col-lg-4 col-md-4 col-sm-12 col-12">
-                  <div className="info">
-                    <h6 className='line_style'>BBMP</h6>
-                    <div className="footer-title-line"></div>
-                    <div>
-                      <i className="fas fa-map-marker-alt"></i>
-                      <p>{t('translation.footer.headOffice.address')}</p>
-                    </div>
-                    <div className="icon_size">
-                      <i className="fa fa-envelope"></i>
-                      <p>{t('translation.footer.headOffice.email')}</p>
-                    </div>
-                    {/* <div>
-                      <i className="fa fa-phone"></i>
-                      <p>{t('translation.footer.headOffice.phone')}</p>
-                    </div>
-                    <div>
-                      <i className="fa fa-phone"></i>
-                      <p>{t('translation.footer.headOffice.phone1')}</p>
-                    </div> */}
-                  </div>
-                </div>
-
-                <div className="col-lg-4 col-md-4 col-sm-12 col-12">
-                  <h6 className='line_style'>{t('translation.footer.bussinessHours.heading')}</h6>
-                  <div className="footer-title-line"></div>
-                  <div className="row">
-                    <div className="col-md-6">
-                      {t('translation.footer.bussinessHours.days')}
-                    </div>
-                    <div className="col-md-6">
-                      {t('translation.footer.bussinessHours.hours')}
-                    </div>
-                    <div className="col-md-12">
-                      {t('translation.footer.bussinessHours.timings')}
-                    </div>
-                    <div className="col-md-12">
-                      {t('translation.footer.bussinessHours.closing')}
-                    </div>
-                    <br />
-
-                  </div>
-                </div>
-              </div><br /><br />
-            </div>
-          </section>
-
-          <footer id="footer">
-            <div className="container">
-              <div className="row">
-                <div className="col-lg-12 text-lg-left text-center">
-                  <div className="copyright">
-                    <p><span style={{ backgroundColor: "#023e8a", color: '#fff' }}>{t('translation.footer.designedby')}</span> &copy; {t('translation.footer.copyrights')} <strong>{t('translation.footer.heading')}</strong>. {t('translation.footer.reserved')}</p>
-
-                  </div>
-                </div>
-
-              </div>
-            </div>
-          </footer>
+          
         </div>
       </div>
     </div>
@@ -563,4 +482,4 @@ const FloatingButton = ({ onClick }) => {
 };
 
 
-export default DashboardLayout;
+export default Header;

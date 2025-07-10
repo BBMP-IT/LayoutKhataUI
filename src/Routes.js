@@ -79,7 +79,7 @@ const AppRoutes = () => {
       
             <Route path="/Login" element={<BBMPLogin />} />
             <Route path="/" element={<BBMP_Home/>}/>
-            <Route path='/home' element={<BBMP_HP/>}/>
+            {/* <Route path='/home' element={<BBMP_HP/>}/> */}
 
             {/* Protected Routes */}
             <Route path="/homePage" element={<ProtectedRoute element={<BBMP_Homepage />} />} />
