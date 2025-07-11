@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import DashboardLayout, { LoaderContext }  from '../../Layout/DashboardLayout';
+import DashboardLayout, { LoaderContext } from '../../Layout/DashboardLayout';
 import Loader from "../../Layout/Loader";
 import DataTable from 'react-data-table-component';
 import '../../Styles/CSS/ReleaseSiteSelection.css';
@@ -29,8 +29,8 @@ const ReleaseSelection = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   // const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
-  
-   const { loading, start_loader, stop_loader } = useContext(LoaderContext);
+
+  const { loading, start_loader, stop_loader } = useContext(LoaderContext);
 
   const [selectedValue, setSelectedValue] = useState('');
   const location = useLocation();
@@ -399,334 +399,7 @@ const ReleaseSelection = () => {
   }, [selectedRows, releaseData, releasePercentage, originalTotalRecords, releasedData, selectedValue]);
 
 
-  // handleDimensionChange
-  const handleDimensionChange = (ReleaseType, originalTotalRecords, unreleasedSites, releasedSites, lengthRO, percentage) => {
-    setSelectedValue(ReleaseType);
-    setReleasePercentage(percentage);
-    setSelectAllChecked(false);
-    setSelectedRows([]);
 
-    const allowedCount = Math.round((percentage / 100) * originalTotalRecords);
-    // Handle 100% release custom conditions
-    if (ReleaseType === 1) {
-
-      if (lengthRO === 1) {
-        if (releasedSites.length === 0 && unreleasedSites.length === originalTotalRecords) {
-          // 👉 All sites unreleased, allow release
-          setSelectionLimit(originalTotalRecords);
-        }
-        else if (releasedSites.length === originalTotalRecords && unreleasedSites.length === 0) {
-          // 👉 All sites already released
-          Swal.fire({
-            icon: 'info',
-            title: 'All sites are Released',
-            text: 'All records have already been released.',
-            confirmButtonColor: '#3085d6',
-          });
-          setSelectionLimit(0);
-        }
-      }
-    }
-    //60% * 40% release
-    else if (ReleaseType === 2) {
-      //60% release  
-      if (lengthRO === 1) {
-        if (releasedSites.length === 0 && unreleasedSites.length === originalTotalRecords) {
-          // Allow 60% release
-          setSelectionLimit(Math.round(0.6 * originalTotalRecords));
-          setDeletebtn_disabled(false); //enable delete btn
-        } else if (releasedSites.length !== 0 && unreleasedSites.length !== 0) {
-          Swal.fire({
-            icon: 'info',
-            title: '60% Already Released',
-            text: '60% of records have already been released.',
-            confirmButtonColor: '#3085d6',
-            allowOutsideClick: false,
-            allowEscapeKey: false
-          });
-          setSelectionLimit(0);
-          setIsOrder_EditingArea(true); // allow to proceed if that’s your intention
-          setDeletebtn_disabled(true);//delete btn disabled
-        }
-        else {
-          setIsOrder_EditingArea(false); // block save in other cases
-
-        }
-      }
-      //40% release
-      else if (lengthRO === 2) {
-        if (releasedSites.length !== 0 && unreleasedSites.length !== 0) {
-          // Allow 40% release
-
-          setSelectionLimit(Math.round(0.4 * originalTotalRecords));
-          setDeletebtn_disabled(false); //enable delete btn
-        } else if (releasedSites.length === originalTotalRecords && unreleasedSites.length === 0) {
-          Swal.fire({
-            icon: 'success',
-            title: 'All Sites are Released',
-            text: 'All records have already been released.',
-            confirmButtonColor: '#3085d6',
-            allowOutsideClick: false,
-            allowEscapeKey: false
-          });
-          setSelectionLimit(0);
-          setDeletebtn_disabled(true);//delete btn disabled
-        }
-      }
-    }
-    //40% * 30% * 30%
-    else if (ReleaseType == 3) {
-      const fortyPercentCount = Math.round(0.4 * originalTotalRecords);
-      const thirtyPercentCount = Math.round(0.3 * originalTotalRecords);
-
-      if (lengthRO == 1) {
-        if (releasedSites.length == 0 && unreleasedSites.length == originalTotalRecords) {
-          // Allow 40 Release
-          setSelectionLimit(fortyPercentCount);
-          setDeletebtn_disabled(false); //enable delete btn
-        } else if (releasedSites.length != 0 && unreleasedSites.length != 0) {
-          // Already Released
-          Swal.fire({
-            icon: 'info',
-            title: '40% phase already started',
-            text: 'You have already started the 40% release phase.',
-            confirmButtonColor: '#3085d6',
-          });
-          setIsOrder_EditingArea(true);
-          setDeletebtn_disabled(true); //delete btn disabled
-          setSelectionLimit(0);
-        }
-      }
-      else if (lengthRO == 2) {
-        if (releasedSites.length != 0 && unreleasedSites.length != 0) {
-          const ReleasedPercentage = (releasedSites.length / originalTotalRecords) * 100;
-          const YetToBeReleasedPercentage = (unreleasedSites.length / originalTotalRecords) * 100;
-
-          if (ReleasedPercentage < YetToBeReleasedPercentage) {
-            // Allow 30 Release
-            setSelectionLimit(thirtyPercentCount);
-            setDeletebtn_disabled(false); //enable delete btn
-          } else {
-            // Already Released
-            Swal.fire({
-              icon: 'info',
-              title: '30% phase already completed',
-              text: 'You have already completed the 30% release phase.',
-              confirmButtonColor: '#3085d6',
-            });
-            setIsOrder_EditingArea(true);
-            setDeletebtn_disabled(true);//delete btn disabled
-            setSelectionLimit(0);
-          }
-        } else if (releasedSites.length == originalTotalRecords && unreleasedSites.length == 0) {
-          // Already Released
-          Swal.fire({
-            icon: 'success',
-            title: 'All Sites Released',
-            text: 'All records have already been released.',
-            confirmButtonColor: '#3085d6',
-          });
-          setSelectionLimit(0);
-          setDeletebtn_disabled(true);//delete btn disabled
-        }
-      }
-      else if (lengthRO == 3) {
-        if (releasedSites.length != 0 && unreleasedSites.length != 0) {
-          const ReleasedPercentage = (releasedSites.length / originalTotalRecords) * 100;
-          const YetToBeReleasedPercentage = (unreleasedSites.length / originalTotalRecords) * 100;
-
-          if (ReleasedPercentage < YetToBeReleasedPercentage) {
-            // Allow 30 Release
-            setSelectionLimit(thirtyPercentCount);
-          } else {
-            // Already Released
-            Swal.fire({
-              icon: 'success',
-              title: 'All Sites are Released',
-              text: 'All records have already been released.',
-              confirmButtonColor: '#3085d6',
-            });
-            setSelectionLimit(0);
-          }
-        } else if (releasedSites.length == originalTotalRecords && unreleasedSites.length == 0) {
-          // Already Released
-          Swal.fire({
-            icon: 'success',
-            title: 'All Sites Released',
-            text: 'All records have already been released.',
-            confirmButtonColor: '#3085d6',
-          });
-          setSelectionLimit(0);
-        }
-      }
-    }
-  };
-
-  // const handleRowSelect = (index) => {
-  //   const isSelected = selectedRows.includes(index);
-
-  //   if (isSelected) {
-  //     setSelectedRows(prev => prev.filter(i => i !== index));
-  //   } else {
-  //     // Calculate allowed limit based on percentage
-  //     const allowedCount = Math.round((releasePercentage / 100) * originalTotalRecords);
-  //     const remaining = allowedCount - releasedData.length;
-
-  //     if (selectedRows.length < remaining) {
-  //       setSelectedRows(prev => [...prev, index]);
-  //     } else {
-  //       Swal.fire({
-  //         icon: 'warning',
-  //         title: 'Selection Limit Reached',
-  //         text: `You can only select up to ${remaining} site(s).`,
-  //         confirmButtonColor: '#3085d6',
-  //       });
-  //     }
-  //   }
-  // };
-
-
-  // // Select All handler
-  // const handleSelectAll = (e) => {
-  //   const checked = e.target.checked;
-  //   let rowsToSelect = [];
-
-  //   if (checked) {
-  //     const allIndexes = releaseData.map((_, index) => index);
-
-  //     if (selectedValue === '1') {
-  //       rowsToSelect = allIndexes;
-  //     } else {
-  //       const allowedCount = Math.round((releasePercentage / 100) * originalTotalRecords);
-  //       const remaining = allowedCount - releasedData.length;
-  //       rowsToSelect = allIndexes.slice(0, remaining);
-  //     }
-  //   }
-
-  //   setSelectedRows(rowsToSelect);
-  //   setSelectAllChecked(checked);
-  // };
-
-
-  // // Sync Select All checkbox state
-  // useEffect(() => {
-  //   if (releaseData.length > 0) {
-  //     setSelectAllChecked(selectedRows.length === releaseData.length);
-  //   } else {
-  //     setSelectAllChecked(false);
-  //   }
-  // }, [selectedRows, releaseData]);
-
-  // const handleDimensionChange = (ReleaseType, originalTotalRecords, unreleasedSites, releasedSites, lengthRO, releasePercentage) => {
-  //   setSelectedValue(ReleaseType);
-  //   setSelectAllChecked(false);
-  //   setSelectedRows([]);
-
-  //   const total = unreleasedSites.length + releasedSites.length;
-  //   const sixtyPercentCount = Math.round(0.6 * originalTotalRecords);
-  //   const fortyPercentCount = originalTotalRecords - sixtyPercentCount;
-
-  //   //100% release 
-  //   if (ReleaseType == 1) {
-  //     if (lengthRO == 1) {
-  //       if (unreleasedSites == 0 && releasedSites == originalTotalRecords) {
-  //         alert("Allow Release");
-  //       }
-  //       else if(releasedSites == originalTotalRecords && unreleasedSites == 0){
-  //         alert("alerady releasee");
-  //       }
-  //     }
-  //   }
-
-
-  //   // if (value === '2') {
-  //   //   if (releasedData.length === 0) {
-  //   //     // First phase - allow 60% selection
-  //   //     setSelectionLimit(sixtyPercentCount);
-  //   //   } else if (releasedData.length === sixtyPercentCount) {
-  //   //     // Second phase - allow 40% selection
-  //   //     setSelectionLimit(fortyPercentCount);
-  //   //   } else if (releasedData.length === total) {
-  //   //     // All released - no more selection
-  //   //     Swal.fire({
-  //   //       icon: 'info',
-  //   //       title: '100% Already Released',
-  //   //       text: 'All records have been released. No further action is allowed.',
-  //   //       confirmButtonColor: '#3085d6',
-  //   //     });
-  //   //     setSelectionLimit(0);
-  //   //   } else {
-  //   //     // Invalid state (e.g., partial release) — disable
-  //   //     Swal.fire({
-  //   //       icon: 'warning',
-  //   //       title: 'Invalid Release State',
-  //   //       text: 'You can only release 40% after 60% has been completed.',
-  //   //       confirmButtonColor: '#3085d6',
-  //   //     });
-  //   //     setSelectionLimit(0);
-  //   //   }
-  //   // } else if (value === '3') {
-  //   //   const fortyPercent = Math.round(0.4 * originalTotalRecords);
-  //   //   const thirtyPercent = Math.round(0.3 * originalTotalRecords);
-  //   //   const total = releaseData.length + releasedData.length;
-
-  //   //   if (releasedData.length === 0) {
-  //   //     // Phase 1: 40%
-  //   //     setSelectionLimit(fortyPercent);
-  //   //   } else if (releasedData.length === fortyPercent) {
-  //   //     // Phase 2: 30%
-  //   //     setSelectionLimit(thirtyPercent);
-  //   //   } else if (releasedData.length === fortyPercent + thirtyPercent) {
-  //   //     // Phase 3: final 30%
-  //   //     setSelectionLimit(originalTotalRecords - releasedData.length);
-  //   //   } else if (releasedData.length === originalTotalRecords) {
-  //   //     Swal.fire({
-  //   //       icon: 'info',
-  //   //       title: '100% Already Released',
-  //   //       text: 'All records have been released.',
-  //   //       confirmButtonColor: '#3085d6',
-  //   //     });
-  //   //     setSelectionLimit(0);
-  //   //   } else {
-  //   //     Swal.fire({
-  //   //       icon: 'warning',
-  //   //       title: 'Invalid Release State',
-  //   //       text: 'You can only release 30% after completing the previous phase.',
-  //   //       confirmButtonColor: '#3085d6',
-  //   //     });
-  //   //     setSelectionLimit(0);
-  //   //   }
-  //   // }
-
-
-  // };
-
-
-  // const handleDimensionChange = (ReleaseType, originalTotalRecords, unreleasedSites, releasedSites, lengthRO, percentage) => {
-  //   setSelectedValue(ReleaseType);
-  //   setReleasePercentage(percentage);
-  //   setSelectAllChecked(false);
-  //   setSelectedRows([]); // 🟢 Update the releasePercentage for other handlers
-
-  //   const allowedCount = Math.round((percentage / 100) * originalTotalRecords);
-
-  //   if (ReleaseType == 1) {
-  //     // your logic
-  //   } else {
-  //     if (releasedSites.length >= allowedCount) {
-  //       Swal.fire({
-  //         icon: 'info',
-  //         title: `${percentage}% Already Released`,
-  //         text: `You have already released ${allowedCount} site(s).`,
-  //         confirmButtonColor: '#3085d6',
-  //       });
-  //       setSelectionLimit(0);
-  //     } else {
-  //       const remaining = allowedCount - releasedSites.length;
-  //       setSelectionLimit(remaining);
-  //     }
-  //   }
-  // };
 
 
   const handleCheckboxToggle = (id) => {
@@ -1261,213 +934,9 @@ const ReleaseSelection = () => {
     },
   ];
   const [is40PercentDone, setIs40PercentDone] = useState(false);
-  const handleInitial60PercentSave = () => {
-    const totalRecords = releaseData.length + releasedData.length;
-    const expectedCount60 = Math.round(0.6 * totalRecords);
-    const expectedCount40 = Math.round(0.4 * originalTotalRecords);
-    const expectedCount30 = Math.round(0.3 * originalTotalRecords);
 
-    if (selectedValue === '2') {
-      if (releasedData.length < expectedCount60) {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Minimum Selection Required',
-          text: `You must move at least ${expectedCount60} sites to the Already Released Table for 60 * 40.`,
-          confirmButtonColor: '#3085d6',
-        });
-        return;
-      }
-
-      setFinalApiList(prev => {
-        const updated = [...prev, ...releasedData];
-        console.log("finalApiList after update:", updated);
-        return updated;
-      });
-
-      setReleasedData([]);
-
-      Swal.fire({
-        icon: 'success',
-        title: '60% Sites Released Successfully',
-        text: 'You have successfully released 60% of the sites.',
-        showCancelButton: true,
-        confirmButtonText: 'Continue with Next Release',
-        cancelButtonText: 'Back to Dashboard',
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-      }).then((result) => {
-        if (result.isConfirmed) {
-          setIs60PercentDone(true);
-          setShowNextReleaseForm(true);
-
-          const remainingToSelect = totalRecords - expectedCount60;
-          const remainingRows = releaseData.slice(0, remainingToSelect).map(row => row.id);
-
-          setSelectedRows([]);
-          setSelectedRows(remainingRows);
-        } else if (result.dismiss === Swal.DismissReason.cancel) {
-          window.location.href = '/dashboard';
-        }
-      });
-    }
-
-    else if (selectedValue === '3') {
-      if (releasedData.length < expectedCount40) {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Minimum 40% Required',
-          text: `You must release at least ${expectedCount40} sites for the 40% phase.`,
-          confirmButtonColor: '#3085d6',
-        });
-        return;
-      }
-
-      setFinalApiList(prev => [...prev, ...releasedData]);
-      setReleasedData([]);
-
-      Swal.fire({
-        icon: 'success',
-        title: '40% Sites Released Successfully',
-        text: 'You have successfully released 40% of the sites.',
-        showCancelButton: true,
-        confirmButtonText: 'Continue with Next 30% Release',
-        cancelButtonText: 'Back to Dashboard',
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-      }).then((result) => {
-        if (result.isConfirmed) {
-          setIs40PercentDone(true); // ✅ This is the correct flag
-          setShowNextReleaseForm(true); // Continue to 30% release
-
-          const next30Count = Math.floor(originalTotalRecords * 0.3);
-          const next30Rows = releaseData
-            .filter(row => !finalApiList.some(finalRow => finalRow.id === row.id)) // exclude already released
-            .slice(0, next30Count)
-            .map(row => row.id);
-
-          setSelectedRows([]);
-          setSelectedRows(next30Rows);
-        } else if (result.dismiss === Swal.DismissReason.cancel) {
-          window.location.href = '/dashboard';
-        }
-      });
-    }
-
-    else if (selectedValue === '1') {
-      if (releasedData.length < originalTotalRecords) {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Incomplete Selection',
-          text: `You must release all ${originalTotalRecords} sites.`,
-          confirmButtonColor: '#3085d6',
-        });
-        return;
-      }
-
-      setFinalApiList(prev => [...prev, ...releasedData]);
-      setReleasedData([]);
-
-      Swal.fire({
-        icon: 'success',
-        title: 'All Sites Released Successfully',
-        text: 'You have completed all release phases successfully.',
-        confirmButtonColor: '#3085d6',
-      });
-    }
-  };
   const [current30Step, setCurrent30Step] = useState(1);
-  // const handleFinal40PercentSave = () => {
-  //   const expectedCount40 = Math.round(0.4 * originalTotalRecords);
-  //   const expectedCount30 = Math.round(0.3 * originalTotalRecords);
 
-  //   if (selectedValue === '2') {
-  //     if (releasedData.length !== expectedCount40) {
-  //       Swal.fire({
-  //         icon: 'error',
-  //         title: 'Invalid Selection',
-  //         text: `You must move exactly ${expectedCount40} sites for the remaining 40%. You selected ${releasedData.length}.`,
-  //         confirmButtonColor: '#d33',
-  //       });
-  //       return;
-  //     }
-
-  //     setFinalApiList(prev => {
-  //       const updated = [...prev, ...releasedData];
-  //       console.log("finalApiList after update (Final Save - 60*40):", updated);
-  //       return updated;
-  //     });
-
-  //     setReleasedData([]);
-  //     setShowNextReleaseForm(false);
-  //     Swal.fire({
-  //       icon: 'success',
-  //       title: 'All Sites Released Successfully',
-  //       text: 'You have completed all release phases successfully.',
-  //       confirmButtonColor: '#3085d6',
-  //     });
-
-  //     return; // Exit early
-  //   }
-
-  //   if (selectedValue === '3') {
-  //     const releasedSoFar = finalApiList.length;
-  //     const nextExpected = expectedCount30;
-
-  //     if (releasedData.length !== nextExpected) {
-  //       Swal.fire({
-  //         icon: 'error',
-  //         title: 'Invalid Selection',
-  //         text: `You must select exactly ${nextExpected} sites for this phase.`,
-  //         confirmButtonColor: '#d33',
-  //       });
-  //       return;
-  //     }
-
-  //     setFinalApiList(prev => {
-  //       const updated = [...prev, ...releasedData];
-  //       console.log("finalApiList after update (Final Save - 40*30*30):", updated);
-  //       return updated;
-  //     });
-
-  //     setReleasedData([]);
-
-  //     if (current30Step === 1) {
-  //       Swal.fire({
-  //         icon: 'success',
-  //         title: ' 30% Released',
-  //         text: 'You have successfully released the 30% of the sites.',
-  //         showCancelButton: true,
-  //         confirmButtonText: 'Another release',
-  //         cancelButtonText: 'Back to Dashboard',
-  //         confirmButtonColor: '#3085d6',
-  //         cancelButtonColor: '#d33',
-  //       }).then((result) => {
-  //         if (result.isConfirmed) {
-  //           setCurrent30Step(2); // Move to second 30%
-  //           setShowNextReleaseForm(true);
-  //           const alreadyReleasedIds = finalApiList.map(item => item.id);
-  //           const next30Rows = releaseData
-  //             .filter(row => !alreadyReleasedIds.includes(row.id))
-  //             .slice(0, expectedCount30)
-  //             .map(row => row.id);
-
-  //           setSelectedRows([]);
-  //           setSelectedRows(next30Rows);
-  //         } else {
-  //           window.location.href = '/dashboard';
-  //         }
-  //       });
-  //     } else {
-  //       setShowNextReleaseForm(false);
-  //       Swal.fire({
-  //         icon: 'success',
-  //         title: 'All Sites Released',
-  //         text: 'You have completed all release phases successfully.',
-  //         confirmButtonColor: '#3085d6',
-  //       });
-  //     }
-  //   }
-  // };
   const handleSiteReleaseOrderNumberChange = (e) => {
     const value = e.target.value;
 
@@ -1871,25 +1340,25 @@ const ReleaseSelection = () => {
   };
 
   const columns = [
-   { name: 'S.No', selector: (row, index) => index + 1, width: '70px', center: true },
-  { name: 'Property ID', width: '140px', selector: () => epid_fetchedData?.PropertyID || 'N/A', center: true },
-  {
-    name: 'Owner Name',
-    center: true,
-    selector: (row) => row.ownerName || 'N/A',
-  },
-  {
-    name: 'ID Type',
-    width: '120px',
-    selector: (row) => row.idType || 'N/A',
-    center: true,
-  },
-  {
-    name: 'ID Number',
-    width: '220px',
-    selector: (row) => row.idNumber || 'N/A',
-    center: true,
-  },
+    { name: 'S.No', selector: (row, index) => index + 1, width: '70px', center: true },
+    { name: 'Property ID', width: '140px', selector: () => epid_fetchedData?.PropertyID || 'N/A', center: true },
+    {
+      name: 'Owner Name',
+      center: true,
+      selector: (row) => row.ownerName || 'N/A',
+    },
+    {
+      name: 'ID Type',
+      width: '120px',
+      selector: (row) => row.idType || 'N/A',
+      center: true,
+    },
+    {
+      name: 'ID Number',
+      width: '220px',
+      selector: (row) => row.idNumber || 'N/A',
+      center: true,
+    },
     // {
     //   name: 'Validate OTP',
     //   width: '250px',
@@ -1976,7 +1445,7 @@ const ReleaseSelection = () => {
         setOriginalTotalRecords(totalRecords); // make sure you have this in state!
 
         // Now safe to call dimension change
-        await fetch_releasePercentage(trimmedLKRSID, totalRecords, unreleasedSites, releasedSites, lengthRO);
+        // await fetch_releasePercentage(trimmedLKRSID, totalRecords, unreleasedSites, releasedSites, lengthRO);
       }
     } catch (error) {
       console.error("Fetch Site Details Error:", error);
@@ -2022,7 +1491,7 @@ const ReleaseSelection = () => {
 
       const response = await final_Release_Sites(payload);
       console.log("Release response:", response);
-
+      setIsOrder_EditingArea(true);
       Swal.fire({
         title: "Site released successfully!",
         icon: 'success',
@@ -2072,6 +1541,7 @@ const ReleaseSelection = () => {
       if (Array.isArray(response)) {
         const releasedSites = response.filter(site => site.sitE_IS_SITE_RELEASED === true);
         setFinalApiList(releasedSites); // ✅ Move to final table
+
       }
     } catch (error) {
       console.error("Final Released Sites Fetch Error:", error);
@@ -2417,10 +1887,7 @@ const ReleaseSelection = () => {
       stop_loader();
     }
   };
-  const handleEditRelease = () => {
-    setIsOrderEditing(false); // Disable edit button
-    setIsOrder_EditingArea(true); // Enable editing mode for area
-  };
+
   //file Upload API
   const file_UploadAPI = async (MstDocumentID, documentnumber, file, date, uniqueID, DocName, trimmedLKRSID) => {
     const formData = new FormData();
@@ -2606,23 +2073,23 @@ const ReleaseSelection = () => {
     });
   };
 
-  const fetch_releasePercentage = async (trimmedLKRSID, totalRecords, unreleasedSites, releasedSites, lengthRO) => {
-    start_loader();
-    try {
-      const listResponse = await fetch_releasePercentageDetails(trimmedLKRSID);
-      const releaseTypeId = listResponse.sitE_RELS_SITE_RELSTYPE_ID;
-      sessionStorage.setItem('sitE_RELS_Latest_SITE_RELS_ID', listResponse.sitE_RELS_Latest_SITE_RELS_ID);
-      const releasePercentage = listResponse.releasePercentage;
+    // const fetch_releasePercentage = async (trimmedLKRSID, totalRecords, unreleasedSites, releasedSites, lengthRO) => {
+    //   start_loader();
+    //   try {
+    //     const listResponse = await fetch_releasePercentageDetails(trimmedLKRSID);
+    //     const releaseTypeId = listResponse.sitE_RELS_SITE_RELSTYPE_ID;
+    //     sessionStorage.setItem('sitE_RELS_Latest_SITE_RELS_ID', listResponse.sitE_RELS_Latest_SITE_RELS_ID);
+    //     const releasePercentage = listResponse.releasePercentage;
 
-      if (releaseTypeId) {
-        handleDimensionChange(releaseTypeId, totalRecords, unreleasedSites, releasedSites, lengthRO, releasePercentage);
-      }
-    } catch (error) {
-      console.error("Error fetching approval list:", error);
-    } finally {
-      stop_loader();
-    }
-  };
+    //     if (releaseTypeId) {
+    //       handleDimensionChange(releaseTypeId, totalRecords, unreleasedSites, releasedSites, lengthRO, releasePercentage);
+    //     }
+    //   } catch (error) {
+    //     console.error("Error fetching approval list:", error);
+    //   } finally {
+    //     stop_loader();
+    //   }
+    // };
 
   const fetchReleaseList = async (trimmedLKRSID) => {
     start_loader();
@@ -2733,7 +2200,7 @@ const ReleaseSelection = () => {
   };
   const [isEKYCCompleted, setIsEKYCCompleted] = useState(false);
   const [ekyc_Data, setEkyc_Data] = useState(null);
-  const [isEKYCVerified, setIsEKYCVerified] = useState(false);
+  const [isEKYCVerified, setIsEKYCVerified] = useState(null);
   const [orderReleaseStatus, setOrderReleaseStatus] = useState(false);
 
 
@@ -2927,241 +2394,231 @@ const ReleaseSelection = () => {
     // <DashboardLayout>
     //   <div className={`layout-form-container ${loading ? 'no-interaction' : ''}`}>
     //     {loading && <Loader />}
-        <div className="my-3 my-md-5">
-          <div className="container mt-5">
+    <div className="my-3 my-md-5">
+      <div className="container mt-5">
 
-            {/* Release Table */}
-            <div className="card">
-              <div className="card-header layout_btn_color">
-                <h5 className="card-title" style={{ textAlign: 'center' }}>Release Dashboard</h5>
-              </div>
-              <div className="card-body">
-                <Link
-                  onClick={handleBackToDashboard}
-                  style={{ textDecoration: 'none', color: '#006879', display: 'flex', alignItems: 'center' }}
-                >
-                  <i className='fa fa-arrow-left' style={{ marginRight: '8px' }}></i>
-                  Back to Dashboard
-                </Link>
-                <div className="row">
-                  <div className='col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mt-2'>
-                    <div className="form-group">
-                      <label className='form-label'>Enter the EPID or KRSID to fetch details <span className='mandatory_color'>*</span></label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Enter the EPID or KRSID"
-                        maxLength={10}
-                        value={localLKRSID}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-                  </div>
-                  <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2  mt-2'>
-                    <div className="form-group">
-                      <label className='form-label'>&nbsp;</label>
-                      <button className='btn btn-primary btn-block' onClick={() => handleSearchClick(localLKRSID)}>
-                        Search
-                      </button>
-                    </div>
-                  </div>
-                  <div className="form-group mt-2" hidden>
-                    <label className="form-label">Select Dimension</label>
-                    <select className="form-control" value={selectedValue} onChange={handleDimensionChange}>
-                      <option value="">-- Select Dimension --</option>
-                      <option value="100">100%</option>
-                      <option value="60*40">60 * 40</option>
-                      <option value="40*30*30">40 * 30 * 30</option>
-                    </select>
-                  </div>
-
+        {/* Release Table */}
+        <div className="card">
+          <div className="card-header layout_btn_color">
+            <h5 className="card-title" style={{ textAlign: 'center' }}>Release Dashboard</h5>
+          </div>
+          <div className="card-body">
+            <Link
+              onClick={handleBackToDashboard}
+              style={{ textDecoration: 'none', color: '#006879', display: 'flex', alignItems: 'center' }}
+            >
+              <i className='fa fa-arrow-left' style={{ marginRight: '8px' }}></i>
+              Back to Dashboard
+            </Link>
+            <div className="row">
+              <div className='col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mt-2'>
+                <div className="form-group">
+                  <label className='form-label'>Enter the EPID or KRSID to fetch details <span className='mandatory_color'>*</span></label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Enter the EPID or KRSID"
+                    maxLength={10}
+                    value={localLKRSID}
+                    onChange={handleInputChange}
+                  />
                 </div>
-                {/* property details table */}
-                {(lkrsTableData.lkrS_DISPLAYID && approvalTableData.approvalOrderNo) && (
-                  <>
-                    <h5>Property Details</h5>
-                    <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-                      <tbody>
-                        <tr>
-                          <th colSpan={2} style={thStyle}>Land type</th>
-                          <td colSpan={2} style={tdStyle}>
-                            {lkrsTableData.lkrS_LANDTYPE === 'surveyNo'
-                              ? 'Converted Revenue Survey Number (No BBMP Khata)'
-                              : lkrsTableData.lkrS_LANDTYPE === 'khata'
-                                ? 'BBMP A-Khata'
-                                : lkrsTableData.lkrS_LANDTYPE}
-                          </td>
-                        </tr>
-                        <tr>
-                          <th style={thStyle}>KRS ID</th>
-                          <td style={tdStyle}>{lkrsTableData.lkrS_DISPLAYID}</td>
-                          <th style={thStyle}>Mother EPID</th>
-                          <td style={tdStyle}>{lkrsTableData.lkrS_EPID}</td>
-                        </tr>
-                        <tr>
-                          <th style={thStyle}>Total Number of Sites</th>
-                          <td style={tdStyle}> {approvalTableData.totalNoOfSites}</td>
-                          <th style={thStyle}>Total Extent</th>
-                          <td style={tdStyle}>{lkrsTableData.lkrS_SITEAREA_SQFT} [SQFT] , {lkrsTableData.lkrS_SITEAREA_SQMT} [SQM]</td>
-                        </tr>
-                        <tr>
-                          <th style={thStyle}>DC Conversion</th>
-                          <td style={tdStyle}>N/A</td>
-                          <th style={thStyle}>Approval Order Number</th>
-                          <td style={tdStyle}>{approvalTableData.approvalOrderNo || 'N/A'}</td>
-                        </tr>
-                        <tr>
-                          <th style={thStyle}>Release Type</th>
-                          <td style={tdStyle}>{approvalTableData.releaseType || 'N/A'}</td>
-                          <th style={thStyle}>EC Number</th>
-                          <td style={tdStyle}>{lkrsTableData.lkrS_ECNUMBER || 'N/A'}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </>
-                )}
+              </div>
+              <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2  mt-2'>
+                <div className="form-group">
+                  <label className='form-label'>&nbsp;</label>
+                  <button className='btn btn-primary btn-block' onClick={() => handleSearchClick(localLKRSID)}>
+                    Search
+                  </button>
+                </div>
+              </div>
+        
+            {/* property details table */}
+            {(lkrsTableData.lkrS_DISPLAYID && approvalTableData.approvalOrderNo) && (
+              <>
+                <h5>Property Details</h5>
+                <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+                  <tbody>
+                    <tr>
+                      <th colSpan={2} style={thStyle}>Land type</th>
+                      <td colSpan={2} style={tdStyle}>
+                        {lkrsTableData.lkrS_LANDTYPE === 'surveyNo'
+                          ? 'Converted Revenue Survey Number (No BBMP Khata)'
+                          : lkrsTableData.lkrS_LANDTYPE === 'khata'
+                            ? 'BBMP A-Khata'
+                            : lkrsTableData.lkrS_LANDTYPE}
+                      </td>
+                    </tr>
+                    <tr>
+                      <th style={thStyle}>KRS ID</th>
+                      <td style={tdStyle}>{lkrsTableData.lkrS_DISPLAYID}</td>
+                      <th style={thStyle}>Mother EPID</th>
+                      <td style={tdStyle}>{lkrsTableData.lkrS_EPID}</td>
+                    </tr>
+                    <tr>
+                      <th style={thStyle}>Total Number of Sites</th>
+                      <td style={tdStyle}> {approvalTableData.totalNoOfSites}</td>
+                      <th style={thStyle}>Total Extent</th>
+                      <td style={tdStyle}>{lkrsTableData.lkrS_SITEAREA_SQFT} [SQFT] , {lkrsTableData.lkrS_SITEAREA_SQMT} [SQM]</td>
+                    </tr>
+                    <tr>
+                      <th style={thStyle}>DC Conversion</th>
+                      <td style={tdStyle}>N/A</td>
+                      <th style={thStyle}>Approval Order Number</th>
+                      <td style={tdStyle}>{approvalTableData.approvalOrderNo || 'N/A'}</td>
+                    </tr>
+                    <tr>
+                      <th style={thStyle}>Release Type</th>
+                      <td style={tdStyle}>{approvalTableData.releaseType || 'N/A'}</td>
+                      <th style={thStyle}>EC Number</th>
+                      <td style={tdStyle}>{lkrsTableData.lkrS_ECNUMBER || 'N/A'}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </>
+            )}
 
-                <hr />
-                {selectedLandType === "surveyNo" && (
-                  <>
-                    {combinedData.length > 0 && (
-                      <div className="col-12">
-                        <div className="">
-                          <div className="d-flex justify-content-between align-items-center mb-3">
-                            <h4 className=" m-0">Survey Number Details</h4>
-                            <div className="d-flex align-items-center">
-                              <label className="me-2 mb-0">Rows per page:</label>
-                              <select
-                                className="form-select form-select-sm w-auto"
-                                value={rowsPerPage}
-                                onChange={handlePageSizeChange}
-                              >
-                                {[5, 10, 15, 20, 25, 30].map((size) => (
-                                  <option key={size} value={size}>{size}</option>
-                                ))}
-                              </select>
-                            </div>
-                          </div>
-
-                          <div className="table-responsive custom-scroll-table">
-                            <table className="table table-striped table-hover table-bordered rounded-table">
-                              <thead className="table-primary sticky-header">
-                                <tr>
-                                  <th hidden>Action</th>
-                                  <th>S.No</th>
-                                  <th>District</th>
-                                  <th>Taluk</th>
-                                  <th>Hobli</th>
-                                  <th>Village</th>
-                                  <th>Owner Name</th>
-                                  <th>Survey Number / Surnoc / Hissa</th>
-                                  <th>Extent (Acre.Gunta.Fgunta)</th>
-                                  <th>SqFt</th>
-                                  <th>SqM</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {paginatedData.map((row, index) => (
-                                  <tr key={index}>
-                                    <td hidden>
-                                    </td>
-                                    <td>{index + 1 + (currentPage - 1) * rowsPerPage}</td>
-                                    <td>{row.district}</td>
-                                    <td>{row.taluk}</td>
-                                    <td>{row.hobli}</td>
-                                    <td>{row.village}</td>
-                                    <td>{row.owner}</td>
-                                    <td>{`${row.survey_no}/${row.surnoc}/${row.hissa_no}`}</td>
-                                    <td>{`${row.ext_acre}.${row.ext_gunta}.${row.ext_fgunta}`}</td>
-                                    <td>
-                                      {(
-                                        (parseFloat(row.ext_acre) * 43560) +
-                                        (parseFloat(row.ext_gunta) * 1089) +
-                                        (parseFloat(row.ext_fgunta) * 68.0625)
-                                      ).toFixed(2)}
-                                    </td>
-                                    <td>
-                                      {(
-                                        (
-                                          (parseFloat(row.ext_acre) * 43560) +
-                                          (parseFloat(row.ext_gunta) * 1089) +
-                                          (parseFloat(row.ext_fgunta) * 68.0625)
-                                        ) * 0.092903
-                                      ).toFixed(2)}
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                              <tfoot >
-                                <tr>
-                                  <th colSpan={5}></th>
-                                  <th colSpan={2} className="text-end fw-bold">Total Area:</th>
-                                  <th className="text-left fw-bold" >{`${totalAcre}.${totalGunta}.${totalFGunta}`}</th>
-                                  <th className='fw-bold'>{totalSqFt.toFixed(2)}</th>
-                                  <th className='fw-bold'>{totalSqFt.toFixed(2)}</th>
-                                </tr>
-                              </tfoot>
-                            </table>
-                          </div>
-
-                          {/* Pagination Summary and Controls */}
-                          <div className="d-flex justify-content-between align-items-center mt-3 flex-wrap">
-                            <div>
-                              Showing {Math.min((currentPage - 1) * rowsPerPage + 1, combinedData.length)}–{Math.min(currentPage * rowsPerPage, combinedData.length)} of {combinedData.length} records
-                            </div>
-
-                            <div>
-                              <button
-                                className="btn btn-outline-secondary btn-sm mx-1"
-                                onClick={() => goToPage(currentPage - 1)}
-                                disabled={currentPage === 1}
-                              >
-                                Previous
-                              </button>
-                              {[...Array(totalPages).keys()].map((num) => (
-                                <button
-                                  key={num}
-                                  className={`btn btn-sm mx-1 ${currentPage === num + 1 ? 'btn-primary' : 'btn-outline-primary'}`}
-                                  onClick={() => goToPage(num + 1)}
-                                >
-                                  {num + 1}
-                                </button>
-                              ))}
-                              <button
-                                className="btn btn-outline-secondary btn-sm mx-1"
-                                onClick={() => goToPage(currentPage + 1)}
-                                disabled={currentPage === totalPages}
-                              >
-                                Next
-                              </button>
-                            </div>
-                          </div>
-
+            <hr />
+            {selectedLandType === "surveyNo" && (
+              <>
+                {combinedData.length > 0 && (
+                  <div className="col-12">
+                    <div className="">
+                      <div className="d-flex justify-content-between align-items-center mb-3">
+                        <h4 className=" m-0">Survey Number Details</h4>
+                        <div className="d-flex align-items-center">
+                          <label className="me-2 mb-0">Rows per page:</label>
+                          <select
+                            className="form-select form-select-sm w-auto"
+                            value={rowsPerPage}
+                            onChange={handlePageSizeChange}
+                          >
+                            {[5, 10, 15, 20, 25, 30].map((size) => (
+                              <option key={size} value={size}>{size}</option>
+                            ))}
+                          </select>
                         </div>
                       </div>
-                    )
-                    }
-                  </>
-                )}
-                {/* EPID preview block */}
-                {(selectedLandType === "khata") && (
-                  <>
-                    {epidshowTable && epid_fetchedData && (
-                      <div>
-                        <h5>Property Owner details as per BBMP eKhata</h5>
-                        <h6>Note: Plot-wise New Khata will be issued in owner's name. Hence, if owner has changed then first get Mutation done in eKhata.</h6>
-                        {/* <h6>If there has been a change in ownership, the Mutation process in eKhata must be completed first, as the New Khata will be issued in the owner's name.</h6> */}
-                        <DataTable
-                          columns={columns}
-                          data={epid_fetchedData?.OwnerDetails || []}
-                          pagination
-                          noHeader
-                          dense={false}
-                          customStyles={customStyles}
-                        />
-                        {epid_fetchedData && (
-                <>
-                    <style>{`
+
+                      <div className="table-responsive custom-scroll-table">
+                        <table className="table table-striped table-hover table-bordered rounded-table">
+                          <thead className="table-primary sticky-header">
+                            <tr>
+                              <th hidden>Action</th>
+                              <th>S.No</th>
+                              <th>District</th>
+                              <th>Taluk</th>
+                              <th>Hobli</th>
+                              <th>Village</th>
+                              <th>Owner Name</th>
+                              <th>Survey Number / Surnoc / Hissa</th>
+                              <th>Extent (Acre.Gunta.Fgunta)</th>
+                              <th>SqFt</th>
+                              <th>SqM</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {paginatedData.map((row, index) => (
+                              <tr key={index}>
+                                <td hidden>
+                                </td>
+                                <td>{index + 1 + (currentPage - 1) * rowsPerPage}</td>
+                                <td>{row.district}</td>
+                                <td>{row.taluk}</td>
+                                <td>{row.hobli}</td>
+                                <td>{row.village}</td>
+                                <td>{row.owner}</td>
+                                <td>{`${row.survey_no}/${row.surnoc}/${row.hissa_no}`}</td>
+                                <td>{`${row.ext_acre}.${row.ext_gunta}.${row.ext_fgunta}`}</td>
+                                <td>
+                                  {(
+                                    (parseFloat(row.ext_acre) * 43560) +
+                                    (parseFloat(row.ext_gunta) * 1089) +
+                                    (parseFloat(row.ext_fgunta) * 68.0625)
+                                  ).toFixed(2)}
+                                </td>
+                                <td>
+                                  {(
+                                    (
+                                      (parseFloat(row.ext_acre) * 43560) +
+                                      (parseFloat(row.ext_gunta) * 1089) +
+                                      (parseFloat(row.ext_fgunta) * 68.0625)
+                                    ) * 0.092903
+                                  ).toFixed(2)}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                          <tfoot >
+                            <tr>
+                              <th colSpan={5}></th>
+                              <th colSpan={2} className="text-end fw-bold">Total Area:</th>
+                              <th className="text-left fw-bold" >{`${totalAcre}.${totalGunta}.${totalFGunta}`}</th>
+                              <th className='fw-bold'>{totalSqFt.toFixed(2)}</th>
+                              <th className='fw-bold'>{totalSqFt.toFixed(2)}</th>
+                            </tr>
+                          </tfoot>
+                        </table>
+                      </div>
+
+                      {/* Pagination Summary and Controls */}
+                      <div className="d-flex justify-content-between align-items-center mt-3 flex-wrap">
+                        <div>
+                          Showing {Math.min((currentPage - 1) * rowsPerPage + 1, combinedData.length)}–{Math.min(currentPage * rowsPerPage, combinedData.length)} of {combinedData.length} records
+                        </div>
+
+                        <div>
+                          <button
+                            className="btn btn-outline-secondary btn-sm mx-1"
+                            onClick={() => goToPage(currentPage - 1)}
+                            disabled={currentPage === 1}
+                          >
+                            Previous
+                          </button>
+                          {[...Array(totalPages).keys()].map((num) => (
+                            <button
+                              key={num}
+                              className={`btn btn-sm mx-1 ${currentPage === num + 1 ? 'btn-primary' : 'btn-outline-primary'}`}
+                              onClick={() => goToPage(num + 1)}
+                            >
+                              {num + 1}
+                            </button>
+                          ))}
+                          <button
+                            className="btn btn-outline-secondary btn-sm mx-1"
+                            onClick={() => goToPage(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                          >
+                            Next
+                          </button>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                )
+                }
+              </>
+            )}
+            {/* EPID preview block */}
+            {(selectedLandType === "khata") && (
+              <>
+                {epidshowTable && epid_fetchedData && (
+                  <div>
+                    <h5>Property Owner details as per BBMP eKhata</h5>
+                    <h6>Note: Plot-wise New Khata will be issued in owner's name. Hence, if owner has changed then first get Mutation done in eKhata.</h6>
+                    {/* <h6>If there has been a change in ownership, the Mutation process in eKhata must be completed first, as the New Khata will be issued in the owner's name.</h6> */}
+                    <DataTable
+                      columns={columns}
+                      data={epid_fetchedData?.OwnerDetails || []}
+                      pagination
+                      noHeader
+                      dense={false}
+                      customStyles={customStyles}
+                    />
+                    {epid_fetchedData && (
+                      <>
+                        <style>{`
       /* Wrapper for horizontal scroll on small screens */
       .table-responsive-wrapper { /* Renamed to avoid conflict if parent also uses table-responsive */
       width: 100%;
@@ -3206,530 +2663,530 @@ const ReleaseSelection = () => {
         margin-bottom: 10px; /* Space between heading/button and table */
       }
     `}</style>
-                    <div className="table-responsive-wrapper">
-                        <div className="header-with-button">
+                        <div className="table-responsive-wrapper">
+                          <div className="header-with-button">
                             <h4>Property Details</h4>
                             {/* <button className='btn btn-warning' onClick={showImplementationAlert}>View eKhata</button> */}
-                        </div>
+                          </div>
 
-                        {/* Property Details */}
-                        <table>
+                          {/* Property Details */}
+                          <table>
                             <thead>
-                                <tr>
-                                    <th>Property ID</th>
-                                    <th>Category</th>
-                                    <th>Classification</th>
-                                    <th>Ward Number</th>
-                                    <th>Ward Name</th>
-                                    <th>Street Name</th>
-                                </tr>
+                              <tr>
+                                <th>Property ID</th>
+                                <th>Category</th>
+                                <th>Classification</th>
+                                <th>Ward Number</th>
+                                <th>Ward Name</th>
+                                <th>Street Name</th>
+                              </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>{epid_fetchedData.PropertyID}</td>
-                                    <td>{epid_fetchedData.PropertyCategory}</td>
-                                    <td>{epid_fetchedData.PropertyClassification}</td>
-                                    <td>{epid_fetchedData.WardNumber}</td>
-                                    <td>{epid_fetchedData.WardName?.trim()}</td>
-                                    <td>{epid_fetchedData.StreetName?.trim()}</td>
-                                </tr>
+                              <tr>
+                                <td>{epid_fetchedData.PropertyID}</td>
+                                <td>{epid_fetchedData.PropertyCategory}</td>
+                                <td>{epid_fetchedData.PropertyClassification}</td>
+                                <td>{epid_fetchedData.WardNumber}</td>
+                                <td>{epid_fetchedData.WardName?.trim()}</td>
+                                <td>{epid_fetchedData.StreetName?.trim()}</td>
+                              </tr>
                             </tbody>
-                        </table>
+                          </table>
 
-                        {/* Kaveri Registration Numbers */}
-                        {epid_fetchedData.KaveriRegistrationNumber?.length > 0 && (
+                          {/* Kaveri Registration Numbers */}
+                          {epid_fetchedData.KaveriRegistrationNumber?.length > 0 && (
                             <>
-                                <h4>Kaveri Registration Numbers</h4>
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Registration Number</th>
-                                            <th>EC Number</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {epid_fetchedData.KaveriRegistrationNumber.map((item, idx) => (
-                                            <tr key={idx}>
-                                                <td>{item.kaveriRegistrationNumber}</td>
-                                                <td>{item.kaveriECNumber}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </>
-                        )}
-
-                        {/* More Property Info */}
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Street Code</th>
-                                    <th>SAS Application No</th>
-                                    <th>Is Mutation</th>
-                                    <th>Assessment No</th>
-                                    <th>Court Stay</th>
-                                    <th>Enquiry Dispute</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>{epid_fetchedData.Streetcode}</td>
-                                    <td>{epid_fetchedData.SASApplicationNumber}</td>
-                                    <td>{epid_fetchedData.IsMuation}</td>
-                                    <td>{epid_fetchedData.AssessmentNumber}</td>
-                                    <td>{epid_fetchedData.courtStay}</td>
-                                    <td>{epid_fetchedData.enquiryDispute}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        {/* Check Bandi */}
-                        <h4>Check Bandi</h4>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>North</th>
-                                    <th>South</th>
-                                    <th>East</th>
-                                    <th>West</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>{epid_fetchedData.CheckBandi?.north}</td>
-                                    <td>{epid_fetchedData.CheckBandi?.south}</td>
-                                    <td>{epid_fetchedData.CheckBandi?.east}</td>
-                                    <td>{epid_fetchedData.CheckBandi?.west}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        {/* Site Details */}
-                        <h4>Site Details</h4>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Site Area (sq ft)</th>
-                                    <th>East-West Dimension</th>
-                                    <th>North-South Dimension</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>{epid_fetchedData.SiteDetails?.siteArea}</td>
-                                    <td>{epid_fetchedData.SiteDetails?.dimensions?.eastWest || '-'}</td>
-                                    <td>{epid_fetchedData.SiteDetails?.dimensions?.northSouth || '-'}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        {/* Owner Details */}
-                        <h4>Owner Details</h4>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Owner Name</th>
-                                    <th>ID Type</th>
-                                    <th>ID Number</th>
-                                    <th>Address</th>
-                                    <th>Identifier Name</th>
-                                    <th>Gender</th>
-                                    <th>Mobile Number</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {epid_fetchedData.OwnerDetails?.map((owner, index) => (
-                                    <tr key={index}>
-                                        <td>{owner.ownerName}</td>
-                                        <td>{owner.idType}</td>
-                                        <td>{owner.idNumber}</td>
-                                        <td>{owner.ownerAddress}</td>
-                                        <td>{owner.identifierName}</td>
-                                        <td>{owner.gender}</td>
-                                        <td>{owner.mobileNumber}</td>
+                              <h4>Kaveri Registration Numbers</h4>
+                              <table>
+                                <thead>
+                                  <tr>
+                                    <th>Registration Number</th>
+                                    <th>EC Number</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {epid_fetchedData.KaveriRegistrationNumber.map((item, idx) => (
+                                    <tr key={idx}>
+                                      <td>{item.kaveriRegistrationNumber}</td>
+                                      <td>{item.kaveriECNumber}</td>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </>
-            )}
+                                  ))}
+                                </tbody>
+                              </table>
+                            </>
+                          )}
 
+                          {/* More Property Info */}
+                          <table>
+                            <thead>
+                              <tr>
+                                <th>Street Code</th>
+                                <th>SAS Application No</th>
+                                <th>Is Mutation</th>
+                                <th>Assessment No</th>
+                                <th>Court Stay</th>
+                                <th>Enquiry Dispute</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td>{epid_fetchedData.Streetcode}</td>
+                                <td>{epid_fetchedData.SASApplicationNumber}</td>
+                                <td>{epid_fetchedData.IsMuation}</td>
+                                <td>{epid_fetchedData.AssessmentNumber}</td>
+                                <td>{epid_fetchedData.courtStay}</td>
+                                <td>{epid_fetchedData.enquiryDispute}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+
+                          {/* Check Bandi */}
+                          <h4>Check Bandi</h4>
+                          <table>
+                            <thead>
+                              <tr>
+                                <th>North</th>
+                                <th>South</th>
+                                <th>East</th>
+                                <th>West</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td>{epid_fetchedData.CheckBandi?.north}</td>
+                                <td>{epid_fetchedData.CheckBandi?.south}</td>
+                                <td>{epid_fetchedData.CheckBandi?.east}</td>
+                                <td>{epid_fetchedData.CheckBandi?.west}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+
+                          {/* Site Details */}
+                          <h4>Site Details</h4>
+                          <table>
+                            <thead>
+                              <tr>
+                                <th>Site Area (sq ft)</th>
+                                <th>East-West Dimension</th>
+                                <th>North-South Dimension</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td>{epid_fetchedData.SiteDetails?.siteArea}</td>
+                                <td>{epid_fetchedData.SiteDetails?.dimensions?.eastWest || '-'}</td>
+                                <td>{epid_fetchedData.SiteDetails?.dimensions?.northSouth || '-'}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+
+                          {/* Owner Details */}
+                          <h4>Owner Details</h4>
+                          <table>
+                            <thead>
+                              <tr>
+                                <th>Owner Name</th>
+                                <th>ID Type</th>
+                                <th>ID Number</th>
+                                <th>Address</th>
+                                <th>Identifier Name</th>
+                                <th>Gender</th>
+                                <th>Mobile Number</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {epid_fetchedData.OwnerDetails?.map((owner, index) => (
+                                <tr key={index}>
+                                  <td>{owner.ownerName}</td>
+                                  <td>{owner.idType}</td>
+                                  <td>{owner.idNumber}</td>
+                                  <td>{owner.ownerAddress}</td>
+                                  <td>{owner.identifierName}</td>
+                                  <td>{owner.gender}</td>
+                                  <td>{owner.mobileNumber}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </>
+                    )}
+
+                  </div>
+                )}
+              </>
+            )}
+            <hr />
+            {/* Approval details table  */}
+            {releaseDetails.length > 0 && (
+              <div style={{ marginTop: '20px' }}>
+                <h5 style={{ marginBottom: '15px', fontSize: '20px', fontWeight: 'bold', color: '#333' }}>
+                  Layout Approval Order
+                </h5>
+                <table style={{
+                  borderCollapse: "collapse",
+                  width: "100%",
+                  fontFamily: "Arial, sans-serif",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
+                }}>
+                  <thead>
+                    <tr style={{ backgroundColor: "#fff", color: "#000", textAlign: "left" }}>
+                      {/* <th style={thStyle}>ID</th> */}
+                      {/* <th style={thStyle}>KRS ID</th> */}
+                      <th style={thStyle}>Site Approval order Number</th>
+                      <th style={thStyle}>Date of Order</th>
+                      <th style={thStyle}>Approval Authority</th>
+                      <th style={thStyle}>Designation of Authority issued </th>
+                      <th style={thStyle}>Total Number of sites </th>
+                      <th style={thStyle}>Release Type</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {releaseDetails.map((item, index) => (
+                      <tr key={index} style={{ backgroundColor: index % 2 === 0 ? "#f9f9f9" : "#fff" }}>
+                        {/* <td style={tdStyle}>{item.sitE_RELS_ID}</td> */}
+                        {/* <td style={tdStyle}>{item.apr_LKRS_Id}</td> */}
+                        <td style={tdStyle}>{item.apr_Approval_No}</td>
+                        <td style={tdStyle}>{new Date(item.apr_Approval_Date).toLocaleDateString()}</td>
+                        <td style={tdStyle}>{item.apR_APPROVALAUTHORITY_Text}</td>
+                        <td style={tdStyle}>{item.apR_APPROVALDESIGNATION}</td>
+                        <td style={tdStyle}>{item.lkrS_NUMBEROFSITES}</td>
+                        <td style={tdStyle}>{item.sitE_RELS_SITE_RELSTYPE}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <hr />
+                <div className='row mt-2'>
+                  <h5 style={{ marginBottom: '15px', fontSize: '20px', fontWeight: 'bold', color: '#333' }}>Owner EKYC</h5>
+
+                  <div className="col-12 col-sm-12 col-md-7 col-lg-7 col-xl-7 mt-2">
+                    <label className="form-label">Select Owner <span className='mandatory_color'>*</span></label>
+                    <button
+                      className="form-control text-start"
+                      onClick={() => {
+                        const shouldOpen = !isDropdownOpen;
+                        setIsDropdownOpen(shouldOpen);
+                        if (shouldOpen) {
+                          fetchOwners();
+                        }
+                      }}
+                      ref={buttonRef}  // attach ref here
+                    >
+                      {selectedOwner ? selectedOwner.name : "Select an owner"}
+                    </button>
+
+                    {isDropdownOpen && (
+                      <ul
+                        className="dropdown-menu show"
+                        style={{
+                          overflowY: "auto",
+                          width: dropdownWidth,
+                          maxHeight: "250px", marginLeft: "13px",
+                        }}
+                      >
+                        {loadingOwners ? (
+                          <li className="px-3 py-2">Loading...</li>
+                        ) : (
+                          ownerList.map((owner, index) => (
+                            <li key={owner.id || index}>
+                              <button
+                                className="dropdown-item"
+                                onClick={() => {
+                                  setSelectedOwner(owner);
+                                  setOwnerNameInput(owner.name);
+                                  setIsDropdownOpen(false);
+                                }}
+                              >
+                                {owner.name}
+                              </button>
+                            </li>
+                          ))
+                        )}
+                      </ul>
+                    )}
+                  </div>
+                  <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-5" >
+                    <label className="form-label"></label>
+                    <button className='btn btn-info btn-block' disabled={!selectedOwner || isEKYCVerified} onClick={handleDoEKYC}>Do eKYC</button>
+                  </div>
+                  <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 mt-5">
+                    {isEKYCVerified && (
+                      <div className="mb-2 text-success font-weight-bold">
+                        eKYC Verified!
                       </div>
                     )}
-                  </>
-                )}
-                <hr />
-                {/* Approval details table  */}
-                {releaseDetails.length > 0 && (
-                  <div style={{ marginTop: '20px' }}>
-                    <h5 style={{ marginBottom: '15px', fontSize: '20px', fontWeight: 'bold', color: '#333' }}>
-                      Layout Approval Order
-                    </h5>
-                    <table style={{
-                      borderCollapse: "collapse",
-                      width: "100%",
-                      fontFamily: "Arial, sans-serif",
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
-                    }}>
-                      <thead>
-                        <tr style={{ backgroundColor: "#fff", color: "#000", textAlign: "left" }}>
-                          {/* <th style={thStyle}>ID</th> */}
-                          {/* <th style={thStyle}>KRS ID</th> */}
-                          <th style={thStyle}>Site Approval order Number</th>
-                          <th style={thStyle}>Date of Order</th>
-                          <th style={thStyle}>Approval Authority</th>
-                          <th style={thStyle}>Designation of Authority issued </th>
-                          <th style={thStyle}>Total Number of sites </th>
-                          <th style={thStyle}>Release Type</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {releaseDetails.map((item, index) => (
-                          <tr key={index} style={{ backgroundColor: index % 2 === 0 ? "#f9f9f9" : "#fff" }}>
-                            {/* <td style={tdStyle}>{item.sitE_RELS_ID}</td> */}
-                            {/* <td style={tdStyle}>{item.apr_LKRS_Id}</td> */}
-                            <td style={tdStyle}>{item.apr_Approval_No}</td>
-                            <td style={tdStyle}>{new Date(item.apr_Approval_Date).toLocaleDateString()}</td>
-                            <td style={tdStyle}>{item.apR_APPROVALAUTHORITY_Text}</td>
-                            <td style={tdStyle}>{item.apR_APPROVALDESIGNATION}</td>
-                            <td style={tdStyle}>{item.lkrS_NUMBEROFSITES}</td>
-                            <td style={tdStyle}>{item.sitE_RELS_SITE_RELSTYPE}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    <hr />
-                    <div className='row mt-2'>
-                      <h5 style={{ marginBottom: '15px', fontSize: '20px', fontWeight: 'bold', color: '#333' }}>Owner EKYC</h5>
+                    {!isEKYCVerified && (
+                      <div className="mb-2 text-danger font-weight-bold">
+                        eKYC Failed!
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="mt-5" >
+                  <hr className='mt-1' />
+                  <h6 className='fw-normal fs-5' style={{ color: '#0077b6' }}>{t('translation.BDA.Subdivision1.heading')}</h6>
+                  <hr className='mt-1' style={{ border: '1px dashed #0077b6' }} />
+                  <div className="row">
+                    {/* release Order Number */}
+                    <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                      <div className="form-group">
+                        <label className="form-label">
+                          {t('translation.BDA.Subdivision1.orderNo')} <span className="mandatory_color">*</span>
+                        </label>
+                        <input
+                          type="tel"
+                          className="form-control"
+                          placeholder={t('translation.BDA.Subdivision1.orderNoPlaceholder')}
+                          name="layoutOrderNumber"  // <-- Corrected here
+                          value={release_formData.layoutOrderNumber}
+                          onChange={handleOrderChange}
+                          disabled={!isOrder_EditingArea}
+                        />
+                        {release_errors.layoutOrderNumber && (
+                          <small className="text-danger">{release_errors.layoutOrderNumber}</small>
+                        )}
 
-                      <div className="col-12 col-sm-12 col-md-7 col-lg-7 col-xl-7 mt-2">
-                        <label className="form-label">Select Owner <span className='mandatory_color'>*</span></label>
-                        <button
-                          className="form-control text-start"
-                          onClick={() => {
-                            const shouldOpen = !isDropdownOpen;
-                            setIsDropdownOpen(shouldOpen);
-                            if (shouldOpen) {
-                              fetchOwners();
-                            }
-                          }}
-                          ref={buttonRef}  // attach ref here
-                        >
-                          {selectedOwner ? selectedOwner.name : "Select an owner"}
+                      </div>
+                    </div>
+                    {/* Date of order */}
+                    <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                      <div className="form-group">
+                        <label className="form-label">
+                          {t('translation.BDA.Subdivision1.dateofOrder')} <span className="mandatory_color">*</span>
+                        </label>
+                        <input
+                          type="date"
+                          className="form-control"
+                          name="dateOfOrder"
+                          value={release_formData.dateOfOrder}
+                          max={new Date().toISOString().split("T")[0]}
+                          onChange={handleOrderChange}
+                          disabled={!isOrder_EditingArea} // Disable when not editing
+                        />
+                        {release_errors.dateOfOrder && (
+                          <small className="text-danger">{release_errors.dateOfOrder}</small>
+                        )}
+                      </div>
+                    </div>
+                    {/* Scan & Upload Layout release order */}
+                    <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                      <div className="form-group">
+                        <label className="form-label">
+                          {t('translation.BDA.Subdivision1.scanUploadOrder')}
+                          <span className="mandatory_color">*</span>
+                        </label>
+                        <input
+                          type="file"
+                          accept=".pdf"
+                          className="form-control"
+                          onChange={handleFilereleaseOrderChange}
+                          ref={fileReleaseOrderInputRef}
+                          disabled={!isOrder_EditingArea} // Disable when not editing
+                        />
+                        {release_formData.release_Order && releaseOrderURL && (
+                          <div className="mt-2">
+                            <div
+                              style={{
+                                width: "120px",
+                                height: "120px",
+                                border: "1px solid #ccc",
+                                borderRadius: "8px",
+                                overflow: "hidden",
+                              }}
+                            >
+                              <iframe
+                                src={releaseOrderURL}
+                                title="Release Order"
+                                width="100%"
+                                height="100%"
+                                style={{ cursor: "pointer", border: "none" }}
+                                onClick={() =>
+                                  window.open(releaseOrderURL, "_blank")
+                                }
+                              />
+                            </div>
+                            <p className="mt-1" style={{ fontSize: "0.875rem" }}>
+                              Current File:{" "}
+                              <a
+                                href={releaseOrderURL}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  textDecoration: "underline",
+                                  color: "#007bff",
+                                  fontSize: "0.875rem",
+                                }}
+                              >
+                                {release_formData.release_Order.name}
+                              </a>
+                            </p>
+                          </div>
+                        )}
+                        <span className="note_color">
+                          {t('translation.BDA.Subdivision1.noteFile')}
+                        </span>
+                        <br />
+                        {release_errors.release_Order && (
+                          <small className="text-danger">{release_errors.release_Order}</small>
+                        )}
+                      </div>
+                    </div>
+                    {/* release Authority */}
+                    <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                      <div className="form-group">
+                        <label className="form-label">
+                          {t('translation.BDA.Subdivision1.designation')}
+                          <span className="mandatory_color">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder={t('translation.BDA.Subdivision1.placeholderDesignation')}
+                          name="orderAuthority"
+                          value={release_formData.orderAuthority}
+                          onChange={handleOrderChange}
+                          disabled={!isOrder_EditingArea} // Disable when not editing
+                        />
+                        {release_errors.orderAuthority && (
+                          <small className="text-danger">{release_errors.orderAuthority}</small>
+                        )}
+                      </div>
+                    </div>
+
+
+                    <div className='col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10'></div>
+                    <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 ">
+                      <div className="form-group">
+                        <button className="btn btn-success btn-block" onClick={handleOrderSave} disabled={!isOrder_EditingArea}>
+                          Save and continue
                         </button>
-
-                        {isDropdownOpen && (
-                          <ul
-                            className="dropdown-menu show"
-                            style={{
-                              overflowY: "auto",
-                              width: dropdownWidth,
-                              maxHeight: "250px", marginLeft: "13px",
-                            }}
-                          >
-                            {loadingOwners ? (
-                              <li className="px-3 py-2">Loading...</li>
-                            ) : (
-                              ownerList.map((owner, index) => (
-                                <li key={owner.id || index}>
-                                  <button
-                                    className="dropdown-item"
-                                    onClick={() => {
-                                      setSelectedOwner(owner);
-                                      setOwnerNameInput(owner.name);
-                                      setIsDropdownOpen(false);
-                                    }}
-                                  >
-                                    {owner.name}
-                                  </button>
-                                </li>
-                              ))
-                            )}
-                          </ul>
-                        )}
                       </div>
-                      <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-5" >
-                        <label className="form-label"></label>
-                        <button className='btn btn-info btn-block' disabled={!selectedOwner || isEKYCVerified} onClick={handleDoEKYC}>Do eKYC</button>
-                      </div>
-                      <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 mt-5">
-                        {isEKYCVerified && (
-                          <div className="mb-2 text-success font-weight-bold">
-                            eKYC Verified!
-                          </div>
-                        )}
-                        {!isEKYCVerified && (
-                          <div className="mb-2 text-danger font-weight-bold">
-                            eKYC Failed!
+                    </div>
+                    {/* Save Button */}
+                    <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+                      <div className="form-group">
+                        {order_records.length > 0 && (
+                          <div className="mt-4">
+                            <h4>{t('translation.BDA.table1.heading')}</h4>
+                            <DataTable
+                              columns={order_columns}
+                              data={order_records}
+                              customStyles={customStyles}
+                              pagination
+                              highlightOnHover
+                              striped
+                            />
                           </div>
                         )}
                       </div>
                     </div>
-                    <div className="mt-5" >
-                      <hr className='mt-1' />
-                      <h6 className='fw-normal fs-5' style={{ color: '#0077b6' }}>{t('translation.BDA.Subdivision1.heading')}</h6>
-                      <hr className='mt-1' style={{ border: '1px dashed #0077b6' }} />
-                      <div className="row">
-                        {/* release Order Number */}
-                        <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
-                          <div className="form-group">
-                            <label className="form-label">
-                              {t('translation.BDA.Subdivision1.orderNo')} <span className="mandatory_color">*</span>
-                            </label>
-                            <input
-                              type="tel"
-                              className="form-control"
-                              placeholder={t('translation.BDA.Subdivision1.orderNoPlaceholder')}
-                              name="layoutOrderNumber"  // <-- Corrected here
-                              value={release_formData.layoutOrderNumber}
-                              onChange={handleOrderChange}
-                              disabled={!isOrder_EditingArea}
-                            />
-                            {release_errors.layoutOrderNumber && (
-                              <small className="text-danger">{release_errors.layoutOrderNumber}</small>
-                            )}
+                    {/* Table to Display Records */}
 
-                          </div>
-                        </div>
-                        {/* Date of order */}
-                        <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
-                          <div className="form-group">
-                            <label className="form-label">
-                              {t('translation.BDA.Subdivision1.dateofOrder')} <span className="mandatory_color">*</span>
-                            </label>
-                            <input
-                              type="date"
-                              className="form-control"
-                              name="dateOfOrder"
-                              value={release_formData.dateOfOrder}
-                              max={new Date().toISOString().split("T")[0]}
-                              onChange={handleOrderChange}
-                              disabled={!isOrder_EditingArea} // Disable when not editing
-                            />
-                            {release_errors.dateOfOrder && (
-                              <small className="text-danger">{release_errors.dateOfOrder}</small>
-                            )}
-                          </div>
-                        </div>
-                        {/* Scan & Upload Layout release order */}
-                        <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
-                          <div className="form-group">
-                            <label className="form-label">
-                              {t('translation.BDA.Subdivision1.scanUploadOrder')}
-                              <span className="mandatory_color">*</span>
-                            </label>
-                            <input
-                              type="file"
-                              accept=".pdf"
-                              className="form-control"
-                              onChange={handleFilereleaseOrderChange}
-                              ref={fileReleaseOrderInputRef}
-                              disabled={!isOrder_EditingArea} // Disable when not editing
-                            />
-                            {release_formData.release_Order && releaseOrderURL && (
-                              <div className="mt-2">
-                                <div
-                                  style={{
-                                    width: "120px",
-                                    height: "120px",
-                                    border: "1px solid #ccc",
-                                    borderRadius: "8px",
-                                    overflow: "hidden",
-                                  }}
-                                >
-                                  <iframe
-                                    src={releaseOrderURL}
-                                    title="Release Order"
-                                    width="100%"
-                                    height="100%"
-                                    style={{ cursor: "pointer", border: "none" }}
-                                    onClick={() =>
-                                      window.open(releaseOrderURL, "_blank")
-                                    }
-                                  />
-                                </div>
-                                <p className="mt-1" style={{ fontSize: "0.875rem" }}>
-                                  Current File:{" "}
-                                  <a
-                                    href={releaseOrderURL}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    style={{
-                                      textDecoration: "underline",
-                                      color: "#007bff",
-                                      fontSize: "0.875rem",
-                                    }}
-                                  >
-                                    {release_formData.release_Order.name}
-                                  </a>
-                                </p>
-                              </div>
-                            )}
-                            <span className="note_color">
-                              {t('translation.BDA.Subdivision1.noteFile')}
-                            </span>
-                            <br />
-                            {release_errors.release_Order && (
-                              <small className="text-danger">{release_errors.release_Order}</small>
-                            )}
-                          </div>
-                        </div>
-                        {/* release Authority */}
-                        <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
-                          <div className="form-group">
-                            <label className="form-label">
-                              {t('translation.BDA.Subdivision1.designation')}
-                              <span className="mandatory_color">*</span>
-                            </label>
-                            <input
-                              type="text"
-                              className="form-control"
-                              placeholder={t('translation.BDA.Subdivision1.placeholderDesignation')}
-                              name="orderAuthority"
-                              value={release_formData.orderAuthority}
-                              onChange={handleOrderChange}
-                              disabled={!isOrder_EditingArea} // Disable when not editing
-                            />
-                            {release_errors.orderAuthority && (
-                              <small className="text-danger">{release_errors.orderAuthority}</small>
-                            )}
-                          </div>
-                        </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
 
-                        <div className='col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10'></div>
-                        <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 ">
-                          <div className="form-group">
-                            <button className="btn btn-success btn-block" onClick={handleOrderSave} disabled={!isOrder_EditingArea}>
-                              Save and continue
-                            </button>
-                          </div>
-                        </div>
-                        {/* Save Button */}
-                        <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
-                          <div className="form-group">
-                            {order_records.length > 0 && (
-                              <div className="mt-4">
-                                <h4>{t('translation.BDA.table1.heading')}</h4>
-                                <DataTable
-                                  columns={order_columns}
-                                  data={order_records}
-                                  customStyles={customStyles}
-                                  pagination
-                                  highlightOnHover
-                                  striped
+
+
+
+
+
+          </div>
+        </div>
+        <div className="card">
+          <div className="card-header layout_btn_color">
+            <h5 className="card-title" style={{ textAlign: 'center' }}>Sites to be released</h5>
+          </div>
+          <div className="card-body">
+            <div className='row'>
+              <div className='col-md-12 my-3'>
+                {selectedRows.length > 0 && (
+                  <p style={{
+                    backgroundColor: '#e8f4ff',
+                    border: '1px solid #b3d8ff',
+                    padding: '10px 15px',
+                    borderRadius: '6px',
+                    color: '#0056b3',
+                    fontWeight: '500',
+                    marginTop: '10px'
+                  }}>
+                    {selectedRows.length} record{selectedRows.length > 1 ? 's' : ''} selected
+                  </p>
+                )}
+                {releaseData.length > 0 ? (
+                  <>
+                    {/* Select All Checkbox */}
+                    <div className="d-flex justify-content-start mb-2">
+                      <label>
+                        <input
+                          type="checkbox"
+                          checked={selectAllChecked}
+                          onChange={(e) => handleSelectAll(e)}
+                          disabled={isSelectAllDisabled()}
+                        />{' '}
+                        Select All
+                      </label>
+                    </div>
+
+                    {/* Cards Grid */}
+                    <div className="row">
+                      {releaseData.map((row, index) => {
+                        const isSelected = selectedRows.includes(index);
+                        const feetSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINFT).join(" x ") || '';
+                        const meterSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINMT).join(" x ") || '';
+                        const roadFacing = row.siteDimensions?.map(dim => dim.sitediM_ROADFACING ? "Yes" : "No").join(', ') || '';
+
+                        return (
+                          <div className="col-md-4 col-lg-3 col-xl-2 mb-3" key={row.id}>
+                            <div className={`card h-100 shadow p-2 blue-bordered-card position-relative ${isSelected ? 'border-primary' : ''}`}>
+                              <div className="d-flex justify-content-between align-items-center">
+                                <input
+                                  type="checkbox"
+                                  checked={isSelected}
+                                  onChange={() => handleRowSelect(index)}
                                 />
+                                <span className="badge bg-secondary">{row.sitE_SHAPETYPE}</span>
                               </div>
-                            )}
-                          </div>
-                        </div>
-                        {/* Table to Display Records */}
 
+                              <div className="mt-2">
+                                <div><strong>Site No:</strong> {row.sitE_NO}</div>
+                                <div><strong>Dimension:</strong></div>
+                                <div className="small text-muted">{feetSides} ft</div>
+                                <div className="small text-muted">{meterSides} m</div>
+                                <div className="small"><strong>Road Facing:</strong> {roadFacing}</div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Submit Button */}
+                    <div className="row">
+                      <div className="col-md-9"></div>
+                      <div className="col-md-3">
+                        <button className="btn btn-primary btn-block mt-3" onClick={moveToReleasedTable}>
+                          Add
+                        </button>
                       </div>
                     </div>
+                  </>
+                ) : (
+                  <div style={{
+                    textAlign: 'center',
+                    padding: '20px',
+                    fontWeight: '500',
+                    color: '#999'
+                  }}>
+                    There are no sites to display
                   </div>
                 )}
 
 
-
-
-
-
-
-              </div>
-            </div>
-            <div className="card">
-              <div className="card-header layout_btn_color">
-                <h5 className="card-title" style={{ textAlign: 'center' }}>Sites to be released</h5>
-              </div>
-              <div className="card-body">
-                <div className='row'>
-                  <div className='col-md-12 my-3'>
-                    {selectedRows.length > 0 && (
-                      <p style={{
-                        backgroundColor: '#e8f4ff',
-                        border: '1px solid #b3d8ff',
-                        padding: '10px 15px',
-                        borderRadius: '6px',
-                        color: '#0056b3',
-                        fontWeight: '500',
-                        marginTop: '10px'
-                      }}>
-                        {selectedRows.length} record{selectedRows.length > 1 ? 's' : ''} selected
-                      </p>
-                    )}
-                    {releaseData.length > 0 ? (
-                      <>
-                        {/* Select All Checkbox */}
-                        <div className="d-flex justify-content-start mb-2">
-                          <label>
-                            <input
-                              type="checkbox"
-                              checked={selectAllChecked}
-                              onChange={(e) => handleSelectAll(e)}
-                              disabled={isSelectAllDisabled()}
-                            />{' '}
-                            Select All
-                          </label>
-                        </div>
-
-                        {/* Cards Grid */}
-                        <div className="row">
-                          {releaseData.map((row, index) => {
-                            const isSelected = selectedRows.includes(index);
-                            const feetSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINFT).join(" x ") || '';
-                            const meterSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINMT).join(" x ") || '';
-                            const roadFacing = row.siteDimensions?.map(dim => dim.sitediM_ROADFACING ? "Yes" : "No").join(', ') || '';
-
-                            return (
-                              <div className="col-md-4 col-lg-3 col-xl-2 mb-3" key={row.id}>
-                                <div className={`card h-100 shadow p-2 blue-bordered-card position-relative ${isSelected ? 'border-primary' : ''}`}>
-                                  <div className="d-flex justify-content-between align-items-center">
-                                    <input
-                                      type="checkbox"
-                                      checked={isSelected}
-                                      onChange={() => handleRowSelect(index)}
-                                    />
-                                    <span className="badge bg-secondary">{row.sitE_SHAPETYPE}</span>
-                                  </div>
-
-                                  <div className="mt-2">
-                                    <div><strong>Site No:</strong> {row.sitE_NO}</div>
-                                    <div><strong>Dimension:</strong></div>
-                                    <div className="small text-muted">{feetSides} ft</div>
-                                    <div className="small text-muted">{meterSides} m</div>
-                                    <div className="small"><strong>Road Facing:</strong> {roadFacing}</div>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-
-                        {/* Submit Button */}
-                        <div className="row">
-                          <div className="col-md-9"></div>
-                          <div className="col-md-3">
-                            <button className="btn btn-primary btn-block mt-3" onClick={moveToReleasedTable}>
-                              Add
-                            </button>
-                          </div>
-                        </div>
-                      </>
-                    ) : (
-                      <div style={{
-                        textAlign: 'center',
-                        padding: '20px',
-                        fontWeight: '500',
-                        color: '#999'
-                      }}>
-                        There are no sites to display
-                      </div>
-                    )}
-
-
-                    {/* {releaseData.length > 0 ? (
+                {/* {releaseData.length > 0 ? (
                       <>
                         <DataTable
                           columns={releaseTableColumns}
@@ -3758,44 +3215,44 @@ const ReleaseSelection = () => {
                         There are no sites to display
                       </div>
                     )} */}
-                  </div>
-                </div>
               </div>
             </div>
+          </div>
+        </div>
 
 
 
-            {/* Already Released Table */}
-            {releasedData.length > 0 && (
-              <div className="card">
-                <div className="card-header layout_btn_color">
-                  <h5 className="card-title" style={{ textAlign: 'center' }}>Selected sites</h5>
+        {/* Already Released Table */}
+        {releasedData.length > 0 && (
+          <div className="card">
+            <div className="card-header layout_btn_color">
+              <h5 className="card-title" style={{ textAlign: 'center' }}>Selected sites</h5>
+            </div>
+            <div className="card-body">
+              <div className='row'>
+                <div className='col-md-12 my-3'>
+                  <DataTable
+                    columns={releasedTableColumns}
+                    data={releasedData}
+                    customStyles={customStyles}
+                    pagination
+                    highlightOnHover
+                    striped
+                  />
+
                 </div>
-                <div className="card-body">
-                  <div className='row'>
-                    <div className='col-md-12 my-3'>
-                      <DataTable
-                        columns={releasedTableColumns}
-                        data={releasedData}
-                        customStyles={customStyles}
-                        pagination
-                        highlightOnHover
-                        striped
-                      />
+                <div className='col-md-9'></div>
+                <div className='col-md-3'>
+                  <button
+                    className="btn btn-primary btn-block mt-3"
+                    // onClick={handleInitial60PercentSave}
+                    onClick={releaseSites}
+                  >
+                    Save
+                  </button>
+                </div>
 
-                    </div>
-                    <div className='col-md-9'></div>
-                    <div className='col-md-3'>
-                      <button
-                        className="btn btn-primary btn-block mt-3"
-                        // onClick={handleInitial60PercentSave}
-                        onClick={releaseSites}
-                      >
-                        Save
-                      </button>
-                    </div>
-
-                    {/* {finalApiList.length !== 0 && (
+                {/* {finalApiList.length !== 0 && (
                       <div className='col-md-3'>
                         <button
                           className="btn btn-primary btn-block mt-3"
@@ -3807,20 +3264,20 @@ const ReleaseSelection = () => {
                     )} */}
 
 
-                  </div>
-                </div>
               </div>
-            )}
+            </div>
+          </div>
+        )}
 
 
-            {/* Final API list Table */}
-            {finalApiList.length > 0 && (
-              <div className="card mt-4">
-                <div className="card-header layout_btn_color">
-                  <h5 className="card-title" style={{ textAlign: 'center' }}>Released sites </h5>
-                </div>
-                <div className="card-body">
-                  {/* <DataTable
+        {/* Final API list Table */}
+        {finalApiList.length > 0 && (
+          <div className="card mt-4">
+            <div className="card-header layout_btn_color">
+              <h5 className="card-title" style={{ textAlign: 'center' }}>Released sites </h5>
+            </div>
+            <div className="card-body">
+              {/* <DataTable
                     columns={alreadyreleasedTableColumns}
                     data={finalApiList}
                     customStyles={customStyles}
@@ -3829,50 +3286,50 @@ const ReleaseSelection = () => {
                     highlightOnHover
                     responsive
                   /> */}
-                  {finalApiList.length > 0 ? (
-                    <div className="row">
-                      {finalApiList.map((row, index) => {
-                        const feetSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINFT).join(" x ") || '';
-                        const meterSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINMT).join(" x ") || '';
-                        const roadFacing = row.siteDimensions?.map(dim => dim.sitediM_ROADFACING ? "Yes" : "No").join(', ') || '';
+              {finalApiList.length > 0 ? (
+                <div className="row">
+                  {finalApiList.map((row, index) => {
+                    const feetSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINFT).join(" x ") || '';
+                    const meterSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINMT).join(" x ") || '';
+                    const roadFacing = row.siteDimensions?.map(dim => dim.sitediM_ROADFACING ? "Yes" : "No").join(', ') || '';
 
-                        return (
-                          <div className="col-md-4 col-lg-3 col-xl-2 mb-2" key={row.id || index}>
-                            <div className="card h-100 shadow p-3 green-bordered-card position-relative">
-                              {/* Top-right badge */}
-                              <div className="status-badge">Released</div>
+                    return (
+                      <div className="col-md-4 col-lg-3 col-xl-2 mb-2" key={row.id || index}>
+                        <div className="card h-100 shadow p-3 green-bordered-card position-relative">
+                          {/* Top-right badge */}
+                          <div className="status-badge">Released</div>
 
-                              <div className="mt-1">
-                                <div><strong>Site No:</strong> {row.sitE_NO}</div>
-                                <div><strong>Dimension:</strong></div>
-                                <div className="small text-muted">{feetSides} ft</div>
-                                <div className="small text-muted">{meterSides} m</div>
-                                <div className="small"><strong>Road Facing:</strong> {roadFacing}</div>
-                                <div className="small"><strong>Shape:</strong> {row.sitE_SHAPETYPE}</div>
-
-                              </div>
-                            </div>
+                          <div className="mt-1">
+                            <div><strong>Site No:</strong> {row.sitE_NO}</div>
+                            <div><strong>Dimension:</strong></div>
+                            <div className="small text-muted">{feetSides} ft</div>
+                            <div className="small text-muted">{meterSides} m</div>
+                            <div className="small"><strong>Road Facing:</strong> {roadFacing}</div>
+                            <div className="small"><strong>Shape:</strong> {row.sitE_SHAPETYPE}</div>
 
                           </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div style={{
-                      textAlign: 'center',
-                      padding: '20px',
-                      fontWeight: '500',
-                      color: '#999'
-                    }}>
-                      There are no released sites to display
-                    </div>
-                  )}
+                        </div>
 
+                      </div>
+                    );
+                  })}
                 </div>
-              </div>
-            )}
+              ) : (
+                <div style={{
+                  textAlign: 'center',
+                  padding: '20px',
+                  fontWeight: '500',
+                  color: '#999'
+                }}>
+                  There are no released sites to display
+                </div>
+              )}
+
+            </div>
           </div>
-        </div>
+        )}
+      </div>
+    </div>
     //   </div>
     // </DashboardLayout>
   );

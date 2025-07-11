@@ -83,7 +83,8 @@ const BBMP_Layout_Dashboard = () => {
     });
   };
 
-    //Endorsement information redirection
+
+  //Endorsement information redirection
   const handleAcknowledgementClick = (lkrS_ID, lkrS_DISPLAYLKRSID) => {
     sessionStorage.removeItem('LKRSID');
     sessionStorage.removeItem('display_LKRSID');
@@ -98,6 +99,73 @@ const BBMP_Layout_Dashboard = () => {
   };
 
   const columns = [
+
+    {
+      name: "Action",
+      selector: (row) => {
+        if (row.lkrS_APPSTATUS === 1) {
+          return (
+            <button
+              className="btn btn-danger btn-sm"
+              onClick={() => handleEditClick(row.lkrS_ID, row.lkrS_DISPLAYID)}
+              title="Edit"
+            >
+              <i className="fa fa-pencil"></i>
+            </button>
+          );
+        } else if (row.lkrS_APPSTATUS === 10) {
+          return (
+            <div style={{ display: 'flex', flexDirection: 'row', gap: '6px', alignItems: 'center' }}>
+              <button
+                className="btn btn-info btn-sm"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                title="View Submitted Info"
+                onClick={() => handleSubmittedInfoClick(row.lkrS_ID, row.lkrS_DISPLAYID)}
+              >
+                <i className="fa fa-file-alt"></i>
+              </button>
+              <button
+                className="btn btn-success btn-sm"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                title="View Endorsement"
+                onClick={() => handleEndorsementClick(row.lkrS_ID, row.lkrS_DISPLAYID)}
+              >
+                <i className="fa fa-check-circle"></i> {/* Icon for endorsement */}
+              </button>
+
+            </div>
+          );
+        } else if (row.lkrS_APPSTATUS === 9) {
+          return (
+            <div style={{ display: 'flex', flexDirection: 'row', gap: '6px', alignItems: 'center' }}>
+             <button
+                className="btn btn-success btn-sm"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                title="View Endorsement"
+                onClick={() => handleEndorsementClick(row.lkrS_ID, row.lkrS_DISPLAYID)}
+              >
+                <i className="fa fa-check-circle"></i> {/* Icon for endorsement */}
+              </button>
+              <button
+                className="btn btn-primary btn-sm"
+                onClick={() => handleReleaseClick(row.lkrS_ID, row.lkrS_DISPLAYID)}
+              >
+                Site Release
+              </button>
+            </div>
+          );
+        }
+        return null;
+      },
+      center: true,
+      ignoreRowClick: true,
+      allowOverflow: true,
+      button: true,
+      width: "200px"
+    },
     {
       name: "S.No",
       cell: (row, index) => (currentPage - 1) * rowsPerPage + index + 1,
@@ -190,73 +258,7 @@ const BBMP_Layout_Dashboard = () => {
         );
       },
     },
-    {
-      name: "Action",
-      selector: (row) => {
-        if (row.lkrS_APPSTATUS === 1) {
-          return (
-            <button
-              className="btn btn-danger btn-sm"
-              onClick={() => handleEditClick(row.lkrS_ID, row.lkrS_DISPLAYID)}
-              title="Edit"
-            >
-              <i className="fa fa-pencil"></i>
-            </button>
-          );
-        } else if (row.lkrS_APPSTATUS === 10) {
-          return (
-            <div style={{ display: 'flex', flexDirection: 'row', gap: '6px', alignItems: 'center' }}>
 
-              <button
-                className="btn btn-info btn-sm"
-                data-bs-toggle="tooltip"
-                data-bs-placement="top"
-                title="View Submitted Info"
-                onClick={() => handleSubmittedInfoClick(row.lkrS_ID, row.lkrS_DISPLAYID)}
-              >
-                <i className="fa fa-file-alt"></i>
-              </button>
-
-              <button
-                className="btn btn-success btn-sm"
-                data-bs-toggle="tooltip"
-                data-bs-placement="top"
-                title="View Endorsement"
-                onClick={() => handleEndorsementClick(row.lkrS_ID, row.lkrS_DISPLAYID)}
-              >
-                <i className="fa fa-check-circle"></i> {/* Icon for endorsement */}
-              </button>
-
-            </div>
-          );
-        } else if (row.lkrS_APPSTATUS === 9) {
-          return (
-            <div style={{ display: 'flex', flexDirection: 'row', gap: '6px', alignItems: 'center' }}>
-
-              <button
-                className="btn btn-primary btn-sm"
-                onClick={() => handleReleaseClick(row.lkrS_ID, row.lkrS_DISPLAYID)}
-              >
-                Site Release
-              </button>
-              <button
-                className="btn btn-warning btn-sm"
-                onClick={() => handleAcknowledgementClick(row.lkrS_ID, row.lkrS_DISPLAYID)}
-                title="View Acknowledgement"
-              >
-               <i className="fa fa-file-text"></i>
-              </button>
-            </div>
-          );
-        }
-        return null;
-      },
-      center: true,
-      ignoreRowClick: true,
-      allowOverflow: true,
-      button: true,
-      width: "200px"
-    }
 
 
   ];

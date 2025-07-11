@@ -1,34 +1,34 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import bbmpLogo from '../../assets/bbmp.png';
-// ... import other CSS files if needed
+import Swal from "sweetalert2";
+import { individualSiteListAPI } from '../../API/authService';
+import { useLocation } from 'react-router-dom';
 
 const Endorsement = () => {
+
+
+  const location = useLocation();
+
+  const { LKRS_ID, createdBy, createdName, roleID, display_LKRS_ID } = location.state || {};
+  const [localLKRSID, setLocalLKRSID] = useState(LKRS_ID || "");
+ 
   useEffect(() => {
-    // Cache buster script load
-    const script = document.createElement('script');
-    script.src = `TaxScripts/endorsement.js?cb=${Math.round(new Date().getTime() / 1000)}`;
-    script.async = true;
-    document.body.appendChild(script);
 
-    // Disable back
-    window.history.forward();
-    window.onunload = function () { };
 
-    // Disable copy/paste
-    const preventActions = (e) => {
-      if ((e.ctrlKey || e.metaKey) && ['c', 'v', 'x', 'u'].includes(e.key.toLowerCase())) {
-        e.preventDefault();
-      }
-    };
-    document.addEventListener("keydown", preventActions);
-    document.addEventListener("copy", e => e.preventDefault());
-    document.addEventListener("cut", e => e.preventDefault());
-    document.addEventListener("paste", e => e.preventDefault());
+    if (LKRS_ID) {
+      setLocalLKRSID(LKRS_ID);
 
-    return () => {
-      document.removeEventListener("keydown", preventActions);
-    };
-  }, []);
+      fetchSiteDetails(LKRS_ID);
+    } else {
+      const id = sessionStorage.getItem("LKRSID");
+      if (id) setLocalLKRSID(id);
+      fetchSiteDetails(id);
+    }
+
+  }, [LKRS_ID]);
+
+
+
 
   const printData = () => window.print();
 
@@ -49,6 +49,35 @@ const Endorsement = () => {
     document.body.appendChild(form);
     form.submit();
   };
+  const [allSites, setAllSites] = useState([]);
+  const fetchSiteDetails = async (LKRS_ID) => {
+    try {
+      const listPayload = {
+        level: 1,
+        LkrsId: LKRS_ID,
+        SiteID: 0,
+      };
+      // start_loader();
+      const response = await individualSiteListAPI(listPayload);
+      console.log("API Response:", response);
+      if (response && Array.isArray(response) && response.length > 0) {
+        const releasedSites = response.filter(site => site.sitE_IS_SITE_RELEASED === true);
+        console.log("Filtered Released Sites:", releasedSites);
+        setAllSites(releasedSites);
+      } else {
+        Swal.fire({
+          text: response.responseMessage,
+          icon: "error",
+          confirmButtonText: "OK",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to insert data:", error);
+    } finally {
+      // stop_loader();
+    }
+  };
+
 
   return (
     <div className="endorsement-page" style={{ margin: 0, padding: 0 }}>
@@ -67,8 +96,8 @@ const Endorsement = () => {
             <div style={{ display: "flex", justifyContent: "center", alignItems: "center", borderBottom: "2px solid black", paddingBottom: 10, marginBottom: 20 }}>
               <img src={bbmpLogo} alt="BBMP Logo" style={{ height: 80, marginRight: 20 }} />
               <div>
-                <h1 style={{ margin: 0, fontSize: 24, textAlign: "center" }}>Bruhat Bengaluru Mahanagara Palike</h1><br/>
-                <h4 style={{ margin: 0, fontSize: 20, textAlign: "center", fontWeight: "bold" }}>ENDORSEMENT</h4>
+                <h1 style={{ margin: 0, fontSize: 24, textAlign: "center" }}>Bruhat Bengaluru Mahanagara Palike</h1><br />
+                <h4 style={{ margin: 0, fontSize: 20, textAlign: "center", fontWeight: "bold" }}>Endorsement</h4>
               </div>
             </div>
 
@@ -76,30 +105,44 @@ const Endorsement = () => {
             <div className="row">
               <div style={{ width: "50%", display: "inline-block", padding: 5 }}>SAS Application No: <strong><label id="sasno" /></strong></div>
               <div style={{ width: "50%", display: "inline-block", padding: 5 }}>Temporary ePID: <strong><label id="temporary_epid" /></strong></div>
-              <div style={{ width: "50%", display: "inline-block", padding: 5 }}>Khata Request Ref No: <strong><label id="krs_id" /></strong></div>
+              <div style={{ width: "50%", display: "inline-block", padding: 5 }}>Khata Request Ref No: <strong><span>{display_LKRS_ID}</span></strong></div>
               <div style={{ width: "50%", display: "inline-block", padding: 5 }}>App received date: <strong><label id="app_date" /></strong></div>
             </div>
 
             <hr style={{ border: "1px solid black", margin: "10px 0" }} />
 
             {/* Dynamic Status Sections */}
-            <p>Dear Applicant,</p>
+            <p style={{ fontSize: 18 }}>Dear Applicant,</p>
             <div className="status14">
-              <p>Your property location for the scheduled property is reported to be on government/ BBMP/ Govt Agency land...</p>
-              <p>...concerned ARO <b><label id="aro_name1" /></b>, Zone <b><label id="zone_name2" /></b>...</p>
+              <p style={{ fontSize: 18 }}>Your application for New Khata for the property in the schedule below is received successfully and Non-Transactable Provisional New Khata with temporary ePID has been generated, which you can download after upto-date payment of property tax.</p>
             </div>
             <div className="statusNot14">
-              <p>Your application for New Khata is received successfully...</p>
-              <p>Visit <a href="https://BBMPeAasthi.Karnataka.gov.in">BBMPeAasthi Portal</a></p>
-              <p>Pay Tax: <a href="https://BBMPtax.Karnataka.gov.in">BBMP Tax Portal</a></p>
+              <p style={{ fontSize: 18 }}>
+                Non-Transactable Provisional New Khata at{' '} <a href="https://BBMPeAasthi.Karnataka.gov.in" target="_blank" rel="noopener noreferrer">https://BBMPeAasthi.Karnataka.gov.in </a>{' '} (Using your temporary ePID) </p>
+              <p style={{ fontSize: 18 }}>Pay upto-date Property Tax at <a href="https://BBMPtax.Karnataka.gov.in">https://BBMPtax.Karnataka.gov.in </a>(Using your SAS Application No. given at top)</p>
+              <p style={{ fontSize: 18 }}>Your case has been referred to ARO <p>Your case has been referred to ARO <b>VASANTHANAGAR</b>, Zone <b>East</b>, ARO Address <b>BBMP OFFICES, Ground Floor, NEXT TO KSFC BUILDING, THIMMAIAH ROAD, VASANTHNAGAR, BANGALORE</b></p></p>
+            </div>
+            <div className='row'>
+              <p style={{ fontSize: 18 }}><strong>For the following reasons/purposes:</strong> <br /></p>
+              <p style={{ fontSize: 18 }}>1. BBMP will visit your property for verification.</p>
+              <p style={{ fontSize: 18 }}>2. Owner Name as per the Aadhaar is not matching with the name in registered deed.</p>
+              <p style={{ fontSize: 18 }}>3. Basis of A-khata Claim document is uploaded which required ARO approval.</p>
+              <p style={{ fontSize: 18 }}>4. The Consumer name as per Bescom is not matching with the name in registered deed which requires ARO approval.</p>
+
+              <p style={{ fontSize: 18 }}>
+                <b>Note:</b> Please wait for verification which may take upto 60 days and do not visit anyone in ARO & BBMP office. There upon decision on <u>Final Transactable New Khata</u> will be given.
+              </p>
             </div>
 
             {/* Disclaimers */}
             <div className="statusNot14">
-              <p><b>This is to disclaim and clarify:</b></p>
-              <p>1. This is merely an endorsement...</p>
-              <p>2. Even payment of tax is not a guarantee...</p>
-              {/* Other disclaimers */}
+              <p style={{ fontSize: 18 }}><b>This is the disclaim, clarify and bind you with the following -</b></p>
+              <p style={{ fontSize: 18 }}>1. This is merely an endorsement for receiving your New Khata application.</p>
+              <p style={{ fontSize: 18 }}>2. Even payment of Property Tax has been accepted as per your claims & information submitted. If any information is found false or wrong or you are found ineligible for BBMP Khata, your application shall be rejected without any liability or acceptance of any of your claims by BBMP. The property tax paid shall stand forfeited to the BBMP without any liability.</p>
+              <p style={{ fontSize: 18 }}>3. In case your Property is found on Government or BBMP or any Govt Agency land at any time, your SAS Application Number and Khata (whether provisional or final) will be summarily cancelled.</p>
+              <p style={{ fontSize: 18 }}>4. Any attempt to get duplicate New Khata for existing khata property will make you liable for criminal case apart from cancellation of  SAS Application Number and  Khata (if issued).</p>
+              <p style={{ fontSize: 18 }}>5. Any misrepresentation or falsehood or wrongful submission makes you liable for a criminal case apart from cancellation of SAS Application Number and Khata (if issued).</p>
+
             </div>
 
             {/* Property Schedule */}
@@ -124,6 +167,55 @@ const Endorsement = () => {
                 <strong>BBMP</strong>
               </div>
             </div>
+            <div className="row">
+              <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px' }} border="1">
+                <thead>
+                  <tr style={{ backgroundColor: '#f2f2f2' }}>
+                    <th style={{ padding: '8px', border: '1px solid #000' }}>S.No</th>
+                    <th style={{ padding: '8px', border: '1px solid #000' }}>EPID</th>
+                    <th style={{ padding: '8px', border: '1px solid #000' }}>Site Number</th>
+                    {/* <th style={{ padding: '8px', border: '1px solid #000' }}>Number of sides</th> */}
+                    <th style={{ padding: '8px', border: '1px solid #000' }}>Dimension</th>
+                    <th style={{ padding: '8px', border: '1px solid #000' }}>Total Area</th>
+                    <th style={{ padding: '8px', border: '1px solid #000' }}>Order Number</th>
+                    <th style={{ padding: '8px', border: '1px solid #000' }}>Order Date</th>
+                    {/* <th style={{ padding: '8px', border: '1px solid #000' }}>Is Released</th> */}
+                  </tr>
+                </thead>
+                <tbody>
+                  {(() => {
+                    const seenSiteNumbers = new Set();
+
+                    return allSites.map((site, index) => {
+                      if (seenSiteNumbers.has(site.sitE_NO)) {
+                        return null; // skip duplicates
+                      }
+                      seenSiteNumbers.add(site.sitE_NO);
+
+                      const totalFt = site.siteDimensions.reduce((sum, dim) => sum + dim.sitediM_SIDEINFT, 0);
+                      const totalMt = site.siteDimensions.reduce((sum, dim) => sum + dim.sitediM_SIDEINMT, 0);
+
+                      return (
+                        <tr key={site.sitE_ID}>
+                          <td style={{ padding: '8px', border: '1px solid #000' }}>{index + 1}</td>
+                          <td style={{ padding: '8px', border: '1px solid #000' }}>{site.sitE_EPID}</td>
+                          <td style={{ padding: '8px', border: '1px solid #000' }}>{site.sitE_NO}</td>
+                          <td style={{ padding: '8px', border: '1px solid #000' }}>
+                            {`${totalFt} [Sq.ft], ${totalMt.toFixed(2)} [Sq.mtr]`}
+                          </td>
+                          <td style={{ padding: '8px', border: '1px solid #000' }}>{site.sitE_AREAINSQFT} sqft</td>
+                          <td style={{ padding: '8px', border: '1px solid #000' }}>-</td> {/* Placeholder for Order Number */}
+                          <td style={{ padding: '8px', border: '1px solid #000' }}>-</td> {/* Placeholder for Order Date */}
+                        </tr>
+                      );
+                    });
+                  })()}
+                </tbody>
+
+              </table>
+            </div>
+
+
 
             {/* Footer */}
             <div style={{ marginTop: 40, textAlign: "center" }}>

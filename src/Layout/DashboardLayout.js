@@ -164,21 +164,23 @@ const DashboardLayout = ({ children }) => {
 
 
 
-  const handleLayoutFormClick = () => {
-    sessionStorage.removeItem('LKRSID');
-    sessionStorage.removeItem('display_LKRSID');
-    sessionStorage.removeItem('totalNoOfSites');
-    sessionStorage.removeItem('ownerName');
-    navigate('/LayoutForm');
-  };
+const handleLayoutFormClick = (e) => {
+  e.preventDefault(); // Prevent default link behavior
+  sessionStorage.removeItem('LKRSID');
+  sessionStorage.removeItem('display_LKRSID');
+  sessionStorage.removeItem('totalNoOfSites');
+  sessionStorage.removeItem('ownerName');
+  window.open(`${window.location.origin}/LayoutForm`);
+};
 
-  const handleReleaseClick = () => {
-    sessionStorage.removeItem('LKRSID');
-    sessionStorage.removeItem('display_LKRSID');
-    sessionStorage.removeItem('totalNoOfSites');
-    sessionStorage.removeItem('ownerName');
-    navigate('/Release');
-  };
+const handleReleaseClick = (e) => {
+  e.preventDefault();
+  sessionStorage.removeItem('LKRSID');
+  sessionStorage.removeItem('display_LKRSID');
+  sessionStorage.removeItem('totalNoOfSites');
+  sessionStorage.removeItem('ownerName');
+  window.open(`${window.location.origin}/Release`);
+};
 
 
   return (

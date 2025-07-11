@@ -59,12 +59,15 @@ import BBMP_SubmittedInfo from './Pages/BBMP/Submitted_ApplicationInfo';
 import LayoutForm from './Pages/BBMP/LayoutKhata';
 import ProtectedRoute from './ProtectedRoute';
 import ReleaseEKYCResultHandler from './Pages/BBMP/Release_EKYC_Preview';
-import ReleaseDashboard from './Pages/BBMP/ReleaseDashboard';
+
 import Endorsement from './Pages/BBMP/Endorsement';
 import Acknowledgement from './Pages/BBMP/Acknowledgement';
 import BBMP_Home from './Pages/BBMP/BBMP_HomePage';
 import BBMP_HP from './Pages/BBMP/BBMP_HP';
 import DashboardLayout from './Layout/DashboardLayout';
+import ReleaseDashboard from './Pages/BBMP/ReleaseDashboard';
+
+
 const AppRoutes = () => {
 
   return (
@@ -86,6 +89,8 @@ const AppRoutes = () => {
             <Route path="/LayoutForm" element={<ProtectedRoute element={ <DashboardLayout><BBMP_LayoutForm /></DashboardLayout>} />} />
             <Route path="/LayoutDashboard" element={<ProtectedRoute element={<DashboardLayout><BBMP_Layout_Dashboard /></DashboardLayout>} />} />
             <Route path="/Release" element={<ProtectedRoute element={<DashboardLayout><ReleaseSelection /></DashboardLayout>} />} />
+            <Route path="/SiteRelease" element={<ProtectedRoute element={<DashboardLayout><ReleaseDashboard /></DashboardLayout>} />} />
+
             <Route path="/EKYCResponse" element={<ProtectedRoute element={<EKYCResultHandler />} />} />
             <Route path="/ReleaseEKYCResponse" element={<ProtectedRoute element={<ReleaseEKYCResultHandler />} />} />
             <Route path="/Info" element={<ProtectedRoute element={<DashboardLayout><BBMP_SubmittedInfo /></DashboardLayout>} />} />

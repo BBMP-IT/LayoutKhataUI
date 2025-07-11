@@ -29,13 +29,6 @@ const HomePageLayout = ({ children }) => {
 
   };
 
-
-
-
-
-
-
-
   const handleLogout = () => {
     Swal.fire({
       title: 'Are you sure?',
@@ -76,6 +69,13 @@ const HomePageLayout = ({ children }) => {
                   </div>
                   <div className="col-6 mb-3">
                     <div className="rounded-circle bg-white d-flex align-items-center justify-content-center mx-auto" style={{ width: 60, height: 60, overflow: 'hidden' }}>
+                      <img src={dcmlogo} alt="DCM" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                    <div className="fw-bold mt-2">Sri DK. Shivakumar</div>
+                    <small className="badge bg-secondary mt-1">Hon'ble Deputy CM</small>
+                  </div>
+                  <div className="col-6 mb-3">
+                    <div className="rounded-circle bg-white d-flex align-items-center justify-content-center mx-auto" style={{ width: 60, height: 60, overflow: 'hidden' }}>
                       <img src={gokLogo} alt="GOK" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
                     <div className="fw-bold mt-2">Government of Karnataka</div>
@@ -84,13 +84,7 @@ const HomePageLayout = ({ children }) => {
                     <img src={bbmplogo} alt="BBMP" width={60} height={60} className="rounded-circle bg-white p-1" />
                     <div className="fw-bold mt-2">BBMP</div>
                   </div>
-                  <div className="col-6 mb-3">
-                    <div className="rounded-circle bg-white d-flex align-items-center justify-content-center mx-auto" style={{ width: 60, height: 60, overflow: 'hidden' }}>
-                      <img src={dcmlogo} alt="DCM" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    </div>
-                    <div className="fw-bold mt-2">Sri DK. Shivakumar</div>
-                    <small className="badge bg-secondary mt-1">Hon'ble Deputy CM</small>
-                  </div>
+                  
                 </div>
               </div>
 

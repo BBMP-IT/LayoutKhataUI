@@ -811,9 +811,14 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         }
 
         //  Site Type Dropdown validation
-        if (irregularsiteType === '') {
-            setIrregularsiteTypeError('Please select a type of site');
-            if (!firstErrorField) firstErrorField = irregular_siteTyperef;
+        // if (irregularsiteType === '') {
+        //     setIrregularsiteTypeError('Please select a type of site');
+        //     if (!firstErrorField) firstErrorField = irregular_siteTyperef;
+        //     isValid = false;
+        // }
+        if (siteType === '') {
+            setSiteTypeError('Please select a type of site');
+            if (!firstErrorField) firstErrorField = siteTypeRef;
             isValid = false;
         }
 
@@ -1572,6 +1577,90 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         }
     };
 
+    const road_Validation = () => {
+        let isValid = true;
+        let firstErrorField = null;
+
+        // Reset all error states
+        setSiteTypeError('');
+        setLatitudeError('');
+        setLongitudeError('');
+
+
+        //area calculation
+        if ((!roadAreaSqFt || parseFloat(roadAreaSqFt) <= 0) && (!roadAreaSqM || parseFloat(roadAreaSqM) <= 0)) {
+            setRoadAreaSqft_sqM_error('Please enter Area  in either Sq.ft or Sq.M');
+            if (!firstErrorField) firstErrorField = road_AreaSqFtref;
+            isValid = false;
+        }
+        //area validation
+        const totalArea = parseFloat(totalSQFT);
+        const enteredArea = parseFloat(roadAreaSqFt);
+
+        if (isNaN(enteredArea) || enteredArea <= 0) {
+            Swal.fire({
+                title: "Invalid Area",
+                text: `Area must be a positive number`,
+                icon: "error",
+                confirmButtonText: "OK",
+            })
+            isValid = false;
+        } else if (enteredArea > totalArea) {
+            Swal.fire({
+                title: "Area Exceeds Limit",
+                text: `Area cannot exceed Total Area of the layout`,
+                icon: "error",
+                confirmButtonText: "OK",
+            })
+            isValid = false;
+        }
+
+
+        if (siteType === '') {
+            setSiteTypeError('Please select a type of site');
+            if (!firstErrorField) firstErrorField = siteTypeRef;
+            isValid = false;
+        }
+
+
+        // Latitude Validation
+        if (!latitude || latitude.trim() === '') {
+            setLatitudeError('Latitude is required');
+            if (!firstErrorField) firstErrorField = latitudeRef;
+            isValid = false;
+        }
+
+        // Validate Longitude
+        if (!longitude || longitude.trim() === '') {
+            setLongitudeError('Longitude is required');
+            if (!firstErrorField) firstErrorField = longitudeRef;
+            isValid = false;
+        }
+
+        // Zone Validation
+        if (!selectedZone || isNaN(selectedZone)) {
+            setZoneError('Please select a zone');
+            if (!firstErrorField) firstErrorField = zoneRef;
+            isValid = false;
+        }
+
+        // Ward Validation
+        if (!selectedWard || isNaN(selectedWard)) {
+            setWardError('Please select a ward');
+            if (!firstErrorField) firstErrorField = wardRef;
+            isValid = false;
+        }
+
+
+        if (firstErrorField?.current) {
+            firstErrorField.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            firstErrorField.current.focus?.();
+        }
+
+
+        return isValid;
+    };
+
     //Add site button click API
     const addSites = async (shape) => {
         const isRegular = shape === "regular";
@@ -1653,10 +1742,17 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             }
         }
 
+        let isValid = "";
+
+        if (siteType === '8') {
+            isValid = road_Validation();
+            if (!isValid) return;
+        } else {
+            isValid = isRegular ? finalValidation() : isIrregular ? irregularFinalValidation() : false;
+            if (!isValid) return;
+        }
 
 
-        const isValid = isRegular ? finalValidation() : isIrregular ? irregularFinalValidation() : false;
-        if (!isValid) return;
 
         setSiteIdCounter(prev => prev + 1);
 
@@ -1715,41 +1811,103 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         let updated_sites = "";
         let status_site = true;
         const NoofSites = parseInt(layoutSiteCount, 10);
-
-
-
+        let payload = "";
+        //Road
+        if (siteType === '8') {
+             payload = {
+                sitE_ID: 0,
+                sitE_LKRS_ID: localLKRSID,
+                sitE_SHAPETYPE: "",
+                sitE_NO: "",
+                sitE_AREA: "",
+                sitE_TYPEID: siteType,
+                sitE_AREAINSQFT: roadAreaSqFt,
+                sitE_AREAINSQMT: roadAreaSqM,
+                sitE_LATITUDE: latitude,
+                sitE_LONGITUDE: longitude,
+                sitE_OWNER: ownerNames,
+                sitE_CORNERPLOT: true,
+                sitE_NO_OF_SIDES: 0,
+                sitE_EPID: "",
+                sitE_SASNO: "",
+                sitE_NORTH: "",
+                sitE_SOUTH: "",
+                sitE_EAST: "",
+                sitE_WEST: "",
+                sitE_REMARKS: "",
+                sitE_ADDITIONALINFO: "",
+                sitE_CREATEDBY: createdBy,
+                sitE_CREATEDNAME: createdName,
+                sitE_CREATEDROLE: roleID,
+                sitE_ZONE: selectedZone || '',
+                sitE_WARD: selectedWard || '',
+                siteDimensions: null
+            };
+        } else {
+             payload = {
+                sitE_ID: 0,
+                sitE_LKRS_ID: localLKRSID,
+                sitE_SHAPETYPE: isRegular ? "Regular" : "Irregular",
+                sitE_NO: isRegular ? regular_siteNumber : irregular_siteNumber,
+                sitE_AREA: isRegular ? blockArea : irregular_blockArea,
+                sitE_TYPEID: isRegular ? siteType : siteType,
+                sitE_AREAINSQFT: isRegular ? regularAreaSqFt : irregularAreaSqFt,
+                sitE_AREAINSQMT: isRegular ? regularAreaSqM : irregularAreaSqM,
+                sitE_LATITUDE: latitude,
+                sitE_LONGITUDE: longitude,
+                sitE_OWNER: ownerNames,
+                sitE_CORNERPLOT: isRegular ? cornerSite : irregularcornerSite,
+                sitE_NO_OF_SIDES: isRegular ? 2 : numSides,
+                sitE_EPID: "",
+                sitE_SASNO: "",
+                sitE_NORTH: isRegular ? chakbandiNorth : irregularchakbandiNorth,
+                sitE_SOUTH: isRegular ? chakbandiSouth : irregularchakbandiSouth,
+                sitE_EAST: isRegular ? chakbandiEast : irregularchakbandiEast,
+                sitE_WEST: isRegular ? chakbandiWest : irregularchakbandiWest,
+                sitE_REMARKS: "",
+                sitE_ADDITIONALINFO: "",
+                sitE_CREATEDBY: createdBy,
+                sitE_CREATEDNAME: createdName,
+                sitE_CREATEDROLE: roleID,
+                sitE_ZONE: selectedZone || '',
+                sitE_WARD: selectedWard || '',
+                // lkrS_NUMBEROFSITES: updated_sites,
+                // updatE_LKRS_NUMBEROFSITES: status_site,
+                siteDimensions
+            };
+        }
         // Prepare payload
-        const payload = {
-            sitE_ID: 0,
-            sitE_LKRS_ID: localLKRSID,
-            sitE_SHAPETYPE: isRegular ? "Regular" : "Irregular",
-            sitE_NO: isRegular ? regular_siteNumber : irregular_siteNumber,
-            sitE_AREA: isRegular ? blockArea : irregular_blockArea,
-            sitE_TYPEID: isRegular ? siteType : siteType,
-            sitE_AREAINSQFT: isRegular ? regularAreaSqFt : irregularAreaSqFt,
-            sitE_AREAINSQMT: isRegular ? regularAreaSqM : irregularAreaSqM,
-            sitE_LATITUDE: latitude,
-            sitE_LONGITUDE: longitude,
-            sitE_OWNER: ownerNames,
-            sitE_CORNERPLOT: isRegular ? cornerSite : irregularcornerSite,
-            sitE_NO_OF_SIDES: isRegular ? 2 : numSides,
-            sitE_EPID: "",
-            sitE_SASNO: "",
-            sitE_NORTH: isRegular ? chakbandiNorth : irregularchakbandiNorth,
-            sitE_SOUTH: isRegular ? chakbandiSouth : irregularchakbandiSouth,
-            sitE_EAST: isRegular ? chakbandiEast : irregularchakbandiEast,
-            sitE_WEST: isRegular ? chakbandiWest : irregularchakbandiWest,
-            sitE_REMARKS: "",
-            sitE_ADDITIONALINFO: "",
-            sitE_CREATEDBY: createdBy,
-            sitE_CREATEDNAME: createdName,
-            sitE_CREATEDROLE: roleID,
-            sitE_ZONE: selectedZone || '',
-            sitE_WARD: selectedWard || '',
-            // lkrS_NUMBEROFSITES: updated_sites,
-            // updatE_LKRS_NUMBEROFSITES: status_site,
-            siteDimensions
-        };
+        // const payload = {
+        //     sitE_ID: 0,
+        //     sitE_LKRS_ID: localLKRSID,
+        //     sitE_SHAPETYPE: isRegular ? "Regular" : "Irregular",
+        //     sitE_NO: isRegular ? regular_siteNumber : irregular_siteNumber,
+        //     sitE_AREA: isRegular ? blockArea : irregular_blockArea,
+        //     sitE_TYPEID: isRegular ? siteType : siteType,
+        //     sitE_AREAINSQFT: isRegular ? regularAreaSqFt : irregularAreaSqFt,
+        //     sitE_AREAINSQMT: isRegular ? regularAreaSqM : irregularAreaSqM,
+        //     sitE_LATITUDE: latitude,
+        //     sitE_LONGITUDE: longitude,
+        //     sitE_OWNER: ownerNames,
+        //     sitE_CORNERPLOT: isRegular ? cornerSite : irregularcornerSite,
+        //     sitE_NO_OF_SIDES: isRegular ? 2 : numSides,
+        //     sitE_EPID: "",
+        //     sitE_SASNO: "",
+        //     sitE_NORTH: isRegular ? chakbandiNorth : irregularchakbandiNorth,
+        //     sitE_SOUTH: isRegular ? chakbandiSouth : irregularchakbandiSouth,
+        //     sitE_EAST: isRegular ? chakbandiEast : irregularchakbandiEast,
+        //     sitE_WEST: isRegular ? chakbandiWest : irregularchakbandiWest,
+        //     sitE_REMARKS: "",
+        //     sitE_ADDITIONALINFO: "",
+        //     sitE_CREATEDBY: createdBy,
+        //     sitE_CREATEDNAME: createdName,
+        //     sitE_CREATEDROLE: roleID,
+        //     sitE_ZONE: selectedZone || '',
+        //     sitE_WARD: selectedWard || '',
+        //     // lkrS_NUMBEROFSITES: updated_sites,
+        //     // updatE_LKRS_NUMBEROFSITES: status_site,
+        //     siteDimensions
+        // };
 
         try {
             start_loader();
@@ -1841,7 +1999,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         const storedSiteCount = sessionStorage.getItem("totalNoOfSite");
         if (storedSiteCount) {
             setLayoutSiteCount(storedSiteCount);
-            setIsReadOnly(true);     
+            setIsReadOnly(true);
             setShowEditBtn(true);
         }
         try {
@@ -2012,7 +2170,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                     confirmButtonText: "OK",
                 });
                 setDeedFetchSuccess(false);
-                 setIsDeedSectionDisabled(true);
+                setIsDeedSectionDisabled(true);
                 setShowViewDeedButton(false);
             }
         } catch (error) {
@@ -2088,18 +2246,18 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
 
     const handleDeedUpload = async () => {
-    if (!uploadedDeedFile) {
-        setUploadError("Please upload a deed document");
-        return;
-    }
+        if (!uploadedDeedFile) {
+            setUploadError("Please upload a deed document");
+            return;
+        }
 
-    if (uploadedDeedFile.type !== "application/pdf") {
-        setUploadError("Only PDF files are allowed");
-        return;
-    }
+        if (uploadedDeedFile.type !== "application/pdf") {
+            setUploadError("Only PDF files are allowed");
+            return;
+        }
 
-   
-};
+
+    };
 
 
 

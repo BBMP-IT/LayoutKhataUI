@@ -13,8 +13,10 @@ const Acknowledgement = () => {
     
     useEffect(() => {
   
+        
         if (LKRS_ID) {
             setLocalLKRSID(LKRS_ID);
+
             fetchSiteDetails(LKRS_ID);
         } else {
             const id = sessionStorage.getItem("LKRSID");
