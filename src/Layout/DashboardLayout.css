@@ -16475,3 +16475,10 @@
 .autocomplete-container {
   position: relative;
 }
+
+
+.modal-dialog-scrollable .modal-content {
+  max-height: 90vh;
+}
+
+

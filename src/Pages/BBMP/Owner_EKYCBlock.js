@@ -315,7 +315,11 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
                 name: owner.owN_NAME_EN,
                 id: owner.owN_ID,
                 phoneNo: owner.owN_MOBILENUMBER,
-                ekycStatus: owner.owN_AADHAARVERISTATUS === "Success"
+                ekycStatus: owner.owN_AADHAARVERISTATUS === "Success",
+                isCompanyOwned: owner.owN_COMPANYOWNPROPERTY === true,
+                companyName: owner.owN_COMPANYNAME || '-',
+                additionalInfo: owner.owN_ADDITIONALINFO,
+                remarks: owner.owN_REMARKS,
             }));
 
             setOwnerList(owners);
@@ -346,7 +350,8 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
             if (event.data.ekycStatus === "Success") {
                 if (selectedOwner?.name) {
                     const encodedName = encodeURIComponent(selectedOwner.name);
-                    fetchEKYC_ResponseDetails(encodedName, event.data.ekycTxnNo);
+                    const encodedOwnerNo = encodeURIComponent(selectedOwner.id);
+                    fetchEKYC_ResponseDetails(encodedOwnerNo, encodedName, event.data.ekycTxnNo, localLKRSID);
                 } else {
                     console.error("No selected owner found.");
                     Swal.fire('Missing Data', 'Please select an owner before starting eKYC.', 'warning');
@@ -396,6 +401,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
 
                 // Pass them to your API
                 const response = await ekyc_Details({
+                    LKRS_ID,
                     OwnerNumber,
                     BOOK_APP_NO,
                     PROPERTY_CODE,
@@ -423,21 +429,26 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
             }
         }
     };
-    const fetchEKYC_ResponseDetails = async (ownerName, txnno) => {
+    const fetchEKYC_ResponseDetails = async (ownerNo, ownerName, txnno, localLKRSID) => {
         const transaction_No = sessionStorage.getItem("tranNo");
+        
         if (transaction_No === txnno) {
             try {
-                const payload = {
-                    transactionNumber: 83,
-                    OwnerType: 'NEWOWNER',
-                    ownName: ownerName,
-                };
+                // const payload = {
+                //     LKRS_ID: LKRS_ID,
+                //     OwnerNumber: ownerNo,
+                //     transactionNumber: 83,
+                //     OwnerType: 'NEWOWNER',
+                //     ownName: ownerName,
+                //     redirectSource: redirectSource,
+                // };
                 const transactionNumber = 83;
                 const OwnerType = "NEWOWNER";
+                const redirectSource = "";
 
 
 
-                const response = await ekyc_Response(transactionNumber, OwnerType, ownerName);
+                const response = await ekyc_Response(transactionNumber, OwnerType, ownerName, ownerNo, localLKRSID, redirectSource);
                 setOwnerData(response);
                 setEKYC_Status(true);
 
@@ -508,8 +519,8 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
             owN_COMPANYOWNPROPERTY: false,
             owN_COMPANYNAME: "",
             owN_REPRESENTATIVENAME: "",
-            owN_REMARKS: "",
-            owN_ADDITIONALINFO: "",
+            owN_REMARKS: selectedOwner?.remarks ?? '',
+            owN_ADDITIONALINFO: selectedOwner?.additionalInfo ?? '',
             owN_CREATEDBY: createdBy,
             owN_CREATEDNAME: createdName,
             owN_CREATEDROLE: roleID,
@@ -673,7 +684,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
         setIsTimerActive(false);
     };
     const [disabledEKYCOwners, setDisabledEKYCOwners] = useState([]);
-
+    const [companyName, setCompanyName] = useState('');
     return (
         <div>
             <div className="card"> {loading && <Loader />}
@@ -718,6 +729,25 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
                         <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 mt-3">
                             <div className='row'>
                                 {/* <div className="alert alert-info">Note: Click on eKYC Status button once the ekyc is done to check verification status</div> */}
+
+                                {selectedOption === 'Owner_representative' && (
+                                    <>
+
+                                        <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mt-2" >
+                                            <label className="form-label">Company Name <span className='mandatory_color'>*</span></label>
+                                        </div>
+                                        <div className="col-12 col-sm-12 col-md-7 col-lg-7 col-xl-7 mt-2">
+                                            <input
+                                                type="text"
+                                                id="companyName"
+                                                className="form-control"
+                                                value={companyName}
+                                                readOnly
+                                            />
+                                        </div>
+                                    </>
+                                )}
+
 
                                 <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mt-2" >
                                     <label className="form-label">Select Owner <span className='mandatory_color'>*</span></label>
@@ -801,6 +831,9 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
 
                                     )}
                                 </div> */}
+
+
+
                                 <div className="col-12 col-sm-12 col-md-7 col-lg-7 col-xl-7 mt-2">
                                     <button
                                         className="form-control text-start"
@@ -848,6 +881,14 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
                                                                 setPhone_Status(false);
                                                                 setIsVerified(false);
                                                                 resetOtpStates();
+
+                                                                // Set radio option if company owns property
+                                                                if (owner.isCompanyOwned) {
+                                                                    setSelectedOption('Owner_representative');
+                                                                    setCompanyName(owner.companyName);
+                                                                } else {
+                                                                    setSelectedOption('owner');
+                                                                }
                                                             }}
                                                             disabled={owner.ekycStatus}
                                                             style={{
@@ -862,6 +903,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
                                                     </li>
                                                 ))
                                             )}
+
                                             {showInput && (
                                                 <li className="px-3 py-2">
                                                     <input
@@ -875,14 +917,14 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
                                                     />
                                                 </li>
                                             )}
-                                            {landDetails === "surveyNo" &&(
+                                            {landDetails === "surveyNo" && (
                                                 <li>
-                                                <button className="dropdown-item text-primary" onClick={handleAddMoreOwner}>
-                                                    ➕ Add More
-                                                </button>
-                                            </li>
+                                                    <button className="dropdown-item text-primary" onClick={handleAddMoreOwner}>
+                                                        ➕ Add More
+                                                    </button>
+                                                </li>
                                             )}
-                                            
+
                                         </ul>
                                     )}
                                 </div>

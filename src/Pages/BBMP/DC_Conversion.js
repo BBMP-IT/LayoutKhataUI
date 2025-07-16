@@ -52,18 +52,18 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
 
     }, []);
     const [localLKRSID, setLocalLKRSID] = useState("");
-     const buttonRef = useRef(null);
-    
+    const buttonRef = useRef(null);
+
     useEffect(() => {
-       
+
         if (buttonRef.current) {
             buttonRef.current.click();
         }
     }, [LKRS_ID]);
 
 
-     const fetch_details = async () => {
-         const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+    const fetch_details = async () => {
+        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
         if (LKRS_ID) {
             setLocalLKRSID(LKRS_ID);
             delay(1000);
@@ -171,10 +171,10 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
         }
 
         //  All validations passed — Now call your API
-const formatDateForAPI = (dateStr) => {
-  const [day, month, year] = dateStr.split('/');
-  return `${year}-${month}-${day}T00:00:00`;
-};
+        const formatDateForAPI = (dateStr) => {
+            const [day, month, year] = dateStr.split('/');
+            return `${year}-${month}-${day}T00:00:00`;
+        };
 
 
         try {
@@ -184,17 +184,20 @@ const formatDateForAPI = (dateStr) => {
             if (response.responsE_CODE === "200") {
                 console.log(response);
                 const requestDetails = response.requesT_DETAILS[0];
+                const DCJSON = JSON.stringify(response);
                 try {
                     const payload = {
                         dC_id: 0,
                         dC_LKRS_Id: localLKRSID,
-                       dC_Conversion_No: String(requestDetails.reQ_AID),      
+                        dC_Conversion_No: String(requestDetails.reQ_AID),
                         dC_Conversion_Date: formatDateForAPI(requestDetails.reQ_CDTE),
                         dC_Remarks: "",
                         dC_AdditionalInfo: "",
                         dC_CreatedBy: createdBy,
                         dC_CreatedName: createdName,
-                        dC_CreatedRole: roleID
+                        dC_CreatedRole: roleID,
+                        dC_JSON: DCJSON,
+                        dC_SurveyNo: requestDetails.surveyno,
 
                     };
 
@@ -219,6 +222,7 @@ const formatDateForAPI = (dateStr) => {
                                 const formattedList = listResponse.map((item, index) => ({
                                     layoutDCNumber: item.dC_Conversion_No,
                                     dateOfOrder: item.dC_Conversion_Date,
+                                    surveyno: item.surveyno,
                                     dc_id: item.dC_id,
 
                                 }));
@@ -276,6 +280,7 @@ const formatDateForAPI = (dateStr) => {
                 const formattedList = listResponse.map((item, index) => ({
                     layoutDCNumber: item.dC_Conversion_No,
                     dateOfOrder: item.dC_Conversion_Date,
+                    surveyno: item.surveyno,
                     DCFile: listFileResponse[index]?.doctrN_DOCBASE64 || null,
                     dc_id: item.dC_id,
                     DCconversionDocID: listFileResponse[index]?.doctrN_ID || null,
@@ -349,7 +354,7 @@ const formatDateForAPI = (dateStr) => {
             width: '80px',
             center: true,
         },
-         {
+        {
             name: "Survey Number",
             selector: row => row.surveyno,
             sortable: true,
@@ -500,152 +505,152 @@ const formatDateForAPI = (dateStr) => {
     }
 
     return (
-        <div className={`layout-form-container ${loading ? 'no-interaction' : ''}`}>
-            {loading && <Loader />}
-            <div className="card">
-                <button className='btn btn-block' onClick={fetch_details} ref={buttonRef} hidden>Click me</button>
-                {/* <button className='btn btn-block' onClick={loadData} ref={buttonRef} hidden></button> */}
-                <div className="card-header layout_btn_color" >
-                    <h5 className="card-title" style={{ textAlign: 'center' }}>DC Conversion</h5>
-                </div>
-                <div className="card-body">
+        // <div className={`layout-form-container ${loading ? 'no-interaction' : ''}`}>
+        //     {loading && <Loader />}
+        <div className="card">
+            <button className='btn btn-block' onClick={fetch_details} ref={buttonRef} hidden>Click me</button>
+            {/* <button className='btn btn-block' onClick={loadData} ref={buttonRef} hidden></button> */}
+            <div className="card-header layout_btn_color" >
+                <h5 className="card-title" style={{ textAlign: 'center' }}>DC Conversion</h5>
+            </div>
+            <div className="card-body">
 
-                    <div className='row'>
-                        {/* Layout DC Conversion order No */}
-                        <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4">
-                            <div className="form-group">
-                                <label className="form-label">
-                                    Enter DC Conversion Order Number <span className="mandatory_color">*</span>
-                                </label>
-                                <input
-                                    type="tel"
-                                    className="form-control"
-                                    placeholder="Enter DC Conversion Order Number"
-                                    name="layoutApprovalNumber"
-                                    value={dcNumber} ref={fileDCInputRef}
-                                    onChange={handleDCNumberChange}
-                                    max={new Date().toISOString().split("T")[0]} // Prevent future date
-                                    disabled={isDCSectionDisabled}
-                                />
-                                {errors.dcNumber && (
-                                    <span className="text-danger" style={{ fontSize: '0.875rem' }}>{errors.dcNumber}</span>
-                                )}
-                            </div>
-                        </div>
-                        <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 ' >
-                            <div className="form-group">
-                                <label className="form-label">&nbsp;
-                                </label>
-                                <button className="btn btn-primary btn-block" disabled={isDCSectionDisabled} onClick={() => bhommiDCConversion(dcNumber)}>Fetch</button>
-                            </div>
-                        </div>
-                        {/* DC conversion Date */}
-                        <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4" hidden>
-                            <div className="form-group">
-                                <label className="form-label">
-                                    Enter DC Conversion Date <span className="mandatory_color">*</span>
-                                </label>
-                                <input
-                                    type="date"
-                                    className="form-control"
-                                    name="dcOrderDate"
-                                    value={dcDate}
-                                    onChange={handleDCOrderDateChange}
-                                    max={new Date().toISOString().split("T")[0]} // Prevent future date
-                                    disabled={isDCSectionDisabled}
-                                />
-                                {errors.dcDate && (
-                                    <span className="text-danger" style={{ fontSize: '0.875rem' }}>{errors.dcDate}</span>
-                                )}
-                            </div>
-                        </div>
-                        {/* Scan & Upload Layout DC Conversion order */}
-                        <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4" hidden>
-                            <div className="form-group">
-                                <label className="form-label">Upload Conversion order  <span className="mandatory_color">*</span></label>
-                                <input
-                                    type="file"
-                                    accept=".pdf"
-                                    className="form-control"
-                                    onChange={handleFileChange}
-                                    disabled={isDCSectionDisabled}
-                                    ref={fileDCFileRef}
-                                />
-                                {errors.file && (
-                                    <span className="text-danger" style={{ fontSize: '0.875rem' }}>{errors.file}</span>
-                                )}
-
-                                {uploadDCFile && uploadedDCFileURL && (
-                                    <div className="mt-2">
-                                        <div
-                                            className="iframe-container"
-                                            style={{
-                                                border: "1px solid #ddd",
-                                                borderRadius: "5px",
-                                                overflow: "hidden",
-                                                padding: "0",
-                                                width: "120px",
-                                                height: "120px",
-                                            }}
-                                        >
-                                            <iframe
-                                                src={uploadedDCFileURL}
-                                                width="100%"
-                                                height="100%"
-                                                title="Conversion Order"
-                                                onClick={() => window.open(uploadedDCFileURL, "_blank")}
-                                                style={{ cursor: "pointer", border: "none" }}
-                                            />
-                                        </div>
-                                        <p className="mt-1" style={{ fontSize: "0.875rem" }}>
-                                            Current File:{" "}
-                                            <a
-                                                href={uploadedDCFileURL}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                style={{
-                                                    textDecoration: "underline",
-                                                    color: "#007bff",
-                                                    fontSize: "0.875rem",
-                                                }}
-                                            >
-                                                {uploadDCFile.name}
-                                            </a>
-                                        </p>
-                                    </div>
-                                )}
-
-                                <span className="note_color">
-                                    [ Only PDF files are allowed, file size must be less than 5MB ]
-                                </span>
-                            </div>
-                        </div>
-                        <div className='col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10'></div>
-                        {/* Save and continue button */}
-                        <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2' hidden>
-                            <div className="form-group">
-                                <button className="btn btn-success btn-block" onClick={() => bhommiDCConversion(dcNumber)}>
-                                    Save and continue
-                                </button>
-                            </div>
+                <div className='row'>
+                    {/* Layout DC Conversion order No */}
+                    <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4">
+                        <div className="form-group">
+                            <label className="form-label">
+                                Enter DC Conversion Order Number <span className="mandatory_color">*</span>
+                            </label>
+                            <input
+                                type="tel"
+                                className="form-control"
+                                placeholder="Enter DC Conversion Order Number"
+                                name="layoutApprovalNumber"
+                                value={dcNumber} ref={fileDCInputRef}
+                                onChange={handleDCNumberChange}
+                                max={new Date().toISOString().split("T")[0]} // Prevent future date
+                                disabled={isDCSectionDisabled}
+                            />
+                            {errors.dcNumber && (
+                                <span className="text-danger" style={{ fontSize: '0.875rem' }}>{errors.dcNumber}</span>
+                            )}
                         </div>
                     </div>
-                    {records.length > 0 && (
-                        <div className="mt-4">
-                            <h4>DC Conversion Details</h4>
-                            <DataTable
-                                columns={columns}
-                                data={records}
-                                customStyles={customStyles}
-                                pagination
-                                highlightOnHover
-                                striped
-                            />
+                    <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 ' >
+                        <div className="form-group">
+                            <label className="form-label">&nbsp;
+                            </label>
+                            <button className="btn btn-primary btn-block" disabled={isDCSectionDisabled} onClick={() => bhommiDCConversion(dcNumber)}>Fetch</button>
                         </div>
-                    )}
+                    </div>
+                    {/* DC conversion Date */}
+                    <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4" hidden>
+                        <div className="form-group">
+                            <label className="form-label">
+                                Enter DC Conversion Date <span className="mandatory_color">*</span>
+                            </label>
+                            <input
+                                type="date"
+                                className="form-control"
+                                name="dcOrderDate"
+                                value={dcDate}
+                                onChange={handleDCOrderDateChange}
+                                max={new Date().toISOString().split("T")[0]} // Prevent future date
+                                disabled={isDCSectionDisabled}
+                            />
+                            {errors.dcDate && (
+                                <span className="text-danger" style={{ fontSize: '0.875rem' }}>{errors.dcDate}</span>
+                            )}
+                        </div>
+                    </div>
+                    {/* Scan & Upload Layout DC Conversion order */}
+                    <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4" hidden>
+                        <div className="form-group">
+                            <label className="form-label">Upload Conversion order  <span className="mandatory_color">*</span></label>
+                            <input
+                                type="file"
+                                accept=".pdf"
+                                className="form-control"
+                                onChange={handleFileChange}
+                                disabled={isDCSectionDisabled}
+                                ref={fileDCFileRef}
+                            />
+                            {errors.file && (
+                                <span className="text-danger" style={{ fontSize: '0.875rem' }}>{errors.file}</span>
+                            )}
+
+                            {uploadDCFile && uploadedDCFileURL && (
+                                <div className="mt-2">
+                                    <div
+                                        className="iframe-container"
+                                        style={{
+                                            border: "1px solid #ddd",
+                                            borderRadius: "5px",
+                                            overflow: "hidden",
+                                            padding: "0",
+                                            width: "120px",
+                                            height: "120px",
+                                        }}
+                                    >
+                                        <iframe
+                                            src={uploadedDCFileURL}
+                                            width="100%"
+                                            height="100%"
+                                            title="Conversion Order"
+                                            onClick={() => window.open(uploadedDCFileURL, "_blank")}
+                                            style={{ cursor: "pointer", border: "none" }}
+                                        />
+                                    </div>
+                                    <p className="mt-1" style={{ fontSize: "0.875rem" }}>
+                                        Current File:{" "}
+                                        <a
+                                            href={uploadedDCFileURL}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            style={{
+                                                textDecoration: "underline",
+                                                color: "#007bff",
+                                                fontSize: "0.875rem",
+                                            }}
+                                        >
+                                            {uploadDCFile.name}
+                                        </a>
+                                    </p>
+                                </div>
+                            )}
+
+                            <span className="note_color">
+                                [ Only PDF files are allowed, file size must be less than 5MB ]
+                            </span>
+                        </div>
+                    </div>
+                    <div className='col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10'></div>
+                    {/* Save and continue button */}
+                    <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2' hidden>
+                        <div className="form-group">
+                            <button className="btn btn-success btn-block" onClick={() => bhommiDCConversion(dcNumber)}>
+                                Save and continue
+                            </button>
+                        </div>
+                    </div>
                 </div>
+                {records.length > 0 && (
+                    <div className="mt-4">
+                        <h4>DC Conversion Details</h4>
+                        <DataTable
+                            columns={columns}
+                            data={records}
+                            customStyles={customStyles}
+                            pagination
+                            highlightOnHover
+                            striped
+                        />
+                    </div>
+                )}
             </div>
         </div>
+        // </div>
     );
 }
 

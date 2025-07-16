@@ -2073,23 +2073,23 @@ const ReleaseSelection = () => {
     });
   };
 
-    // const fetch_releasePercentage = async (trimmedLKRSID, totalRecords, unreleasedSites, releasedSites, lengthRO) => {
-    //   start_loader();
-    //   try {
-    //     const listResponse = await fetch_releasePercentageDetails(trimmedLKRSID);
-    //     const releaseTypeId = listResponse.sitE_RELS_SITE_RELSTYPE_ID;
-    //     sessionStorage.setItem('sitE_RELS_Latest_SITE_RELS_ID', listResponse.sitE_RELS_Latest_SITE_RELS_ID);
-    //     const releasePercentage = listResponse.releasePercentage;
+  // const fetch_releasePercentage = async (trimmedLKRSID, totalRecords, unreleasedSites, releasedSites, lengthRO) => {
+  //   start_loader();
+  //   try {
+  //     const listResponse = await fetch_releasePercentageDetails(trimmedLKRSID);
+  //     const releaseTypeId = listResponse.sitE_RELS_SITE_RELSTYPE_ID;
+  //     sessionStorage.setItem('sitE_RELS_Latest_SITE_RELS_ID', listResponse.sitE_RELS_Latest_SITE_RELS_ID);
+  //     const releasePercentage = listResponse.releasePercentage;
 
-    //     if (releaseTypeId) {
-    //       handleDimensionChange(releaseTypeId, totalRecords, unreleasedSites, releasedSites, lengthRO, releasePercentage);
-    //     }
-    //   } catch (error) {
-    //     console.error("Error fetching approval list:", error);
-    //   } finally {
-    //     stop_loader();
-    //   }
-    // };
+  //     if (releaseTypeId) {
+  //       handleDimensionChange(releaseTypeId, totalRecords, unreleasedSites, releasedSites, lengthRO, releasePercentage);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching approval list:", error);
+  //   } finally {
+  //     stop_loader();
+  //   }
+  // };
 
   const fetchReleaseList = async (trimmedLKRSID) => {
     start_loader();
@@ -2224,7 +2224,7 @@ const ReleaseSelection = () => {
           confirmButtonText: 'OK'
         }).then((result) => {
           if (result.isConfirmed) {
-            fetchEKYC_ResponseDetails(selectedOwner?.name, data.ekycTxnNo, data.ekycStatus);
+            fetchEKYC_ResponseDetails(selectedOwner.id, selectedOwner?.name, data.ekycTxnNo, data.ekycStatus);
           }
         });
       } else if (data.ekycStatus === "Failure") {
@@ -2242,6 +2242,11 @@ const ReleaseSelection = () => {
       Swal.fire('Warning', 'Please select an owner before proceeding with e-KYC.', 'warning');
       return;
     }
+         let trimmedLKRSID = localLKRSID;
+    if (/^L\d+$/i.test(localLKRSID)) {
+      trimmedLKRSID = localLKRSID.substring(1);
+    }
+    
 
     const swalResult = await Swal.fire({
       title: 'Redirecting for e-KYC Verification',
@@ -2250,6 +2255,7 @@ const ReleaseSelection = () => {
       confirmButtonText: 'OK',
       allowOutsideClick: false
     });
+
 
     if (swalResult.isConfirmed) {
       start_loader();
@@ -2260,9 +2266,11 @@ const ReleaseSelection = () => {
         const PROPERTY_CODE = 1;
         const redirectSource = "RLS";
         const EkycResponseUrl = `${config.redirectionTypeURL}`;
+        const LKRS_ID = parseInt(trimmedLKRSID, 10);
 
         // Pass them to your API
         const response = await ekyc_Details({
+          LKRS_ID,
           OwnerNumber,
           BOOK_APP_NO,
           PROPERTY_CODE,
@@ -2289,7 +2297,7 @@ const ReleaseSelection = () => {
       }
     }
   };
-  const fetchEKYC_ResponseDetails = async (jdaRepName, txnno, ekycStatus) => {
+  const fetchEKYC_ResponseDetails = async (ownerNo, ownerName, txnno, ekycStatus) => {
     let trimmedLKRSID = localLKRSID;
     if (/^L\d+$/i.test(localLKRSID)) {
       trimmedLKRSID = localLKRSID.substring(1);
@@ -2300,24 +2308,27 @@ const ReleaseSelection = () => {
         const payload = {
           transactionNumber: 83,
           OwnerType: 'NEWOWNER',
-          ownName: jdaRepName,
+          ownName: ownerName,
         };
         const transactionNumber = 83;
         const OwnerType = "NEWOWNER";
 
-        const response = await ekyc_Response(transactionNumber, OwnerType, jdaRepName);
+        const redirectSource = "RLS";
+
+        const response = await ekyc_Response(transactionNumber, OwnerType, ownerName,  ownerNo, trimmedLKRSID, redirectSource);
 
         if (response) {
           const score = response.nameMatchScore;
           const EkycNameMatch = `${config.rd_nameScore}`;
-          if (score >= EkycNameMatch) {
+          // if (score >= EkycNameMatch) {
+            if(response.vaultIdisPresent === true){
 
             setOwnerData(response);
 
             const payloadReleaseOwner = {
               relsekyC_ID: 0,
               relsekyC_LKRS_ID: parseInt(trimmedLKRSID),
-              relsekyC_Own_ID: selectedOwner.id,
+              relsekyC_Own_ID: ownerNo,
               relsekyC_NAME_KN: "",
               relsekyC_NAME_EN: selectedOwner.name,
               relsekyC_MOBILENUMBER: "",
@@ -2432,193 +2443,193 @@ const ReleaseSelection = () => {
                   </button>
                 </div>
               </div>
-        
-            {/* property details table */}
-            {(lkrsTableData.lkrS_DISPLAYID && approvalTableData.approvalOrderNo) && (
-              <>
-                <h5>Property Details</h5>
-                <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-                  <tbody>
-                    <tr>
-                      <th colSpan={2} style={thStyle}>Land type</th>
-                      <td colSpan={2} style={tdStyle}>
-                        {lkrsTableData.lkrS_LANDTYPE === 'surveyNo'
-                          ? 'Converted Revenue Survey Number (No BBMP Khata)'
-                          : lkrsTableData.lkrS_LANDTYPE === 'khata'
-                            ? 'BBMP A-Khata'
-                            : lkrsTableData.lkrS_LANDTYPE}
-                      </td>
-                    </tr>
-                    <tr>
-                      <th style={thStyle}>KRS ID</th>
-                      <td style={tdStyle}>{lkrsTableData.lkrS_DISPLAYID}</td>
-                      <th style={thStyle}>Mother EPID</th>
-                      <td style={tdStyle}>{lkrsTableData.lkrS_EPID}</td>
-                    </tr>
-                    <tr>
-                      <th style={thStyle}>Total Number of Sites</th>
-                      <td style={tdStyle}> {approvalTableData.totalNoOfSites}</td>
-                      <th style={thStyle}>Total Extent</th>
-                      <td style={tdStyle}>{lkrsTableData.lkrS_SITEAREA_SQFT} [SQFT] , {lkrsTableData.lkrS_SITEAREA_SQMT} [SQM]</td>
-                    </tr>
-                    <tr>
-                      <th style={thStyle}>DC Conversion</th>
-                      <td style={tdStyle}>N/A</td>
-                      <th style={thStyle}>Approval Order Number</th>
-                      <td style={tdStyle}>{approvalTableData.approvalOrderNo || 'N/A'}</td>
-                    </tr>
-                    <tr>
-                      <th style={thStyle}>Release Type</th>
-                      <td style={tdStyle}>{approvalTableData.releaseType || 'N/A'}</td>
-                      <th style={thStyle}>EC Number</th>
-                      <td style={tdStyle}>{lkrsTableData.lkrS_ECNUMBER || 'N/A'}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </>
-            )}
 
-            <hr />
-            {selectedLandType === "surveyNo" && (
-              <>
-                {combinedData.length > 0 && (
-                  <div className="col-12">
-                    <div className="">
-                      <div className="d-flex justify-content-between align-items-center mb-3">
-                        <h4 className=" m-0">Survey Number Details</h4>
-                        <div className="d-flex align-items-center">
-                          <label className="me-2 mb-0">Rows per page:</label>
-                          <select
-                            className="form-select form-select-sm w-auto"
-                            value={rowsPerPage}
-                            onChange={handlePageSizeChange}
-                          >
-                            {[5, 10, 15, 20, 25, 30].map((size) => (
-                              <option key={size} value={size}>{size}</option>
-                            ))}
-                          </select>
+              {/* property details table */}
+              {(lkrsTableData.lkrS_DISPLAYID && approvalTableData.approvalOrderNo) && (
+                <>
+                  <h5>Property Details</h5>
+                  <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+                    <tbody>
+                      <tr>
+                        <th colSpan={2} style={thStyle}>Land type</th>
+                        <td colSpan={2} style={tdStyle}>
+                          {lkrsTableData.lkrS_LANDTYPE === 'surveyNo'
+                            ? 'Converted Revenue Survey Number (No BBMP Khata)'
+                            : lkrsTableData.lkrS_LANDTYPE === 'khata'
+                              ? 'BBMP A-Khata'
+                              : lkrsTableData.lkrS_LANDTYPE}
+                        </td>
+                      </tr>
+                      <tr>
+                        <th style={thStyle}>KRS ID</th>
+                        <td style={tdStyle}>{lkrsTableData.lkrS_DISPLAYID}</td>
+                        <th style={thStyle}>Mother EPID</th>
+                        <td style={tdStyle}>{lkrsTableData.lkrS_EPID}</td>
+                      </tr>
+                      <tr>
+                        <th style={thStyle}>Total Number of Sites</th>
+                        <td style={tdStyle}> {approvalTableData.totalNoOfSites}</td>
+                        <th style={thStyle}>Total Extent</th>
+                        <td style={tdStyle}>{lkrsTableData.lkrS_SITEAREA_SQFT} [SQFT] , {lkrsTableData.lkrS_SITEAREA_SQMT} [SQM]</td>
+                      </tr>
+                      <tr>
+                        <th style={thStyle}>DC Conversion</th>
+                        <td style={tdStyle}>N/A</td>
+                        <th style={thStyle}>Approval Order Number</th>
+                        <td style={tdStyle}>{approvalTableData.approvalOrderNo || 'N/A'}</td>
+                      </tr>
+                      <tr>
+                        <th style={thStyle}>Release Type</th>
+                        <td style={tdStyle}>{approvalTableData.releaseType || 'N/A'}</td>
+                        <th style={thStyle}>EC Number</th>
+                        <td style={tdStyle}>{lkrsTableData.lkrS_ECNUMBER || 'N/A'}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </>
+              )}
+
+              <hr />
+              {selectedLandType === "surveyNo" && (
+                <>
+                  {combinedData.length > 0 && (
+                    <div className="col-12">
+                      <div className="">
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                          <h4 className=" m-0">Survey Number Details</h4>
+                          <div className="d-flex align-items-center">
+                            <label className="me-2 mb-0">Rows per page:</label>
+                            <select
+                              className="form-select form-select-sm w-auto"
+                              value={rowsPerPage}
+                              onChange={handlePageSizeChange}
+                            >
+                              {[5, 10, 15, 20, 25, 30].map((size) => (
+                                <option key={size} value={size}>{size}</option>
+                              ))}
+                            </select>
+                          </div>
                         </div>
-                      </div>
 
-                      <div className="table-responsive custom-scroll-table">
-                        <table className="table table-striped table-hover table-bordered rounded-table">
-                          <thead className="table-primary sticky-header">
-                            <tr>
-                              <th hidden>Action</th>
-                              <th>S.No</th>
-                              <th>District</th>
-                              <th>Taluk</th>
-                              <th>Hobli</th>
-                              <th>Village</th>
-                              <th>Owner Name</th>
-                              <th>Survey Number / Surnoc / Hissa</th>
-                              <th>Extent (Acre.Gunta.Fgunta)</th>
-                              <th>SqFt</th>
-                              <th>SqM</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {paginatedData.map((row, index) => (
-                              <tr key={index}>
-                                <td hidden>
-                                </td>
-                                <td>{index + 1 + (currentPage - 1) * rowsPerPage}</td>
-                                <td>{row.district}</td>
-                                <td>{row.taluk}</td>
-                                <td>{row.hobli}</td>
-                                <td>{row.village}</td>
-                                <td>{row.owner}</td>
-                                <td>{`${row.survey_no}/${row.surnoc}/${row.hissa_no}`}</td>
-                                <td>{`${row.ext_acre}.${row.ext_gunta}.${row.ext_fgunta}`}</td>
-                                <td>
-                                  {(
-                                    (parseFloat(row.ext_acre) * 43560) +
-                                    (parseFloat(row.ext_gunta) * 1089) +
-                                    (parseFloat(row.ext_fgunta) * 68.0625)
-                                  ).toFixed(2)}
-                                </td>
-                                <td>
-                                  {(
-                                    (
+                        <div className="table-responsive custom-scroll-table">
+                          <table className="table table-striped table-hover table-bordered rounded-table">
+                            <thead className="table-primary sticky-header">
+                              <tr>
+                                <th hidden>Action</th>
+                                <th>S.No</th>
+                                <th>District</th>
+                                <th>Taluk</th>
+                                <th>Hobli</th>
+                                <th>Village</th>
+                                <th>Owner Name</th>
+                                <th>Survey Number / Surnoc / Hissa</th>
+                                <th>Extent (Acre.Gunta.Fgunta)</th>
+                                <th>SqFt</th>
+                                <th>SqM</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {paginatedData.map((row, index) => (
+                                <tr key={index}>
+                                  <td hidden>
+                                  </td>
+                                  <td>{index + 1 + (currentPage - 1) * rowsPerPage}</td>
+                                  <td>{row.district}</td>
+                                  <td>{row.taluk}</td>
+                                  <td>{row.hobli}</td>
+                                  <td>{row.village}</td>
+                                  <td>{row.owner}</td>
+                                  <td>{`${row.survey_no}/${row.surnoc}/${row.hissa_no}`}</td>
+                                  <td>{`${row.ext_acre}.${row.ext_gunta}.${row.ext_fgunta}`}</td>
+                                  <td>
+                                    {(
                                       (parseFloat(row.ext_acre) * 43560) +
                                       (parseFloat(row.ext_gunta) * 1089) +
                                       (parseFloat(row.ext_fgunta) * 68.0625)
-                                    ) * 0.092903
-                                  ).toFixed(2)}
-                                </td>
+                                    ).toFixed(2)}
+                                  </td>
+                                  <td>
+                                    {(
+                                      (
+                                        (parseFloat(row.ext_acre) * 43560) +
+                                        (parseFloat(row.ext_gunta) * 1089) +
+                                        (parseFloat(row.ext_fgunta) * 68.0625)
+                                      ) * 0.092903
+                                    ).toFixed(2)}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                            <tfoot >
+                              <tr>
+                                <th colSpan={5}></th>
+                                <th colSpan={2} className="text-end fw-bold">Total Area:</th>
+                                <th className="text-left fw-bold" >{`${totalAcre}.${totalGunta}.${totalFGunta}`}</th>
+                                <th className='fw-bold'>{totalSqFt.toFixed(2)}</th>
+                                <th className='fw-bold'>{totalSqFt.toFixed(2)}</th>
                               </tr>
-                            ))}
-                          </tbody>
-                          <tfoot >
-                            <tr>
-                              <th colSpan={5}></th>
-                              <th colSpan={2} className="text-end fw-bold">Total Area:</th>
-                              <th className="text-left fw-bold" >{`${totalAcre}.${totalGunta}.${totalFGunta}`}</th>
-                              <th className='fw-bold'>{totalSqFt.toFixed(2)}</th>
-                              <th className='fw-bold'>{totalSqFt.toFixed(2)}</th>
-                            </tr>
-                          </tfoot>
-                        </table>
-                      </div>
-
-                      {/* Pagination Summary and Controls */}
-                      <div className="d-flex justify-content-between align-items-center mt-3 flex-wrap">
-                        <div>
-                          Showing {Math.min((currentPage - 1) * rowsPerPage + 1, combinedData.length)}–{Math.min(currentPage * rowsPerPage, combinedData.length)} of {combinedData.length} records
+                            </tfoot>
+                          </table>
                         </div>
 
-                        <div>
-                          <button
-                            className="btn btn-outline-secondary btn-sm mx-1"
-                            onClick={() => goToPage(currentPage - 1)}
-                            disabled={currentPage === 1}
-                          >
-                            Previous
-                          </button>
-                          {[...Array(totalPages).keys()].map((num) => (
+                        {/* Pagination Summary and Controls */}
+                        <div className="d-flex justify-content-between align-items-center mt-3 flex-wrap">
+                          <div>
+                            Showing {Math.min((currentPage - 1) * rowsPerPage + 1, combinedData.length)}–{Math.min(currentPage * rowsPerPage, combinedData.length)} of {combinedData.length} records
+                          </div>
+
+                          <div>
                             <button
-                              key={num}
-                              className={`btn btn-sm mx-1 ${currentPage === num + 1 ? 'btn-primary' : 'btn-outline-primary'}`}
-                              onClick={() => goToPage(num + 1)}
+                              className="btn btn-outline-secondary btn-sm mx-1"
+                              onClick={() => goToPage(currentPage - 1)}
+                              disabled={currentPage === 1}
                             >
-                              {num + 1}
+                              Previous
                             </button>
-                          ))}
-                          <button
-                            className="btn btn-outline-secondary btn-sm mx-1"
-                            onClick={() => goToPage(currentPage + 1)}
-                            disabled={currentPage === totalPages}
-                          >
-                            Next
-                          </button>
+                            {[...Array(totalPages).keys()].map((num) => (
+                              <button
+                                key={num}
+                                className={`btn btn-sm mx-1 ${currentPage === num + 1 ? 'btn-primary' : 'btn-outline-primary'}`}
+                                onClick={() => goToPage(num + 1)}
+                              >
+                                {num + 1}
+                              </button>
+                            ))}
+                            <button
+                              className="btn btn-outline-secondary btn-sm mx-1"
+                              onClick={() => goToPage(currentPage + 1)}
+                              disabled={currentPage === totalPages}
+                            >
+                              Next
+                            </button>
+                          </div>
                         </div>
-                      </div>
 
+                      </div>
                     </div>
-                  </div>
-                )
-                }
-              </>
-            )}
-            {/* EPID preview block */}
-            {(selectedLandType === "khata") && (
-              <>
-                {epidshowTable && epid_fetchedData && (
-                  <div>
-                    <h5>Property Owner details as per BBMP eKhata</h5>
-                    <h6>Note: Plot-wise New Khata will be issued in owner's name. Hence, if owner has changed then first get Mutation done in eKhata.</h6>
-                    {/* <h6>If there has been a change in ownership, the Mutation process in eKhata must be completed first, as the New Khata will be issued in the owner's name.</h6> */}
-                    <DataTable
-                      columns={columns}
-                      data={epid_fetchedData?.OwnerDetails || []}
-                      pagination
-                      noHeader
-                      dense={false}
-                      customStyles={customStyles}
-                    />
-                    {epid_fetchedData && (
-                      <>
-                        <style>{`
+                  )
+                  }
+                </>
+              )}
+              {/* EPID preview block */}
+              {(selectedLandType === "khata") && (
+                <>
+                  {epidshowTable && epid_fetchedData && (
+                    <div>
+                      <h5>Property Owner details as per BBMP eKhata</h5>
+                      <h6>Note: Plot-wise New Khata will be issued in owner's name. Hence, if owner has changed then first get Mutation done in eKhata.</h6>
+                      {/* <h6>If there has been a change in ownership, the Mutation process in eKhata must be completed first, as the New Khata will be issued in the owner's name.</h6> */}
+                      <DataTable
+                        columns={columns}
+                        data={epid_fetchedData?.OwnerDetails || []}
+                        pagination
+                        noHeader
+                        dense={false}
+                        customStyles={customStyles}
+                      />
+                      {epid_fetchedData && (
+                        <>
+                          <style>{`
       /* Wrapper for horizontal scroll on small screens */
       .table-responsive-wrapper { /* Renamed to avoid conflict if parent also uses table-responsive */
       width: 100%;
@@ -2663,430 +2674,430 @@ const ReleaseSelection = () => {
         margin-bottom: 10px; /* Space between heading/button and table */
       }
     `}</style>
-                        <div className="table-responsive-wrapper">
-                          <div className="header-with-button">
-                            <h4>Property Details</h4>
-                            {/* <button className='btn btn-warning' onClick={showImplementationAlert}>View eKhata</button> */}
-                          </div>
+                          <div className="table-responsive-wrapper">
+                            <div className="header-with-button">
+                              <h4>Property Details</h4>
+                              {/* <button className='btn btn-warning' onClick={showImplementationAlert}>View eKhata</button> */}
+                            </div>
 
-                          {/* Property Details */}
-                          <table>
-                            <thead>
-                              <tr>
-                                <th>Property ID</th>
-                                <th>Category</th>
-                                <th>Classification</th>
-                                <th>Ward Number</th>
-                                <th>Ward Name</th>
-                                <th>Street Name</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr>
-                                <td>{epid_fetchedData.PropertyID}</td>
-                                <td>{epid_fetchedData.PropertyCategory}</td>
-                                <td>{epid_fetchedData.PropertyClassification}</td>
-                                <td>{epid_fetchedData.WardNumber}</td>
-                                <td>{epid_fetchedData.WardName?.trim()}</td>
-                                <td>{epid_fetchedData.StreetName?.trim()}</td>
-                              </tr>
-                            </tbody>
-                          </table>
+                            {/* Property Details */}
+                            <table>
+                              <thead>
+                                <tr>
+                                  <th>Property ID</th>
+                                  <th>Category</th>
+                                  <th>Classification</th>
+                                  <th>Ward Number</th>
+                                  <th>Ward Name</th>
+                                  <th>Street Name</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <td>{epid_fetchedData.PropertyID}</td>
+                                  <td>{epid_fetchedData.PropertyCategory}</td>
+                                  <td>{epid_fetchedData.PropertyClassification}</td>
+                                  <td>{epid_fetchedData.WardNumber}</td>
+                                  <td>{epid_fetchedData.WardName?.trim()}</td>
+                                  <td>{epid_fetchedData.StreetName?.trim()}</td>
+                                </tr>
+                              </tbody>
+                            </table>
 
-                          {/* Kaveri Registration Numbers */}
-                          {epid_fetchedData.KaveriRegistrationNumber?.length > 0 && (
-                            <>
-                              <h4>Kaveri Registration Numbers</h4>
-                              <table>
-                                <thead>
-                                  <tr>
-                                    <th>Registration Number</th>
-                                    <th>EC Number</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {epid_fetchedData.KaveriRegistrationNumber.map((item, idx) => (
-                                    <tr key={idx}>
-                                      <td>{item.kaveriRegistrationNumber}</td>
-                                      <td>{item.kaveriECNumber}</td>
+                            {/* Kaveri Registration Numbers */}
+                            {epid_fetchedData.KaveriRegistrationNumber?.length > 0 && (
+                              <>
+                                <h4>Kaveri Registration Numbers</h4>
+                                <table>
+                                  <thead>
+                                    <tr>
+                                      <th>Registration Number</th>
+                                      <th>EC Number</th>
                                     </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </>
+                                  </thead>
+                                  <tbody>
+                                    {epid_fetchedData.KaveriRegistrationNumber.map((item, idx) => (
+                                      <tr key={idx}>
+                                        <td>{item.kaveriRegistrationNumber}</td>
+                                        <td>{item.kaveriECNumber}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </>
+                            )}
+
+                            {/* More Property Info */}
+                            <table>
+                              <thead>
+                                <tr>
+                                  <th>Street Code</th>
+                                  <th>SAS Application No</th>
+                                  <th>Is Mutation</th>
+                                  <th>Assessment No</th>
+                                  <th>Court Stay</th>
+                                  <th>Enquiry Dispute</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <td>{epid_fetchedData.Streetcode}</td>
+                                  <td>{epid_fetchedData.SASApplicationNumber}</td>
+                                  <td>{epid_fetchedData.IsMuation}</td>
+                                  <td>{epid_fetchedData.AssessmentNumber}</td>
+                                  <td>{epid_fetchedData.courtStay}</td>
+                                  <td>{epid_fetchedData.enquiryDispute}</td>
+                                </tr>
+                              </tbody>
+                            </table>
+
+                            {/* Check Bandi */}
+                            <h4>Check Bandi</h4>
+                            <table>
+                              <thead>
+                                <tr>
+                                  <th>North</th>
+                                  <th>South</th>
+                                  <th>East</th>
+                                  <th>West</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <td>{epid_fetchedData.CheckBandi?.north}</td>
+                                  <td>{epid_fetchedData.CheckBandi?.south}</td>
+                                  <td>{epid_fetchedData.CheckBandi?.east}</td>
+                                  <td>{epid_fetchedData.CheckBandi?.west}</td>
+                                </tr>
+                              </tbody>
+                            </table>
+
+                            {/* Site Details */}
+                            <h4>Site Details</h4>
+                            <table>
+                              <thead>
+                                <tr>
+                                  <th>Site Area (sq ft)</th>
+                                  <th>East-West Dimension</th>
+                                  <th>North-South Dimension</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <td>{epid_fetchedData.SiteDetails?.siteArea}</td>
+                                  <td>{epid_fetchedData.SiteDetails?.dimensions?.eastWest || '-'}</td>
+                                  <td>{epid_fetchedData.SiteDetails?.dimensions?.northSouth || '-'}</td>
+                                </tr>
+                              </tbody>
+                            </table>
+
+                            {/* Owner Details */}
+                            <h4>Owner Details</h4>
+                            <table>
+                              <thead>
+                                <tr>
+                                  <th>Owner Name</th>
+                                  <th>ID Type</th>
+                                  <th>ID Number</th>
+                                  <th>Address</th>
+                                  <th>Identifier Name</th>
+                                  <th>Gender</th>
+                                  <th>Mobile Number</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {epid_fetchedData.OwnerDetails?.map((owner, index) => (
+                                  <tr key={index}>
+                                    <td>{owner.ownerName}</td>
+                                    <td>{owner.idType}</td>
+                                    <td>{owner.idNumber}</td>
+                                    <td>{owner.ownerAddress}</td>
+                                    <td>{owner.identifierName}</td>
+                                    <td>{owner.gender}</td>
+                                    <td>{owner.mobileNumber}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </>
+                      )}
+
+                    </div>
+                  )}
+                </>
+              )}
+              <hr />
+              {/* Approval details table  */}
+              {releaseDetails.length > 0 && (
+                <div style={{ marginTop: '20px' }}>
+                  <h5 style={{ marginBottom: '15px', fontSize: '20px', fontWeight: 'bold', color: '#333' }}>
+                    Layout Approval Order
+                  </h5>
+                  <table style={{
+                    borderCollapse: "collapse",
+                    width: "100%",
+                    fontFamily: "Arial, sans-serif",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
+                  }}>
+                    <thead>
+                      <tr style={{ backgroundColor: "#fff", color: "#000", textAlign: "left" }}>
+                        {/* <th style={thStyle}>ID</th> */}
+                        {/* <th style={thStyle}>KRS ID</th> */}
+                        <th style={thStyle}>Site Approval order Number</th>
+                        <th style={thStyle}>Date of Order</th>
+                        <th style={thStyle}>Approval Authority</th>
+                        <th style={thStyle}>Designation of Authority issued </th>
+                        <th style={thStyle}>Total Number of sites </th>
+                        <th style={thStyle}>Release Type</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {releaseDetails.map((item, index) => (
+                        <tr key={index} style={{ backgroundColor: index % 2 === 0 ? "#f9f9f9" : "#fff" }}>
+                          {/* <td style={tdStyle}>{item.sitE_RELS_ID}</td> */}
+                          {/* <td style={tdStyle}>{item.apr_LKRS_Id}</td> */}
+                          <td style={tdStyle}>{item.apr_Approval_No}</td>
+                          <td style={tdStyle}>{new Date(item.apr_Approval_Date).toLocaleDateString()}</td>
+                          <td style={tdStyle}>{item.apR_APPROVALAUTHORITY_Text}</td>
+                          <td style={tdStyle}>{item.apR_APPROVALDESIGNATION}</td>
+                          <td style={tdStyle}>{item.lkrS_NUMBEROFSITES}</td>
+                          <td style={tdStyle}>{item.sitE_RELS_SITE_RELSTYPE}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <hr />
+                  <div className='row mt-2'>
+                    <h5 style={{ marginBottom: '15px', fontSize: '20px', fontWeight: 'bold', color: '#333' }}>Owner EKYC</h5>
+
+                    <div className="col-12 col-sm-12 col-md-7 col-lg-7 col-xl-7 mt-2">
+                      <label className="form-label">Select Owner <span className='mandatory_color'>*</span></label>
+                      <button
+                        className="form-control text-start"
+                        onClick={() => {
+                          const shouldOpen = !isDropdownOpen;
+                          setIsDropdownOpen(shouldOpen);
+                          if (shouldOpen) {
+                            fetchOwners();
+                          }
+                        }}
+                        ref={buttonRef}  // attach ref here
+                      >
+                        {selectedOwner ? selectedOwner.name : "Select an owner"}
+                      </button>
+
+                      {isDropdownOpen && (
+                        <ul
+                          className="dropdown-menu show"
+                          style={{
+                            overflowY: "auto",
+                            width: dropdownWidth,
+                            maxHeight: "250px", marginLeft: "13px",
+                          }}
+                        >
+                          {loadingOwners ? (
+                            <li className="px-3 py-2">Loading...</li>
+                          ) : (
+                            ownerList.map((owner, index) => (
+                              <li key={owner.id || index}>
+                                <button
+                                  className="dropdown-item"
+                                  onClick={() => {
+                                    setSelectedOwner(owner);
+                                    setOwnerNameInput(owner.name);
+                                    setIsDropdownOpen(false);
+                                  }}
+                                >
+                                  {owner.name}
+                                </button>
+                              </li>
+                            ))
+                          )}
+                        </ul>
+                      )}
+                    </div>
+                    <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-5" >
+                      <label className="form-label"></label>
+                      <button className='btn btn-info btn-block' disabled={!selectedOwner || isEKYCVerified} onClick={handleDoEKYC}>Do eKYC</button>
+                    </div>
+                    <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 mt-5">
+                      {isEKYCVerified && (
+                        <div className="mb-2 text-success font-weight-bold">
+                          eKYC Verified!
+                        </div>
+                      )}
+                      {!isEKYCVerified && (
+                        <div className="mb-2 text-danger font-weight-bold">
+                          eKYC Failed!
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="mt-5" >
+                    <hr className='mt-1' />
+                    <h6 className='fw-normal fs-5' style={{ color: '#0077b6' }}>{t('translation.BDA.Subdivision1.heading')}</h6>
+                    <hr className='mt-1' style={{ border: '1px dashed #0077b6' }} />
+                    <div className="row">
+                      {/* release Order Number */}
+                      <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                        <div className="form-group">
+                          <label className="form-label">
+                            {t('translation.BDA.Subdivision1.orderNo')} <span className="mandatory_color">*</span>
+                          </label>
+                          <input
+                            type="tel"
+                            className="form-control"
+                            placeholder={t('translation.BDA.Subdivision1.orderNoPlaceholder')}
+                            name="layoutOrderNumber"  // <-- Corrected here
+                            value={release_formData.layoutOrderNumber}
+                            onChange={handleOrderChange}
+                            disabled={!isOrder_EditingArea}
+                          />
+                          {release_errors.layoutOrderNumber && (
+                            <small className="text-danger">{release_errors.layoutOrderNumber}</small>
                           )}
 
-                          {/* More Property Info */}
-                          <table>
-                            <thead>
-                              <tr>
-                                <th>Street Code</th>
-                                <th>SAS Application No</th>
-                                <th>Is Mutation</th>
-                                <th>Assessment No</th>
-                                <th>Court Stay</th>
-                                <th>Enquiry Dispute</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr>
-                                <td>{epid_fetchedData.Streetcode}</td>
-                                <td>{epid_fetchedData.SASApplicationNumber}</td>
-                                <td>{epid_fetchedData.IsMuation}</td>
-                                <td>{epid_fetchedData.AssessmentNumber}</td>
-                                <td>{epid_fetchedData.courtStay}</td>
-                                <td>{epid_fetchedData.enquiryDispute}</td>
-                              </tr>
-                            </tbody>
-                          </table>
-
-                          {/* Check Bandi */}
-                          <h4>Check Bandi</h4>
-                          <table>
-                            <thead>
-                              <tr>
-                                <th>North</th>
-                                <th>South</th>
-                                <th>East</th>
-                                <th>West</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr>
-                                <td>{epid_fetchedData.CheckBandi?.north}</td>
-                                <td>{epid_fetchedData.CheckBandi?.south}</td>
-                                <td>{epid_fetchedData.CheckBandi?.east}</td>
-                                <td>{epid_fetchedData.CheckBandi?.west}</td>
-                              </tr>
-                            </tbody>
-                          </table>
-
-                          {/* Site Details */}
-                          <h4>Site Details</h4>
-                          <table>
-                            <thead>
-                              <tr>
-                                <th>Site Area (sq ft)</th>
-                                <th>East-West Dimension</th>
-                                <th>North-South Dimension</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr>
-                                <td>{epid_fetchedData.SiteDetails?.siteArea}</td>
-                                <td>{epid_fetchedData.SiteDetails?.dimensions?.eastWest || '-'}</td>
-                                <td>{epid_fetchedData.SiteDetails?.dimensions?.northSouth || '-'}</td>
-                              </tr>
-                            </tbody>
-                          </table>
-
-                          {/* Owner Details */}
-                          <h4>Owner Details</h4>
-                          <table>
-                            <thead>
-                              <tr>
-                                <th>Owner Name</th>
-                                <th>ID Type</th>
-                                <th>ID Number</th>
-                                <th>Address</th>
-                                <th>Identifier Name</th>
-                                <th>Gender</th>
-                                <th>Mobile Number</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {epid_fetchedData.OwnerDetails?.map((owner, index) => (
-                                <tr key={index}>
-                                  <td>{owner.ownerName}</td>
-                                  <td>{owner.idType}</td>
-                                  <td>{owner.idNumber}</td>
-                                  <td>{owner.ownerAddress}</td>
-                                  <td>{owner.identifierName}</td>
-                                  <td>{owner.gender}</td>
-                                  <td>{owner.mobileNumber}</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
                         </div>
-                      </>
-                    )}
-
-                  </div>
-                )}
-              </>
-            )}
-            <hr />
-            {/* Approval details table  */}
-            {releaseDetails.length > 0 && (
-              <div style={{ marginTop: '20px' }}>
-                <h5 style={{ marginBottom: '15px', fontSize: '20px', fontWeight: 'bold', color: '#333' }}>
-                  Layout Approval Order
-                </h5>
-                <table style={{
-                  borderCollapse: "collapse",
-                  width: "100%",
-                  fontFamily: "Arial, sans-serif",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
-                }}>
-                  <thead>
-                    <tr style={{ backgroundColor: "#fff", color: "#000", textAlign: "left" }}>
-                      {/* <th style={thStyle}>ID</th> */}
-                      {/* <th style={thStyle}>KRS ID</th> */}
-                      <th style={thStyle}>Site Approval order Number</th>
-                      <th style={thStyle}>Date of Order</th>
-                      <th style={thStyle}>Approval Authority</th>
-                      <th style={thStyle}>Designation of Authority issued </th>
-                      <th style={thStyle}>Total Number of sites </th>
-                      <th style={thStyle}>Release Type</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {releaseDetails.map((item, index) => (
-                      <tr key={index} style={{ backgroundColor: index % 2 === 0 ? "#f9f9f9" : "#fff" }}>
-                        {/* <td style={tdStyle}>{item.sitE_RELS_ID}</td> */}
-                        {/* <td style={tdStyle}>{item.apr_LKRS_Id}</td> */}
-                        <td style={tdStyle}>{item.apr_Approval_No}</td>
-                        <td style={tdStyle}>{new Date(item.apr_Approval_Date).toLocaleDateString()}</td>
-                        <td style={tdStyle}>{item.apR_APPROVALAUTHORITY_Text}</td>
-                        <td style={tdStyle}>{item.apR_APPROVALDESIGNATION}</td>
-                        <td style={tdStyle}>{item.lkrS_NUMBEROFSITES}</td>
-                        <td style={tdStyle}>{item.sitE_RELS_SITE_RELSTYPE}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <hr />
-                <div className='row mt-2'>
-                  <h5 style={{ marginBottom: '15px', fontSize: '20px', fontWeight: 'bold', color: '#333' }}>Owner EKYC</h5>
-
-                  <div className="col-12 col-sm-12 col-md-7 col-lg-7 col-xl-7 mt-2">
-                    <label className="form-label">Select Owner <span className='mandatory_color'>*</span></label>
-                    <button
-                      className="form-control text-start"
-                      onClick={() => {
-                        const shouldOpen = !isDropdownOpen;
-                        setIsDropdownOpen(shouldOpen);
-                        if (shouldOpen) {
-                          fetchOwners();
-                        }
-                      }}
-                      ref={buttonRef}  // attach ref here
-                    >
-                      {selectedOwner ? selectedOwner.name : "Select an owner"}
-                    </button>
-
-                    {isDropdownOpen && (
-                      <ul
-                        className="dropdown-menu show"
-                        style={{
-                          overflowY: "auto",
-                          width: dropdownWidth,
-                          maxHeight: "250px", marginLeft: "13px",
-                        }}
-                      >
-                        {loadingOwners ? (
-                          <li className="px-3 py-2">Loading...</li>
-                        ) : (
-                          ownerList.map((owner, index) => (
-                            <li key={owner.id || index}>
-                              <button
-                                className="dropdown-item"
-                                onClick={() => {
-                                  setSelectedOwner(owner);
-                                  setOwnerNameInput(owner.name);
-                                  setIsDropdownOpen(false);
+                      </div>
+                      {/* Date of order */}
+                      <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                        <div className="form-group">
+                          <label className="form-label">
+                            {t('translation.BDA.Subdivision1.dateofOrder')} <span className="mandatory_color">*</span>
+                          </label>
+                          <input
+                            type="date"
+                            className="form-control"
+                            name="dateOfOrder"
+                            value={release_formData.dateOfOrder}
+                            max={new Date().toISOString().split("T")[0]}
+                            onChange={handleOrderChange}
+                            disabled={!isOrder_EditingArea} // Disable when not editing
+                          />
+                          {release_errors.dateOfOrder && (
+                            <small className="text-danger">{release_errors.dateOfOrder}</small>
+                          )}
+                        </div>
+                      </div>
+                      {/* Scan & Upload Layout release order */}
+                      <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                        <div className="form-group">
+                          <label className="form-label">
+                            {t('translation.BDA.Subdivision1.scanUploadOrder')}
+                            <span className="mandatory_color">*</span>
+                          </label>
+                          <input
+                            type="file"
+                            accept=".pdf"
+                            className="form-control"
+                            onChange={handleFilereleaseOrderChange}
+                            ref={fileReleaseOrderInputRef}
+                            disabled={!isOrder_EditingArea} // Disable when not editing
+                          />
+                          {release_formData.release_Order && releaseOrderURL && (
+                            <div className="mt-2">
+                              <div
+                                style={{
+                                  width: "120px",
+                                  height: "120px",
+                                  border: "1px solid #ccc",
+                                  borderRadius: "8px",
+                                  overflow: "hidden",
                                 }}
                               >
-                                {owner.name}
-                              </button>
-                            </li>
-                          ))
-                        )}
-                      </ul>
-                    )}
-                  </div>
-                  <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-5" >
-                    <label className="form-label"></label>
-                    <button className='btn btn-info btn-block' disabled={!selectedOwner || isEKYCVerified} onClick={handleDoEKYC}>Do eKYC</button>
-                  </div>
-                  <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 mt-5">
-                    {isEKYCVerified && (
-                      <div className="mb-2 text-success font-weight-bold">
-                        eKYC Verified!
+                                <iframe
+                                  src={releaseOrderURL}
+                                  title="Release Order"
+                                  width="100%"
+                                  height="100%"
+                                  style={{ cursor: "pointer", border: "none" }}
+                                  onClick={() =>
+                                    window.open(releaseOrderURL, "_blank")
+                                  }
+                                />
+                              </div>
+                              <p className="mt-1" style={{ fontSize: "0.875rem" }}>
+                                Current File:{" "}
+                                <a
+                                  href={releaseOrderURL}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{
+                                    textDecoration: "underline",
+                                    color: "#007bff",
+                                    fontSize: "0.875rem",
+                                  }}
+                                >
+                                  {release_formData.release_Order.name}
+                                </a>
+                              </p>
+                            </div>
+                          )}
+                          <span className="note_color">
+                            {t('translation.BDA.Subdivision1.noteFile')}
+                          </span>
+                          <br />
+                          {release_errors.release_Order && (
+                            <small className="text-danger">{release_errors.release_Order}</small>
+                          )}
+                        </div>
                       </div>
-                    )}
-                    {!isEKYCVerified && (
-                      <div className="mb-2 text-danger font-weight-bold">
-                        eKYC Failed!
+                      {/* release Authority */}
+                      <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                        <div className="form-group">
+                          <label className="form-label">
+                            {t('translation.BDA.Subdivision1.designation')}
+                            <span className="mandatory_color">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder={t('translation.BDA.Subdivision1.placeholderDesignation')}
+                            name="orderAuthority"
+                            value={release_formData.orderAuthority}
+                            onChange={handleOrderChange}
+                            disabled={!isOrder_EditingArea} // Disable when not editing
+                          />
+                          {release_errors.orderAuthority && (
+                            <small className="text-danger">{release_errors.orderAuthority}</small>
+                          )}
+                        </div>
                       </div>
-                    )}
-                  </div>
-                </div>
-                <div className="mt-5" >
-                  <hr className='mt-1' />
-                  <h6 className='fw-normal fs-5' style={{ color: '#0077b6' }}>{t('translation.BDA.Subdivision1.heading')}</h6>
-                  <hr className='mt-1' style={{ border: '1px dashed #0077b6' }} />
-                  <div className="row">
-                    {/* release Order Number */}
-                    <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
-                      <div className="form-group">
-                        <label className="form-label">
-                          {t('translation.BDA.Subdivision1.orderNo')} <span className="mandatory_color">*</span>
-                        </label>
-                        <input
-                          type="tel"
-                          className="form-control"
-                          placeholder={t('translation.BDA.Subdivision1.orderNoPlaceholder')}
-                          name="layoutOrderNumber"  // <-- Corrected here
-                          value={release_formData.layoutOrderNumber}
-                          onChange={handleOrderChange}
-                          disabled={!isOrder_EditingArea}
-                        />
-                        {release_errors.layoutOrderNumber && (
-                          <small className="text-danger">{release_errors.layoutOrderNumber}</small>
-                        )}
 
+
+                      <div className='col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10'></div>
+                      <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 ">
+                        <div className="form-group">
+                          <button className="btn btn-success btn-block" onClick={handleOrderSave} disabled={!isOrder_EditingArea}>
+                            Save and continue
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                    {/* Date of order */}
-                    <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
-                      <div className="form-group">
-                        <label className="form-label">
-                          {t('translation.BDA.Subdivision1.dateofOrder')} <span className="mandatory_color">*</span>
-                        </label>
-                        <input
-                          type="date"
-                          className="form-control"
-                          name="dateOfOrder"
-                          value={release_formData.dateOfOrder}
-                          max={new Date().toISOString().split("T")[0]}
-                          onChange={handleOrderChange}
-                          disabled={!isOrder_EditingArea} // Disable when not editing
-                        />
-                        {release_errors.dateOfOrder && (
-                          <small className="text-danger">{release_errors.dateOfOrder}</small>
-                        )}
-                      </div>
-                    </div>
-                    {/* Scan & Upload Layout release order */}
-                    <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
-                      <div className="form-group">
-                        <label className="form-label">
-                          {t('translation.BDA.Subdivision1.scanUploadOrder')}
-                          <span className="mandatory_color">*</span>
-                        </label>
-                        <input
-                          type="file"
-                          accept=".pdf"
-                          className="form-control"
-                          onChange={handleFilereleaseOrderChange}
-                          ref={fileReleaseOrderInputRef}
-                          disabled={!isOrder_EditingArea} // Disable when not editing
-                        />
-                        {release_formData.release_Order && releaseOrderURL && (
-                          <div className="mt-2">
-                            <div
-                              style={{
-                                width: "120px",
-                                height: "120px",
-                                border: "1px solid #ccc",
-                                borderRadius: "8px",
-                                overflow: "hidden",
-                              }}
-                            >
-                              <iframe
-                                src={releaseOrderURL}
-                                title="Release Order"
-                                width="100%"
-                                height="100%"
-                                style={{ cursor: "pointer", border: "none" }}
-                                onClick={() =>
-                                  window.open(releaseOrderURL, "_blank")
-                                }
+                      {/* Save Button */}
+                      <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+                        <div className="form-group">
+                          {order_records.length > 0 && (
+                            <div className="mt-4">
+                              <h4>{t('translation.BDA.table1.heading')}</h4>
+                              <DataTable
+                                columns={order_columns}
+                                data={order_records}
+                                customStyles={customStyles}
+                                pagination
+                                highlightOnHover
+                                striped
                               />
                             </div>
-                            <p className="mt-1" style={{ fontSize: "0.875rem" }}>
-                              Current File:{" "}
-                              <a
-                                href={releaseOrderURL}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                style={{
-                                  textDecoration: "underline",
-                                  color: "#007bff",
-                                  fontSize: "0.875rem",
-                                }}
-                              >
-                                {release_formData.release_Order.name}
-                              </a>
-                            </p>
-                          </div>
-                        )}
-                        <span className="note_color">
-                          {t('translation.BDA.Subdivision1.noteFile')}
-                        </span>
-                        <br />
-                        {release_errors.release_Order && (
-                          <small className="text-danger">{release_errors.release_Order}</small>
-                        )}
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    {/* release Authority */}
-                    <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
-                      <div className="form-group">
-                        <label className="form-label">
-                          {t('translation.BDA.Subdivision1.designation')}
-                          <span className="mandatory_color">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          placeholder={t('translation.BDA.Subdivision1.placeholderDesignation')}
-                          name="orderAuthority"
-                          value={release_formData.orderAuthority}
-                          onChange={handleOrderChange}
-                          disabled={!isOrder_EditingArea} // Disable when not editing
-                        />
-                        {release_errors.orderAuthority && (
-                          <small className="text-danger">{release_errors.orderAuthority}</small>
-                        )}
-                      </div>
-                    </div>
+                      {/* Table to Display Records */}
 
-
-                    <div className='col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10'></div>
-                    <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 ">
-                      <div className="form-group">
-                        <button className="btn btn-success btn-block" onClick={handleOrderSave} disabled={!isOrder_EditingArea}>
-                          Save and continue
-                        </button>
-                      </div>
                     </div>
-                    {/* Save Button */}
-                    <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
-                      <div className="form-group">
-                        {order_records.length > 0 && (
-                          <div className="mt-4">
-                            <h4>{t('translation.BDA.table1.heading')}</h4>
-                            <DataTable
-                              columns={order_columns}
-                              data={order_records}
-                              customStyles={customStyles}
-                              pagination
-                              highlightOnHover
-                              striped
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    {/* Table to Display Records */}
-
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
 
 
@@ -3094,99 +3105,99 @@ const ReleaseSelection = () => {
 
 
 
+            </div>
           </div>
-        </div>
-        <div className="card">
-          <div className="card-header layout_btn_color">
-            <h5 className="card-title" style={{ textAlign: 'center' }}>Sites to be released</h5>
-          </div>
-          <div className="card-body">
-            <div className='row'>
-              <div className='col-md-12 my-3'>
-                {selectedRows.length > 0 && (
-                  <p style={{
-                    backgroundColor: '#e8f4ff',
-                    border: '1px solid #b3d8ff',
-                    padding: '10px 15px',
-                    borderRadius: '6px',
-                    color: '#0056b3',
-                    fontWeight: '500',
-                    marginTop: '10px'
-                  }}>
-                    {selectedRows.length} record{selectedRows.length > 1 ? 's' : ''} selected
-                  </p>
-                )}
-                {releaseData.length > 0 ? (
-                  <>
-                    {/* Select All Checkbox */}
-                    <div className="d-flex justify-content-start mb-2">
-                      <label>
-                        <input
-                          type="checkbox"
-                          checked={selectAllChecked}
-                          onChange={(e) => handleSelectAll(e)}
-                          disabled={isSelectAllDisabled()}
-                        />{' '}
-                        Select All
-                      </label>
-                    </div>
+          <div className="card">
+            <div className="card-header layout_btn_color">
+              <h5 className="card-title" style={{ textAlign: 'center' }}>Sites to be released</h5>
+            </div>
+            <div className="card-body">
+              <div className='row'>
+                <div className='col-md-12 my-3'>
+                  {selectedRows.length > 0 && (
+                    <p style={{
+                      backgroundColor: '#e8f4ff',
+                      border: '1px solid #b3d8ff',
+                      padding: '10px 15px',
+                      borderRadius: '6px',
+                      color: '#0056b3',
+                      fontWeight: '500',
+                      marginTop: '10px'
+                    }}>
+                      {selectedRows.length} record{selectedRows.length > 1 ? 's' : ''} selected
+                    </p>
+                  )}
+                  {releaseData.length > 0 ? (
+                    <>
+                      {/* Select All Checkbox */}
+                      <div className="d-flex justify-content-start mb-2">
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={selectAllChecked}
+                            onChange={(e) => handleSelectAll(e)}
+                            disabled={isSelectAllDisabled()}
+                          />{' '}
+                          Select All
+                        </label>
+                      </div>
 
-                    {/* Cards Grid */}
-                    <div className="row">
-                      {releaseData.map((row, index) => {
-                        const isSelected = selectedRows.includes(index);
-                        const feetSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINFT).join(" x ") || '';
-                        const meterSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINMT).join(" x ") || '';
-                        const roadFacing = row.siteDimensions?.map(dim => dim.sitediM_ROADFACING ? "Yes" : "No").join(', ') || '';
+                      {/* Cards Grid */}
+                      <div className="row">
+                        {releaseData.map((row, index) => {
+                          const isSelected = selectedRows.includes(index);
+                          const feetSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINFT).join(" x ") || '';
+                          const meterSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINMT).join(" x ") || '';
+                          const roadFacing = row.siteDimensions?.map(dim => dim.sitediM_ROADFACING ? "Yes" : "No").join(', ') || '';
 
-                        return (
-                          <div className="col-md-4 col-lg-3 col-xl-2 mb-3" key={row.id}>
-                            <div className={`card h-100 shadow p-2 blue-bordered-card position-relative ${isSelected ? 'border-primary' : ''}`}>
-                              <div className="d-flex justify-content-between align-items-center">
-                                <input
-                                  type="checkbox"
-                                  checked={isSelected}
-                                  onChange={() => handleRowSelect(index)}
-                                />
-                                <span className="badge bg-secondary">{row.sitE_SHAPETYPE}</span>
-                              </div>
+                          return (
+                            <div className="col-md-4 col-lg-3 col-xl-2 mb-3" key={row.id}>
+                              <div className={`card h-100 shadow p-2 blue-bordered-card position-relative ${isSelected ? 'border-primary' : ''}`}>
+                                <div className="d-flex justify-content-between align-items-center">
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onChange={() => handleRowSelect(index)}
+                                  />
+                                  <span className="badge bg-secondary">{row.sitE_SHAPETYPE}</span>
+                                </div>
 
-                              <div className="mt-2">
-                                <div><strong>Site No:</strong> {row.sitE_NO}</div>
-                                <div><strong>Dimension:</strong></div>
-                                <div className="small text-muted">{feetSides} ft</div>
-                                <div className="small text-muted">{meterSides} m</div>
-                                <div className="small"><strong>Road Facing:</strong> {roadFacing}</div>
+                                <div className="mt-2">
+                                  <div><strong>Site No:</strong> {row.sitE_NO}</div>
+                                  <div><strong>Dimension:</strong></div>
+                                  <div className="small text-muted">{feetSides} ft</div>
+                                  <div className="small text-muted">{meterSides} m</div>
+                                  <div className="small"><strong>Road Facing:</strong> {roadFacing}</div>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Submit Button */}
-                    <div className="row">
-                      <div className="col-md-9"></div>
-                      <div className="col-md-3">
-                        <button className="btn btn-primary btn-block mt-3" onClick={moveToReleasedTable}>
-                          Add
-                        </button>
+                          );
+                        })}
                       </div>
+
+                      {/* Submit Button */}
+                      <div className="row">
+                        <div className="col-md-9"></div>
+                        <div className="col-md-3">
+                          <button className="btn btn-primary btn-block mt-3" onClick={moveToReleasedTable}>
+                            Add
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div style={{
+                      textAlign: 'center',
+                      padding: '20px',
+                      fontWeight: '500',
+                      color: '#999'
+                    }}>
+                      There are no sites to display
                     </div>
-                  </>
-                ) : (
-                  <div style={{
-                    textAlign: 'center',
-                    padding: '20px',
-                    fontWeight: '500',
-                    color: '#999'
-                  }}>
-                    There are no sites to display
-                  </div>
-                )}
+                  )}
 
 
-                {/* {releaseData.length > 0 ? (
+                  {/* {releaseData.length > 0 ? (
                       <>
                         <DataTable
                           columns={releaseTableColumns}
@@ -3215,44 +3226,44 @@ const ReleaseSelection = () => {
                         There are no sites to display
                       </div>
                     )} */}
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
 
 
-        {/* Already Released Table */}
-        {releasedData.length > 0 && (
-          <div className="card">
-            <div className="card-header layout_btn_color">
-              <h5 className="card-title" style={{ textAlign: 'center' }}>Selected sites</h5>
-            </div>
-            <div className="card-body">
-              <div className='row'>
-                <div className='col-md-12 my-3'>
-                  <DataTable
-                    columns={releasedTableColumns}
-                    data={releasedData}
-                    customStyles={customStyles}
-                    pagination
-                    highlightOnHover
-                    striped
-                  />
+          {/* Already Released Table */}
+          {releasedData.length > 0 && (
+            <div className="card">
+              <div className="card-header layout_btn_color">
+                <h5 className="card-title" style={{ textAlign: 'center' }}>Selected sites</h5>
+              </div>
+              <div className="card-body">
+                <div className='row'>
+                  <div className='col-md-12 my-3'>
+                    <DataTable
+                      columns={releasedTableColumns}
+                      data={releasedData}
+                      customStyles={customStyles}
+                      pagination
+                      highlightOnHover
+                      striped
+                    />
 
-                </div>
-                <div className='col-md-9'></div>
-                <div className='col-md-3'>
-                  <button
-                    className="btn btn-primary btn-block mt-3"
-                    // onClick={handleInitial60PercentSave}
-                    onClick={releaseSites}
-                  >
-                    Save
-                  </button>
-                </div>
+                  </div>
+                  <div className='col-md-9'></div>
+                  <div className='col-md-3'>
+                    <button
+                      className="btn btn-primary btn-block mt-3"
+                      // onClick={handleInitial60PercentSave}
+                      onClick={releaseSites}
+                    >
+                      Save
+                    </button>
+                  </div>
 
-                {/* {finalApiList.length !== 0 && (
+                  {/* {finalApiList.length !== 0 && (
                       <div className='col-md-3'>
                         <button
                           className="btn btn-primary btn-block mt-3"
@@ -3264,20 +3275,20 @@ const ReleaseSelection = () => {
                     )} */}
 
 
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
 
-        {/* Final API list Table */}
-        {finalApiList.length > 0 && (
-          <div className="card mt-4">
-            <div className="card-header layout_btn_color">
-              <h5 className="card-title" style={{ textAlign: 'center' }}>Released sites </h5>
-            </div>
-            <div className="card-body">
-              {/* <DataTable
+          {/* Final API list Table */}
+          {finalApiList.length > 0 && (
+            <div className="card mt-4">
+              <div className="card-header layout_btn_color">
+                <h5 className="card-title" style={{ textAlign: 'center' }}>Released sites </h5>
+              </div>
+              <div className="card-body">
+                {/* <DataTable
                     columns={alreadyreleasedTableColumns}
                     data={finalApiList}
                     customStyles={customStyles}
@@ -3286,50 +3297,50 @@ const ReleaseSelection = () => {
                     highlightOnHover
                     responsive
                   /> */}
-              {finalApiList.length > 0 ? (
-                <div className="row">
-                  {finalApiList.map((row, index) => {
-                    const feetSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINFT).join(" x ") || '';
-                    const meterSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINMT).join(" x ") || '';
-                    const roadFacing = row.siteDimensions?.map(dim => dim.sitediM_ROADFACING ? "Yes" : "No").join(', ') || '';
+                {finalApiList.length > 0 ? (
+                  <div className="row">
+                    {finalApiList.map((row, index) => {
+                      const feetSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINFT).join(" x ") || '';
+                      const meterSides = row.siteDimensions?.map(dim => dim.sitediM_SIDEINMT).join(" x ") || '';
+                      const roadFacing = row.siteDimensions?.map(dim => dim.sitediM_ROADFACING ? "Yes" : "No").join(', ') || '';
 
-                    return (
-                      <div className="col-md-4 col-lg-3 col-xl-2 mb-2" key={row.id || index}>
-                        <div className="card h-100 shadow p-3 green-bordered-card position-relative">
-                          {/* Top-right badge */}
-                          <div className="status-badge">Released</div>
+                      return (
+                        <div className="col-md-4 col-lg-3 col-xl-2 mb-2" key={row.id || index}>
+                          <div className="card h-100 shadow p-3 green-bordered-card position-relative">
+                            {/* Top-right badge */}
+                            <div className="status-badge">Released</div>
 
-                          <div className="mt-1">
-                            <div><strong>Site No:</strong> {row.sitE_NO}</div>
-                            <div><strong>Dimension:</strong></div>
-                            <div className="small text-muted">{feetSides} ft</div>
-                            <div className="small text-muted">{meterSides} m</div>
-                            <div className="small"><strong>Road Facing:</strong> {roadFacing}</div>
-                            <div className="small"><strong>Shape:</strong> {row.sitE_SHAPETYPE}</div>
+                            <div className="mt-1">
+                              <div><strong>Site No:</strong> {row.sitE_NO}</div>
+                              <div><strong>Dimension:</strong></div>
+                              <div className="small text-muted">{feetSides} ft</div>
+                              <div className="small text-muted">{meterSides} m</div>
+                              <div className="small"><strong>Road Facing:</strong> {roadFacing}</div>
+                              <div className="small"><strong>Shape:</strong> {row.sitE_SHAPETYPE}</div>
 
+                            </div>
                           </div>
+
                         </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div style={{
+                    textAlign: 'center',
+                    padding: '20px',
+                    fontWeight: '500',
+                    color: '#999'
+                  }}>
+                    There are no released sites to display
+                  </div>
+                )}
 
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div style={{
-                  textAlign: 'center',
-                  padding: '20px',
-                  fontWeight: '500',
-                  color: '#999'
-                }}>
-                  There are no released sites to display
-                </div>
-              )}
-
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
-    </div>
     //   </div>
     // </DashboardLayout>
   );

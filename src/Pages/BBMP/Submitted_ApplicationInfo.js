@@ -985,7 +985,7 @@ const BBMP_SubmittedInfo = () => {
         }
     };
     const final_Save_Release = async () => {
-        navigate('/Release', {
+        navigate('/SiteRelease', {
             state: {
                 LKRS_ID,
                 display_LKRS_ID

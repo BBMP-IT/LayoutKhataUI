@@ -1572,10 +1572,10 @@ const ReleaseDashboard = () => {
         if (Object.keys(newErrors).length > 0) {
             setRelease_Errors(newErrors);
             Swal.fire("Validation Error", "Please fix the highlighted errors.", "warning");
-            return false; // ❗ Explicit return
+            return false; 
         }
 
-        return true; // ❗ Explicit success
+        return true; 
     };
 
     const handleOrderSave = async () => {
@@ -1616,7 +1616,7 @@ const ReleaseDashboard = () => {
 
                 if (uploadSuccess) {
                     start_loader();
-
+                    fetch_releasePercentage(trimmedLKRSID);
                     try {
                         const listPayload = {
                             level: 1,
@@ -1806,7 +1806,7 @@ const ReleaseDashboard = () => {
                                 row.releaseOrderDocID
                             )
                         }
-                        disabled={deletebtn_disabled}
+                        // disabled={deletebtn_disabled}
                     >
                         <i className="fa fa-trash"></i>
                     </button>
@@ -1869,7 +1869,7 @@ const ReleaseDashboard = () => {
         });
     };
 
-    const fetch_releasePercentage = async (trimmedLKRSID, totalRecords, unreleasedSites, releasedSites, lengthRO) => {
+    const fetch_releasePercentage = async (trimmedLKRSID) => {
         start_loader();
         try {
             const listResponse = await fetch_releasePercentageDetails(trimmedLKRSID);
@@ -2020,7 +2020,7 @@ const ReleaseDashboard = () => {
                     confirmButtonText: 'OK'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        fetchEKYC_ResponseDetails(selectedOwner?.name, data.ekycTxnNo, data.ekycStatus);
+                        fetchEKYC_ResponseDetails(selectedOwner.id, selectedOwner?.name, data.ekycTxnNo, data.ekycStatus);
                     }
                 });
             } else if (data.ekycStatus === "Failure") {
@@ -2033,155 +2033,166 @@ const ReleaseDashboard = () => {
         return () => window.removeEventListener("message", handleMessage);
     }, [selectedOwner?.name]);
     //DO EKYC
-    const handleDoEKYC = async () => {
-        if (!selectedOwner || !selectedOwner.name) {
-            Swal.fire('Warning', 'Please select an owner before proceeding with e-KYC.', 'warning');
-            return;
-        }
+   const handleDoEKYC = async () => {
+    if (!selectedOwner || !selectedOwner.name) {
+      Swal.fire('Warning', 'Please select an owner before proceeding with e-KYC.', 'warning');
+      return;
+    }
+         let trimmedLKRSID = localLKRSID;
+    if (/^L\d+$/i.test(localLKRSID)) {
+      trimmedLKRSID = localLKRSID.substring(1);
+    }
+    
 
-        const swalResult = await Swal.fire({
-            title: 'Redirecting for e-KYC Verification',
-            text: 'You are being redirected to another tab for e-KYC verification. Once the e-KYC verification is complete, please return to this tab and click the verify e-KYC button.',
-            icon: 'info',
-            confirmButtonText: 'OK',
-            allowOutsideClick: false
+    const swalResult = await Swal.fire({
+      title: 'Redirecting for e-KYC Verification',
+      text: 'You are being redirected to another tab for e-KYC verification. Once the e-KYC verification is complete, please return to this tab and click the verify e-KYC button.',
+      icon: 'info',
+      confirmButtonText: 'OK',
+      allowOutsideClick: false
+    });
+
+
+    if (swalResult.isConfirmed) {
+      start_loader();
+      try {
+        // Use selectedOwner.id and selectedOwner.name
+        const OwnerNumber = selectedOwner.id;
+        const BOOK_APP_NO = 2;
+        const PROPERTY_CODE = 1;
+        const redirectSource = "RLS";
+        const EkycResponseUrl = `${config.redirectionTypeURL}`;
+        const LKRS_ID = parseInt(trimmedLKRSID, 10);
+
+        // Pass them to your API
+        const response = await ekyc_Details({
+          LKRS_ID,
+          OwnerNumber,
+          BOOK_APP_NO,
+          PROPERTY_CODE,
+          redirectSource, EkycResponseUrl
         });
 
-        if (swalResult.isConfirmed) {
-            start_loader();
-            try {
-                // Use selectedOwner.id and selectedOwner.name
-                const OwnerNumber = selectedOwner.id;
-                const BOOK_APP_NO = 2;
-                const PROPERTY_CODE = 1;
-                const redirectSource = "RLS";
-                const EkycResponseUrl = `${config.redirectionTypeURL}`;
-
-                // Pass them to your API
-                const response = await ekyc_Details({
-                    OwnerNumber,
-                    BOOK_APP_NO,
-                    PROPERTY_CODE,
-                    redirectSource, EkycResponseUrl
-                });
-
-                const resultUrl = response?.ekycRequestUrl;
-                sessionStorage.setItem("tranNo", response?.tranNo);
-                if (resultUrl) {
-                    window.open(
-                        resultUrl,
-                        '_blank',
-                        `toolbar=0,location=0,menubar=0,width=${window.screen.width},height=${window.screen.height},top=0,left=0`
-                    );
-                    stop_loader();
-                } else {
-                    stop_loader();
-                    Swal.fire('Error', 'No redirect URL returned', 'error');
-                }
-            } catch (error) {
-                Swal.fire('Error', 'eKYC API call failed', 'error');
-                console.error('eKYC API call failed:', error);
-                stop_loader();
-            }
-        }
-    };
-    const fetchEKYC_ResponseDetails = async (jdaRepName, txnno, ekycStatus) => {
-        let trimmedLKRSID = localLKRSID;
-        if (/^L\d+$/i.test(localLKRSID)) {
-            trimmedLKRSID = localLKRSID.substring(1);
-        }
-        const transaction_No = sessionStorage.getItem("tranNo");
-        if (transaction_No === txnno) {
-            try {
-                const payload = {
-                    transactionNumber: 83,
-                    OwnerType: 'NEWOWNER',
-                    ownName: jdaRepName,
-                };
-                const transactionNumber = 83;
-                const OwnerType = "NEWOWNER";
-
-                const response = await ekyc_Response(transactionNumber, OwnerType, jdaRepName);
-
-                if (response) {
-                    const score = response.nameMatchScore;
-                    const EkycNameMatch = `${config.rd_nameScore}`;
-                    if (score >= EkycNameMatch) {
-
-                        setOwnerData(response);
-
-                        const payloadReleaseOwner = {
-                            relsekyC_ID: 0,
-                            relsekyC_LKRS_ID: parseInt(trimmedLKRSID),
-                            relsekyC_Own_ID: selectedOwner.id,
-                            relsekyC_NAME_KN: "",
-                            relsekyC_NAME_EN: selectedOwner.name,
-                            relsekyC_MOBILENUMBER: "",
-                            relsekyC_AADHAARNUMBER: response?.ekycResponse?.maskedAadhaar ?? null,
-                            relsekyC_NAMEASINAADHAAR: response?.ekycResponse?.ownerNameEng ?? null,
-                            relsekyC_AADHAARVERISTATUS: ekycStatus,
-                            relsekyC_NAMEMATCHSCORE: response?.nameMatchScore,
-                            relsekyC_REMARKS: "",
-                            relsekyC_ADDITIONALINFO: "",
-                            relsekyC_CREATEDBY: CreatedBy,
-                            relsekyC_CREATEDNAME: CreatedName,
-                            relsekyC_CREATEDROLE: RoleID,
-                            relsekyC_TransactionNo: txnno,
-                            relsEkyc_AADHAAR_RESPONSE: JSON.stringify(response) ?? null,
-                        };
-                        try {
-                            start_loader();
-                            const insert_response = await ekyc_insertReleaseDetails(payloadReleaseOwner);
-
-                            if (insert_response.responseStatus === true) {
-                                setEKYC_Status(true);
-                                setIsEKYCVerified(true);
-                                setIsEKYCCompleted(true);
-                                Swal.fire({
-                                    text: insert_response.responseMessage,
-                                    icon: "success",
-                                    confirmButtonText: "OK",
-                                    allowOutsideClick: false, // prevents closing on outside click
-                                });
-                                stop_loader();
-                            } else {
-                                setEKYC_Status(false);
-                                setIsEKYCVerified(false);
-                                setIsEKYCCompleted(false);
-                                Swal.fire({
-                                    text: insert_response.responseMessage,
-                                    icon: "error",
-                                    confirmButtonText: "OK",
-                                });
-                                stop_loader();
-                            }
-
-                        } catch (error) {
-                            console.error("Failed to insert data:", error);
-                        } finally {
-                            stop_loader();
-                        }
-                    } else {
-                        setIsEKYCVerified(false); // Optional, but ensures clarity
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Name Mismatch',
-                            text: 'The name in the Aadhaar and the selected owner’s name do not match. Please verify the details to proceed with eKYC.',
-                            confirmButtonColor: '#d33'
-                        });
-                    }
-
-
-                }
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            } finally {
-
-            }
+        const resultUrl = response?.ekycRequestUrl;
+        sessionStorage.setItem("tranNo", response?.tranNo);
+        if (resultUrl) {
+          window.open(
+            resultUrl,
+            '_blank',
+            `toolbar=0,location=0,menubar=0,width=${window.screen.width},height=${window.screen.height},top=0,left=0`
+          );
+          stop_loader();
         } else {
+          stop_loader();
+          Swal.fire('Error', 'No redirect URL returned', 'error');
+        }
+      } catch (error) {
+        Swal.fire('Error', 'Something went wrong, Please try again later!', 'error');
+        console.error('eKYC API call failed:', error);
+        stop_loader();
+      }
+    }
+  };
+  const fetchEKYC_ResponseDetails = async (ownerNo, ownerName, txnno, ekycStatus) => {
+    let trimmedLKRSID = localLKRSID;
+    if (/^L\d+$/i.test(localLKRSID)) {
+      trimmedLKRSID = localLKRSID.substring(1);
+    }
+    const transaction_No = sessionStorage.getItem("tranNo");
+    if (transaction_No === txnno) {
+      try {
+        const payload = {
+          transactionNumber: 83,
+          OwnerType: 'NEWOWNER',
+          ownName: ownerName,
+        };
+        const transactionNumber = 83;
+        const OwnerType = "NEWOWNER";
+
+        const redirectSource = "RLS";
+
+        const response = await ekyc_Response(transactionNumber, OwnerType, ownerName,  ownerNo, trimmedLKRSID, redirectSource);
+
+        if (response) {
+          const score = response.nameMatchScore;
+          const EkycNameMatch = `${config.rd_nameScore}`;
+          // if (score >= EkycNameMatch) {
+            if(response.vaultIdisPresent === true){
+
+            setOwnerData(response);
+
+            const payloadReleaseOwner = {
+              relsekyC_ID: 0,
+              relsekyC_LKRS_ID: parseInt(trimmedLKRSID),
+              relsekyC_Own_ID: selectedOwner.id,
+              relsekyC_NAME_KN: "",
+              relsekyC_NAME_EN: selectedOwner.name,
+              relsekyC_MOBILENUMBER: "",
+              relsekyC_AADHAARNUMBER: response?.ekycResponse?.maskedAadhaar ?? null,
+              relsekyC_NAMEASINAADHAAR: response?.ekycResponse?.ownerNameEng ?? null,
+              relsekyC_AADHAARVERISTATUS: ekycStatus,
+              relsekyC_NAMEMATCHSCORE: response?.nameMatchScore,
+              relsekyC_REMARKS: "",
+              relsekyC_ADDITIONALINFO: "",
+              relsekyC_CREATEDBY: CreatedBy,
+              relsekyC_CREATEDNAME: CreatedName,
+              relsekyC_CREATEDROLE: RoleID,
+              relsekyC_TransactionNo: txnno,
+              relsEkyc_AADHAAR_RESPONSE: JSON.stringify(response) ?? null,
+            };
+            try {
+              start_loader();
+              const insert_response = await ekyc_insertReleaseDetails(payloadReleaseOwner);
+
+              if (insert_response.responseStatus === true) {
+                setEKYC_Status(true);
+                setIsEKYCVerified(true);
+                setIsEKYCCompleted(true);
+                Swal.fire({
+                  text: insert_response.responseMessage,
+                  icon: "success",
+                  confirmButtonText: "OK",
+                  allowOutsideClick: false, // prevents closing on outside click
+                });
+                stop_loader();
+              } else {
+                setEKYC_Status(false);
+                setIsEKYCVerified(false);
+                setIsEKYCCompleted(false);
+                Swal.fire({
+                  text: insert_response.responseMessage,
+                  icon: "error",
+                  confirmButtonText: "OK",
+                });
+                stop_loader();
+              }
+
+            } catch (error) {
+              console.error("Failed to insert data:", error);
+            } finally {
+              stop_loader();
+            }
+          } else {
+            setIsEKYCVerified(false); // Optional, but ensures clarity
+            Swal.fire({
+              icon: 'error',
+              title: 'Name Mismatch',
+              text: 'The name in the Aadhaar and the selected owner’s name do not match. Please verify the details to proceed with eKYC.',
+              confirmButtonColor: '#d33'
+            });
+          }
+
 
         }
-    };
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+
+      }
+    } else {
+
+    }
+  };
     const handleBackToDashboard = (e) => {
         e.preventDefault(); // Prevents the default anchor tag behavior
         navigate("/LayoutDashboard");
@@ -2644,7 +2655,7 @@ const ReleaseDashboard = () => {
                                             <th style={thStyle}>Approval Authority</th>
                                             <th style={thStyle}>Designation of Authority issued </th>
                                             <th style={thStyle}>Total Number of sites </th>
-                                            <th style={thStyle}>Release Type</th>
+                                            <th style={thStyle} hidden>Release Type</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -2657,7 +2668,7 @@ const ReleaseDashboard = () => {
                                                 <td style={tdStyle}>{item.apR_APPROVALAUTHORITY_Text}</td>
                                                 <td style={tdStyle}>{item.apR_APPROVALDESIGNATION}</td>
                                                 <td style={tdStyle}>{item.lkrS_NUMBEROFSITES}</td>
-                                                <td style={tdStyle}>{item.sitE_RELS_SITE_RELSTYPE}</td>
+                                                <td style={tdStyle} hidden>{item.sitE_RELS_SITE_RELSTYPE}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -2747,7 +2758,7 @@ const ReleaseDashboard = () => {
                                                     name="layoutOrderNumber"  // <-- Corrected here
                                                     value={release_formData.layoutOrderNumber}
                                                     onChange={handleOrderChange}
-                                                    disabled={!isOrder_EditingArea}
+                                                    // disabled={!isOrder_EditingArea}
                                                 />
                                                 {release_errors.layoutOrderNumber && (
                                                     <small className="text-danger">{release_errors.layoutOrderNumber}</small>
@@ -2768,7 +2779,7 @@ const ReleaseDashboard = () => {
                                                     value={release_formData.dateOfOrder}
                                                     max={new Date().toISOString().split("T")[0]}
                                                     onChange={handleOrderChange}
-                                                    disabled={!isOrder_EditingArea} // Disable when not editing
+                                                    // disabled={!isOrder_EditingArea} // Disable when not editing
                                                 />
                                                 {release_errors.dateOfOrder && (
                                                     <small className="text-danger">{release_errors.dateOfOrder}</small>
@@ -2788,7 +2799,7 @@ const ReleaseDashboard = () => {
                                                     className="form-control"
                                                     onChange={handleFilereleaseOrderChange}
                                                     ref={fileReleaseOrderInputRef}
-                                                    disabled={!isOrder_EditingArea} // Disable when not editing
+                                                    // disabled={!isOrder_EditingArea} // Disable when not editing
                                                 />
                                                 {release_formData.release_Order && releaseOrderURL && (
                                                     <div className="mt-2">
@@ -2852,7 +2863,7 @@ const ReleaseDashboard = () => {
                                                     name="orderAuthority"
                                                     value={release_formData.orderAuthority}
                                                     onChange={handleOrderChange}
-                                                    disabled={!isOrder_EditingArea} // Disable when not editing
+                                                    // disabled={!isOrder_EditingArea} // Disable when not editing
                                                 />
                                                 {release_errors.orderAuthority && (
                                                     <small className="text-danger">{release_errors.orderAuthority}</small>
@@ -2864,7 +2875,9 @@ const ReleaseDashboard = () => {
                                         <div className='col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10'></div>
                                         <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 ">
                                             <div className="form-group">
-                                                <button className="btn btn-success btn-block" onClick={handleOrderSave} disabled={!isOrder_EditingArea}>
+                                                <button className="btn btn-success btn-block" onClick={handleOrderSave} 
+                                                // disabled={!isOrder_EditingArea}
+                                                >
                                                     Save and continue
                                                 </button>
                                             </div>

@@ -487,9 +487,9 @@ export const jdaEKYC_Details = async (level, LKRSID) => {
 };
 
 //DO EKYC API
-export const ekyc_Details = async ({ OwnerNumber, BOOK_APP_NO, PROPERTY_CODE, redirectSource, EkycResponseUrl }) => {
+export const ekyc_Details = async ({ LKRS_ID, OwnerNumber, BOOK_APP_NO, PROPERTY_CODE, redirectSource, EkycResponseUrl }) => {
   try {
-    const query = `?OwnerNumber=${OwnerNumber}&BOOK_APP_NO=${BOOK_APP_NO}&PROPERTY_CODE=${PROPERTY_CODE}&redirectSource=${redirectSource}&EkycResponseUrl=${EkycResponseUrl}`;
+    const query = `?LKRS_ID=${LKRS_ID}&OwnerNumber=${OwnerNumber}&BOOK_APP_NO=${BOOK_APP_NO}&PROPERTY_CODE=${PROPERTY_CODE}&redirectSource=${redirectSource}&EkycResponseUrl=${EkycResponseUrl}`;
     const url = config.endpoints.ekyc_request + query;
 
     const response = await apiService.postRequest(url); // No payload needed
@@ -500,7 +500,7 @@ export const ekyc_Details = async ({ OwnerNumber, BOOK_APP_NO, PROPERTY_CODE, re
   }
 };
 //EKYC Resposne API
-export const ekyc_Response = async (transactionNumber, OwnerType, ownName) => {
+export const ekyc_Response = async (transactionNumber, OwnerType,  ownerName, ownerNo, LKRS_ID, redirectSource) => {  
   try {
     // const queryParams = new URLSearchParams({
     //   transactionNumber: payload.transactionNumber,
@@ -510,7 +510,7 @@ export const ekyc_Response = async (transactionNumber, OwnerType, ownName) => {
 
     // const url = `${config.endpoints.ekyc_response}?${queryParams}`;
 
-    const query = `?transactionNumber=${transactionNumber}&OwnerType=${OwnerType}&ownName=${ownName}`;
+    const query = `?LKRS_ID=${LKRS_ID}&OwnerNumber=${ownerNo}&transactionNumber=${transactionNumber}&OwnerType=${OwnerType}&ownName=${ownerName}&redirectSource=${redirectSource}`;
     const url = config.endpoints.ekyc_response + query;
 
 

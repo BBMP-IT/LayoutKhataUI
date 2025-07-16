@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useRef, useContext  } from 'react';
+import React, { useEffect, useState, useRef, useContext } from 'react';
 import ReactDOM from 'react-dom';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import DashboardLayout, { LoaderContext }  from '../../Layout/DashboardLayout';
+import DashboardLayout, { LoaderContext } from '../../Layout/DashboardLayout';
 import { useTranslation } from "react-i18next";
 import i18n from "../../localization/i18n";
 import SAS_Sample from '../../assets/Sample_SAS_APPLICATIONNO.jpeg';
@@ -32,10 +32,11 @@ import Owner_EKYCBlock from './Owner_EKYCBlock';
 import ECDetailsBlock from './ECDetailsBlock';
 import Preview_siteDetailsTable from './Preview_siteDetailsTable';
 import IndividualGPSBlock from './IndividualGPSBlock';
-
 import usericon from '../../assets/usericon.png';
 import { Cookie, Stop } from '@mui/icons-material';
 import { responsiveProperty } from '@mui/material/styles/cssUtils';
+import { ModalContext } from '../../Layout/ModalContext';
+
 
 
 export const useLoader = () => {
@@ -49,9 +50,9 @@ export const useLoader = () => {
 
 
 const BBMP_LayoutForm = () => {
-    
-   const { loading, start_loader, stop_loader } = useContext(LoaderContext);
-    
+
+    const { loading, start_loader, stop_loader } = useContext(LoaderContext);
+
     const navigate = useNavigate();
     // const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
     const [zoomLevel] = useState(0.9);
@@ -59,10 +60,10 @@ const BBMP_LayoutForm = () => {
     const location = useLocation();
     const { LKRSID, DISPLAYLKRSID } = location.state || {};
 
-useEffect(() => {
-    start_loader(); // test
-    setTimeout(() => stop_loader(), 3000); // simulate load
-  }, []);
+    useEffect(() => {
+        start_loader(); // test
+        setTimeout(() => stop_loader(), 3000); // simulate load
+    }, []);
 
 
     const [siteData, setSiteData] = useState([]);
@@ -195,123 +196,123 @@ useEffect(() => {
     };
     return (
         <>
-            
+
 
             {/* <DashboardLayout> */}
             {/* {loading && <Loader />}
                 <div className={`layout-form-container ${loading ? 'no-interaction' : ''}`}> */}
-                    <div className="my-3 my-md-5">
-                        <div className="container mt-6">
-                            <button
-                                onClick={handleBackToDashboard}
-                                style={{
-                                    position: 'fixed',
-                                    bottom: '20px',
-                                    left: '20px',
-                                    background: 'linear-gradient(45deg, #023e8a, #0077b6)',
-                                    color: '#fff',
-                                    border: 'none',
-                                    borderRadius: '50px',
-                                    padding: '10px 20px',
-                                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    cursor: 'pointer',
-                                    zIndex: 999,
-                                }}
-                            >
-                                <i className="fa fa-arrow-left" style={{ marginRight: '8px' }}></i>
-                            </button>
+            <div className="my-3 my-md-5">
+                <div className="container mt-6">
+                    <button
+                        onClick={handleBackToDashboard}
+                        style={{
+                            position: 'fixed',
+                            bottom: '20px',
+                            left: '20px',
+                            background: 'linear-gradient(45deg, #023e8a, #0077b6)',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '50px',
+                            padding: '10px 20px',
+                            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            cursor: 'pointer',
+                            zIndex: 999,
+                        }}
+                    >
+                        <i className="fa fa-arrow-left" style={{ marginRight: '8px' }}></i>
+                    </button>
 
-                            <div className="card">
-                                <div className="card-header layout_btn_color" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <h5 className="card-title" style={{ margin: 0 }}>Bulk eKhata for layout to Owner / Developer</h5>
-                                    <h5 style={{ color: '#fff' }}>KRSID : {display_LKRS_ID}</h5>
+                    <div className="card">
+                        <div className="card-header layout_btn_color" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <h5 className="card-title" style={{ margin: 0 }}>Bulk eKhata for layout to Owner / Developer</h5>
+                            <h5 style={{ color: '#fff' }}>KRSID : {display_LKRS_ID}</h5>
+                        </div>
+
+                        <div className="card-body">
+
+                            <div className="row mt-3">
+                                <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+                                    <h6>What is the type of Land on which layout is formed</h6>
                                 </div>
 
-                                <div className="card-body">
-
-                                    <div className="row mt-3">
-                                        <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
-                                            <h6>What is the type of Land on which layout is formed</h6>
-                                        </div>
-
-                                        {/* First Radio Button */}
-                                        <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mt-3" >
-                                            <div className="form-check">
-                                                <label className="form-check-label">
-                                                    <input
-                                                        className="form-check-input radioStyle"
-                                                        type="radio"
-                                                        name="landType"
-                                                        value="convertedRevenue"
-                                                        onChange={() => setSelectedLandType("convertedRevenue")}
-                                                        checked={selectedLandType === "convertedRevenue"}
-                                                        disabled={isEPIDSectionDisabled || isSurveyNoSectionDisabled}
-                                                    />
-                                                    Converted Revenue Survey Number (No BBMP Khata)
-                                                </label>
-                                            </div>
-                                        </div>
-                                        {/* Second Radio Button */}
-                                        <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mt-3">
-                                            <div className="form-check">
-                                                <label className="form-check-label">
-                                                    <input
-                                                        className="form-check-input radioStyle"
-                                                        type="radio"
-                                                        name="landType"
-                                                        value="bbmpKhata"
-                                                        onChange={() => setSelectedLandType("bbmpKhata")}
-                                                        checked={selectedLandType === "bbmpKhata"}
-                                                        disabled={isEPIDSectionDisabled || isSurveyNoSectionDisabled}
-                                                    />
-                                                    BBMP A-Khata</label>
-                                            </div>
-                                        </div>
-
-                                        {/* Section for First Radio Button */}
-                                        {/* Section for BBMP A-Khata Selection */}
-                                        {selectedLandType === "bbmpKhata" && (
-                                            <BBMPKhata onDisableEPIDSection={() => { setIsEPIDSectionDisabled(true); setIsSurveyNoSectionDisabled(true) }} setAreaSqft={setAreaSqft} setLKRS_ID={setLKRS_ID}
-                                                LKRS_ID={LKRS_ID} setDisplay_LKRS_ID={setDisplay_LKRS_ID} setIsEPIDSectionSaved={setIsEPIDSectionSaved} setOwnerName={setOwnerName} />
-                                        )}
-
-                                        {/* Section for Second Radio Button */}
-                                        {selectedLandType === "convertedRevenue" && (
-                                            <NoBBMPKhata setAreaSqft={setAreaSqft} Language={newLanguage} rtc_AddedData={rtc_AddedData}
-                                                setRtc_AddedData={setRtc_AddedData} setOrderDetails={setOrderDetails}
-                                                onDisableEPIDSection={() => { setIsEPIDSectionDisabled(true); setIsSurveyNoSectionDisabled(true) }} LKRS_ID={LKRS_ID}
-                                                setDisplay_LKRS_ID={setDisplay_LKRS_ID} setLKRS_ID={setLKRS_ID} setIsRTCSectionSaved={setIsRTCSectionSaved} setOwnerName={setOwnerName} />
-
-                                        )}
-
+                                {/* First Radio Button */}
+                                <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mt-3" >
+                                    <div className="form-check">
+                                        <label className="form-check-label">
+                                            <input
+                                                className="form-check-input radioStyle"
+                                                type="radio"
+                                                name="landType"
+                                                value="convertedRevenue"
+                                                onChange={() => setSelectedLandType("convertedRevenue")}
+                                                checked={selectedLandType === "convertedRevenue"}
+                                                disabled={isEPIDSectionDisabled || isSurveyNoSectionDisabled}
+                                            />
+                                            Converted Revenue Survey Number (No BBMP Khata)
+                                        </label>
                                     </div>
                                 </div>
+                                {/* Second Radio Button */}
+                                <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mt-3">
+                                    <div className="form-check">
+                                        <label className="form-check-label">
+                                            <input
+                                                className="form-check-input radioStyle"
+                                                type="radio"
+                                                name="landType"
+                                                value="bbmpKhata"
+                                                onChange={() => setSelectedLandType("bbmpKhata")}
+                                                checked={selectedLandType === "bbmpKhata"}
+                                                disabled={isEPIDSectionDisabled || isSurveyNoSectionDisabled}
+                                            />
+                                            BBMP A-Khata</label>
+                                    </div>
+                                </div>
+
+                                {/* Section for First Radio Button */}
+                                {/* Section for BBMP A-Khata Selection */}
+                                {selectedLandType === "bbmpKhata" && (
+                                    <BBMPKhata onDisableEPIDSection={() => { setIsEPIDSectionDisabled(true); setIsSurveyNoSectionDisabled(true) }} setAreaSqft={setAreaSqft} setLKRS_ID={setLKRS_ID}
+                                        LKRS_ID={LKRS_ID} setDisplay_LKRS_ID={setDisplay_LKRS_ID} setIsEPIDSectionSaved={setIsEPIDSectionSaved} setOwnerName={setOwnerName} />
+                                )}
+
+                                {/* Section for Second Radio Button */}
+                                {selectedLandType === "convertedRevenue" && (
+                                    <NoBBMPKhata setAreaSqft={setAreaSqft} Language={newLanguage} rtc_AddedData={rtc_AddedData}
+                                        setRtc_AddedData={setRtc_AddedData} setOrderDetails={setOrderDetails}
+                                        onDisableEPIDSection={() => { setIsEPIDSectionDisabled(true); setIsSurveyNoSectionDisabled(true) }} LKRS_ID={LKRS_ID}
+                                        setDisplay_LKRS_ID={setDisplay_LKRS_ID} setLKRS_ID={setLKRS_ID} setIsRTCSectionSaved={setIsRTCSectionSaved} setOwnerName={setOwnerName} />
+
+                                )}
+
                             </div>
-                            {selectedLandType === "convertedRevenue" && (
-                                <DCConversion LKRS_ID={LKRS_ID} isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} />
-                            )}
-
-
-                            <BDA approval_details={approval_details} setApprovalDetails={setApprovalDetails}
-                                order_details={order_details} setOrderDetails={setOrderDetails} LKRS_ID={LKRS_ID}
-                                isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsApprovalSectionSaved={setIsApprovalSectionSaved}
-                                setIsReleaseSectionSaved={setIsReleaseSectionSaved} setTotalNoofsites={setTotalNoofsites} />
-
-                            {/* {totalNoofsites > 0 && ( */}
-                                <IndividualGPSBlock areaSqft={areaSqft} LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID} totalNoofsites={totalNoofsites}
-                                    isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsSitesSectionSaved={setIsSitesSectionSaved} ownerName={ownerName} />
-                            {/* )} */}
-                            <ECDetailsBlock LKRS_ID={LKRS_ID} isRTCSectionSaved={isRTCSectionSaved} ownerName={ownerName} isEPIDSectionSaved={isEPIDSectionSaved} setIsECSectionSaved={setIsECSectionSaved}
-                                landDetails={landDetails} setValidate_OwnerDataList={setValidate_OwnerDataList} setIsOwnerEKYCSectionSaved={setIsOwnerEKYCSectionSaved} setIsJDAEKYCSectionSaved={setIsJDAEKYCSectionSaved} />
-
-                            <DeclarationBlock LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID} display_LKRS_ID={display_LKRS_ID} isRTCSectionSaved={isRTCSectionSaved}
-                                isEPIDSectionSaved={isEPIDSectionSaved} isApprovalSectionSaved={isApprovalSectionSaved} isReleaseSectionSaved={isReleaseSectionSaved} validate_ownerDataList={validate_ownerDataList}
-                                isSitesSectionSaved={isSitesSectionSaved} isECSectionSaved={isECSectionSaved} isJDAEKYCSectionSaved={isJDAEKYCSectionSaved} isOwnerEKYCSectionSaved={isOwnerEKYCSectionSaved} />
                         </div>
                     </div>
-                {/* </div> */}
+                    {selectedLandType === "convertedRevenue" && (
+                        <DCConversion LKRS_ID={LKRS_ID} isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} />
+                    )}
+
+
+                    <BDA approval_details={approval_details} setApprovalDetails={setApprovalDetails}
+                        order_details={order_details} setOrderDetails={setOrderDetails} LKRS_ID={LKRS_ID}
+                        isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsApprovalSectionSaved={setIsApprovalSectionSaved}
+                        setIsReleaseSectionSaved={setIsReleaseSectionSaved} setTotalNoofsites={setTotalNoofsites} />
+
+                    {/* {totalNoofsites > 0 && ( */}
+                    <IndividualGPSBlock areaSqft={areaSqft} LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID} totalNoofsites={totalNoofsites}
+                        isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsSitesSectionSaved={setIsSitesSectionSaved} ownerName={ownerName} />
+                    {/* )} */}
+                    <ECDetailsBlock LKRS_ID={LKRS_ID} isRTCSectionSaved={isRTCSectionSaved} ownerName={ownerName} isEPIDSectionSaved={isEPIDSectionSaved} setIsECSectionSaved={setIsECSectionSaved}
+                        landDetails={landDetails} setValidate_OwnerDataList={setValidate_OwnerDataList} setIsOwnerEKYCSectionSaved={setIsOwnerEKYCSectionSaved} setIsJDAEKYCSectionSaved={setIsJDAEKYCSectionSaved} />
+
+                    <DeclarationBlock LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID} display_LKRS_ID={display_LKRS_ID} isRTCSectionSaved={isRTCSectionSaved}
+                        isEPIDSectionSaved={isEPIDSectionSaved} isApprovalSectionSaved={isApprovalSectionSaved} isReleaseSectionSaved={isReleaseSectionSaved} validate_ownerDataList={validate_ownerDataList}
+                        isSitesSectionSaved={isSitesSectionSaved} isECSectionSaved={isECSectionSaved} isJDAEKYCSectionSaved={isJDAEKYCSectionSaved} isOwnerEKYCSectionSaved={isOwnerEKYCSectionSaved} />
+                </div>
+            </div>
+            {/* </div> */}
             {/* </DashboardLayout> */}
 
         </>
@@ -321,7 +322,7 @@ useEffect(() => {
 const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, setDisplay_LKRS_ID, setIsRTCSectionSaved, setOwnerName }) => {
 
     const { loading, start_loader, stop_loader } = useContext(LoaderContext);
-
+    const { showModal, setModalContent, setModalTitle } = useContext(ModalContext);
     // const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
     const [language, setLanguage] = useState(sessionStorage.getItem("selectedLanguage"));
     const { t, i18n } = useTranslation();
@@ -645,12 +646,202 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
     };
     //final RTC details table
     const tableRTCRef = useRef(null);
-   
-    // const handleViewRTC = (item) => {
-    //     // Always get all owners related to the same main_owner_no
-    //     const ownersToAdd = data.filter(o => o.main_owner_no === item.main_owner_no);
 
-    //     // Remove duplicates
+
+
+    //First block save API
+
+    //     const handleViewRTC = async (item) => {
+    //   const ownersToAdd = data.filter(o => o.main_owner_no === item.main_owner_no);
+
+    //   const newOwners = ownersToAdd.filter((ownerItem) => {
+    //     return !rtcAddedData.some(
+    //       (data) =>
+    //         data.survey_no === ownerItem.survey_no &&
+    //         data.surnoc === ownerItem.surnoc &&
+    //         data.hissa_no === ownerItem.hissa_no &&
+    //         data.owner === ownerItem.owner &&
+    //         data.father === ownerItem.father &&
+    //         data.owner_no === ownerItem.owner_no
+    //     );
+    //   });
+
+    //   if (newOwners.length === 0) {
+    //     Swal.fire('Duplicate!', 'All selected records already exist in the table.', 'warning');
+    //     return;
+    //   }
+
+    //   const { value: formValues } = await Swal.fire({
+    //     title: `Survey Number/Surnoc/Hissa No: ${item.survey_no}/${item.surnoc}/${item.hissa_no}`,
+    //     html: `
+    //       <div style="margin-top: 20px;">
+    //         <div class="row">
+    //           <div class="col-md-3">
+    //             <label class="form-label mt-4" style="text-align: left;">Total Extent</label>
+    //           </div>
+
+    //           <div class="col-md-3">
+    //             <input type="tel" class="form-control" id="total_acre" placeholder="Acre" />
+    //           </div>
+
+    //           <div class="col-md-3">
+    //             <input type="tel" class="form-control" id="total_gunta" placeholder="Gunta" />
+    //           </div>
+
+    //           <div class="col-md-3">
+    //             <input type="tel" class="form-control" id="total_fgunta" placeholder="FGunta" />
+    //           </div>
+
+    //           <div class="col-md-3 mt-4">
+    //             <label class="form-label" style="text-align: left;">BDA Approved Extent</label>
+    //           </div>
+
+    //           <div class="col-md-3">
+    //             <input type="tel" class="form-control" id="bda_acre" placeholder="Acre" />
+    //           </div>
+
+    //           <div class="col-md-3">
+    //             <input type="tel" class="form-control" id="bda_gunta" placeholder="Gunta" />
+    //           </div>
+
+    //           <div class="col-md-3">
+    //             <input type="tel" class="form-control" id="bda_fgunta" placeholder="FGunta" />
+    //           </div>
+    //         </div>
+    //       </div>
+    //     `,
+    //     showCancelButton: true,
+    //     confirmButtonText: 'Save',
+    //     cancelButtonText: 'Cancel',
+    //     customClass: {
+    //       popup: 'swal2-xl'
+    //     },
+    //     focusConfirm: false,
+    //     preConfirm: () => {
+    //       return {
+    //         totalAcre: document.getElementById('total_acre')?.value,
+    //         totalGunta: document.getElementById('total_gunta')?.value,
+    //         totalFGunta: document.getElementById('total_fgunta')?.value,
+    //         bdaAcre: document.getElementById('bda_acre')?.value,
+    //         bdaGunta: document.getElementById('bda_gunta')?.value,
+    //         bdaFGunta: document.getElementById('bda_fgunta')?.value
+    //       };
+    //     }
+    //   });
+
+    //   if (formValues) {
+    //     const selectedDistrictObj = districts.find(d => String(d.districT_CODE) === String(selectedDistrict)) || {};
+    //     const selectedTalukObj = taluks.find(t => String(t.talukA_CODE) === String(selectedTaluk)) || {};
+    //     const selectedHobliObj = hoblis.find(h => String(h.hoblI_CODE) === String(selectedHobli)) || {};
+    //     const selectedVillageObj = villages.find(v => String(v.villagE_CODE) === String(selectedVillage)) || {};
+
+    //     const locationData = {
+    //       district: selectedDistrictObj.districT_NAME || '',
+    //       districtCode: selectedDistrictObj.districT_CODE || '',
+    //       taluk: selectedTalukObj.displayName || '',
+    //       talukCode: selectedTalukObj.talukA_CODE || '',
+    //       hobli: selectedHobliObj.displayName || '',
+    //       hobliCode: selectedHobliObj.hoblI_CODE || '',
+    //       village: selectedVillageObj.displayName || '',
+    //       villageCode: selectedVillageObj.villagE_CODE || '',
+    //       ...formValues
+    //     };
+
+    //     const ownersWithLocation = newOwners.map(o => ({
+    //       ...o,
+    //       ...locationData
+    //     }));
+
+    //     setRtcAddedData(prev => [...prev, ...ownersWithLocation]);
+
+    //     toast.success(`${ownersWithLocation.length} record(s) added!`);
+
+    //     setTimeout(() => {
+    //       tableRTCRef.current?.scrollIntoView({
+    //         behavior: 'smooth',
+    //         block: 'nearest',
+    //       });
+    //     }, 300);
+    //   }
+    // };
+
+    const [showRTCModal, setShowRTCModal] = useState(false);
+    const [selectedItem, setSelectedItem] = useState(null);
+
+
+    const [total_Acre, setTotal_Acre] = useState('');
+    const [total_Gunta, setTotal_Gunta] = useState('');
+    const [total_FGunta, setTotal_FGunta] = useState('');
+    const [bdaAcre, setBdaAcre] = useState('');
+    const [bdaGunta, setBdaGunta] = useState('');
+    const [bdaFGunta, setBdaFGunta] = useState('');
+
+    const [aKharabAcre, setAKharabAcre] = useState('');
+    const [aKharabGunta, setAKharabGunta] = useState('');
+    const [aKharabFGunta, setAKharabFGunta] = useState('');
+    const [bdaAKharabAcre, setBdaAKharabAcre] = useState('');
+    const [bdaAKharabGunta, setBdaAKharabGunta] = useState('');
+    const [bdaAKharabFGunta, setBdaAKharabFGunta] = useState('');
+    const [uploaded_File, setUploaded_File] = useState(null);
+
+    const [isAKharabIncluded, setIsAKharabIncluded] = useState("");
+    const isAKharabIncludedRef = useRef(null);
+    const [isAKharabIncludedError, setIsAKharabIncludedError] = useState("");
+
+
+    const handleShowModal = () => {
+        setModalTitle(
+            <h5>
+                <span style={{ backgroundColor: 'yellow', padding: '2px 6px' }}>
+                    Survey Number/Surnoc/Hissa No Details :
+                </span>&nbsp;3/*/2
+            </h5>
+        );
+
+        setModalContent(
+         <div>welcome</div>
+        );
+
+        showModal();
+    };
+  const handleClick = () => {
+    setModalTitle('Fill This Form');
+    setModalContent(<MyFormComponent />);
+    showModal();
+  };
+
+    const [pendingRTCData, setPendingRTCData] = useState([]);
+
+
+    useEffect(() => {
+        setIsAKharabIncluded("1"); // ✅ this selects "Yes"
+    }, []);
+
+    useEffect(() => {
+        console.log("Dropdown value:", isAKharabIncluded);
+    }, [isAKharabIncluded]);
+
+
+const [showModal1, setShowModal1] = useState(false);
+  const handleChange = (value) => {
+    const newValue = value === "1" ? true : value === "2" ? false : "";
+    setIsAKharabIncluded(newValue);
+
+    if (value === "1") {
+      setShowModal1(true);
+    } else {
+      setShowModal1(false);
+    }
+  };
+
+//modal popup
+    // const handleViewRTC = async (item) => {
+    //     const mainOwnerNo = item.main_owner_no;
+
+    //     // Get all owners under this main owner
+    //     const ownersToAdd = data.filter(o => o.main_owner_no === mainOwnerNo);
+
+    //     // Filter out already added owners
     //     const newOwners = ownersToAdd.filter((ownerItem) => {
     //         return !rtcAddedData.some(
     //             (data) =>
@@ -664,11 +855,20 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
     //     });
 
     //     if (newOwners.length === 0) {
-    //         Swal.fire("Duplicate!", "All selected records already exist in the table.", "warning");
+    //         Swal.fire('Duplicate!', 'All selected records already exist in the table.', 'warning');
     //         return;
     //     }
 
-    //     // Prepare location data
+    //     // Remove duplicate survey entries
+    //     const seenSurveyKeys = new Set();
+    //     const uniqueSurveyOwners = newOwners.filter(o => {
+    //         const key = `${o.survey_no}-${o.surnoc}-${o.hissa_no}`;
+    //         if (seenSurveyKeys.has(key)) return false;
+    //         seenSurveyKeys.add(key);
+    //         return true;
+    //     });
+
+    //     // Location mapping
     //     const selectedDistrictObj = districts.find(d => String(d.districT_CODE) === String(selectedDistrict)) || {};
     //     const selectedTalukObj = taluks.find(t => String(t.talukA_CODE) === String(selectedTaluk)) || {};
     //     const selectedHobliObj = hoblis.find(h => String(h.hoblI_CODE) === String(selectedHobli)) || {};
@@ -682,144 +882,207 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
     //         hobli: selectedHobliObj.displayName || '',
     //         hobliCode: selectedHobliObj.hoblI_CODE || '',
     //         village: selectedVillageObj.displayName || '',
-    //         villageCode: selectedVillageObj.villagE_CODE || ''
+    //         villageCode: selectedVillageObj.villagE_CODE || '',
     //     };
 
-    //     // Add new owners with location
-    //     const ownersWithLocation = newOwners.map(o => ({
+    //     const ownersWithLocation = uniqueSurveyOwners.map(o => ({
     //         ...o,
-    //         ...locationData
+    //         ...locationData,
     //     }));
 
-    //     setRtcAddedData(prev => [...prev, ...ownersWithLocation]);
+    //     const mainOwnerRecord = data.find(
+    //         o => o.main_owner_no === mainOwnerNo && o.owner_no === mainOwnerNo
+    //     );
 
-    //     toast.success(`${ownersWithLocation.length} record(s) added!`);
+    //     // Clear state before update
+    //     // setTotal_Acre('');
+    //     // setTotal_Gunta('');
+    //     // setTotal_FGunta('');
 
-    //     setTimeout(() => {
-    //         tableRTCRef.current?.scrollIntoView({
-    //             behavior: 'smooth',
-    //             block: 'nearest',
-    //         });
-    //     }, 300);
+    //     // setTimeout(() => {
+    //     //     let updatedAcre = '';
+    //     //     let updatedGunta = '';
+    //     //     let updatedFGunta = '';
+
+    //     //     if (mainOwnerRecord) {
+    //     //         updatedAcre = mainOwnerRecord.ext_acre ?? '';
+    //     //         updatedGunta = mainOwnerRecord.ext_gunta ?? '';
+    //     //         updatedFGunta = mainOwnerRecord.ext_fgunta ?? '';
+
+    //     //         setTotal_Acre(updatedAcre);
+    //     //         setTotal_Gunta(updatedGunta);
+    //     //         setTotal_FGunta(updatedFGunta);
+    //     //     }
+
+    //     //     setPendingRTCData(ownersWithLocation);
+
+    //     //     const formattedDetails = ownersWithLocation
+    //     //         .map(o => `${o.survey_no}/${o.surnoc}/${o.hissa_no}`)
+    //     //         .join(', ');
+
+    //     //     setModalTitle(`Survey Number/Surnoc/Hissa No Details: ${formattedDetails}`);
+
+    //     //     setModalContent(() => (
+    //     //         <div className="row mt-3">
+    //     //             {/* Total Extent */}
+    //     //             <div className="col-md-3"><label>Total Extent:<span className="text-danger">*</span></label></div>
+    //     //             <div className="col-md-3">
+    //     //                 <input type="text" placeholder="Acre" className="form-control" value={updatedAcre} readOnly />
+    //     //             </div>
+    //     //             <div className="col-md-3">
+    //     //                 <input type="text" placeholder="Gunta" className="form-control" value={updatedGunta} readOnly />
+    //     //             </div>
+    //     //             <div className="col-md-3">
+    //     //                 <input type="text" placeholder="FGunta" className="form-control" value={updatedFGunta} readOnly />
+    //     //             </div>
+
+    //     //             {/* BDA Approved Extent */}
+    //     //             <div className="col-md-3 mt-3"><label>BDA Approved Extent:<span className="text-danger">*</span></label></div>
+    //     //             <div className="col-md-3">
+    //     //                 <input type="text" placeholder="Acre" className="form-control" value={bdaAcre} onChange={(e) => setBdaAcre(e.target.value)} />
+    //     //             </div>
+    //     //             <div className="col-md-3">
+    //     //                 <input type="text" placeholder="Gunta" className="form-control" value={bdaGunta} onChange={(e) => setBdaGunta(e.target.value)} />
+    //     //             </div>
+    //     //             <div className="col-md-3">
+    //     //                 <input type="text" placeholder="FGunta" className="form-control" value={bdaFGunta} onChange={(e) => setBdaFGunta(e.target.value)} />
+    //     //             </div>
+
+
+    //     //             {/* Is A-Kharab Included Dropdown */}
+    //     //             <div className="row mt-3">
+    //     //                 {/* your JSX content */}
+    //     //                 <div className="col-md-6 mt-3">
+    //     //                     <label>
+    //     //                         Is A-Kharab extent part of BDA approved plan: <span className="text-danger">*</span>
+    //     //                     </label>
+    //     //                     <select
+    //     //                         value={isAKharabIncluded}
+    //     //                         onChange={(e) => {
+    //     //                             const value = e.target.value;
+    //     //                             console.log(value);
+    //     //                             setIsAKharabIncluded(value);
+    //     //                             console.log(isAKharabIncluded);
+    //     //                         }}
+    //     //                     >
+    //     //                         <option value="">-- Select --</option>
+    //     //                         <option value="1">Yes</option>
+    //     //                         <option value="2">No</option>
+    //     //                     </select>
+    //     //                 </div>
+    //     //                 {/* rest of the fields shown conditionally */}
+    //     //             </div>
+
+    //     //             <div className="col-md-12">
+    //     //                 <div className="form-check form-check-inline">
+    //     //                     <input
+    //     //                         className="form-check-input"
+    //     //                         type="radio"
+    //     //                         id="akharab-yes"
+    //     //                         name="isAKharabIncluded"
+    //     //                         checked={isAKharabIncluded === true}
+    //     //                         onChange={() => setIsAKharabIncluded(true)}
+    //     //                     />
+    //     //                     <label className="form-check-label" htmlFor="akharab-yes">Yes</label>
+    //     //                 </div>
+
+    //     //                 <div className="form-check form-check-inline">
+    //     //                     <input
+    //     //                         className="form-check-input"
+    //     //                         type="radio"
+    //     //                         id="akharab-no"
+    //     //                         name="isAKharabIncluded"
+    //     //                         checked={isAKharabIncluded === false}
+    //     //                         onChange={() => setIsAKharabIncluded(false)}
+    //     //                     />
+    //     //                     <label className="form-check-label" htmlFor="akharab-no">No</label>
+    //     //                 </div>
+    //     //             </div>
+
+    //     //             {/* Note */}
+    //     //             <div className="col-md-12 mt-3">
+    //     //                 <span className="text-danger fw-bold">Note: Do Not include B-Kharab land</span>
+    //     //             </div>
+    //     //         </div>
+    //     //     ));
+
+    //     //     showModal();
+    //     // }, 0);
     // };
 
 
-    //First block save API
-    
     const handleViewRTC = async (item) => {
-  const ownersToAdd = data.filter(o => o.main_owner_no === item.main_owner_no);
+    const mainOwnerNo = item.main_owner_no;
 
-  const newOwners = ownersToAdd.filter((ownerItem) => {
-    return !rtcAddedData.some(
-      (data) =>
-        data.survey_no === ownerItem.survey_no &&
-        data.surnoc === ownerItem.surnoc &&
-        data.hissa_no === ownerItem.hissa_no &&
-        data.owner === ownerItem.owner &&
-        data.father === ownerItem.father &&
-        data.owner_no === ownerItem.owner_no
-    );
-  });
+    // Get all owners under this main owner
+    const ownersToAdd = data.filter(o => o.main_owner_no === mainOwnerNo);
 
-  if (newOwners.length === 0) {
-    Swal.fire('Duplicate!', 'All selected records already exist in the table.', 'warning');
-    return;
-  }
+    // Filter out already added owners
+    const newOwners = ownersToAdd.filter((ownerItem) => {
+        return !rtcAddedData.some(
+            (data) =>
+                data.survey_no === ownerItem.survey_no &&
+                data.surnoc === ownerItem.surnoc &&
+                data.hissa_no === ownerItem.hissa_no &&
+                data.owner === ownerItem.owner &&
+                data.father === ownerItem.father &&
+                data.owner_no === ownerItem.owner_no
+        );
+    });
 
-  const { value: formValues } = await Swal.fire({
-    title: `Survey Number/Surnoc/Hissa No: ${item.survey_no}/${item.surnoc}/${item.hissa_no}`,
-    html: `
-      <div style="margin-top: 20px;">
-        <div class="row">
-          <div class="col-md-3">
-            <label class="form-label mt-4" style="text-align: left;">Total Extent</label>
-          </div>
-
-          <div class="col-md-3">
-            <input type="tel" class="form-control" id="total_acre" placeholder="Acre" />
-          </div>
-
-          <div class="col-md-3">
-            <input type="tel" class="form-control" id="total_gunta" placeholder="Gunta" />
-          </div>
-
-          <div class="col-md-3">
-            <input type="tel" class="form-control" id="total_fgunta" placeholder="FGunta" />
-          </div>
-
-          <div class="col-md-3 mt-4">
-            <label class="form-label" style="text-align: left;">BDA Approved Extent</label>
-          </div>
-
-          <div class="col-md-3">
-            <input type="tel" class="form-control" id="bda_acre" placeholder="Acre" />
-          </div>
-
-          <div class="col-md-3">
-            <input type="tel" class="form-control" id="bda_gunta" placeholder="Gunta" />
-          </div>
-
-          <div class="col-md-3">
-            <input type="tel" class="form-control" id="bda_fgunta" placeholder="FGunta" />
-          </div>
-        </div>
-      </div>
-    `,
-    showCancelButton: true,
-    confirmButtonText: 'Save',
-    cancelButtonText: 'Cancel',
-    customClass: {
-      popup: 'swal2-xl'
-    },
-    focusConfirm: false,
-    preConfirm: () => {
-      return {
-        totalAcre: document.getElementById('total_acre')?.value,
-        totalGunta: document.getElementById('total_gunta')?.value,
-        totalFGunta: document.getElementById('total_fgunta')?.value,
-        bdaAcre: document.getElementById('bda_acre')?.value,
-        bdaGunta: document.getElementById('bda_gunta')?.value,
-        bdaFGunta: document.getElementById('bda_fgunta')?.value
-      };
+    if (newOwners.length === 0) {
+        Swal.fire('Duplicate!', 'All selected records already exist in the table.', 'warning');
+        return;
     }
-  });
 
-  if (formValues) {
+    // Remove duplicate survey entries
+    const seenSurveyKeys = new Set();
+    const uniqueSurveyOwners = newOwners.filter(o => {
+        const key = `${o.survey_no}-${o.surnoc}-${o.hissa_no}`;
+        if (seenSurveyKeys.has(key)) return false;
+        seenSurveyKeys.add(key);
+        return true;
+    });
+
+    // Map location info
     const selectedDistrictObj = districts.find(d => String(d.districT_CODE) === String(selectedDistrict)) || {};
     const selectedTalukObj = taluks.find(t => String(t.talukA_CODE) === String(selectedTaluk)) || {};
     const selectedHobliObj = hoblis.find(h => String(h.hoblI_CODE) === String(selectedHobli)) || {};
     const selectedVillageObj = villages.find(v => String(v.villagE_CODE) === String(selectedVillage)) || {};
 
     const locationData = {
-      district: selectedDistrictObj.districT_NAME || '',
-      districtCode: selectedDistrictObj.districT_CODE || '',
-      taluk: selectedTalukObj.displayName || '',
-      talukCode: selectedTalukObj.talukA_CODE || '',
-      hobli: selectedHobliObj.displayName || '',
-      hobliCode: selectedHobliObj.hoblI_CODE || '',
-      village: selectedVillageObj.displayName || '',
-      villageCode: selectedVillageObj.villagE_CODE || '',
-      ...formValues
+        district: selectedDistrictObj.districT_NAME || '',
+        districtCode: selectedDistrictObj.districT_CODE || '',
+        taluk: selectedTalukObj.displayName || '',
+        talukCode: selectedTalukObj.talukA_CODE || '',
+        hobli: selectedHobliObj.displayName || '',
+        hobliCode: selectedHobliObj.hoblI_CODE || '',
+        village: selectedVillageObj.displayName || '',
+        villageCode: selectedVillageObj.villagE_CODE || '',
     };
 
-    const ownersWithLocation = newOwners.map(o => ({
-      ...o,
-      ...locationData
+    // Final mapped owners with location info
+    const ownersWithLocation = uniqueSurveyOwners.map(o => ({
+        ...o,
+        ...locationData,
     }));
 
+    // Optionally update extent fields from main owner
+    const mainOwnerRecord = data.find(
+        o => o.main_owner_no === mainOwnerNo && o.owner_no === mainOwnerNo
+    );
+
+    if (mainOwnerRecord) {
+        setTotal_Acre(mainOwnerRecord.ext_acre ?? '');
+        setTotal_Gunta(mainOwnerRecord.ext_gunta ?? '');
+        setTotal_FGunta(mainOwnerRecord.ext_fgunta ?? '');
+    }
+
+    // ✅ Append new entries to the rtcAddedData state for table
     setRtcAddedData(prev => [...prev, ...ownersWithLocation]);
-
-    toast.success(`${ownersWithLocation.length} record(s) added!`);
-
-    setTimeout(() => {
-      tableRTCRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-      });
-    }, 300);
-  }
 };
-    
+
+
     const handleSaveRTC = async () => {
         if (rtcAddedData.length === 0) {
             Swal.fire("No Data", "Please add at least one record before saving.", "warning");
@@ -1164,348 +1427,328 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
             setErrors(prev => ({ ...prev, file: '' }));
         }
     };
-const [showModal, setShowModal] = useState(false);
+
 
     return (
         // <div className={`layout-form-container ${loading ? 'no-interaction' : ''}`}>
         //     {loading && <Loader />}
-            <div className='row mt-5'>
+        <div className='row mt-5'>
 
-                <button className='btn btn-block' onClick={fetch_details} ref={buttonRef} hidden>Click me</button>
-                {/* District */}
-                <div className="col-12 col-sm-12 col-md-6 col-lg-2 col-xl-2  mb-3" >
-                    <label className="form-label">District <span className='mandatory_color'>*</span></label>
-                    <select
-                        value={selectedDistrict}
-                        onChange={(e) => setSelectedDistrict(e.target.value)} // Add this
+            <button className='btn btn-block' onClick={fetch_details} ref={buttonRef} hidden>Click me</button>
+            {/* District */}
+            <div className="col-12 col-sm-12 col-md-6 col-lg-2 col-xl-2  mb-3" >
+                <label className="form-label">District <span className='mandatory_color'>*</span></label>
+                <select
+                    value={selectedDistrict}
+                    onChange={(e) => setSelectedDistrict(e.target.value)} // Add this
 
-                        className="form-select"
-                        disabled={isDistrictReadonly || isSurveyNoSectionDisabled} //  Freeze the dropdown
-                    >
-                        <option value="" disabled>{t('translation.dropdownValues.district')}</option>
-                        {districts
-                            .filter(item => item.districT_CODE === 20) //  Only show Bengaluru
-                            .map(item => (
-                                <option key={item.districT_CODE} value={item.districT_CODE}>
-                                    {item.displayName}
-                                </option>
-                            ))}
-                    </select>
-                </div>
-                {/* Taluk Dropdown */}
-                <div className="col-12 col-sm-12 col-md-6 col-lg-2 col-xl-2  mb-3"  >
-                    <label className="form-label">Taluk <span className='mandatory_color'>*</span></label>
-                    <select value={selectedTaluk} onChange={handleTalukChange} className="form-select" disabled={isSurveyNoSectionDisabled}>
-                        <option value="" disabled>{t('translation.dropdownValues.taluk')}</option>
-                        {taluks.map((item) => (
-                            <option key={item.talukA_CODE} value={item.talukA_CODE}>
+                    className="form-select"
+                    disabled={isDistrictReadonly || isSurveyNoSectionDisabled} //  Freeze the dropdown
+                >
+                    <option value="" disabled>{t('translation.dropdownValues.district')}</option>
+                    {districts
+                        .filter(item => item.districT_CODE === 20) //  Only show Bengaluru
+                        .map(item => (
+                            <option key={item.districT_CODE} value={item.districT_CODE}>
                                 {item.displayName}
                             </option>
                         ))}
-                    </select>
-                </div>
-                {/* Hobli */}
-                <div className="col-12 col-sm-12 col-md-6 col-lg-2 col-xl-2  mb-3">
-                    <label className="form-label">Hobli <span className='mandatory_color'>*</span></label>
-                    <select value={selectedHobli} onChange={handleHobliChange} className="form-select" disabled={!selectedTaluk || isSurveyNoSectionDisabled}>
-                        <option value="" disabled>{t('translation.dropdownValues.hobli')}</option>
-                        {hoblis.map((item) => (
-                            <option key={item.hoblI_CODE} value={item.hoblI_CODE}>
-                                {item.displayName}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                {/* Village */}
-                <div className="col-12 col-sm-12 col-md-6 col-lg-2 col-xl-2  mb-3">
-                    <label className="form-label">Village <span className='mandatory_color'>*</span></label>
-                    <select value={selectedVillage} onChange={handleVillageChange} className="form-select" disabled={!selectedHobli || isSurveyNoSectionDisabled}>
-                        <option value="" disabled>{t('translation.dropdownValues.village')}</option>
-                        {villages.map((item) => (
-                            <option key={item.villagE_CODE} value={item.villagE_CODE}>
-                                {item.displayName}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                {/* Survey Number */}
-                <div className="col-12 col-sm-12 col-md-6 col-lg-2 col-xl-2  mb-3">
-                    <label className="form-label">Survey Number <span className='mandatory_color'>*</span></label>
-                    <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Enter Survey Number"
-                        value={surveyNumber}
-                        onChange={(e) => {
-                            const value = e.target.value;
+                </select>
+            </div>
+            {/* Taluk Dropdown */}
+            <div className="col-12 col-sm-12 col-md-6 col-lg-2 col-xl-2  mb-3"  >
+                <label className="form-label">Taluk <span className='mandatory_color'>*</span></label>
+                <select value={selectedTaluk} onChange={handleTalukChange} className="form-select" disabled={isSurveyNoSectionDisabled}>
+                    <option value="" disabled>{t('translation.dropdownValues.taluk')}</option>
+                    {taluks.map((item) => (
+                        <option key={item.talukA_CODE} value={item.talukA_CODE}>
+                            {item.displayName}
+                        </option>
+                    ))}
+                </select>
+            </div>
+            {/* Hobli */}
+            <div className="col-12 col-sm-12 col-md-6 col-lg-2 col-xl-2  mb-3">
+                <label className="form-label">Hobli <span className='mandatory_color'>*</span></label>
+                <select value={selectedHobli} onChange={handleHobliChange} className="form-select" disabled={!selectedTaluk || isSurveyNoSectionDisabled}>
+                    <option value="" disabled>{t('translation.dropdownValues.hobli')}</option>
+                    {hoblis.map((item) => (
+                        <option key={item.hoblI_CODE} value={item.hoblI_CODE}>
+                            {item.displayName}
+                        </option>
+                    ))}
+                </select>
+            </div>
+            {/* Village */}
+            <div className="col-12 col-sm-12 col-md-6 col-lg-2 col-xl-2  mb-3">
+                <label className="form-label">Village <span className='mandatory_color'>*</span></label>
+                <select value={selectedVillage} onChange={handleVillageChange} className="form-select" disabled={!selectedHobli || isSurveyNoSectionDisabled}>
+                    <option value="" disabled>{t('translation.dropdownValues.village')}</option>
+                    {villages.map((item) => (
+                        <option key={item.villagE_CODE} value={item.villagE_CODE}>
+                            {item.displayName}
+                        </option>
+                    ))}
+                </select>
+            </div>
+            {/* Survey Number */}
+            <div className="col-12 col-sm-12 col-md-6 col-lg-2 col-xl-2  mb-3">
+                <label className="form-label">Survey Number <span className='mandatory_color'>*</span></label>
+                <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Enter Survey Number"
+                    value={surveyNumber}
+                    onChange={(e) => {
+                        const value = e.target.value;
 
-                            // Allow only digits, no leading 0
-                            if (/^[1-9][0-9]*$/.test(value) || value === "") {
-                                setSurveyNumber(value);
-                            }
-                        }}
-                        disabled={!selectedVillage || isSurveyNoSectionDisabled}
-                    />
-                </div>
-                {/* Go button  */}
-                <div className="col-12 col-sm-12 col-md-6 col-lg-2 col-xl-2 mb-3">
-                    <label className="form-label">&nbsp;</label>
-                    <button className='btn btn-primary btn-block' disabled={!selectedVillage || !surveyNumber || isSurveyNoSectionDisabled} onClick={handleFetchHissa}>
-                        Go
-                    </button>
-                </div>
-                {/* Surnoc */}
-                <div className="col-12 col-sm-12 col-md-6 col-lg-3 col-xl-3 mb-3">
-                    <label className="form-label">Surnoc <span className='mandatory_color'>*</span></label>
-                    <select
-                        className="form-select"
-                        value={selectedSurnoc}
-                        onChange={(e) => {
-                            setSelectedSurnoc(e.target.value);
-                            setHissaEnabled(true); // Enable Hissa dropdown
-                        }}
-                        disabled={!surnocEnabled || isSurveyNoSectionDisabled}
-                    >
-                        <option value="" disabled>Select Surnoc</option>
-                        {surnocOptions.length > 0
-                            ? surnocOptions.map((option, index) => (
-                                <option key={index} value={option}>{option}</option>
-                            ))
-                            : <option disabled>{t('translation.dropdownValues.surnoc')}</option>}
-                    </select>
-
-
-                </div>
-                {/* Hissa No */}
-                <div className="col-12 col-sm-12 col-md-6 col-lg-3 col-xl-3 mb-3">
-                    <label className="form-label">Hissa Number <span className='mandatory_color'>*</span></label>
-                    <select
-                        className="form-select"
-                        value={selectedHissaNo}
-                        onChange={(e) => { setSelectedHissaNo(e.target.value); setHissaEnabled(true); }}
-                        disabled={!hissaEnabled || isSurveyNoSectionDisabled}
-                    >
-                        <option value="" disabled>Select Hissa No</option>
-                        {hissaOptions.length > 0
-                            ? hissaOptions.map((option, index) => (
-                                <option key={index} value={option}>{option}</option>
-                            ))
-                            : <option disabled>{t('translation.dropdownValues.hissaNo')}</option>}
-                    </select>
+                        // Allow only digits, no leading 0
+                        if (/^[1-9][0-9]*$/.test(value) || value === "") {
+                            setSurveyNumber(value);
+                        }
+                    }}
+                    disabled={!selectedVillage || isSurveyNoSectionDisabled}
+                />
+            </div>
+            {/* Go button  */}
+            <div className="col-12 col-sm-12 col-md-6 col-lg-2 col-xl-2 mb-3">
+                <label className="form-label">&nbsp;</label>
+                <button className='btn btn-primary btn-block' disabled={!selectedVillage || !surveyNumber || isSurveyNoSectionDisabled} onClick={handleFetchHissa}>
+                    Go
+                </button>
+            </div>
+            {/* Surnoc */}
+            <div className="col-12 col-sm-12 col-md-6 col-lg-3 col-xl-3 mb-3">
+                <label className="form-label">Surnoc <span className='mandatory_color'>*</span></label>
+                <select
+                    className="form-select"
+                    value={selectedSurnoc}
+                    onChange={(e) => {
+                        setSelectedSurnoc(e.target.value);
+                        setHissaEnabled(true); // Enable Hissa dropdown
+                    }}
+                    disabled={!surnocEnabled || isSurveyNoSectionDisabled}
+                >
+                    <option value="" disabled>Select Surnoc</option>
+                    {surnocOptions.length > 0
+                        ? surnocOptions.map((option, index) => (
+                            <option key={index} value={option}>{option}</option>
+                        ))
+                        : <option disabled>{t('translation.dropdownValues.surnoc')}</option>}
+                </select>
 
 
-                </div>
-                {/* Fetch button  */}
-                <div className="col-12 col-sm-12 col-md-6 col-lg-2 col-xl-2  mb-3">
-                    <label className="form-label">&nbsp;</label>
-                    <button className='btn btn-primary btn-block' onClick={fetchRTCDetails} disabled={!hissaEnabled || isSurveyNoSectionDisabled}>Fetch</button>
-                </div>
-                {/* View RTC button */}
-                <div className='col-md-2 mb-3'>
-                    <label className="form-label">&nbsp;</label>
-                    {showTable && (
-                        <button className='btn btn-warning btn-block' onClick={viewRTC}>View RTC</button>
-                    )}
-                </div>
+            </div>
+            {/* Hissa No */}
+            <div className="col-12 col-sm-12 col-md-6 col-lg-3 col-xl-3 mb-3">
+                <label className="form-label">Hissa Number <span className='mandatory_color'>*</span></label>
+                <select
+                    className="form-select"
+                    value={selectedHissaNo}
+                    onChange={(e) => { setSelectedHissaNo(e.target.value); setHissaEnabled(true); }}
+                    disabled={!hissaEnabled || isSurveyNoSectionDisabled}
+                >
+                    <option value="" disabled>Select Hissa No</option>
+                    {hissaOptions.length > 0
+                        ? hissaOptions.map((option, index) => (
+                            <option key={index} value={option}>{option}</option>
+                        ))
+                        : <option disabled>{t('translation.dropdownValues.hissaNo')}</option>}
+                </select>
 
-                {/* RTC Land Details Table */}
+
+            </div>
+            {/* Fetch button  */}
+            <div className="col-12 col-sm-12 col-md-6 col-lg-2 col-xl-2  mb-3">
+                <label className="form-label">&nbsp;</label>
+                <button className='btn btn-primary btn-block' onClick={fetchRTCDetails} disabled={!hissaEnabled || isSurveyNoSectionDisabled}>Fetch</button>
+            </div>
+            {/* View RTC button */}
+            <div className='col-md-2 mb-3'>
+                <label className="form-label">&nbsp;</label>
                 {showTable && (
-                    <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12" style={{ display: 'block' }}>
-                        <hr />
-                        <h4>Revenue Survey Number Details</h4>
-                        <div className="table-responsive">
-                            <table className="table table-bordered table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Survey Number / Surnoc / Hissa Number</th>
-                                        <th>Owner Name</th>
-                                        <th>Father Name</th>
-                                        <th>Extent (Acre)</th>
-                                        <th>Extent (Gunta)</th>
-                                        <th>Extent (Fgunta)</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {data.length === 0 ? (
-                                        <tr><td colSpan="7">No data available</td></tr>
-                                    ) : (
-                                        data.map((item, index) => (
-                                            <tr key={index}>
-                                                <td>{item.survey_no} / {item.surnoc} / {item.hissa_no}</td>
-                                                <td>{item.owner}</td>
-                                                <td>{item.father}</td>
-                                                <td>{item.ext_acre}</td>
-                                                <td>{item.ext_gunta}</td>
-                                                <td>{item.ext_fgunta}</td>
-                                                <td>
-                                                    <button className='btn btn-primary btn-sm' disabled={isSurveyNoSectionDisabled} onClick={() => handleViewRTC(item)}>Add</button>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
+                    <button className='btn btn-warning btn-block' onClick={viewRTC}>View RTC</button>
+                )}
+            </div>
+
+            {/* RTC Land Details Table */}
+            {showTable && (
+                <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12" style={{ display: 'block' }}>
+                    <hr />
+                    <h4>Revenue Survey Number Details</h4>
+                    <div className="table-responsive">
+                        <table className="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Survey Number / Surnoc / Hissa Number</th>
+                                    <th>Owner Name</th>
+                                    <th>Father Name</th>
+                                    <th>Extent (Acre)</th>
+                                    <th>Extent (Gunta)</th>
+                                    <th>Extent (Fgunta)</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {data.length === 0 ? (
+                                    <tr><td colSpan="7">No data available</td></tr>
+                                ) : (
+                                    data.map((item, index) => (
+                                        <tr key={index}>
+                                            <td>{item.survey_no} / {item.surnoc} / {item.hissa_no}</td>
+                                            <td>{item.owner}</td>
+                                            <td>{item.father}</td>
+                                            <td>{item.ext_acre}</td>
+                                            <td>{item.ext_gunta}</td>
+                                            <td>{item.ext_fgunta}</td>
+                                            <td>
+                                                <button className='btn btn-primary btn-sm' disabled={isSurveyNoSectionDisabled} onClick={() => handleViewRTC(item)}>Add</button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
+
+            {/* <button className="btn btn-primary" onClick={handleShowModal}>
+                Show Modal
+            </button>
+<button onClick={handleClick}>Open Modal</button>; */}
+          
+
+
+            <hr />
+            {/* Added RTC Table */}
+            {combinedData.length > 0 && (
+                <div className="col-12" ref={tableRTCRef}>
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                        <h4 className=" m-0">Added Survey Number Details</h4>
+                        <div className="d-flex align-items-center">
+                            <label className="me-2 mb-0">Rows per page:</label>
+                            <select
+                                className="form-select form-select-sm w-auto"
+                                value={rowsPerPage}
+                                onChange={handlePageSizeChange}
+                            >
+                                {[5, 10, 15, 20, 25, 30].map((size) => (
+                                    <option key={size} value={size}>{size}</option>
+                                ))}
+                            </select>
                         </div>
                     </div>
-                )}
-                <div>
-      {/* Button to open modal */}
-      <button onClick={() => setShowModal(true)}>Open Modal</button>
 
-      {/* Modal */}
-      {showModal && (
-        <div style={styles.overlay}>
-          <div style={styles.modal}>
-            <h2>Modal Title</h2>
-            <p>This is a modal popup!</p>
-            <p>This is a modal popup!</p>
-            <p>This is a modal popup!</p>
-            <p>This is a modal popup!</p>
-            <p>This is a modal popup!</p>
-            <p>This is a modal popup!</p>
-            <p>This is a modal popup!</p>
-            <p>This is a modal popup!</p>
-            <p>This is a modal popup!</p>
-            <p>This is a modal popup!</p>
-            <p>This is a modal popup!</p>
-            <p>This is a modal popup!</p>
-            <button onClick={() => setShowModal(false)}>Close</button>
-          </div>
-        </div>
-      )}
-    </div>
-
-
-                <hr />
-                {/* Added RTC Table */}
-                {combinedData.length > 0 && (
-                    <div className="col-12" ref={tableRTCRef}>
-                        <div className="d-flex justify-content-between align-items-center mb-3">
-                            <h4 className=" m-0">Added Survey Number Details</h4>
-                            <div className="d-flex align-items-center">
-                                <label className="me-2 mb-0">Rows per page:</label>
-                                <select
-                                    className="form-select form-select-sm w-auto"
-                                    value={rowsPerPage}
-                                    onChange={handlePageSizeChange}
-                                >
-                                    {[5, 10, 15, 20, 25, 30].map((size) => (
-                                        <option key={size} value={size}>{size}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className="table-responsive custom-scroll-table">
-                            <table className="table table-striped table-hover table-bordered rounded-table">
-                                <thead className="table-primary sticky-header">
-                                    <tr>
-                                        <th >Action</th>
-                                        <th>S.No</th>
-                                        <th>District</th>
-                                        <th>Taluk</th>
-                                        <th>Hobli</th>
-                                        <th>Village</th>
-                                        <th>Owner Name</th>
-                                        <th>Survey Number / Surnoc / Hissa Number</th>
-                                        <th>Extent (Acre.Gunta.Fgunta)</th>
-                                        <th>SqFt</th>
-                                        <th>SqM</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {paginatedData.map((row, index) => (
-                                        <tr key={index}>
-                                            <td >
-                                                <button className="btn btn-sm btn-outline-danger" onClick={() => handleRemoveRTC(row)}>
-                                                    <i className="fa fa-trash" />
-                                                </button>
-                                            </td>
-                                            <td>{index + 1 + (currentPage - 1) * rowsPerPage}</td>
-                                            <td>{row.district}</td>
-                                            <td>{row.taluk}</td>
-                                            <td>{row.hobli}</td>
-                                            <td>{row.village}</td>
-                                            <td>{row.owner}</td>
-                                            <td>{`${row.survey_no}/${row.surnoc}/${row.hissa_no}`}</td>
-                                            <td>{`${row.ext_acre}.${row.ext_gunta}.${row.ext_fgunta}`}</td>
-                                            <td>
-                                                {(
+                    <div className="table-responsive custom-scroll-table">
+                        <table className="table table-striped table-hover table-bordered rounded-table">
+                            <thead className="table-primary sticky-header">
+                                <tr>
+                                    <th >Action</th>
+                                    <th>S.No</th>
+                                    <th>District</th>
+                                    <th>Taluk</th>
+                                    <th>Hobli</th>
+                                    <th>Village</th>
+                                    <th>Owner Name</th>
+                                    <th>Survey Number / Surnoc / Hissa Number</th>
+                                    <th>Extent (Acre.Gunta.Fgunta)</th>
+                                    <th>SqFt</th>
+                                    <th>SqM</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {paginatedData.map((row, index) => (
+                                    <tr key={index}>
+                                        <td >
+                                            <button className="btn btn-sm btn-outline-danger" onClick={() => handleRemoveRTC(row)}>
+                                                <i className="fa fa-trash" />
+                                            </button>
+                                        </td>
+                                        <td>{index + 1 + (currentPage - 1) * rowsPerPage}</td>
+                                        <td>{row.district}</td>
+                                        <td>{row.taluk}</td>
+                                        <td>{row.hobli}</td>
+                                        <td>{row.village}</td>
+                                        <td>{row.owner}</td>
+                                        <td>{`${row.survey_no}/${row.surnoc}/${row.hissa_no}`}</td>
+                                        <td>{`${row.ext_acre}.${row.ext_gunta}.${row.ext_fgunta}`}</td>
+                                        <td>
+                                            {(
+                                                (parseFloat(row.ext_acre) * 43560) +
+                                                (parseFloat(row.ext_gunta) * 1089) +
+                                                (parseFloat(row.ext_fgunta) * 68.0625)
+                                            ).toFixed(2)}
+                                        </td>
+                                        <td>
+                                            {(
+                                                (
                                                     (parseFloat(row.ext_acre) * 43560) +
                                                     (parseFloat(row.ext_gunta) * 1089) +
                                                     (parseFloat(row.ext_fgunta) * 68.0625)
-                                                ).toFixed(2)}
-                                            </td>
-                                            <td>
-                                                {(
-                                                    (
-                                                        (parseFloat(row.ext_acre) * 43560) +
-                                                        (parseFloat(row.ext_gunta) * 1089) +
-                                                        (parseFloat(row.ext_fgunta) * 68.0625)
-                                                    ) * 0.092903
-                                                ).toFixed(2)}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                                <tfoot >
-                                    <tr>
-                                        <th colSpan={6}></th>
-                                        <th colSpan={2} className="text-end fw-bold">Total Area:</th>
-                                        <th className="text-left fw-bold" >{`${totalAcre}.${totalGunta}.${totalFGunta}`}</th>
-                                        <th className='fw-bold'>{totalSqFt.toFixed(2)}</th>
-                                        <th className='fw-bold'>{totalSqM.toFixed(2)}</th>
+                                                ) * 0.092903
+                                            ).toFixed(2)}
+                                        </td>
                                     </tr>
-                                </tfoot>
-                            </table>
-                        </div>
-
-                        {/* Pagination Summary and Controls */}
-                        <div className="d-flex justify-content-between align-items-center mt-3 flex-wrap">
-                            <div>
-                                Showing {Math.min((currentPage - 1) * rowsPerPage + 1, combinedData.length)}–{Math.min(currentPage * rowsPerPage, combinedData.length)} of {combinedData.length} records
-                            </div>
-
-                            <div>
-                                <button
-                                    className="btn btn-outline-secondary btn-sm mx-1"
-                                    onClick={() => goToPage(currentPage - 1)}
-                                    disabled={currentPage === 1}
-                                >
-                                    Previous
-                                </button>
-                                {[...Array(totalPages).keys()].map((num) => (
-                                    <button
-                                        key={num}
-                                        className={`btn btn-sm mx-1 ${currentPage === num + 1 ? 'btn-primary' : 'btn-outline-primary'}`}
-                                        onClick={() => goToPage(num + 1)}
-                                    >
-                                        {num + 1}
-                                    </button>
                                 ))}
-                                <button
-                                    className="btn btn-outline-secondary btn-sm mx-1"
-                                    onClick={() => goToPage(currentPage + 1)}
-                                    disabled={currentPage === totalPages}
-                                >
-                                    Next
-                                </button>
-                            </div>
+                            </tbody>
+                            <tfoot >
+                                <tr>
+                                    <th colSpan={6}></th>
+                                    <th colSpan={2} className="text-end fw-bold">Total Area:</th>
+                                    <th className="text-left fw-bold" >{`${totalAcre}.${totalGunta}.${totalFGunta}`}</th>
+                                    <th className='fw-bold'>{totalSqFt.toFixed(2)}</th>
+                                    <th className='fw-bold'>{totalSqM.toFixed(2)}</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    {/* Pagination Summary and Controls */}
+                    <div className="d-flex justify-content-between align-items-center mt-3 flex-wrap">
+                        <div>
+                            Showing {Math.min((currentPage - 1) * rowsPerPage + 1, combinedData.length)}–{Math.min(currentPage * rowsPerPage, combinedData.length)} of {combinedData.length} records
                         </div>
-                        <br />
 
-
-                        <div className="row mt-4">
-                            <div className="col-md-10"></div>
-                            <div className="col-md-2">
-                                <button className="btn btn-success btn-block w-100"
-                                    disabled={isSurveyNoSectionDisabled} // <-- disable condition
-                                    onClick={handleSaveRTC}>Save and continue</button>
-                            </div>
+                        <div>
+                            <button
+                                className="btn btn-outline-secondary btn-sm mx-1"
+                                onClick={() => goToPage(currentPage - 1)}
+                                disabled={currentPage === 1}
+                            >
+                                Previous
+                            </button>
+                            {[...Array(totalPages).keys()].map((num) => (
+                                <button
+                                    key={num}
+                                    className={`btn btn-sm mx-1 ${currentPage === num + 1 ? 'btn-primary' : 'btn-outline-primary'}`}
+                                    onClick={() => goToPage(num + 1)}
+                                >
+                                    {num + 1}
+                                </button>
+                            ))}
+                            <button
+                                className="btn btn-outline-secondary btn-sm mx-1"
+                                onClick={() => goToPage(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                            >
+                                Next
+                            </button>
                         </div>
                     </div>
-                )}
+                    <br />
+
+
+                    <div className="row mt-4">
+                        <div className="col-md-10"></div>
+                        <div className="col-md-2">
+                            <button className="btn btn-success btn-block w-100"
+                                disabled={isSurveyNoSectionDisabled} // <-- disable condition
+                                onClick={handleSaveRTC}>Save and continue</button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* </div> */}
         </div>
@@ -1514,25 +1757,25 @@ const [showModal, setShowModal] = useState(false);
 };
 
 const styles = {
-  overlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    width: '100vw',
-    height: '100vh',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1000,
-  },
-  modal: {
-    background: '#fff',
-    padding: '20px',
-    borderRadius: '8px',
-    minWidth: '300px',
-    textAlign: 'center',
-  },
+    overlay: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1000,
+    },
+    modal: {
+        background: '#fff',
+        padding: '20px',
+        borderRadius: '8px',
+        minWidth: '300px',
+        textAlign: 'center',
+    },
 };
 
 //BBMP khata section
@@ -2245,9 +2488,20 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
         });
     };
 
+    const [showModal, setShowModal] = useState(false);
+
+  const handleShowModal = () => {
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
     return (
         <div className="row g-3">
-           
+            
+
             <button className='btn btn-block' onClick={handleGetLKRSID} ref={buttonRef} hidden>Click me</button>
             <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4  mt-3">
                 <div className="form-group mt-2">
@@ -2510,6 +2764,75 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
         </div>
     );
 };
+
+
+const MyFormComponent = () => {
+  const [selectedOption, setSelectedOption] = useState('');
+  const [radioValue, setRadioValue] = useState('');
+  const [textValue, setTextValue] = useState('');
+
+  return (
+    <div>
+      {/* Dropdown */}
+      <div className="mb-3">
+        <label className="form-label">Select Option</label>
+        <select
+          className="form-select"
+          value={selectedOption}
+          onChange={(e) => setSelectedOption(e.target.value)}
+        >
+          <option value="">-- Select --</option>
+          <option value="option1">Option 1</option>
+          <option value="option2">Option 2</option>
+        </select>
+      </div>
+
+      {/* Radio */}
+      <div className="mb-3">
+        <label className="form-label d-block">Choose One</label>
+        <div className="form-check form-check-inline">
+          <input
+            className="form-check-input"
+            type="radio"
+            name="choice"
+            value="yes"
+            checked={radioValue === 'yes'}
+            onChange={(e) => setRadioValue(e.target.value)}
+          />
+          <label className="form-check-label">Yes</label>
+        </div>
+        <div className="form-check form-check-inline">
+          <input
+            className="form-check-input"
+            type="radio"
+            name="choice"
+            value="no"
+            checked={radioValue === 'no'}
+            onChange={(e) => setRadioValue(e.target.value)}
+          />
+          <label className="form-check-label">No</label>
+        </div>
+      </div>
+
+      {/* Textbox */}
+      <div className="mb-3">
+        <label className="form-label">Enter Text</label>
+        <input
+          type="text"
+          className="form-control"
+          value={textValue}
+          onChange={(e) => setTextValue(e.target.value)}
+        />
+      </div>
+
+      {/* Output for testing */}
+      <pre>
+        {JSON.stringify({ selectedOption, radioValue, textValue }, null, 2)}
+      </pre>
+    </div>
+  );
+};
+
 
 export default BBMP_LayoutForm;
 

@@ -49,7 +49,8 @@ const BBMP_Layout_Dashboard = () => {
     sessionStorage.removeItem('display_LKRSID');
     sessionStorage.setItem('LKRSID', lkrS_ID);
     sessionStorage.setItem('display_LKRSID', lkrS_DISPLAYLKRSID);
-    navigate("/Release", {
+    // navigate("/Release", {
+      navigate("/SiteRelease",{
       state: {
         LKRS_ID: lkrS_ID,
         display_LKRS_ID: lkrS_DISPLAYLKRSID,

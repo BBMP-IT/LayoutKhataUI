@@ -417,7 +417,7 @@ const JDA_EKYCBlock = ({ LKRS_ID, jdaID, setIsJDAEKYCSectionSaved }) => {
                     confirmButtonText: 'OK'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        fetchEKYC_ResponseDetails(jdaRepName, event.data.ekycTxnNo);
+                        fetchEKYC_ResponseDetails(jdaRepName, event.data.ekycTxnNo, localLKRSID);
                     }
                 })
             } else if (event.data.ekycStatus === "Failure") {
@@ -456,6 +456,7 @@ const JDA_EKYCBlock = ({ LKRS_ID, jdaID, setIsJDAEKYCSectionSaved }) => {
 
                 // Pass them to your API
                 const response = await ekyc_Details({
+                     LKRS_ID,
                     OwnerNumber,
                     BOOK_APP_NO,
                     PROPERTY_CODE,
@@ -484,7 +485,7 @@ const JDA_EKYCBlock = ({ LKRS_ID, jdaID, setIsJDAEKYCSectionSaved }) => {
         }
     };
     const [jdaDataList, setJDADataList] = useState([]);
-    const fetchEKYC_ResponseDetails = async (jdaRepName, txnno) => {
+    const fetchEKYC_ResponseDetails = async (jdaRepName, txnno, localLKRSID) => {
         const transaction_No = sessionStorage.getItem("tranNo");
         if (transaction_No === txnno) {
             try {
@@ -495,8 +496,10 @@ const JDA_EKYCBlock = ({ LKRS_ID, jdaID, setIsJDAEKYCSectionSaved }) => {
                 };
                 const transactionNumber = 83;
                 const OwnerType = "NEWOWNER";
+                const redirectSource = "";
+                const ownerNo = 1;
 
-                const response = await ekyc_Response(transactionNumber, OwnerType, jdaRepName);
+                const response = await ekyc_Response(transactionNumber, OwnerType, jdaRepName, ownerNo, localLKRSID, redirectSource);
                 setOwnerData(response);
                 setEKYC_Status(true);
                 setIsEKYCCompleted(true);

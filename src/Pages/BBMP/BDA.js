@@ -348,9 +348,9 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
         } else if (parseInt(formData.totalSites, 10) < `${config.sites}` || parseInt(formData.totalSites, 10) > 5000) {
             newErrors.totalSites = `Total number of sites must be between ${config.sites} and 5000.`;
         }
-        if (!formData.releaseType) {
-            newErrors.releaseType = "Please select a Release Type.";
-        }
+        // if (!formData.releaseType) {
+        //     newErrors.releaseType = "Please select a Release Type.";
+        // }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -419,7 +419,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             Swal.fire("Please save the land details before proceeding with layout approval", "", "warning");
             return;
         }
-
+const releaseType = 999;
         //  Proceed to next step here if any one is true
         const payload = {
             apR_ID: 0,
@@ -434,7 +434,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             apR_APPROVALDESIGNATION: formData.approvalAuthority,
             lkrS_NUMBEROFSITES: formData.totalSites,
             apR_APPROVALAUTHORITY: formData.layoutApprovalAuthority,
-            apR_SITE_RELSTYPE_ID: formData.releaseType,
+            apR_SITE_RELSTYPE_ID: releaseType,
         };
 
         try {
@@ -698,12 +698,12 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             sortable: true,
             minWidth: '150px', center: true,
         },
-        {
-            name: "Release Type",
-            selector: row => row.releaseType,
-            sortable: true,
-            minWidth: '150px', center: true,
-        },
+        // {
+        //     name: "Release Type",
+        //     selector: row => row.releaseType,
+        //     sortable: true,
+        //     minWidth: '150px', center: true,
+        // },
         {
             name: t('translation.BDA.table.action'),
             cell: (row, index) => (
@@ -863,11 +863,11 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             sortable: true,
             center: true,
         },
-        {
-            name: "Release Type",
-            selector: row => row.releaseType, center: true,
-            sortable: true,
-        },
+        // {
+        //     name: "Release Type",
+        //     selector: row => row.releaseType, center: true,
+        //     sortable: true,
+        // },
         {
             name: t('translation.BDA.table1.action'),
             center: true,
@@ -971,11 +971,11 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             newErrors.orderAuthority = "Approval authority designation is required.";
         }
 
-        if (!release_formData.releaseType) {
-            newErrors.releaseType = "Please select a Release Type.";
-        }
+        // if (!release_formData.releaseType) {
+        //     newErrors.releaseType = "Please select a Release Type.";
+        // }
 
-        setRelease_Errors(newErrors);
+        // setRelease_Errors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
     const handleOrderSave = async () => {
@@ -986,7 +986,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             Swal.fire("Please save the land details before proceeding with layout approval", "", "warning");
             return;
         }
-
+        const releaseType = 999;
         const payload = {
             sitE_RELS_ID: 0,
             sitE_RELS_LKRS_ID: localLKRSID,
@@ -998,7 +998,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             sitE_RELS_CREATEDNAME: createdName,
             sitE_RELS_CREATEDROLE: roleID,
             sitE_RELS_APPROVALDESIGNATION: release_formData.orderAuthority,
-            sitE_RELS_SITE_RELSTYPE_ID: release_formData.releaseType,
+            sitE_RELS_SITE_RELSTYPE_ID: releaseType,
         };
 
         try {
@@ -1441,7 +1441,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                                 </div>
                             </div>
                             {/* Release Type */}
-                            <div className='col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6'>
+                            <div className='col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6' hidden>
                                 <div className="form-group mt-2">
                                     <label className='form-label'>
                                         Release Type <span className='mandatory_color'>*</span>
