@@ -15,7 +15,7 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { toast, Toaster } from 'react-hot-toast';
 
 import apiService from '../../API/apiService';
-import { dc_insertDetails, dcConversionListAPI, fileListAPI, fileUploadAPI, deleteDCconversionInfo, bhommiDCConversionFetchAPI } from '../../API/authService';
+import { dc_insertDetails, dcConversionListAPI, fileListAPI, fileUploadAPI, deleteDCconversionInfo, bhommiDCConversionFetchAPI, fetch_LKRSID } from '../../API/authService';
 
 export const useLoader = () => {
     const [loading, setLoading] = useState(false);
@@ -62,20 +62,73 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
     }, [LKRS_ID]);
 
 
+
+
+    
     const fetch_details = async () => {
         const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
         if (LKRS_ID) {
             setLocalLKRSID(LKRS_ID);
             delay(1000);
             fetch_DCConversion(LKRS_ID);
+            handleGetLKRSID(LKRS_ID);
         } else {
             // fallback to sessionStorage if needed
             const id = sessionStorage.getItem("LKRSID");
             if (id) setLocalLKRSID(id);
             delay(1000);
             fetch_DCConversion(id);
+            handleGetLKRSID(id);
         }
     }
+
+
+
+ const handleGetLKRSID = async (localLKRSID) => {
+    const payload = {
+        level: 1,
+        LkrsId: localLKRSID,
+    };
+    try {
+        const response = await fetch_LKRSID(localLKRSID);
+
+        if (response && response.surveyNumberDetails && response.surveyNumberDetails.length > 0) {
+            // const parsedSurveyDetails = mapSurveyDetails(response.surveyNumberDetails);
+
+            // ✅ Combine suR_SURVEYNO/suR_SURNOC/suR_HISSA
+            const surveySet = new Set();
+            response.surveyNumberDetails.forEach(detail => {
+                const combined = `${detail.suR_SURVEYNO}/${detail.suR_SURNOC}/${detail.suR_HISSA}`;
+                surveySet.add(combined);
+            });
+
+            // ✅ Convert to array and log
+            const uniqueSurveyNumbers = Array.from(surveySet);
+            console.log("Unique Survey Numbers:", uniqueSurveyNumbers);
+
+            // ✅ Set RTC data without duplicate owners
+            // setRtcAddedData(prev => {
+            //     const existingKeys = new Set(
+            //         prev.map(item => `${item.surveyNumber}_${item.ownerName}`)
+            //     );
+
+            //     const filteredNewData = parsedSurveyDetails.filter(item => {
+            //         const key = `${item.surveyNumber}_${item.ownerName}`;
+            //         return !existingKeys.has(key);
+            //     });
+
+            //     return [...prev, ...filteredNewData];
+            // });
+        }
+
+    } catch (error) {
+        stop_loader();
+        console.error("Failed to fetch LKRSID data:", error);
+    }
+};
+
+
+
 
     const [records, setRecords] = useState([]);
     const [isDCSectionDisabled, setIsDCSectionDisabled] = useState(false);
@@ -222,7 +275,7 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
                                 const formattedList = listResponse.map((item, index) => ({
                                     layoutDCNumber: item.dC_Conversion_No,
                                     dateOfOrder: item.dC_Conversion_Date,
-                                    surveyno: item.surveyno,
+                                    surveyno: item.dC_SurveyNo,
                                     dc_id: item.dC_id,
 
                                 }));
@@ -280,7 +333,7 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
                 const formattedList = listResponse.map((item, index) => ({
                     layoutDCNumber: item.dC_Conversion_No,
                     dateOfOrder: item.dC_Conversion_Date,
-                    surveyno: item.surveyno,
+                    surveyno: item.dC_SurveyNo,
                     DCFile: listFileResponse[index]?.doctrN_DOCBASE64 || null,
                     dc_id: item.dC_id,
                     DCconversionDocID: listFileResponse[index]?.doctrN_ID || null,

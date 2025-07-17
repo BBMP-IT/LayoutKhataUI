@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../Styles/CSS/BBMPLogin.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -8,7 +8,6 @@ import digital_logo from '../../assets/digital_india.png';
 import bbmpLogo from '../../assets/bbmp.png'
 import { useTranslation } from "react-i18next";
 import i18n from "../../localization/i18n";
-import DashboardLayout from '../../Layout/DashboardLayout';
 import Swal from "sweetalert2";
 import Loader from "../../Layout/Loader";
 import config from '../../Config/config';
@@ -18,7 +17,7 @@ import cmlogo from '../../assets/chief_minister_of_karrnataka_icon.png';
 import dcmlogo from '../../assets/DeputyCM.jpeg';
 import gokLogo from '../../assets/gok.png';
 import bbmplogo from '../../assets/bbmp.png';
-
+import DashboardLayout, { LoaderContext } from '../../Layout/DashboardLayout';
 import { getAccessToken } from '../../API/authService';
 import { ImageOutlined } from '@mui/icons-material';
 import { useAuth } from "../../AuthContext";
@@ -27,7 +26,7 @@ import { useAuth } from "../../AuthContext";
 const BBMPLogin = () => {
     const navigate = useNavigate();
 const { UseLogin } = useAuth();
-
+const { loading, start_loader, stop_loader } = useContext(LoaderContext);
     const [menuOpen, setMenuOpen] = useState(false);
     const { t, i18n } = useTranslation();
     const isEnglish = i18n.language === 'kn';
@@ -48,7 +47,6 @@ const { UseLogin } = useAuth();
     const [captchaError, setCaptchaError] = useState("");
     const [otpError, setOtpError] = useState("");
 
-    const [loading, setLoading] = useState(false);
 
     //reference variables
     const otpRef = useRef(null);
@@ -76,13 +74,7 @@ const { UseLogin } = useAuth();
         sessionStorage.setItem("selectedLanguage", newLang);
     };
 
-    const start_loader = () => {
-        setLoading(true);
-    };
-
-    const stop_loader = () => {
-        setLoading(false);
-    };
+   
     //generate Captcha
     const generateCaptcha = () => {
         const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghjklmnopqrstuvwxyz";

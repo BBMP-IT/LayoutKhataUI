@@ -1720,6 +1720,35 @@ const ReleaseDashboard = () => {
         }
     };
     const order_columns = [
+          {
+            name: t('translation.BDA.table1.action'),
+            center: true,
+            cell: (row, index) => (
+                <div>
+                    {/* <button
+                        className="btn btn-warning btn-sm me-2"
+                        onClick={() => handleOrderEdit(index)} disabled={!isOrder_Editing}
+                    >
+                        <i className="fa fa-pencil"></i>
+                    </button> */}
+                    <button
+                        className="btn btn-danger btn-sm"
+                        onClick={() =>
+                            handleDeleteRelease(
+                                row.releaseID,
+                                row.releaseOrderDocID
+                            )
+                        }
+                        // disabled={deletebtn_disabled}
+                    >
+                        <i className="fa fa-trash"></i>
+                    </button>
+                </div>
+            ),
+            ignoreRowClick: true,
+            allowOverflow: true,
+            button: true,
+        },
         {
             name: t('translation.BDA.table1.slno'),
             cell: (row, index) => index + 1, // Adding 1 to start serial numbers from 1
@@ -1786,36 +1815,12 @@ const ReleaseDashboard = () => {
             sortable: true,
             center: true,
         },
-
-        {
-            name: t('translation.BDA.table1.action'),
-            center: true,
-            cell: (row, index) => (
-                <div>
-                    {/* <button
-                        className="btn btn-warning btn-sm me-2"
-                        onClick={() => handleOrderEdit(index)} disabled={!isOrder_Editing}
-                    >
-                        <i className="fa fa-pencil"></i>
-                    </button> */}
-                    <button
-                        className="btn btn-danger btn-sm"
-                        onClick={() =>
-                            handleDeleteRelease(
-                                row.releaseID,
-                                row.releaseOrderDocID
-                            )
-                        }
-                        // disabled={deletebtn_disabled}
-                    >
-                        <i className="fa fa-trash"></i>
-                    </button>
-                </div>
-            ),
-            ignoreRowClick: true,
-            allowOverflow: true,
-            button: true,
+ {
+            name: "Site Released",
+            selector: row => row.siteReleased,
+            sortable: true, center: true,
         },
+      
     ];
     //Release order delete info button
     const handleDeleteRelease = async (releaseID, releaseOrderDocID) => {
@@ -1908,6 +1913,7 @@ const ReleaseDashboard = () => {
                     releaseType: item.sitE_RELS_SITE_RELSTYPE,
                     releaseOrderDocID: listFileResponse[index]?.doctrN_ID || null,
                     releaseID: item.sitE_RELS_ID || null,
+                    siteReleased: item.sitE_RELS_IS_RELEASED, 
                 }));
 
                 const length_RO = listResponse.length;

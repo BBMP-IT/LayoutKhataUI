@@ -230,7 +230,7 @@ const Endorsement = () => {
               <div className="col-sm-5">
                 <input type="button" className="form-control btn btn-info rounded-pill" value="Back To Dashboard" onClick={backToDashboard} />
               </div>
-              <div className="col-sm-5">
+              <div className="col-sm-5" hidden>
                 <input type="button" className="form-control btn btn-info rounded-pill" value="View Submitted Application" onClick={FnviewApplication} />
               </div>
             </div>

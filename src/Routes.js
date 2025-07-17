@@ -96,7 +96,7 @@ const AppRoutes = () => {
             <Route path="/Info" element={<ProtectedRoute element={<DashboardLayout><BBMP_SubmittedInfo /></DashboardLayout>} />} />
             <Route path='/ReleaseDashboard' element={<ProtectedRoute element={<DashboardLayout><ReleaseDashboard/></DashboardLayout>}/>}/>
             <Route path='/Endorsement' element={<ProtectedRoute element={<Endorsement/>}/>}/>
-            <Route path='/Acknowledgement' element={<ProtectedRoute element={<Acknowledgement />}/>} />
+            {/* <Route path='/Acknowledgement' element={<ProtectedRoute element={<Acknowledgement />}/>} /> */}
 
             <Route path="/tax_Details" element={<BBMP_TaxDetails />} />
             <Route path="/login" element={<Login />} />

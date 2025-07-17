@@ -496,7 +496,7 @@ const JDA_EKYCBlock = ({ LKRS_ID, jdaID, setIsJDAEKYCSectionSaved }) => {
                 };
                 const transactionNumber = 83;
                 const OwnerType = "NEWOWNER";
-                const redirectSource = "";
+                const redirectSource = "LYT";
                 const ownerNo = 1;
 
                 const response = await ekyc_Response(transactionNumber, OwnerType, jdaRepName, ownerNo, localLKRSID, redirectSource);

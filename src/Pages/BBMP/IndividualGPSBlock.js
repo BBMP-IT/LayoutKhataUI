@@ -219,8 +219,6 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
     const sqftToSqm = (sqft) => {
         return sqft ? (parseFloat(sqft) * 0.092903).toFixed(1) : '';
     };
-
-
     const handleNumSidesChange = (e) => {
         const value = e.target.value;
 
@@ -268,7 +266,6 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
         setSides(updatedSides);
     };
-
     const handleRoadFacingChange = (index, value) => {
         const updatedSides = [...sides];
         updatedSides[index].roadFacing = value;
@@ -330,7 +327,6 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             calculateArea(value, northsouthFeet, null, null);
         }
     };
-
     // East-West meter change handler
     const handleEastwestMeterChange = (e) => {
         const value = e.target.value;
@@ -352,11 +348,9 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             calculateArea(null, null, value, northsouthMeter);
         }
     };
-
     //north-south feet or meter calculation function
     const feetToMeter = (feet) => (feet ? (parseFloat(feet) * 0.3048).toFixed(1) : '');
     const meterToFeet = (meter) => (meter ? Math.round(parseFloat(meter) / 0.3048) : '');
-
     // North-South feet change handler
     const handleNorthsouthFeetChange = (e) => {
         const value = e.target.value;
@@ -404,7 +398,6 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             calculateArea(null, null, eastwestMeter, value);
         }
     };
-
     // Area Calculation Function (for regular-shaped site)
     const calculateArea = (lengthFt, widthFt, lengthM, widthM) => {
         if (lengthFt && widthFt) {
@@ -649,11 +642,9 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
     const [irregular_siteNumber, setirregular_siteNumber] = useState('');
     const [irregular_siteNumberError, setirregular_siteNumberError] = useState('');
     const irregular_siteNoref = useRef(null);
-
     const [irregular_blockArea, setirregular_blockArea] = useState('');
     const [irregular_blockAreaError, setirregular_blockAreaError] = useState('');
     const irregular_blockArearef = useRef(null);
-
     const [irregularchakbandiEast, setIrregularChakbandiEast] = useState('');
     const [irregularchakbandiEastError, setIrregularChakbandiEastError] = useState('');
     const irregular_chakbandiEastref = useRef(null);
@@ -670,28 +661,23 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
     const [irregularchakbandiNorthError, setIrregularChakbandiNorthError] = useState('');
     const irregular_chakbandiNorthref = useRef(null);
 
-    const [irregularcornerSite, setIrregularCornerSite] = useState('yes');
+    const [irregularcornerSite, setIrregularCornerSite] = useState(true);
     const [irregularcornerSiteError, setIrregularCornerSiteError] = useState('');
     const irregular_cornerSiteref = useRef(null);
 
     const [irregularsiteType, setIrregularsiteType] = useState('');
     const [irregularsiteTypeError, setIrregularsiteTypeError] = useState('');
     const irregular_siteTyperef = useRef(null);
-
     const [irregularAreaSqFt, setIrregularAreaSqFt] = useState('');
     const [irregularAreaSqM, setIrregularAreaSqM] = useState('');
     const [irregularAreaSqft_sqM_error, setIrregularAreaSqft_sqM_error] = useState('');
     const irregular_AreaSqFtref = useRef(null);
-
     const [numSides, setNumSides] = useState("");
     const [numSidesError, setNumSidesError] = useState('');
     const irregularnumsidesref = useRef(null);
-
     const [sideErrors, setSideErrors] = useState([]);
     const [isChecked, setIsChecked] = useState(false);
     const sideRefs = useRef([]);
-
-
     const [roadAreaSqFt, setRoadAreaSqFt] = useState('');
     const [roadAreaSqM, setRoadAreaSqM] = useState('');
     const [roadAreaSqft_sqM_error, setRoadAreaSqft_sqM_error] = useState('');
@@ -973,7 +959,6 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             setIrregularAreaSqM('');
         }
     };
-
     const handleSqMChange = (e) => {
         const value = e.target.value;
 
@@ -992,8 +977,6 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             }
         }
     };
-
-
     const handleRoadSqFtChange = (e) => {
         const value = e.target.value;
 
@@ -1009,7 +992,6 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             setRoadAreaSqM('');
         }
     };
-
     const handleRoadSqMChange = (e) => {
         const value = e.target.value;
 
@@ -1029,6 +1011,36 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         }
     };
 
+    const [landDetails, setLandDetails] = useState("");
+    const [wardID, setWardID] = useState("");
+    //fetching Details from LKRSID
+    const handleGetLKRSID = async (localLKRSID) => {
+
+        const payload = {
+            level: 1,
+            LkrsId: localLKRSID,
+        };
+        try {
+            start_loader();
+            const response = await fetch_LKRSID(localLKRSID);
+
+            if (response && Object.keys(response).length > 0) {
+                // Check the value and update selectedLandType
+                if (response.lkrS_LANDTYPE === "surveyNo") {
+                    setLandDetails("surveyNo");
+                } else if (response.lkrS_LANDTYPE === "khata") {
+                    setLandDetails("khata");
+                }
+                stop_loader();
+            } else {
+                stop_loader();
+                console.log("failed to fetch data!")
+            }
+        } catch (error) {
+            stop_loader();
+            console.error("Failed to fetch LKRSID data:", error);
+        }
+    };
 
 
     const totalSitesCount = Number(layoutSiteCount);
@@ -1698,7 +1710,6 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
 
         if (totalAddedSites >= totalSitesCount) {
-
             Swal.fire({
                 title: "Limit Reached",
                 text: `Only ${totalSitesCount} sites allowed. Please update the total number of sites if needed.`,
@@ -1807,168 +1818,189 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             sitediM_CREATEDROLE: roleID
         }));
 
+        let zoneName = "";
+        let wardName = "";
+
+
         let no_of_sites = Number(sessionStorage.getItem("NUMBEROFSITES")) || 0;
         let updated_sites = "";
         let status_site = true;
         const NoofSites = parseInt(layoutSiteCount, 10);
         let payload = "";
-        //Road
-        if (siteType === '8') {
-             payload = {
-                sitE_ID: 0,
-                sitE_LKRS_ID: localLKRSID,
-                sitE_SHAPETYPE: "",
-                sitE_NO: "",
-                sitE_AREA: "",
-                sitE_TYPEID: siteType,
-                sitE_AREAINSQFT: roadAreaSqFt,
-                sitE_AREAINSQMT: roadAreaSqM,
-                sitE_LATITUDE: latitude,
-                sitE_LONGITUDE: longitude,
-                sitE_OWNER: ownerNames,
-                sitE_CORNERPLOT: true,
-                sitE_NO_OF_SIDES: 0,
-                sitE_EPID: "",
-                sitE_SASNO: "",
-                sitE_NORTH: "",
-                sitE_SOUTH: "",
-                sitE_EAST: "",
-                sitE_WEST: "",
-                sitE_REMARKS: "",
-                sitE_ADDITIONALINFO: "",
-                sitE_CREATEDBY: createdBy,
-                sitE_CREATEDNAME: createdName,
-                sitE_CREATEDROLE: roleID,
-                sitE_ZONE: selectedZone || '',
-                sitE_WARD: selectedWard || '',
-                siteDimensions: null
-            };
-        } else {
-             payload = {
-                sitE_ID: 0,
-                sitE_LKRS_ID: localLKRSID,
-                sitE_SHAPETYPE: isRegular ? "Regular" : "Irregular",
-                sitE_NO: isRegular ? regular_siteNumber : irregular_siteNumber,
-                sitE_AREA: isRegular ? blockArea : irregular_blockArea,
-                sitE_TYPEID: isRegular ? siteType : siteType,
-                sitE_AREAINSQFT: isRegular ? regularAreaSqFt : irregularAreaSqFt,
-                sitE_AREAINSQMT: isRegular ? regularAreaSqM : irregularAreaSqM,
-                sitE_LATITUDE: latitude,
-                sitE_LONGITUDE: longitude,
-                sitE_OWNER: ownerNames,
-                sitE_CORNERPLOT: isRegular ? cornerSite : irregularcornerSite,
-                sitE_NO_OF_SIDES: isRegular ? 2 : numSides,
-                sitE_EPID: "",
-                sitE_SASNO: "",
-                sitE_NORTH: isRegular ? chakbandiNorth : irregularchakbandiNorth,
-                sitE_SOUTH: isRegular ? chakbandiSouth : irregularchakbandiSouth,
-                sitE_EAST: isRegular ? chakbandiEast : irregularchakbandiEast,
-                sitE_WEST: isRegular ? chakbandiWest : irregularchakbandiWest,
-                sitE_REMARKS: "",
-                sitE_ADDITIONALINFO: "",
-                sitE_CREATEDBY: createdBy,
-                sitE_CREATEDNAME: createdName,
-                sitE_CREATEDROLE: roleID,
-                sitE_ZONE: selectedZone || '',
-                sitE_WARD: selectedWard || '',
-                // lkrS_NUMBEROFSITES: updated_sites,
-                // updatE_LKRS_NUMBEROFSITES: status_site,
-                siteDimensions
-            };
-        }
-        // Prepare payload
-        // const payload = {
-        //     sitE_ID: 0,
-        //     sitE_LKRS_ID: localLKRSID,
-        //     sitE_SHAPETYPE: isRegular ? "Regular" : "Irregular",
-        //     sitE_NO: isRegular ? regular_siteNumber : irregular_siteNumber,
-        //     sitE_AREA: isRegular ? blockArea : irregular_blockArea,
-        //     sitE_TYPEID: isRegular ? siteType : siteType,
-        //     sitE_AREAINSQFT: isRegular ? regularAreaSqFt : irregularAreaSqFt,
-        //     sitE_AREAINSQMT: isRegular ? regularAreaSqM : irregularAreaSqM,
-        //     sitE_LATITUDE: latitude,
-        //     sitE_LONGITUDE: longitude,
-        //     sitE_OWNER: ownerNames,
-        //     sitE_CORNERPLOT: isRegular ? cornerSite : irregularcornerSite,
-        //     sitE_NO_OF_SIDES: isRegular ? 2 : numSides,
-        //     sitE_EPID: "",
-        //     sitE_SASNO: "",
-        //     sitE_NORTH: isRegular ? chakbandiNorth : irregularchakbandiNorth,
-        //     sitE_SOUTH: isRegular ? chakbandiSouth : irregularchakbandiSouth,
-        //     sitE_EAST: isRegular ? chakbandiEast : irregularchakbandiEast,
-        //     sitE_WEST: isRegular ? chakbandiWest : irregularchakbandiWest,
-        //     sitE_REMARKS: "",
-        //     sitE_ADDITIONALINFO: "",
-        //     sitE_CREATEDBY: createdBy,
-        //     sitE_CREATEDNAME: createdName,
-        //     sitE_CREATEDROLE: roleID,
-        //     sitE_ZONE: selectedZone || '',
-        //     sitE_WARD: selectedWard || '',
-        //     // lkrS_NUMBEROFSITES: updated_sites,
-        //     // updatE_LKRS_NUMBEROFSITES: status_site,
-        //     siteDimensions
-        // };
 
-        try {
-            start_loader();
-            const response = await individualSiteAPI(payload);
+        const response = await fetch_LKRSID(localLKRSID);
 
-            if (response.responseStatus === true) {
+        if (response && Object.keys(response).length > 0) {
+            // Case 1: Land type is "surveyNo"
+            if (response.lkrS_LANDTYPE === "surveyNo") {
+                zoneName = selectedZone;
+                wardName = selectedWard;
+
+                // Case 2: Land type is "khata"
+            } else if (response.lkrS_LANDTYPE === "khata") {
+
+
                 try {
-                    const listPayload = {
-                        level: 1,
-                        LkrsId: LKRS_ID,
-                        SiteID: 0,
-                    };
-                    start_loader();
-                    const response = await individualSiteListAPI(listPayload);
+                    const khataJsonString = response.khataDetails?.khatA_JSON;
+                    if (khataJsonString) {
+                        const parsedKhata = JSON.parse(khataJsonString);
+                        const wardNo = parsedKhata?.response?.approvedPropertyDetails?.wardNumber;
 
-                    if (Array.isArray(response)) {
-                        setAllSites(response);
-                        setIsSitesSectionSaved(true);
+                        if (wardNo) {
+                            const requestWardId = [parseInt(wardNo, 10)];
+                            const zoneWardResponse = await fetchZoneFromWardList(requestWardId, response.lkrS_ID);
 
-                        const totalSitesFromAPI = response[0]?.lkrS_NUMBEROFSITES;
-                        sessionStorage.setItem("NUMBEROFSITES", totalSitesFromAPI);
+                            if (
+                                Array.isArray(zoneWardResponse) &&
+                                zoneWardResponse.length > 0 &&
+                                zoneWardResponse[0].wardName &&
+                                zoneWardResponse[0].zoneName
+                            ) {
+                                // Set name values
+                                wardName = zoneWardResponse[0].wardId;
+                                zoneName = zoneWardResponse[0].zoneID;
+
+                            }
+                        }
                     }
-
-                } catch (error) {
-                    console.error("Fetch Site Details Error:", error);
-
-                    if (error.response) {
-                        console.error("API responded with error data:", error.response.data);
-                    } else if (error.request) {
-                        console.error("No response received from API. Request was:", error.request);
-                    }
+                } catch (err) {
+                    console.error("Failed to parse khata JSON or fetch zone/ward", err);
                 }
-                finally {
-                    stop_loader();
-                }
-
-                Swal.fire({
-                    title: response.responseMessage,
-                    icon: "success",
-                    confirmButtonText: "OK",
-                });
-
-                if (isRegular) {
-                    resetFormFields();
-                } else {
-                    setNumSidesData(numSides);
-                    resetIrregularFormFields();
-                }
+            }
+            if (siteType === '8') {
+                payload = {
+                    sitE_ID: 0,
+                    sitE_LKRS_ID: localLKRSID,
+                    sitE_SHAPETYPE: "",
+                    sitE_NO: "",
+                    sitE_AREA: "",
+                    sitE_TYPEID: siteType,
+                    sitE_AREAINSQFT: roadAreaSqFt,
+                    sitE_AREAINSQMT: roadAreaSqM,
+                    sitE_LATITUDE: latitude,
+                    sitE_LONGITUDE: longitude,
+                    sitE_OWNER: ownerNames,
+                    sitE_CORNERPLOT: true,
+                    sitE_NO_OF_SIDES: 0,
+                    sitE_EPID: "",
+                    sitE_SASNO: "",
+                    sitE_NORTH: "",
+                    sitE_SOUTH: "",
+                    sitE_EAST: "",
+                    sitE_WEST: "",
+                    sitE_REMARKS: "",
+                    sitE_ADDITIONALINFO: "",
+                    sitE_CREATEDBY: createdBy,
+                    sitE_CREATEDNAME: createdName,
+                    sitE_CREATEDROLE: roleID,
+                    sitE_ZONE: zoneName,
+                    sitE_WARD: wardName,
+                    siteDimensions: null
+                };
             } else {
-                Swal.fire({
-                    text: response.responseMessage,
-                    icon: "error",
-                    confirmButtonText: "OK",
-                });
+                payload = {
+                    sitE_ID: 0,
+                    sitE_LKRS_ID: localLKRSID,
+                    sitE_SHAPETYPE: isRegular ? "Regular" : "Irregular",
+                    sitE_NO: isRegular ? regular_siteNumber : irregular_siteNumber,
+                    sitE_AREA: isRegular ? blockArea : irregular_blockArea,
+                    sitE_TYPEID: isRegular ? siteType : siteType,
+                    sitE_AREAINSQFT: isRegular ? regularAreaSqFt : irregularAreaSqFt,
+                    sitE_AREAINSQMT: isRegular ? regularAreaSqM : irregularAreaSqM,
+                    sitE_LATITUDE: latitude,
+                    sitE_LONGITUDE: longitude,
+                    sitE_OWNER: ownerNames,
+                    sitE_CORNERPLOT: isRegular ? cornerSite : irregularcornerSite,
+                    sitE_NO_OF_SIDES: isRegular ? 2 : numSides,
+                    sitE_EPID: "",
+                    sitE_SASNO: "",
+                    sitE_NORTH: isRegular ? chakbandiNorth : irregularchakbandiNorth,
+                    sitE_SOUTH: isRegular ? chakbandiSouth : irregularchakbandiSouth,
+                    sitE_EAST: isRegular ? chakbandiEast : irregularchakbandiEast,
+                    sitE_WEST: isRegular ? chakbandiWest : irregularchakbandiWest,
+                    sitE_REMARKS: "",
+                    sitE_ADDITIONALINFO: "",
+                    sitE_CREATEDBY: createdBy,
+                    sitE_CREATEDNAME: createdName,
+                    sitE_CREATEDROLE: roleID,
+                    sitE_ZONE: zoneName,
+                    sitE_WARD: wardName,
+                    siteDimensions
+                };
             }
 
-        } catch (error) {
-            console.error("Failed to insert data:", error);
-        } finally {
-            stop_loader();
+
+            try {
+                start_loader();
+                const response = await individualSiteAPI(payload);
+
+                if (response.responseStatus === true) {
+                    try {
+                        const listPayload = {
+                            level: 1,
+                            LkrsId: LKRS_ID,
+                            SiteID: 0,
+                        };
+                        start_loader();
+                        const response = await individualSiteListAPI(listPayload);
+
+                        if (Array.isArray(response)) {
+                            setAllSites(response);
+                            setIsSitesSectionSaved(true);
+
+                            const totalSitesFromAPI = response[0]?.lkrS_NUMBEROFSITES;
+                            sessionStorage.setItem("NUMBEROFSITES", totalSitesFromAPI);
+                        }
+
+                    } catch (error) {
+                        console.error("Fetch Site Details Error:", error);
+
+                        if (error.response) {
+                            console.error("API responded with error data:", error.response.data);
+                        } else if (error.request) {
+                            console.error("No response received from API. Request was:", error.request);
+                        }
+                    }
+                    finally {
+                        stop_loader();
+                    }
+
+                    Swal.fire({
+                        title: response.responseMessage,
+                        icon: "success",
+                        confirmButtonText: "OK",
+                    });
+
+                    if (isRegular) {
+                        resetFormFields();
+                    } else {
+                        setNumSidesData(numSides);
+                        resetIrregularFormFields();
+                    }
+                } else {
+                    Swal.fire({
+                        text: response.responseMessage,
+                        icon: "error",
+                        confirmButtonText: "OK",
+                    });
+                }
+
+            } catch (error) {
+                console.error("Failed to insert data:", error);
+            } finally {
+                stop_loader();
+            }
+
+        } else {
+            Swal.fire("Something went wrong, Please try again later!", "", "warning");
         }
+
+
+
+
+
+        //Road
+
     };
 
     const [ownerList, setOwnerList] = useState([]);
@@ -3546,25 +3578,25 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
             {
                 Header: "Shape",
                 accessor: (row) => {
-                    return `${row.sitE_SHAPETYPE} `;
+                    return row.sitE_SHAPETYPE ? row.sitE_SHAPETYPE : "-";
                 },
             },
             {
                 Header: "Site Number",
                 accessor: (row) => {
-                    return `${row.sitE_NO}`;
+                    return row.sitE_NO ? row.sitE_NO : "-";
                 },
             },
             {
                 Header: "Block/Area",
                 accessor: (row) => {
-                    return `${row.sitE_AREA}`;
+                    return row.sitE_AREA ? row.sitE_AREA : "-";
                 },
             },
             {
                 Header: "Number of sides",
                 accessor: (row) => {
-                    return `${row.sitE_NO_OF_SIDES}`;
+                    return row.sitE_NO_OF_SIDES ? row.sitE_NO_OF_SIDES : "-";
                 },
             },
             {
@@ -3596,26 +3628,34 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
                                 <div><b>Road Facing:</b> {roadFacingString}</div>
                             </div>
                         );
+                    } else {
+                        return "-";
                     }
 
                 },
             },
-
             {
                 Header: "Total Area",
                 accessor: (row) => {
-                    return `${row.sitE_AREAINSQFT} [Sq.ft], ${row.sitE_AREAINSQMT} [Sq.mtr]`;
+                    if (row.sitE_AREAINSQFT && row.sitE_AREAINSQMT) {
+                        return `${row.sitE_AREAINSQFT} [Sq.ft] - ${row.sitE_AREAINSQMT} [Sq.mtr]`;
+                    } else {
+                        return "-";
+                    }
                 },
             },
             {
                 Header: "Corner Site",
                 accessor: (row) => {
+                    return row.sitE_NO ? row.sitE_NO : "-";
+
                     return row.sitE_CORNERPLOT ? "YES" : "NO";
                 },
             },
             {
                 Header: "Type of Site",
                 accessor: (row) => {
+                    return row.sitE_NO ? row.sitE_NO : "-";
                     return `${row.sitE_TYPE}`;
                 },
             },

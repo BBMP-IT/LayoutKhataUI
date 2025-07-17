@@ -9229,7 +9229,7 @@
   }
   
   blockquote cite:before {
-    content: '— ';
+    content: "— ";
   }
   
   code {
@@ -9300,7 +9300,7 @@
   }
   
   .section-nav:before {
-    content: 'Table of contents:';
+    content: "Table of contents:";
     display: block;
     font-weight: 600;
   }
@@ -12772,7 +12772,7 @@
   }
   
   .list-inline-dots .list-inline-item + .list-inline-item:before {
-    content: '· ';
+    content: "· ";
     margin-left: -2px;
     margin-right: 3px;
   }
@@ -14684,7 +14684,7 @@
   }
   
   .selectize-control.plugin-drag_drop .ui-sortable-placeholder::after {
-    content: '!';
+    content: "!";
     visibility: hidden;
   }
   

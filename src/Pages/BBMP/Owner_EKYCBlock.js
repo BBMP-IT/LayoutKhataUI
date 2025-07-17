@@ -444,7 +444,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
                 // };
                 const transactionNumber = 83;
                 const OwnerType = "NEWOWNER";
-                const redirectSource = "";
+                const redirectSource = "LYT";
 
 
 

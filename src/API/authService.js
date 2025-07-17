@@ -509,6 +509,7 @@ export const ekyc_Response = async (transactionNumber, OwnerType,  ownerName, ow
     // }).toString();
 
     // const url = `${config.endpoints.ekyc_response}?${queryParams}`;
+    
 
     const query = `?LKRS_ID=${LKRS_ID}&OwnerNumber=${ownerNo}&transactionNumber=${transactionNumber}&OwnerType=${OwnerType}&ownName=${ownerName}&redirectSource=${redirectSource}`;
     const url = config.endpoints.ekyc_response + query;
