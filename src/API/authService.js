@@ -700,11 +700,11 @@ export const dcConversionListAPI = async (LKRSID, dcID) => {
   }
 };
 //DC conversion Fetch from Bhoomi API 
-export const bhommiDCConversionFetchAPI = async (affidavitID) => {
+export const bhommiDCConversionFetchAPI = async (affidavitID, localLKRSID) => {
   try {
     const response = await apiService.postRequest(
       `${config.endpoints.fetchDCconversion}`,
-      { affidavitID: affidavitID }
+      { affidavitID: affidavitID, lkrS_ID: localLKRSID }
     );
     return response;
   } catch (error) {
@@ -723,13 +723,25 @@ export const deleteDCconversionInfo = async (payload) => {
   }
 };
 //zone fetch API 
-export const fetchZoneFromWardList = async (wardIds, lkrS_ID = 600) => {
+export const fetchZoneFromWardList = async (wardIds, lkrS_ID) => {
   try {
     const response = await apiService.postRequest(`${config.endpoints.fetchZoneWard}`, {
       wardId: wardIds,
       lkrS_ID: lkrS_ID,
     });
 
+    return response;
+  } catch (error) {
+    console.error("Error fetching zone from ward list", error);
+    throw error;
+  }
+};
+
+//street fetch API 
+export const fetchStreetFromWardList = async (wardId) => {
+  try {
+    const url = `${config.endpoints.fetchStreet}?wardId=${wardId}`;
+    const response = await apiService.getRequest(url);
     return response;
   } catch (error) {
     console.error("Error fetching zone from ward list", error);

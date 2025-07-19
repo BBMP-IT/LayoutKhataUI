@@ -25,8 +25,8 @@ import { useAuth } from "../../AuthContext";
 
 const BBMPLogin = () => {
     const navigate = useNavigate();
-const { UseLogin } = useAuth();
-const { loading, start_loader, stop_loader } = useContext(LoaderContext);
+    const { UseLogin } = useAuth();
+    const { loading, start_loader, stop_loader } = useContext(LoaderContext);
     const [menuOpen, setMenuOpen] = useState(false);
     const { t, i18n } = useTranslation();
     const isEnglish = i18n.language === 'kn';
@@ -74,7 +74,7 @@ const { loading, start_loader, stop_loader } = useContext(LoaderContext);
         sessionStorage.setItem("selectedLanguage", newLang);
     };
 
-   
+
     //generate Captcha
     const generateCaptcha = () => {
         const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghjklmnopqrstuvwxyz";
@@ -93,8 +93,13 @@ const { loading, start_loader, stop_loader } = useContext(LoaderContext);
         setCaptchaError("");
 
         // Phone number validation
-        if (!phoneNumber || phoneNumber.trim() === "") {
-            setPhoneError("Please enter a valid phone number");
+        if (
+            !phoneNumber ||
+            phoneNumber.trim() === "" ||
+            !/^[1-9][0-9]{9}$/.test(phoneNumber) ||
+            /^(\d)\1{9}$/.test(phoneNumber)  // checks for 10 repeated digits (0000000000, 1111111111, etc.)
+        ) {
+            setPhoneError("Please enter a valid 10-digit phone number that doesn't start with 0 or contain repeated digits");
             isValid = false;
         }
 
@@ -186,20 +191,20 @@ const { loading, start_loader, stop_loader } = useContext(LoaderContext);
             const data = response.data;
 
             if (data.responseCode === "200" && data.responseStatus === true) {
-                sessionStorage.setItem('PhoneNumber',phoneNumber);
+                sessionStorage.setItem('PhoneNumber', phoneNumber);
                 console.log("OTP verified, calling generate_Token");
                 generate_Token();
                 console.log("Token generated, showing Swal");
-               
+
                 Swal.fire({
                     title: "OTP Verified!",
                     text: "Your OTP has been successfully verified.",
                     icon: "success",
                     confirmButtonText: "OK"
                 }).then(() => {
-        // Navigate *after* user clicks OK
-        navigate('/homePage');
-    });
+                    // Navigate *after* user clicks OK
+                    navigate('/homePage');
+                });
             }
             else {
                 setOtp('');
@@ -213,24 +218,24 @@ const { loading, start_loader, stop_loader } = useContext(LoaderContext);
             stop_loader();
         }
     };
-  const generate_Token = async () => {
-    try {
-      const response = await getAccessToken();
-      if (response?.access_token) {
-        // sessionStorage.clear();
-        sessionStorage.setItem('PhoneNumber',phoneNumber);
-        sessionStorage.setItem('access_token', response.access_token);
-        UseLogin(response.access_token);
-        return true;  // Indicate success
-      } else {
-        console.error("No access token received");
-        return false;
-      }
-    } catch (err) {
-      console.error("Error generating token", err);
-      return false;
-    }
-  };
+    const generate_Token = async () => {
+        try {
+            const response = await getAccessToken();
+            if (response?.access_token) {
+                // sessionStorage.clear();
+                sessionStorage.setItem('PhoneNumber', phoneNumber);
+                sessionStorage.setItem('access_token', response.access_token);
+                UseLogin(response.access_token);
+                return true;  // Indicate success
+            } else {
+                console.error("No access token received");
+                return false;
+            }
+        } catch (err) {
+            console.error("Error generating token", err);
+            return false;
+        }
+    };
 
 
     //resend OTP btn
@@ -321,8 +326,8 @@ const { loading, start_loader, stop_loader } = useContext(LoaderContext);
     return (
         // <DashboardLayout>
         //     {loading && <Loader />}
-          
-            <div className="container mt-4">
+
+        <div className="container mt-4">
             <div className="d-block d-md-none">
                 <div className="d-flex flex-wrap justify-content-center text-center align-items-center gap-3 px-2">
 
@@ -481,6 +486,7 @@ const { loading, start_loader, stop_loader } = useContext(LoaderContext);
                                                             placeholder={t('translation.LoginForm.captcha.placeholder')}
                                                             value={captchaInput}
                                                             onChange={handleCaptchaChange}  // Using the function here
+                                                            onPaste={(e) => e.preventDefault()}
                                                         />
                                                     </div>
                                                     {captchaError && <label className="text-danger">{captchaError}</label>}
@@ -490,15 +496,16 @@ const { loading, start_loader, stop_loader } = useContext(LoaderContext);
 
                                                 <div className="input-group mb-3">
                                                     <span className="input-group-text"><i className="fa fa-lock"></i></span>
-                                                   
+
                                                     <input style={{ backgroundColor: 'lightgray', color: '#fff' }}
                                                         className="form-control captcha-box   text-dark fw-bold text-center"
                                                         value={captcha}
                                                         readOnly
+                                                        onCopy={(e) => e.preventDefault()}
                                                     />
                                                     <span className="input-group-text" style={{
                                                         background: "linear-gradient(45deg,#0077b6,#023e8a)",
-                                                        color: "#fff", width:"130px", cursor: "pointer" 
+                                                        color: "#fff", width: "130px", cursor: "pointer"
                                                     }} onClick={generateCaptcha} title="Refresh CAPTCHA"><i className="fa fa-refresh"></i>&nbsp;Regenerate</span>
                                                 </div>
                                                 <br />
@@ -597,7 +604,7 @@ const { loading, start_loader, stop_loader } = useContext(LoaderContext);
                     </div>
                 </div>
             </section>
-            </div>
+        </div>
         // {/* </DashboardLayout> */}
 
     );

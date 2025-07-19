@@ -628,12 +628,12 @@ const BBMP_SubmittedInfo = () => {
             sortable: true,
             minWidth: '150px', center: true,
         },
-        {
-            name: "Release Type",
-            selector: row => row.releaseType,
-            sortable: true,
-            minWidth: '150px', center: true,
-        },
+        // {
+        //     name: "Release Type",
+        //     selector: row => row.releaseType,
+        //     sortable: true,
+        //     minWidth: '150px', center: true,
+        // },
     ];
     const base64ToBlob = (dataUrl, mimeType = 'application/pdf') => {
         try {

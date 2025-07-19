@@ -322,7 +322,7 @@ const BBMP_LayoutForm = () => {
 const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, setDisplay_LKRS_ID, setIsRTCSectionSaved, setOwnerName }) => {
 
     const { loading, start_loader, stop_loader } = useContext(LoaderContext);
-    const { showModal, setModalContent, setModalTitle } = useContext(ModalContext);
+    const { showModal, setModalContent, setModalTitle, hideModal } = useContext(ModalContext);
     // const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
     const [language, setLanguage] = useState(sessionStorage.getItem("selectedLanguage"));
     const { t, i18n } = useTranslation();
@@ -648,123 +648,6 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
     const tableRTCRef = useRef(null);
 
 
-
-    //First block save API
-
-    //     const handleViewRTC = async (item) => {
-    //   const ownersToAdd = data.filter(o => o.main_owner_no === item.main_owner_no);
-
-    //   const newOwners = ownersToAdd.filter((ownerItem) => {
-    //     return !rtcAddedData.some(
-    //       (data) =>
-    //         data.survey_no === ownerItem.survey_no &&
-    //         data.surnoc === ownerItem.surnoc &&
-    //         data.hissa_no === ownerItem.hissa_no &&
-    //         data.owner === ownerItem.owner &&
-    //         data.father === ownerItem.father &&
-    //         data.owner_no === ownerItem.owner_no
-    //     );
-    //   });
-
-    //   if (newOwners.length === 0) {
-    //     Swal.fire('Duplicate!', 'All selected records already exist in the table.', 'warning');
-    //     return;
-    //   }
-
-    //   const { value: formValues } = await Swal.fire({
-    //     title: `Survey Number/Surnoc/Hissa No: ${item.survey_no}/${item.surnoc}/${item.hissa_no}`,
-    //     html: `
-    //       <div style="margin-top: 20px;">
-    //         <div class="row">
-    //           <div class="col-md-3">
-    //             <label class="form-label mt-4" style="text-align: left;">Total Extent</label>
-    //           </div>
-
-    //           <div class="col-md-3">
-    //             <input type="tel" class="form-control" id="total_acre" placeholder="Acre" />
-    //           </div>
-
-    //           <div class="col-md-3">
-    //             <input type="tel" class="form-control" id="total_gunta" placeholder="Gunta" />
-    //           </div>
-
-    //           <div class="col-md-3">
-    //             <input type="tel" class="form-control" id="total_fgunta" placeholder="FGunta" />
-    //           </div>
-
-    //           <div class="col-md-3 mt-4">
-    //             <label class="form-label" style="text-align: left;">BDA Approved Extent</label>
-    //           </div>
-
-    //           <div class="col-md-3">
-    //             <input type="tel" class="form-control" id="bda_acre" placeholder="Acre" />
-    //           </div>
-
-    //           <div class="col-md-3">
-    //             <input type="tel" class="form-control" id="bda_gunta" placeholder="Gunta" />
-    //           </div>
-
-    //           <div class="col-md-3">
-    //             <input type="tel" class="form-control" id="bda_fgunta" placeholder="FGunta" />
-    //           </div>
-    //         </div>
-    //       </div>
-    //     `,
-    //     showCancelButton: true,
-    //     confirmButtonText: 'Save',
-    //     cancelButtonText: 'Cancel',
-    //     customClass: {
-    //       popup: 'swal2-xl'
-    //     },
-    //     focusConfirm: false,
-    //     preConfirm: () => {
-    //       return {
-    //         totalAcre: document.getElementById('total_acre')?.value,
-    //         totalGunta: document.getElementById('total_gunta')?.value,
-    //         totalFGunta: document.getElementById('total_fgunta')?.value,
-    //         bdaAcre: document.getElementById('bda_acre')?.value,
-    //         bdaGunta: document.getElementById('bda_gunta')?.value,
-    //         bdaFGunta: document.getElementById('bda_fgunta')?.value
-    //       };
-    //     }
-    //   });
-
-    //   if (formValues) {
-    //     const selectedDistrictObj = districts.find(d => String(d.districT_CODE) === String(selectedDistrict)) || {};
-    //     const selectedTalukObj = taluks.find(t => String(t.talukA_CODE) === String(selectedTaluk)) || {};
-    //     const selectedHobliObj = hoblis.find(h => String(h.hoblI_CODE) === String(selectedHobli)) || {};
-    //     const selectedVillageObj = villages.find(v => String(v.villagE_CODE) === String(selectedVillage)) || {};
-
-    //     const locationData = {
-    //       district: selectedDistrictObj.districT_NAME || '',
-    //       districtCode: selectedDistrictObj.districT_CODE || '',
-    //       taluk: selectedTalukObj.displayName || '',
-    //       talukCode: selectedTalukObj.talukA_CODE || '',
-    //       hobli: selectedHobliObj.displayName || '',
-    //       hobliCode: selectedHobliObj.hoblI_CODE || '',
-    //       village: selectedVillageObj.displayName || '',
-    //       villageCode: selectedVillageObj.villagE_CODE || '',
-    //       ...formValues
-    //     };
-
-    //     const ownersWithLocation = newOwners.map(o => ({
-    //       ...o,
-    //       ...locationData
-    //     }));
-
-    //     setRtcAddedData(prev => [...prev, ...ownersWithLocation]);
-
-    //     toast.success(`${ownersWithLocation.length} record(s) added!`);
-
-    //     setTimeout(() => {
-    //       tableRTCRef.current?.scrollIntoView({
-    //         behavior: 'smooth',
-    //         block: 'nearest',
-    //       });
-    //     }, 300);
-    //   }
-    // };
-
     const [showRTCModal, setShowRTCModal] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
 
@@ -772,9 +655,9 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
     const [total_Acre, setTotal_Acre] = useState('');
     const [total_Gunta, setTotal_Gunta] = useState('');
     const [total_FGunta, setTotal_FGunta] = useState('');
-    const [bdaAcre, setBdaAcre] = useState('');
-    const [bdaGunta, setBdaGunta] = useState('');
-    const [bdaFGunta, setBdaFGunta] = useState('');
+    const [ldaAcre, setLdaAcre] = useState('');
+    const [ldaGunta, setLdaGunta] = useState('');
+    const [ldaFGunta, setLdaFGunta] = useState('');
 
     const [aKharabAcre, setAKharabAcre] = useState('');
     const [aKharabGunta, setAKharabGunta] = useState('');
@@ -789,52 +672,13 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
     const [isAKharabIncludedError, setIsAKharabIncludedError] = useState("");
 
 
-    const handleShowModal = () => {
-        setModalTitle(
-            <h5>
-                <span style={{ backgroundColor: 'yellow', padding: '2px 6px' }}>
-                    Survey Number/Surnoc/Hissa No Details :
-                </span>&nbsp;3/*/2
-            </h5>
-        );
-
-        setModalContent(
-         <div>welcome</div>
-        );
-
-        showModal();
-    };
-  const handleClick = () => {
-    setModalTitle('Fill This Form');
-    setModalContent(<MyFormComponent />);
-    showModal();
-  };
-
-    const [pendingRTCData, setPendingRTCData] = useState([]);
 
 
-    useEffect(() => {
-        setIsAKharabIncluded("1"); // ✅ this selects "Yes"
-    }, []);
-
-    useEffect(() => {
-        console.log("Dropdown value:", isAKharabIncluded);
-    }, [isAKharabIncluded]);
 
 
-const [showModal1, setShowModal1] = useState(false);
-  const handleChange = (value) => {
-    const newValue = value === "1" ? true : value === "2" ? false : "";
-    setIsAKharabIncluded(newValue);
+  
 
-    if (value === "1") {
-      setShowModal1(true);
-    } else {
-      setShowModal1(false);
-    }
-  };
-
-//modal popup
+    //modal popup
     // const handleViewRTC = async (item) => {
     //     const mainOwnerNo = item.main_owner_no;
 
@@ -1010,77 +854,107 @@ const [showModal1, setShowModal1] = useState(false);
     //     // }, 0);
     // };
 
+    //  const [totalSQFT, setTotalSQFT] = useState('');
+    const [totalSQM, setTotalSQM] = useState('');
+
+
+
 
     const handleViewRTC = async (item) => {
-    const mainOwnerNo = item.main_owner_no;
+  const mainOwnerNo = item.main_owner_no;
 
-    // Get all owners under this main owner
-    const ownersToAdd = data.filter(o => o.main_owner_no === mainOwnerNo);
-
-    // Filter out already added owners
-    const newOwners = ownersToAdd.filter((ownerItem) => {
-        return !rtcAddedData.some(
-            (data) =>
-                data.survey_no === ownerItem.survey_no &&
-                data.surnoc === ownerItem.surnoc &&
-                data.hissa_no === ownerItem.hissa_no &&
-                data.owner === ownerItem.owner &&
-                data.father === ownerItem.father &&
-                data.owner_no === ownerItem.owner_no
-        );
-    });
-
-    if (newOwners.length === 0) {
-        Swal.fire('Duplicate!', 'All selected records already exist in the table.', 'warning');
-        return;
-    }
-
-    // Remove duplicate survey entries
-    const seenSurveyKeys = new Set();
-    const uniqueSurveyOwners = newOwners.filter(o => {
-        const key = `${o.survey_no}-${o.surnoc}-${o.hissa_no}`;
-        if (seenSurveyKeys.has(key)) return false;
-        seenSurveyKeys.add(key);
-        return true;
-    });
-
-    // Map location info
-    const selectedDistrictObj = districts.find(d => String(d.districT_CODE) === String(selectedDistrict)) || {};
-    const selectedTalukObj = taluks.find(t => String(t.talukA_CODE) === String(selectedTaluk)) || {};
-    const selectedHobliObj = hoblis.find(h => String(h.hoblI_CODE) === String(selectedHobli)) || {};
-    const selectedVillageObj = villages.find(v => String(v.villagE_CODE) === String(selectedVillage)) || {};
-
-    const locationData = {
-        district: selectedDistrictObj.districT_NAME || '',
-        districtCode: selectedDistrictObj.districT_CODE || '',
-        taluk: selectedTalukObj.displayName || '',
-        talukCode: selectedTalukObj.talukA_CODE || '',
-        hobli: selectedHobliObj.displayName || '',
-        hobliCode: selectedHobliObj.hoblI_CODE || '',
-        village: selectedVillageObj.displayName || '',
-        villageCode: selectedVillageObj.villagE_CODE || '',
-    };
-
-    // Final mapped owners with location info
-    const ownersWithLocation = uniqueSurveyOwners.map(o => ({
-        ...o,
-        ...locationData,
-    }));
-
-    // Optionally update extent fields from main owner
-    const mainOwnerRecord = data.find(
-        o => o.main_owner_no === mainOwnerNo && o.owner_no === mainOwnerNo
+  const ownersToAdd = data.filter(o => o.main_owner_no === mainOwnerNo);
+  const newOwners = ownersToAdd.filter((ownerItem) => {
+    return !rtcAddedData.some(
+      (data) =>
+        data.survey_no === ownerItem.survey_no &&
+        data.surnoc === ownerItem.surnoc &&
+        data.hissa_no === ownerItem.hissa_no &&
+        data.owner === ownerItem.owner &&
+        data.father === ownerItem.father &&
+        data.owner_no === ownerItem.owner_no
     );
+  });
 
-    if (mainOwnerRecord) {
-        setTotal_Acre(mainOwnerRecord.ext_acre ?? '');
-        setTotal_Gunta(mainOwnerRecord.ext_gunta ?? '');
-        setTotal_FGunta(mainOwnerRecord.ext_fgunta ?? '');
-    }
+  if (newOwners.length === 0) {
+    Swal.fire('Duplicate!', 'All selected records already exist in the table.', 'warning');
+    return;
+  }
 
-    // ✅ Append new entries to the rtcAddedData state for table
-    setRtcAddedData(prev => [...prev, ...ownersWithLocation]);
+  const seenSurveyKeys = new Set();
+  const uniqueSurveyOwners = newOwners.filter(o => {
+    const key = `${o.survey_no}-${o.surnoc}-${o.hissa_no}`;
+    if (seenSurveyKeys.has(key)) return false;
+    seenSurveyKeys.add(key);
+    return true;
+  });
+
+  const selectedDistrictObj = districts.find(d => String(d.districT_CODE) === String(selectedDistrict)) || {};
+  const selectedTalukObj = taluks.find(t => String(t.talukA_CODE) === String(selectedTaluk)) || {};
+  const selectedHobliObj = hoblis.find(h => String(h.hoblI_CODE) === String(selectedHobli)) || {};
+  const selectedVillageObj = villages.find(v => String(v.villagE_CODE) === String(selectedVillage)) || {};
+
+  const locationData = {
+    district: selectedDistrictObj.districT_NAME || '',
+    districtCode: selectedDistrictObj.districT_CODE || '',
+    taluk: selectedTalukObj.displayName || '',
+    talukCode: selectedTalukObj.talukA_CODE || '',
+    hobli: selectedHobliObj.displayName || '',
+    hobliCode: selectedHobliObj.hoblI_CODE || '',
+    village: selectedVillageObj.displayName || '',
+    villageCode: selectedVillageObj.villagE_CODE || '',
+  };
+
+  const ownersWithLocation = uniqueSurveyOwners.map(o => ({
+    ...o,
+    ...locationData,
+  }));
+
+  const mainOwnerRecord = data.find(
+    o => o.main_owner_no === mainOwnerNo && o.owner_no === mainOwnerNo
+  );
+
+  if (mainOwnerRecord) {
+    setTotal_Acre(mainOwnerRecord.ext_acre);
+    setTotal_Gunta(mainOwnerRecord.ext_gunta);
+    setTotal_FGunta(mainOwnerRecord.ext_fgunta);
+  }
+
+  const surveyDetails = uniqueSurveyOwners
+    .map(o => `${o.survey_no}/${o.surnoc}/${o.hissa_no}`)
+    .join(', ');
+
+  setModalTitle(`Survey Number/Surnoc/Hissa No Details: ${surveyDetails}`);
+  setModalContent(
+    <MyFormComponent
+      totalAcre={mainOwnerRecord?.ext_acre}
+      totalGunta={mainOwnerRecord?.ext_gunta}
+      totalFGunta={mainOwnerRecord?.ext_fgunta}
+      onSave={(ldaAcre, ldaGunta, ldaFGunta) => {
+        const ownersWithLocationAndLda = ownersWithLocation.map(o => ({
+          ...o,
+          lda_acre: ldaAcre,
+          lda_gunta: ldaGunta,
+          lda_fgunta: ldaFGunta
+        }));
+
+        setRtcAddedData(prev => [...prev, ...ownersWithLocationAndLda]);
+        setLdaAcre(ldaAcre);
+        setLdaGunta(ldaGunta);
+        setLdaFGunta(ldaFGunta);
+
+        // ✅ close modal after data is added
+        hideModal();
+      }}
+    />
+  );
+  showModal();
 };
+
+
+
+
+
 
 
     const handleSaveRTC = async () => {
@@ -1368,6 +1242,46 @@ const [showModal1, setShowModal1] = useState(false);
         setAreaSqft(totalSqFt);
         sessionStorage.setItem('areaSqft', totalSqFt);
     });
+
+    const { bhoomiTotals, ldaTotals } = React.useMemo(() => {
+  const base = () => ({ acre: 0, gunta: 0, fgunta: 0, sqft: 0, sqm: 0 });
+  const totals = { bhoomi: base(), lda: base() };
+
+  combinedData.forEach((row) => {
+    // ---------- Bhoomi ----------
+    totals.bhoomi.fgunta += +row.ext_fgunta || 0;
+    totals.bhoomi.gunta  += +row.ext_gunta  || 0;
+    totals.bhoomi.acre   += +row.ext_acre   || 0;
+
+    // ---------- LDA (may be blank) ----------
+    totals.lda.fgunta += +row.lda_fgunta || 0;
+    totals.lda.gunta  += +row.lda_gunta  || 0;
+    totals.lda.acre   += +row.lda_acre   || 0;
+  });
+
+  const normalize = (o) => {
+    o.gunta += Math.floor(o.fgunta / 16);
+    o.fgunta = o.fgunta % 16;
+    o.acre  += Math.floor(o.gunta / 40);
+    o.gunta  = o.gunta % 40;
+    o.sqft   = o.acre * 43560 + o.gunta * 1089 + o.fgunta * 68.0625;
+    o.sqm    = o.sqft * 0.092903;
+  };
+
+  normalize(totals.bhoomi);
+  normalize(totals.lda);
+  return { bhoomiTotals: totals.bhoomi, ldaTotals: totals.lda };
+}, [combinedData]);
+
+// ——————————————————————————————————————————————————————————————
+// 2️⃣  Persist in sessionStorage (once per change)
+// ——————————————————————————————————————————————————————————————
+React.useEffect(() => {
+  sessionStorage.setItem('areaSqft',      bhoomiTotals.sqft);  // existing key
+  sessionStorage.setItem('ldaAreaSqft',   ldaTotals.sqft);     // new key
+}, [bhoomiTotals.sqft, ldaTotals.sqft]);
+
+
     // Normalize fgunta -> gunta and acre
     totalGunta += Math.floor(totalFGunta / 16);
     totalFGunta = totalFGunta % 16;
@@ -1613,12 +1527,8 @@ const [showModal1, setShowModal1] = useState(false);
                 </div>
             )}
 
-            {/* <button className="btn btn-primary" onClick={handleShowModal}>
-                Show Modal
-            </button>
-<button onClick={handleClick}>Open Modal</button>; */}
-          
 
+         
 
             <hr />
             {/* Added RTC Table */}
@@ -1652,13 +1562,17 @@ const [showModal1, setShowModal1] = useState(false);
                                     <th>Village</th>
                                     <th>Owner Name</th>
                                     <th>Survey Number / Surnoc / Hissa Number</th>
-                                    <th>Extent (Acre.Gunta.Fgunta)</th>
+                                    <th>Bhoomi Extent (Acre.Gunta.Fgunta)</th>
+                                    <th>LDA Extent (Acre.Gunta.Fgunta)</th>
                                     <th>SqFt</th>
                                     <th>SqM</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {paginatedData.map((row, index) => (
+
+
+
                                     <tr key={index}>
                                         <td >
                                             <button className="btn btn-sm btn-outline-danger" onClick={() => handleRemoveRTC(row)}>
@@ -1673,6 +1587,9 @@ const [showModal1, setShowModal1] = useState(false);
                                         <td>{row.owner}</td>
                                         <td>{`${row.survey_no}/${row.surnoc}/${row.hissa_no}`}</td>
                                         <td>{`${row.ext_acre}.${row.ext_gunta}.${row.ext_fgunta}`}</td>
+                                        {/* NEW – LDA extent */}
+                                        <td>{`${row.lda_acre ?? ''}.${row.lda_gunta ?? ''}.${row.lda_fgunta ?? ''}`}</td>
+
                                         <td>
                                             {(
                                                 (parseFloat(row.ext_acre) * 43560) +
@@ -1696,6 +1613,8 @@ const [showModal1, setShowModal1] = useState(false);
                                 <tr>
                                     <th colSpan={6}></th>
                                     <th colSpan={2} className="text-end fw-bold">Total Area:</th>
+                                    <th className="text-left fw-bold" >{`${totalAcre}.${totalGunta}.${totalFGunta}`}</th>
+                                    
                                     <th className="text-left fw-bold" >{`${totalAcre}.${totalGunta}.${totalFGunta}`}</th>
                                     <th className='fw-bold'>{totalSqFt.toFixed(2)}</th>
                                     <th className='fw-bold'>{totalSqM.toFixed(2)}</th>
@@ -2392,13 +2311,13 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
             khatA_OWNER_DETAILS: epid_fetchedData?.OwnerDetails.map(owner => ({
                 owN_ID: 0,
                 owN_LKRS_ID: 0,
-                owN_NAME_KN: owner.owN_NAME_KN || "",
-                owN_NAME_EN: owner.ownerName || "",
-                owN_IDTYPE: owner.idType || "",
-                owN_IDNUMBER: owner.idNumber || "",
-                owN_RELATIONTYPE: owner.owN_RELATIONTYPE || "",
-                owN_RELATIONNAME: owner.owN_RELATIONNAME || "",
-                owN_MOBILENUMBER: owner.mobileNumber || "",
+                owN_NAME_KN: owner.owN_NAME_KN,
+                owN_NAME_EN: owner.ownerName,
+                owN_IDTYPE: owner.idType,
+                owN_IDNUMBER: owner.idNumber,
+                owN_RELATIONTYPE: owner.relationShipType,
+                owN_RELATIONNAME: owner.identifierName,
+                owN_MOBILENUMBER: owner.mobileNumber,
                 owN_REMARKS: "",
                 owN_ADDITIONALINFO: "",
                 owN_CREATEDBY: createdBy,
@@ -2412,7 +2331,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                 own_IsNewlyAddedOwner: false,
                 own_TransactionNo: "",
                 owN_COMPANYOWNPROPERTY: String(owner.iscompany).toUpperCase() === 'Y',
-                owN_COMPANYNAME: String(owner.iscompany).toUpperCase() === 'Y' ? owner.companyname || "" : ""
+                owN_COMPANYNAME: String(owner.iscompany).toUpperCase() === 'Y' ? owner.companyname : ""
             })),
             surveY_NUMBER_DETAILS: null
         };
@@ -2490,17 +2409,17 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
 
     const [showModal, setShowModal] = useState(false);
 
-  const handleShowModal = () => {
-    setShowModal(true);
-  };
+    const handleShowModal = () => {
+        setShowModal(true);
+    };
 
-  const handleCloseModal = () => {
-    setShowModal(false);
-  };
+    const handleCloseModal = () => {
+        setShowModal(false);
+    };
 
     return (
         <div className="row g-3">
-            
+
 
             <button className='btn btn-block' onClick={handleGetLKRSID} ref={buttonRef} hidden>Click me</button>
             <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4  mt-3">
@@ -2766,72 +2685,97 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
 };
 
 
-const MyFormComponent = () => {
-  const [selectedOption, setSelectedOption] = useState('');
-  const [radioValue, setRadioValue] = useState('');
-  const [textValue, setTextValue] = useState('');
+const MyFormComponent = ({ totalAcre, totalGunta, totalFGunta, onSave }) => {
+  const [ldaAcre, setLdaAcre] = useState(totalAcre);
+  const [ldaGunta, setLdaGunta] = useState(totalGunta);
+  const [ldaFGunta, setLdaFGunta] = useState(totalFGunta);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const toSqFt = (acre = 0, gunta = 0, fgunta = 0) =>
+    Number(acre) * 43560 + Number(gunta) * 1089 + Number(fgunta) * 68.0625;
+
+  const handleSubmit = () => {
+    const totalSqFt = toSqFt(totalAcre, totalGunta, totalFGunta);
+    const ldaSqFt = toSqFt(ldaAcre, ldaGunta, ldaFGunta);
+
+    if (ldaSqFt > totalSqFt) {
+      setErrorMsg("LDA Approved Extent cannot exceed the Total Extent.");
+      return;
+    }
+
+    setErrorMsg("");
+    onSave(ldaAcre, ldaGunta, ldaFGunta); // ✅ parent will handle closing
+  };
 
   return (
     <div>
-      {/* Dropdown */}
-      <div className="mb-3">
-        <label className="form-label">Select Option</label>
-        <select
-          className="form-select"
-          value={selectedOption}
-          onChange={(e) => setSelectedOption(e.target.value)}
-        >
-          <option value="">-- Select --</option>
-          <option value="option1">Option 1</option>
-          <option value="option2">Option 2</option>
-        </select>
-      </div>
-
-      {/* Radio */}
-      <div className="mb-3">
-        <label className="form-label d-block">Choose One</label>
-        <div className="form-check form-check-inline">
-          <input
-            className="form-check-input"
-            type="radio"
-            name="choice"
-            value="yes"
-            checked={radioValue === 'yes'}
-            onChange={(e) => setRadioValue(e.target.value)}
-          />
-          <label className="form-check-label">Yes</label>
+      {/* Total Extent */}
+      <div className="row mb-3">
+        <div className="col-3">
+          <label className="form-label">Total Extent: <span className='mandatory_color'>*</span></label>
         </div>
-        <div className="form-check form-check-inline">
-          <input
-            className="form-check-input"
-            type="radio"
-            name="choice"
-            value="no"
-            checked={radioValue === 'no'}
-            onChange={(e) => setRadioValue(e.target.value)}
-          />
-          <label className="form-check-label">No</label>
+        <div className="col-3">
+          <label className="form-label">Acre *</label>
+          <input type="text" className="form-control" value={totalAcre} readOnly />
+        </div>
+        <div className="col-3">
+          <label className="form-label">Gunta *</label>
+          <input type="text" className="form-control" value={totalGunta} readOnly />
+        </div>
+        <div className="col-3">
+          <label className="form-label">FGunta *</label>
+          <input type="text" className="form-control" value={totalFGunta} readOnly />
         </div>
       </div>
 
-      {/* Textbox */}
-      <div className="mb-3">
-        <label className="form-label">Enter Text</label>
-        <input
-          type="text"
-          className="form-control"
-          value={textValue}
-          onChange={(e) => setTextValue(e.target.value)}
-        />
+      {/* LDA Approved Extent */}
+      <div className="row mb-3">
+        <div className="col-3">
+          <label className="form-label">LDA Approved Extent: <span className='mandatory_color'>*</span></label>
+        </div>
+        <div className="col-3">
+          <input
+            type="text"
+            className="form-control"
+            value={ldaAcre}
+            onChange={(e) => setLdaAcre(e.target.value)}
+          />
+        </div>
+        <div className="col-3">
+          <input
+            type="text"
+            className="form-control"
+            value={ldaGunta}
+            onChange={(e) => setLdaGunta(e.target.value)}
+          />
+        </div>
+        <div className="col-3">
+          <input
+            type="text"
+            className="form-control"
+            value={ldaFGunta}
+            onChange={(e) => setLdaFGunta(e.target.value)}
+          />
+        </div>
+        {errorMsg && (
+          <div className="col-12">
+            <small className="text-danger fw-semibold">{errorMsg}</small>
+          </div>
+        )}
       </div>
 
-      {/* Output for testing */}
-      <pre>
-        {JSON.stringify({ selectedOption, radioValue, textValue }, null, 2)}
-      </pre>
+      {/* Submit */}
+      <div className="text-end">
+        <button className="btn btn-primary" onClick={handleSubmit}>
+          Save and Close
+        </button>
+      </div>
     </div>
   );
 };
+
+
+
 
 
 export default BBMP_LayoutForm;

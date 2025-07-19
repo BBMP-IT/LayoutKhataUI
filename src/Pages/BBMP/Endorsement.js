@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import bbmpLogo from '../../assets/bbmp.png';
 import Swal from "sweetalert2";
-import { individualSiteListAPI } from '../../API/authService';
+import { individualSiteListAPI, fetch_LKRSID } from '../../API/authService';
 import { useLocation } from 'react-router-dom';
 
 const Endorsement = () => {
@@ -11,24 +11,48 @@ const Endorsement = () => {
 
   const { LKRS_ID, createdBy, createdName, roleID, display_LKRS_ID } = location.state || {};
   const [localLKRSID, setLocalLKRSID] = useState(LKRS_ID || "");
- 
+
   useEffect(() => {
 
 
     if (LKRS_ID) {
       setLocalLKRSID(LKRS_ID);
-
+      handleGetLKRSID(LKRS_ID);
       fetchSiteDetails(LKRS_ID);
     } else {
       const id = sessionStorage.getItem("LKRSID");
       if (id) setLocalLKRSID(id);
+      handleGetLKRSID(id);
       fetchSiteDetails(id);
+
     }
 
   }, [LKRS_ID]);
 
 
+  const handleGetLKRSID = async (localLKRSID) => {
+    const payload = {
+      level: 1,
+      LkrsId: localLKRSID,
+    };
 
+    try {
+      const response = await fetch_LKRSID(localLKRSID);
+
+      if (response && response.lkrS_CREATEDDATE) {
+        const createdDate = new Date(response.lkrS_CREATEDDATE);
+
+        // Format to DD-MM-YYYY
+        const formattedDate = `${String(createdDate.getDate()).padStart(2, '0')}-${String(createdDate.getMonth() + 1).padStart(2, '0')}-${createdDate.getFullYear()}`;
+
+        // Append to label
+        document.getElementById("app_date").innerText = formattedDate;
+      }
+
+    } catch (error) {
+      console.error("Failed to fetch LKRSID data:", error);
+    }
+  };
 
   const printData = () => window.print();
 
@@ -103,8 +127,8 @@ const Endorsement = () => {
 
             {/* Dynamic Labels */}
             <div className="row">
-              <div style={{ width: "50%", display: "inline-block", padding: 5 }}>SAS Application No: <strong><label id="sasno" /></strong></div>
-              <div style={{ width: "50%", display: "inline-block", padding: 5 }}>Temporary ePID: <strong><label id="temporary_epid" /></strong></div>
+              {/* <div style={{ width: "50%", display: "inline-block", padding: 5 }}>SAS Application No: <strong><label id="sasno" /></strong></div> */}
+              {/* <div style={{ width: "50%", display: "inline-block", padding: 5 }}>Temporary ePID: <strong><label id="temporary_epid" /></strong></div> */}
               <div style={{ width: "50%", display: "inline-block", padding: 5 }}>Khata Request Ref No: <strong><span>{display_LKRS_ID}</span></strong></div>
               <div style={{ width: "50%", display: "inline-block", padding: 5 }}>App received date: <strong><label id="app_date" /></strong></div>
             </div>
@@ -114,25 +138,27 @@ const Endorsement = () => {
             {/* Dynamic Status Sections */}
             <p style={{ fontSize: 18 }}>Dear Applicant,</p>
             <div className="status14">
-              <p style={{ fontSize: 18 }}>Your application for New Khata for the property in the schedule below is received successfully and Non-Transactable Provisional New Khata with temporary ePID has been generated, which you can download after upto-date payment of property tax.</p>
+              <p style={{ fontSize: 18 }}>Your application for Layout Khata for the property in the schedule below is received successfully and Non-TransactabIe
+                Provisional Layout Khata with temporary ePID has been generated, which you can download after upto-date payment of property tax.</p>
             </div>
             <div className="statusNot14">
               <p style={{ fontSize: 18 }}>
-                Non-Transactable Provisional New Khata at{' '} <a href="https://BBMPeAasthi.Karnataka.gov.in" target="_blank" rel="noopener noreferrer">https://BBMPeAasthi.Karnataka.gov.in </a>{' '} (Using your temporary ePID) </p>
+                Non-TransactabIe Provisional Layout Khata at {' '} <a href="https://BBMPeAasthi.Karnataka.gov.in" target="_blank" rel="noopener noreferrer">https://BBMPeAasthi.Karnataka.gov.in </a>{' '} (Using your temporary ePID) </p>
               <p style={{ fontSize: 18 }}>Pay upto-date Property Tax at <a href="https://BBMPtax.Karnataka.gov.in">https://BBMPtax.Karnataka.gov.in </a>(Using your SAS Application No. given at top)</p>
-              <p style={{ fontSize: 18 }}>Your case has been referred to ARO <p>Your case has been referred to ARO <b>VASANTHANAGAR</b>, Zone <b>East</b>, ARO Address <b>BBMP OFFICES, Ground Floor, NEXT TO KSFC BUILDING, THIMMAIAH ROAD, VASANTHNAGAR, BANGALORE</b></p></p>
+              <p style={{ fontSize: 18 }} hidden><p>Your case has been referred to ARO <b>VASANTHANAGAR</b>, Zone <b>East</b>, ARO Address <b>BBMP OFFICES, Ground Floor, NEXT TO KSFC BUILDING, THIMMAIAH ROAD, VASANTHNAGAR, BANGALORE</b></p></p>
             </div>
-            <div className='row'>
+            <div className='row' hidden>
               <p style={{ fontSize: 18 }}><strong>For the following reasons/purposes:</strong> <br /></p>
               <p style={{ fontSize: 18 }}>1. BBMP will visit your property for verification.</p>
               <p style={{ fontSize: 18 }}>2. Owner Name as per the Aadhaar is not matching with the name in registered deed.</p>
               <p style={{ fontSize: 18 }}>3. Basis of A-khata Claim document is uploaded which required ARO approval.</p>
               <p style={{ fontSize: 18 }}>4. The Consumer name as per Bescom is not matching with the name in registered deed which requires ARO approval.</p>
 
-              <p style={{ fontSize: 18 }}>
-                <b>Note:</b> Please wait for verification which may take upto 60 days and do not visit anyone in ARO & BBMP office. There upon decision on <u>Final Transactable New Khata</u> will be given.
-              </p>
+
             </div>
+            <p style={{ fontSize: 18 }}>
+              <b>Note:</b> Please wait for verification which may take upto 60 days and do not visit anyone in ARO & BBMP office. There upon decision on <u>Final Transactable New Khata</u> will be given.
+            </p>
 
             {/* Disclaimers */}
             <div className="statusNot14">
@@ -145,36 +171,17 @@ const Endorsement = () => {
 
             </div>
 
-            {/* Property Schedule */}
-            <div>
-              <span><b>Property Schedule:</b></span><br />
-              <span>Zone: <label id="zone_name" /></span><br />
-              <span>Ward: <label id="ward_name" /></span><br />
-              <span>Category: <label id="cop" /></span><br />
-              <span>Type: <label id="top" /></span><br />
-              <span>ePID: <label id="epid" /></span><br />
-              <span>Owner: <label id="own_name1" /></span>
-            </div>
 
-            {/* Owner Address */}
             <div className="row">
-              <div style={{ width: "80%", padding: 5 }}>
-                <p><strong>To:</strong></p>
-                <p>Name: <label id="own_name" /><br />Address: <label id="own_add" /></p>
-              </div>
-              <div style={{ width: "20%", padding: 5, textAlign: "center" }}>
-                <div id="qrcodeview" style={{ marginTop: 20 }}></div>
-                <strong>BBMP</strong>
-              </div>
-            </div>
-            <div className="row">
+              <h6>Released Site list</h6>
               <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px' }} border="1">
+
                 <thead>
                   <tr style={{ backgroundColor: '#f2f2f2' }}>
                     <th style={{ padding: '8px', border: '1px solid #000' }}>S.No</th>
                     <th style={{ padding: '8px', border: '1px solid #000' }}>EPID</th>
                     <th style={{ padding: '8px', border: '1px solid #000' }}>Site Number</th>
-                    {/* <th style={{ padding: '8px', border: '1px solid #000' }}>Number of sides</th> */}
+                    <th style={{ padding: '8px', border: '1px solid #000' }}>SAS Number</th>
                     <th style={{ padding: '8px', border: '1px solid #000' }}>Dimension</th>
                     <th style={{ padding: '8px', border: '1px solid #000' }}>Total Area</th>
                     <th style={{ padding: '8px', border: '1px solid #000' }}>Order Number</th>
@@ -200,12 +207,17 @@ const Endorsement = () => {
                           <td style={{ padding: '8px', border: '1px solid #000' }}>{index + 1}</td>
                           <td style={{ padding: '8px', border: '1px solid #000' }}>{site.sitE_EPID}</td>
                           <td style={{ padding: '8px', border: '1px solid #000' }}>{site.sitE_NO}</td>
+                          <td style={{ padding: '8px', border: '1px solid #000' }}>{site.sitE_SASNO ? site.sitE_SASNO : '-'}</td>
                           <td style={{ padding: '8px', border: '1px solid #000' }}>
                             {`${totalFt} [Sq.ft], ${totalMt.toFixed(2)} [Sq.mtr]`}
                           </td>
                           <td style={{ padding: '8px', border: '1px solid #000' }}>{site.sitE_AREAINSQFT} sqft</td>
-                          <td style={{ padding: '8px', border: '1px solid #000' }}>-</td> {/* Placeholder for Order Number */}
-                          <td style={{ padding: '8px', border: '1px solid #000' }}>-</td> {/* Placeholder for Order Date */}
+                          <td style={{ padding: '8px', border: '1px solid #000' }}>{site.sitE_RELS_ORDER_NO}</td> {/* Placeholder for Order Number */}
+                          <td style={{ padding: '8px', border: '1px solid #000' }}>
+                            {site.sitE_IS_SITE_RELEASED_DATETIME
+                              ? new Date(site.sitE_IS_SITE_RELEASED_DATETIME).toLocaleDateString('en-GB')
+                              : '-'}
+                          </td>
                         </tr>
                       );
                     });
@@ -224,10 +236,10 @@ const Endorsement = () => {
 
             {/* Buttons */}
             <div className="row" style={{ paddingTop: 40 }}>
-              <div className="col-sm-2">
+              <div className="col-sm-6">
                 <input type="button" className="form-control btn btn-info rounded-pill" value="Print" onClick={printData} />
               </div>
-              <div className="col-sm-5">
+              <div className="col-sm-6">
                 <input type="button" className="form-control btn btn-info rounded-pill" value="Back To Dashboard" onClick={backToDashboard} />
               </div>
               <div className="col-sm-5" hidden>

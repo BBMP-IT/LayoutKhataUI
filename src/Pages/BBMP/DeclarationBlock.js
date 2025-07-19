@@ -457,7 +457,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                     allowOutsideClick: false, // Prevent closing by clicking outside
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        navigate('/release', {
+                        navigate('/SiteRelease', {
                             state: {
                                 LKRS_ID,
                                 display_LKRS_ID
@@ -688,179 +688,204 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
             },
         },
     };
-    const columns = [
-        { name: 'S.No', selector: (row, index) => index + 1, width: '70px', center: true },
-        { name: 'Property ID', width: '140px', selector: () => epid_fetchedData?.PropertyID, center: true },
-        {
-            name: 'Owner Name', center: true,
+   const columns = [
+  {
+    name: 'S.No',
+    selector: (row, index) => index + 1,
+    width: '70px',
+    center: true
+  },
+  {
+    name: 'Property ID',
+    width: '140px',
+    selector: () => epid_fetchedData?.PropertyID || 'N/A',
+    center: true
+  },
+  {
+    name: 'Owner Name',
+    selector: row => row.ownerName || 'N/A',
+    center: true
+  },
+  {
+    name: 'Identifier Type',
+    selector: row => row.relationShipType || '-',
+    center: true,
+    width: '220px'
+  },
+  {
+    name: 'Identifier Name',
+    selector: row => row.identifierName || '-',
+    center: true,
+    width: '220px'
+  },
+  {
+    name: 'ID Type',
+    selector: row => row.idType || 'N/A',
+    center: true,
+    width: '120px'
+  },
+  {
+    name: 'ID Number',
+    selector: row => row.idNumber || 'N/A',
+    center: true,
+    width: '220px'
+  }
+];
 
-            cell: () => (
-                <div style={{
-
-                }}>
-                    {epid_fetchedData?.OwnerDetails?.[0].ownerName || 'N/A'}
-                </div>
-            )
-        },
-        { name: 'Identifier Type', width: '220px', selector: () => epid_fetchedData?.OwnerDetails?.[0].relationShipType || '-', center: true },
-        { name: 'Identifier Name', width: '220px', selector: () => epid_fetchedData?.OwnerDetails?.[0].identifierName || '-', center: true },
-
-        { name: 'ID Type', width: '120px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idType || 'N/A', center: true },
-        { name: 'ID Number', width: '220px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idNumber || 'N/A', center: true },
-
-        // {
-        //     name: 'Validate OTP',
-        //     width: '250px',
-        //     cell: (row, index) => (
-        //         <div className='mb-3'><br />
-        //             <input
-        //                 type="tel"
-        //                 className="form-control mb-1"
-        //                 placeholder="Mobile Number"
-        //                 readOnly
-        //                 value={
-        //                     phoneNumbers[index] ??
-        //                     row.MobileNumber ??
-        //                     epid_fetchedData?.OwnerDetails?.[0]?.mobileNumber ??
-        //                     ""
-        //                 }
-        //                 maxLength={10}
-        //             />
-
-        //             <div className="text-success font-weight-bold mt-2">
-        //                 OTP Verified <i className="fa fa-check-circle"></i>
-        //             </div>
-
-        //         </div>
-        //     ), center: true
-        // }
-    ];
 
     //fetching Details from LKRSID
-    const handleGetLKRSID = async (localLKRSID) => {
-        const payload = {
-            level: 1,
-            LkrsId: localLKRSID,
-        };
-        try {
-            start_loader();
-            const response = await fetch_LKRSID(localLKRSID);
-
-            if (response && response.surveyNumberDetails && response.surveyNumberDetails.length > 0) {
-
-                setSelectedLandType(response.lkrS_LANDTYPE); //  Store the land type
-                setECNumber(response.lkrS_ECNUMBER);
-                // Set EC Number
-                if (response.lkrS_ISJDA === "1") {
-                    setJDASection(true);
-                } else {
-                    setJDASection(false);
-                }
-
-
-                const parsedSurveyDetails = mapSurveyDetails(response.surveyNumberDetails);
-
-                setRtcAddedData(prev => {
-                    const existingKeys = new Set(
-                        prev.map(item => `${item.surveyNumber}_${item.ownerName}`)
-                    );
-
-                    const filteredNewData = parsedSurveyDetails.filter(item => {
-                        const key = `${item.surveyNumber}_${item.ownerName}`;
-                        return !existingKeys.has(key);
-                    });
-
-                    return [...prev, ...filteredNewData];
-                });
-                stop_loader();
-            } else if (
-                response &&
-                response.khataDetails &&
-                response.khataOwnerDetails &&
-                response.khataOwnerDetails.length > 0
-            ) {
-                setSelectedLandType(response.lkrS_LANDTYPE); // Store the land type
-                setECNumber(response.lkrS_ECNUMBER); // Set EC Number
-                setHasJDA(response.lkrS_ISJDA === "1");
-                setEPIDShowTable(true);
-
-                let khataDetailsJson = {};
-                if (response.khataDetails?.khatA_JSON) {
-                    try {
-                        const parsedJson = JSON.parse(response.khataDetails.khatA_JSON);
-                        khataDetailsJson = parsedJson.response?.approvedPropertyDetails || {};
-                    } catch (err) {
-                        console.warn("Failed to parse khatA_JSON", err);
-                    }
-                }
-
-                const ownerDetailsFromJson = khataDetailsJson.ownerDetails || [];
-
-                const ownerDetailsFromApi =
-                    response.khataOwnerDetails?.map((item) => {
-                        let aadhaarResponse = {};
-                        try {
-                            aadhaarResponse = JSON.parse(item.owN_AADHAAR_RESPONSE || "{}")?.ekycResponse || {};
-                        } catch (err) {
-                            console.warn("Failed to parse owN_AADHAAR_RESPONSE", err);
-                        }
-
-                        return {
-                            ownerName: item.owN_NAME_EN || "",
-                            idType: item.owN_IDTYPE || "AADHAR",
-                            idNumber: item.owN_IDNUMBER || item.owN_AADHAARNUMBER || "",
-                            ownerAddress: aadhaarResponse.addressEng || "",
-                            identifierName: aadhaarResponse.identifierNameEng || "",
-                            gender: aadhaarResponse.gender || "",
-                            mobileNumber: aadhaarResponse.mobileNumber || "",
-                        };
-                    }) || [];
-
-                const mergedOwnerDetails = [...ownerDetailsFromJson, ...ownerDetailsFromApi];
-
-                setEPID_FetchedData({
-                    PropertyID: response.lkrS_EPID || "",
-                    PropertyCategory: khataDetailsJson.propertyCategory || "",
-                    PropertyClassification: khataDetailsJson.propertyClassification || "",
-                    WardNumber: khataDetailsJson.wardNumber || "",
-                    WardName: khataDetailsJson.wardName || "",
-                    StreetName: khataDetailsJson.streetName || "",
-                    Streetcode: khataDetailsJson.streetcode || "",
-                    SASApplicationNumber: khataDetailsJson.sasApplicationNumber || "",
-                    IsMuation: khataDetailsJson.isMuation || "",
-                    KaveriRegistrationNumber: khataDetailsJson.kaveriRegistrationNumber || [],
-                    AssessmentNumber: khataDetailsJson.assessmentNumber || "",
-                    courtStay: khataDetailsJson.courtStay || "",
-                    enquiryDispute: khataDetailsJson.enquiryDispute || "",
-                    CheckBandi: khataDetailsJson.checkBandi || {},
-                    SiteDetails: khataDetailsJson.siteDetails || {},
-                    OwnerDetails: mergedOwnerDetails,
-                    rawResponse: response,
-                });
-
-                if (khataDetailsJson.siteDetails?.siteArea) {
-                    setTotalSqFt(khataDetailsJson.siteDetails.siteArea);
-                    sessionStorage.setItem("areaSqft", khataDetailsJson.siteDetails.siteArea);
-                } else {
-                    setTotalSqFt(0);
-                    sessionStorage.removeItem("areaSqft");
-                }
-
-                setOwnerTableData(mergedOwnerDetails);
-            }
-            else {
-                stop_loader();
-                Swal.fire({
-                    text: "No survey details found.",
-                    icon: "warning",
-                    confirmButtonText: "OK",
-                });
-            }
-        } catch (error) {
-            stop_loader();
-            console.error("Failed to fetch LKRSID data:", error);
-        }
+   const handleGetLKRSID = async (localLKRSID) => {
+    const payload = {
+        level: 1,
+        LkrsId: localLKRSID,
     };
+
+    try {
+        start_loader();
+        const response = await fetch_LKRSID(localLKRSID);
+
+        if (response && response.surveyNumberDetails && response.surveyNumberDetails.length > 0) {
+
+            setSelectedLandType(response.lkrS_LANDTYPE); //  Store the land type
+            setECNumber(response.lkrS_ECNUMBER);
+
+            if (response.lkrS_ISJDA === "1") {
+                setJDASection(true);
+            } else {
+                setJDASection(false);
+            }
+
+            const parsedSurveyDetails = mapSurveyDetails(response.surveyNumberDetails);
+
+            setRtcAddedData(prev => {
+                const existingKeys = new Set(
+                    prev.map(item => `${item.surveyNumber}_${item.ownerName}`)
+                );
+
+                const filteredNewData = parsedSurveyDetails.filter(item => {
+                    const key = `${item.surveyNumber}_${item.ownerName}`;
+                    return !existingKeys.has(key);
+                });
+
+                return [...prev, ...filteredNewData];
+            });
+
+            stop_loader();
+
+        } else if (
+            response &&
+            response.khataDetails &&
+            response.khataOwnerDetails &&
+            response.khataOwnerDetails.length > 0
+        ) {
+            setSelectedLandType(response.lkrS_LANDTYPE);
+            setECNumber(response.lkrS_ECNUMBER);
+            setHasJDA(response.lkrS_ISJDA === "1");
+            setEPIDShowTable(true);
+
+            let khataDetailsJson = {};
+            if (response.khataDetails?.khatA_JSON) {
+                try {
+                    const parsedJson = JSON.parse(response.khataDetails.khatA_JSON);
+                    khataDetailsJson = parsedJson.response?.approvedPropertyDetails || {};
+                } catch (err) {
+                    console.warn("Failed to parse khatA_JSON", err);
+                }
+            }
+
+            const ownerDetailsFromJson = khataDetailsJson.ownerDetails || [];
+
+            const ownerDetailsFromApi = (response.khataOwnerDetails || []).map(item => {
+                let aadhaarResponse = {};
+                try {
+                    aadhaarResponse = JSON.parse(item.owN_AADHAAR_RESPONSE || "{}")?.ekycResponse || {};
+                } catch (err) {
+                    console.warn("Failed to parse owN_AADHAAR_RESPONSE", err);
+                }
+
+                return {
+                    ownerName: item.owN_NAME_EN || "",
+                    idType: item.owN_IDTYPE || "AADHAR",
+                    idNumber: item.owN_IDNUMBER || item.owN_AADHAARNUMBER || "",
+                    ownerAddress: aadhaarResponse.addressEng || "",
+                    identifierName: aadhaarResponse.identifierNameEng || "",
+                    gender: aadhaarResponse.gender || "",
+                    mobileNumber: aadhaarResponse.mobileNumber || "",
+                };
+            });
+
+// Combine owners from JSON and API
+const combinedOwners = [...ownerDetailsFromJson, ...ownerDetailsFromApi];
+
+//  Deduplicate by ownerName + idNumber
+const uniqueOwnersMap = new Map();
+
+combinedOwners.forEach((owner) => {
+  const name = (owner.ownerName || "").trim().toLowerCase();
+  const id = (owner.idNumber || "").trim();
+  const uniqueKey = `${name}_${id}`;
+
+  if (!uniqueOwnersMap.has(uniqueKey)) {
+    uniqueOwnersMap.set(uniqueKey, owner);
+  }
+});
+
+const mergedOwnerDetails = Array.from(uniqueOwnersMap.values());
+
+            //  Set EPID Data
+            setEPID_FetchedData({
+                PropertyID: response.lkrS_EPID || "",
+                PropertyCategory: khataDetailsJson.propertyCategory || "",
+                PropertyClassification: khataDetailsJson.propertyClassification || "",
+                WardNumber: khataDetailsJson.wardNumber || "",
+                WardName: khataDetailsJson.wardName || "",
+                StreetName: khataDetailsJson.streetName || "",
+                Streetcode: khataDetailsJson.streetcode || "",
+                SASApplicationNumber: khataDetailsJson.sasApplicationNumber || "",
+                IsMuation: khataDetailsJson.isMuation || "",
+                KaveriRegistrationNumber: khataDetailsJson.kaveriRegistrationNumber || [],
+                AssessmentNumber: khataDetailsJson.assessmentNumber || "",
+                courtStay: khataDetailsJson.courtStay || "",
+                enquiryDispute: khataDetailsJson.enquiryDispute || "",
+                CheckBandi: khataDetailsJson.checkBandi || {},
+                SiteDetails: khataDetailsJson.siteDetails || {},
+               OwnerDetails: mergedOwnerDetails,
+                rawResponse: response,
+            });
+
+            if (khataDetailsJson.siteDetails?.siteArea) {
+                setTotalSqFt(khataDetailsJson.siteDetails.siteArea);
+                sessionStorage.setItem("areaSqft", khataDetailsJson.siteDetails.siteArea);
+            } else {
+                setTotalSqFt(0);
+                sessionStorage.removeItem("areaSqft");
+            }
+
+            setOwnerTableData(mergedOwnerDetails);
+
+            // ✅ Optional: Set formatted created date in UI label (if required)
+            if (response.lkrS_CREATEDDATE) {
+                const d = new Date(response.lkrS_CREATEDDATE);
+                const formattedDate = `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
+                const label = document.getElementById("app_date");
+                if (label) label.innerText = formattedDate;
+            }
+
+            stop_loader();
+        } else {
+            stop_loader();
+            Swal.fire({
+                text: "No survey details found.",
+                icon: "warning",
+                confirmButtonText: "OK",
+            });
+        }
+    } catch (error) {
+        stop_loader();
+        console.error("Failed to fetch LKRSID data:", error);
+    }
+};
+
 
     // ================================================Approval and release order Details starts=======================
     const [records, setRecords] = useState([]);
@@ -1053,12 +1078,12 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
             sortable: true,
             minWidth: '150px', center: true,
         },
-        {
-            name: "Release Type",
-            selector: row => row.releaseType,
-            sortable: true,
-            minWidth: '150px', center: true,
-        },
+        // {
+        //     name: "Release Type",
+        //     selector: row => row.releaseType,
+        //     sortable: true,
+        //     minWidth: '150px', center: true,
+        // },
     ];
     const base64ToBlob = (dataUrl, mimeType = 'application/pdf') => {
         try {

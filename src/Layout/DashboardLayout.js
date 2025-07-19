@@ -211,7 +211,7 @@ const [isDropdownFiveOpen, setIsDropdownFiveOpen] = useState(false);
     sessionStorage.removeItem('display_LKRSID');
     sessionStorage.removeItem('totalNoOfSites');
     sessionStorage.removeItem('ownerName');
-    window.open(`${window.location.origin}/Release`);
+    window.open(`${window.location.origin}/SiteRelease`);
   };
 
 

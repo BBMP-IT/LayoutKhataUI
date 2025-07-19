@@ -72,6 +72,7 @@ const config = {
         fetchDCconversion: '/api/DCConversion/fnGetDCConversioninfo',
         deleteDCconversion: '/api/DCConversion/fnDeleteDCConversioninfo',
         fetchZoneWard: '/api/LKRS/fnGetZonefromWardList',
+        fetchStreet: '/api/LKRS/fnGetStreetList',
     }
 };
 

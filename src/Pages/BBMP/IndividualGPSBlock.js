@@ -23,7 +23,7 @@ import {
     insertApprovalInfo, listApprovalInfo, deleteApprovalInfo, insertReleaseInfo, deleteReleaseInfo, listReleaseInfo, fileUploadAPI, fileListAPI, insertJDA_details, ownerEKYC_Details,
     ekyc_Details, ekyc_Response, ekyc_insertOwnerDetails, jdaEKYC_Details,
     individualSiteAPI, individualSiteListAPI, fetchECDetails, fetchDeedDocDetails, fetchDeedDetails, fetchJDA_details, deleteSiteInfo, fetch_LKRSID,
-    update_Final_SaveAPI, fetchZoneFromWardList,
+    update_Final_SaveAPI, fetchZoneFromWardList, fetchStreetFromWardList,
 } from '../../API/authService';
 
 import usericon from '../../assets/usericon.png';
@@ -166,14 +166,14 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
     const [layoutSiteCount, setLayoutSiteCount] = useState(0);
     const [layoutSiteCountError, setLayoutSiteCountError] = useState("");
 
-    useEffect(() => {
-        const areaSQFT = sessionStorage.getItem('areaSqft');
-        if (areaSQFT) {
-            const sqftRounded = Math.round(parseFloat(areaSQFT));
-            setTotalSQFT(sqftRounded);                // integer only
-            setTotalSQM(sqftToSqm(sqftRounded));      // 1 decimal only
-        }
-    }, [areaSqft]);
+    // useEffect(() => {
+    //     const areaSQFT = sessionStorage.getItem('areaSqft');
+    //     if (areaSQFT) {
+    //         const sqftRounded = Math.round(parseFloat(areaSQFT));
+    //         setTotalSQFT(sqftRounded);                // integer only
+    //         setTotalSQM(sqftToSqm(sqftRounded));      // 1 decimal only
+    //     }
+    // }, [areaSqft]);
 
     const [localLKRSID, setLocalLKRSID] = useState("");
     const [localOwnername, setLocalOwnerName] = useState("");
@@ -205,17 +205,47 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             buttonRef.current.click();
         }
     }, [localLKRSID, isRTCSectionSaved, isEPIDSectionSaved]);
-
+    const [landDetails, setLandDetails] = useState("");
     const loadData = () => {
         const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
         if (localLKRSID && (isRTCSectionSaved || isEPIDSectionSaved)) {
             delay(1000);
             fetchSiteDetails(localLKRSID);
+            delay(1000);
+            handleGetLKRSID(localLKRSID);
             delay(1000); // 1 second delay
             fetchOwners(localLKRSID);
 
         }
     }
+
+
+    const handleGetLKRSID = async (localLKRSID) => {
+
+        const payload = {
+            level: 1,
+            LkrsId: localLKRSID,
+        };
+        try {
+            start_loader();
+            const response = await fetch_LKRSID(localLKRSID);
+
+            if (response && Object.keys(response).length > 0) {
+                setLandDetails(response.lkrS_LANDTYPE);
+
+                setTotalSQFT(response.lkrS_SITEAREA_SQFT);
+                setTotalSQM(response.lkrS_SITEAREA_SQMT);
+                stop_loader();
+            } else {
+                stop_loader();
+                console.log("failed to fetch data!")
+            }
+        } catch (error) {
+            stop_loader();
+            console.error("Failed to fetch LKRSID data:", error);
+        }
+    };
+
     const sqftToSqm = (sqft) => {
         return sqft ? (parseFloat(sqft) * 0.092903).toFixed(1) : '';
     };
@@ -528,19 +558,32 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             if (!firstErrorField) firstErrorField = longitudeRef;
             isValid = false;
         }
-        // Zone Validation
-        if (!selectedZone || isNaN(selectedZone)) {
-            setZoneError('Please select a zone');
-            if (!firstErrorField) firstErrorField = zoneRef;
-            isValid = false;
+        
+        // Zone, Ward, and Street validation only if landDetails !== "khata"
+        if (landDetails !== "khata") {
+            // Zone Validation
+            if (!selectedZone || isNaN(selectedZone)) {
+                setZoneError('Please select a zone');
+                if (!firstErrorField) firstErrorField = zoneRef;
+                isValid = false;
+            }
+
+            // Ward Validation
+            if (!selectedWard || isNaN(selectedWard)) {
+                setWardError('Please select a ward');
+                if (!firstErrorField) firstErrorField = wardRef;
+                isValid = false;
+            }
+
+            // Street name Validation
+            if (!selectedStreet || isNaN(selectedStreet)) {
+                setStreetError('Please select a street');
+                if (!firstErrorField) firstErrorField = streetRef;
+                isValid = false;
+            }
         }
 
-        // Ward Validation
-        if (!selectedWard || isNaN(selectedWard)) {
-            setWardError('Please select a ward');
-            if (!firstErrorField) firstErrorField = wardRef;
-            isValid = false;
-        }
+
 
         if (firstErrorField?.current) {
             firstErrorField.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -551,10 +594,6 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         validateChakbandi(chakbandiWest, setChakbandiWestError, chakbandiWestRef, 'West');
         validateChakbandi(chakbandiSouth, setChakbandiSouthError, chakbandiSouthRef, 'South');
         validateChakbandi(chakbandiNorth, setChakbandiNorthError, chakbandiNorthRef, 'North');
-
-
-
-
 
         return isValid;
     };
@@ -865,20 +904,29 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             isValid = false;
         }
 
-        // Zone Validation
-        if (!selectedZone || isNaN(selectedZone)) {
-            setZoneError('Please select a zone');
-            if (!firstErrorField) firstErrorField = zoneRef;
-            isValid = false;
-        }
+      // Zone, Ward, and Street validation only if landDetails !== "khata"
+        if (landDetails !== "khata") {
+            // Zone Validation
+            if (!selectedZone || isNaN(selectedZone)) {
+                setZoneError('Please select a zone');
+                if (!firstErrorField) firstErrorField = zoneRef;
+                isValid = false;
+            }
 
-        // Ward Validation
-        if (!selectedWard || isNaN(selectedWard)) {
-            setWardError('Please select a ward');
-            if (!firstErrorField) firstErrorField = wardRef;
-            isValid = false;
-        }
+            // Ward Validation
+            if (!selectedWard || isNaN(selectedWard)) {
+                setWardError('Please select a ward');
+                if (!firstErrorField) firstErrorField = wardRef;
+                isValid = false;
+            }
 
+            // Street name Validation
+            if (!selectedStreet || isNaN(selectedStreet)) {
+                setStreetError('Please select a street');
+                if (!firstErrorField) firstErrorField = streetRef;
+                isValid = false;
+            }
+        }
 
         if (firstErrorField?.current) {
             firstErrorField.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1011,36 +1059,10 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         }
     };
 
-    const [landDetails, setLandDetails] = useState("");
+
     const [wardID, setWardID] = useState("");
     //fetching Details from LKRSID
-    const handleGetLKRSID = async (localLKRSID) => {
 
-        const payload = {
-            level: 1,
-            LkrsId: localLKRSID,
-        };
-        try {
-            start_loader();
-            const response = await fetch_LKRSID(localLKRSID);
-
-            if (response && Object.keys(response).length > 0) {
-                // Check the value and update selectedLandType
-                if (response.lkrS_LANDTYPE === "surveyNo") {
-                    setLandDetails("surveyNo");
-                } else if (response.lkrS_LANDTYPE === "khata") {
-                    setLandDetails("khata");
-                }
-                stop_loader();
-            } else {
-                stop_loader();
-                console.log("failed to fetch data!")
-            }
-        } catch (error) {
-            stop_loader();
-            console.error("Failed to fetch LKRSID data:", error);
-        }
-    };
 
 
     const totalSitesCount = Number(layoutSiteCount);
@@ -1322,10 +1344,14 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
     const [wardOptions, setWardOptions] = useState([]);
     const [selectedZone, setSelectedZone] = useState('');
     const [selectedWard, setSelectedWard] = useState('');
+    const [streetOptions, setStreetOptions] = useState([]);
+    const [selectedStreet, setSelectedStreet] = useState('');
     const [zoneError, setZoneError] = useState('');
     const [wardError, setWardError] = useState('');
+    const [streetError, setStreetError] = useState('');
     const zoneRef = useRef(null);
     const wardRef = useRef(null);
+    const streetRef = useRef(null);
 
     useEffect(() => {
         const autocomplete = new window.google.maps.places.Autocomplete(searchInputRef.current);
@@ -1480,6 +1506,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
                 setWardOptions(wardsInZone); // update ward dropdown
                 setSelectedWard(exactWard.wardNo); // auto-select exact ward
+                loadStreetsForWard(exactWard.wardNo);
             } else {
                 // fallback if no exact ward found
                 setWardOptions([]);
@@ -1487,6 +1514,31 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             }
         } catch (error) {
             console.error("Error in getWardAndZoneData:", error);
+        }
+    };
+    const loadStreetsForWard = async (wardId) => {
+
+        setStreetOptions([]);
+        setSelectedStreet('');
+        if (!wardId) return;
+
+        try {
+            start_loader();
+            const res = await fetchStreetFromWardList(wardId); // ✅ res is array
+            console.log("Raw API Response:", res);
+
+            const streets = (res || []).map((s) => ({
+                label: s.streetName,
+                value: s.streetId,
+            }));
+
+            console.log("Mapped streets:", streets);
+            setStreetOptions(streets);
+            stop_loader();
+        } catch (err) {
+            console.error('Street fetch failed', err);
+        } finally {
+            stop_loader();
         }
     };
 
@@ -1620,7 +1672,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         } else if (enteredArea > totalArea) {
             Swal.fire({
                 title: "Area Exceeds Limit",
-                text: `Area cannot exceed Total Area of the layout`,
+                text: `Area cannot exceed Total Area (${totalArea} SqFt) of the layout`,
                 icon: "error",
                 confirmButtonText: "OK",
             })
@@ -1649,18 +1701,28 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             isValid = false;
         }
 
-        // Zone Validation
-        if (!selectedZone || isNaN(selectedZone)) {
-            setZoneError('Please select a zone');
-            if (!firstErrorField) firstErrorField = zoneRef;
-            isValid = false;
-        }
+        // Zone, Ward, and Street validation only if landDetails !== "khata"
+        if (landDetails !== "khata") {
+            // Zone Validation
+            if (!selectedZone || isNaN(selectedZone)) {
+                setZoneError('Please select a zone');
+                if (!firstErrorField) firstErrorField = zoneRef;
+                isValid = false;
+            }
 
-        // Ward Validation
-        if (!selectedWard || isNaN(selectedWard)) {
-            setWardError('Please select a ward');
-            if (!firstErrorField) firstErrorField = wardRef;
-            isValid = false;
+            // Ward Validation
+            if (!selectedWard || isNaN(selectedWard)) {
+                setWardError('Please select a ward');
+                if (!firstErrorField) firstErrorField = wardRef;
+                isValid = false;
+            }
+
+            // Street name Validation
+            if (!selectedStreet || isNaN(selectedStreet)) {
+                setStreetError('Please select a street');
+                if (!firstErrorField) firstErrorField = streetRef;
+                isValid = false;
+            }
         }
 
 
@@ -1683,20 +1745,17 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             layoutSiteCountRef.current?.focus();
             return;
         }
-        //First section save button condition
+
         if (!isRTCSectionSaved && !isEPIDSectionSaved) {
             Swal.fire("Please save the land details before proceeding with layout approval", "", "warning");
             return;
         }
 
-
         const totalAddedSites = allSites.length;
         const textboxSitesCount = parseInt(layoutSiteCount, 10);
         const storedSiteCount = parseInt(sessionStorage.getItem("NUMBEROFSITES"), 10);
 
-        // Check if trying to reduce below original count
         if (textboxSitesCount >= totalAddedSites) {
-            //  If all validations passed
             setIsReadOnly(true);
             setShowEditBtn(true);
         } else {
@@ -1707,7 +1766,6 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             });
             return;
         }
-
 
         if (totalAddedSites >= totalSitesCount) {
             Swal.fire({
@@ -1727,6 +1785,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             });
             return;
         }
+
         const existingSiteNumbers = allSites.map(site => site.sitE_NO);
         const siteNumberToCheck = shape === "regular" ? regular_siteNumber : irregular_siteNumber;
 
@@ -1736,25 +1795,21 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                 title: "Duplicate Site Number",
                 text: `Site number "${siteNumberToCheck}" already exists. Please enter a new site number.`,
             });
-            return; // Stop further execution
+            return;
         }
 
         if (isChecked) {
-            const existingSiteNumbers = allSites.map(site => site.sitE_NO);
-            const siteNumberToCheck = shape === "regular" ? regular_siteNumber : irregular_siteNumber;
-
             if (existingSiteNumbers.includes(siteNumberToCheck)) {
                 Swal.fire({
                     icon: "warning",
                     title: "Duplicate Site Number",
                     text: `Site number "${siteNumberToCheck}" already exists. Please enter a new site number.`,
                 });
-                return; // Stop further execution
+                return;
             }
         }
 
         let isValid = "";
-
         if (siteType === '8') {
             isValid = road_Validation();
             if (!isValid) return;
@@ -1762,6 +1817,82 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             isValid = isRegular ? finalValidation() : isIrregular ? irregularFinalValidation() : false;
             if (!isValid) return;
         }
+
+        if (siteType === '8') {
+            const existingRoadSite = allSites.find(site => site.sitE_TYPEID === 8);
+            if (existingRoadSite) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Duplicate Road Entry",
+                    text: "Only one Road site can be added. You've already inserted one.",
+                });
+                return;
+            }
+        }
+
+        // Area Validation Logic Starts Here
+        const totalLayoutArea = parseFloat(totalSQFT);
+        const existingAreaUsed = allSites.reduce((sum, site) => {
+            const area = parseFloat(site.sitE_AREAINSQFT) || 0;
+            return sum + area;
+        }, 0);
+
+        const newSiteArea = siteType === '8'
+            ? parseFloat(roadAreaSqFt) || 0
+            : (isRegular ? parseFloat(regularAreaSqFt) : parseFloat(irregularAreaSqFt)) || 0;
+
+        const totalAreaAfterAdding = existingAreaUsed + newSiteArea;
+
+        if (totalAreaAfterAdding > totalLayoutArea) {
+            Swal.fire({
+                icon: "warning",
+                title: "Total Area Exceeded",
+                text:
+                    `Total Sites Area ( ${totalAreaAfterAdding} sqft  )  cannot exceed Total Area (${totalLayoutArea} SqFt) of the layout`,
+            });
+            return;
+        }
+        // Area Validation Logic Ends Here
+
+        //  Deed Required Check After 40%
+        // if (isDeedRequired && deedFetchSuccess === false) {
+        //     if (!uploadedDeedFile) {
+        //         Swal.fire({
+        //             icon: "warning",
+        //             title: "Relinquishment Deed Required",
+        //             text: "Please upload the Deed document before adding more sites.",
+        //         });
+        //         return;
+        //     }
+        // }
+        // if (isDeedRequired) {
+        //     if (!deedNumber || deedNumber.trim() === "") {
+        //         Swal.fire({
+        //             icon: "warning",
+        //             title: "Relinquishment Deed Number Required",
+        //             text: "You have reached 40% of total sites. Please enter the deed number. Before saving the sites",
+        //         });
+        //         return;
+        //     }
+
+        //     if (deedFetchSuccess === false && !uploadedDeedFile) {
+        //         Swal.fire({
+        //             icon: "warning",
+        //             title: "Deed Document Required",
+        //             text: "Deed fetch failed. Please upload the deed document before saving.",
+        //         });
+        //         return;
+        //     }
+
+        //     if (deedFetchSuccess !== true && deedFetchSuccess !== false) {
+        //         Swal.fire({
+        //             icon: "warning",
+        //             title: "Deed Verification Needed",
+        //             text: "Please fetch and verify the deed before proceeding.",
+        //         });
+        //         return;
+        //     }
+        // }
 
 
 
@@ -1820,7 +1951,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
         let zoneName = "";
         let wardName = "";
-
+        let streetName = "";
 
         let no_of_sites = Number(sessionStorage.getItem("NUMBEROFSITES")) || 0;
         let updated_sites = "";
@@ -1835,6 +1966,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             if (response.lkrS_LANDTYPE === "surveyNo") {
                 zoneName = selectedZone;
                 wardName = selectedWard;
+                streetName = selectedStreet;
 
                 // Case 2: Land type is "khata"
             } else if (response.lkrS_LANDTYPE === "khata") {
@@ -1845,6 +1977,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                     if (khataJsonString) {
                         const parsedKhata = JSON.parse(khataJsonString);
                         const wardNo = parsedKhata?.response?.approvedPropertyDetails?.wardNumber;
+                        const streetNo = parsedKhata?.response?.approvedPropertyDetails?.streetcode;
 
                         if (wardNo) {
                             const requestWardId = [parseInt(wardNo, 10)];
@@ -1859,7 +1992,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                                 // Set name values
                                 wardName = zoneWardResponse[0].wardId;
                                 zoneName = zoneWardResponse[0].zoneID;
-
+                                streetName = streetNo;
                             }
                         }
                     }
@@ -1895,6 +2028,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                     sitE_CREATEDROLE: roleID,
                     sitE_ZONE: zoneName,
                     sitE_WARD: wardName,
+                    sitE_STREET: streetName,
                     siteDimensions: null
                 };
             } else {
@@ -1925,6 +2059,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                     sitE_CREATEDROLE: roleID,
                     sitE_ZONE: zoneName,
                     sitE_WARD: wardName,
+                    sitE_STREET: streetName,
                     siteDimensions
                 };
             }
@@ -2138,6 +2273,9 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
     const [deedFetchSuccess, setDeedFetchSuccess] = useState(null); // null | true | false
     const [uploadedDeedFile, setUploadedDeedFile] = useState(null);
     const [uploadError, setUploadError] = useState('');
+
+    const deedRequiredThreshold = Math.ceil(totalSitesCount * 0.4);
+    const isDeedRequired = allSites.length >= deedRequiredThreshold;
 
     const validateDeedNumber = (value) => {
         const regex = /^[A-Z]+-([1-9][0-9]*)-\d+-\d{4}-\d{2}$/;
@@ -2355,70 +2493,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
                                 </div>
                             </div>
-                            {/* Deed section starts */}
-                            <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6" >
-                                <label className='form-label'>Enter Relinquishment Deed Number (For park, open space, road + Civic Amenity) <span className='mandatory_color'>*</span></label>
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    placeholder="Enter Relinquishment Deed Number"
-                                    value={deedNumber}
-                                    onChange={handleDeedChange} maxLength={50} disabled={isDeedSectionDisabled}
-                                />
-                                {deedError && <div className="text-danger">{deedError}</div>}
-                            </div>
-                            <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-3">
-                                <div className="form-group ">
-                                    <label> </label>
-                                    <button className="btn btn-primary btn-block" onClick={handleDeed_FetchDetails} disabled={isDeedSectionDisabled}>
-                                        Fetch Deed
-                                    </button>
-                                </div>
-                            </div>
-                            <div className='row'>
-                                {showViewDeedButton && (<>
-                                    <div className="text-success">
-                                        <strong>Deed Check successfully <i className="fa fa-check-circle"></i></strong>
-                                    </div>
-                                    <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 ">
 
-                                        <div className="form-group">
-
-                                            <button className="btn btn-warning btn-block" onClick={handleViewDeed} >
-                                                View Deed
-                                            </button>
-                                        </div>
-
-                                    </div>
-                                </>)}
-                                {/* deed is failed  */}
-                                {deedFetchSuccess === false && (
-                                    <div className="row mt-3">
-                                        <strong className='text-danger'>Deed Check Failed <i className="fa fa-times-circle"></i></strong>
-                                        <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
-                                            <label className="form-label">Upload Relinquishment Deed Document <span className="mandatory_color">*</span></label>
-                                            <input
-                                                type="file"
-                                                accept="application/pdf"
-                                                className="form-control"
-                                                onChange={(e) => setUploadedDeedFile(e.target.files[0])}
-                                            />
-                                            {uploadError && <div className="text-danger">{uploadError}</div>}
-                                        </div>
-                                        <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-4">
-                                            <label className="form-label"></label>
-                                            <button
-                                                className="btn btn-success btn-block"
-                                                onClick={handleDeedUpload}
-                                            >
-                                                Save Deed
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-
-                            </div>
-                            {/* Deed section ends */}
 
                             <div className='col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10 mb-3' hidden></div>
                             <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mb-3' hidden>
@@ -2478,7 +2553,82 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                                 )}
                             </div>
 
+                            {/* Deed section starts */}
+                            {isDeedRequired && (
+                                <>
+                                    <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mt-3">
+                                        <label className='form-label'>Enter Relinquishment Deed Number (For park, open space, road + Civic Amenity) <span className='mandatory_color'>*</span></label>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            placeholder="Enter Relinquishment Deed Number"
+                                            value={deedNumber}
+                                            onChange={(e) => setDeedNumber(e.target.value)}
+                                            maxLength={50}
+                                            disabled={!isDeedRequired}
+                                        />
+                                        {deedError && <div className="text-danger">{deedError}</div>}
+                                    </div>
 
+                                    <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-3">
+                                        <div className="form-group">
+                                            <label> </label>
+                                            <button
+                                                className="btn btn-primary btn-block"
+                                                onClick={handleDeed_FetchDetails}
+                                                disabled={!isDeedRequired}
+                                            >
+                                                Fetch Deed
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="alert alert-warning mt-3">
+                                        <i className="fa fa-exclamation-circle me-2"></i>
+                                        You have reached 40% of your total site entries. Uploading the <strong>Relinquishment Deed</strong> is now <strong>mandatory</strong>.
+                                    </div>
+                                </>
+                            )}
+
+                            {/* Deed View Button */}
+                            {isDeedRequired && deedFetchSuccess === true && (
+                                <>
+                                    <div className="text-success">
+                                        <strong>Deed Check successful <i className="fa fa-check-circle"></i></strong>
+                                    </div>
+                                    <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2">
+                                        <div className="form-group">
+                                            <button className="btn btn-warning btn-block" onClick={handleViewDeed}>
+                                                View Deed
+                                            </button>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+
+                            {/* Deed Upload Section - If fetch failed */}
+                            {isDeedRequired && deedFetchSuccess === false && (
+                                <div className="row mt-3">
+                                    <strong className='text-danger'>Deed Check Failed <i className="fa fa-times-circle"></i></strong>
+
+                                    <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                                        <label className="form-label">Upload Relinquishment Deed Document <span className="mandatory_color">*</span></label>
+                                        <input
+                                            type="file"
+                                            accept="application/pdf"
+                                            className="form-control"
+                                            onChange={(e) => setUploadedDeedFile(e.target.files[0])}
+                                        />
+                                        {uploadError && <div className="text-danger">{uploadError}</div>}
+                                    </div>
+
+                                    <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-4">
+                                        <button className="btn btn-success btn-block" onClick={handleDeedUpload}>
+                                            Save Deed
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                            {/* Deed section ends */}
 
                             <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 mb-3">
                                 <br />
@@ -3359,55 +3509,80 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                                     {longitudeerror && <div className="text-danger">{longitudeerror}</div>}
 
                                 </div>
-                                {/* Zone name */}
-                                <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mb-3">
-                                    <label className="form-label">Zone Name</label>
-                                    <select
-                                        className="form-select"
-                                        value={selectedZone}
-                                        onChange={(e) => {
-                                            const zoneId = parseInt(e.target.value);
-                                            setSelectedZone(zoneId);
-                                            const wards = zoneWardData
-                                                .filter(z => z.zoneID === zoneId)
-                                                .map(z => ({ label: z.wardName, value: z.wardId }));
-                                            setWardOptions(wards);
-                                            setSelectedWard('');
-                                            setZoneError('');
-                                        }}
-                                        ref={zoneRef}
-                                    >
-                                        <option value="">Select Zone</option>
-                                        {zoneOptions.map(opt => (
-                                            <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                        ))}
-                                    </select>
-                                    {zoneError && <div className="text-danger">{zoneError}</div>}
+                                {landDetails !== "khata" && (
+                                    <>
+                                        {/* Zone name */}
+                                        <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4 mb-3">
+                                            <label className="form-label">Zone Name <span className='mandatory_color'>*</span></label>
+                                            <select
+                                                className="form-select"
+                                                value={selectedZone}
+                                                onChange={(e) => {
+                                                    const zoneId = parseInt(e.target.value);
+                                                    setSelectedZone(zoneId);
+                                                    const wards = zoneWardData
+                                                        .filter(z => z.zoneID === zoneId)
+                                                        .map(z => ({ label: z.wardName, value: z.wardId }));
+                                                    setWardOptions(wards);
+                                                    setSelectedWard('');
+                                                    setZoneError('');
+                                                }}
+                                                ref={zoneRef}
+                                            >
+                                                <option value="">Select Zone</option>
+                                                {zoneOptions.map(opt => (
+                                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                                ))}
+                                            </select>
+                                            {zoneError && <div className="text-danger">{zoneError}</div>}
 
-                                </div>
-                                {/* ward name */}
-                                <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mb-3">
-                                    <label className="form-label">Ward Name</label>
-                                    <select
-                                        className="form-select"
-                                        value={selectedWard}
-                                        onChange={(e) => {
-                                            setSelectedWard(parseInt(e.target.value));
-                                            setWardError('');
-                                        }}
-                                        ref={wardRef}
-                                    >
-                                        <option value="">Select Ward</option>
-                                        {wardOptions.map(opt => (
-                                            <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                        ))}
-                                    </select>
-                                    {wardError && <div className="text-danger">{wardError}</div>}
+                                        </div>
+                                        {/* ward name */}
+                                        <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4 mb-3">
+                                            <label className="form-label">Ward Name <span className='mandatory_color'>*</span></label>
+                                            <select
+                                                className="form-select"
+                                                value={selectedWard}
+                                                onChange={(e) => {
+                                                    const wardId = parseInt(e.target.value, 10) || '';
+                                                    setSelectedWard(wardId);
+                                                    setWardError('');
+                                                    loadStreetsForWard(wardId);          // 🔔 reuse
+                                                }}
+                                                ref={wardRef}
+                                            >
+                                                <option value="">Select Ward</option>
+                                                {wardOptions.map((opt) => (
+                                                    <option key={opt.value} value={opt.value}>
+                                                        {opt.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            {wardError && <div className="text-danger">{wardError}</div>}
 
-                                </div>
+                                        </div>
+                                        {/* Street name */}
+                                        <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4 mb-3">
+                                            <label className="form-label">Street Name <span className='mandatory_color'>*</span></label>
+                                            <select className="form-select" value={selectedStreet} ref={streetRef} onChange={(e) => setSelectedStreet(e.target.value)}>
+                                                <option value="">Select Street</option>
+                                                {streetOptions.map((opt) => (
+                                                    <option key={opt.value} value={opt.value}>
+                                                        {opt.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+
+                                            {streetError && <div className="text-danger">{streetError}</div>}
+
+                                        </div>
+                                    </>
+                                )}
+
+
 
                                 {/* Owner Name */}
-                                <div className="col-md-12 col-lg-12 col-sm-12 text-center">
+                                <div className="col-md-12 col-lg-12 col-sm-12 col-12  text-center">
                                     <span className="fw-semibold text-dark">
                                         Owner Name :
                                         <label className="text-success">
@@ -3633,7 +3808,25 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
                     }
 
                 },
+                Footer: (info) => {
+
+                    return (
+                        <strong>
+                            Total Area:
+                        </strong>
+                    );
+                },
             },
+            // {
+            //     Header: "Total Area",
+            //     accessor: (row) => {
+            //         if (row.sitE_AREAINSQFT && row.sitE_AREAINSQMT) {
+            //             return `${row.sitE_AREAINSQFT} [Sq.ft] - ${row.sitE_AREAINSQMT} [Sq.mtr]`;
+            //         } else {
+            //             return "-";
+            //         }
+            //     },
+            // },
             {
                 Header: "Total Area",
                 accessor: (row) => {
@@ -3643,7 +3836,25 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
                         return "-";
                     }
                 },
+                Footer: (info) => {
+                    const totalSqft = info.rows.reduce((sum, row) => {
+                        const value = parseFloat(row.original.sitE_AREAINSQFT);
+                        return isNaN(value) ? sum : sum + value;
+                    }, 0);
+
+                    const totalSqmt = info.rows.reduce((sum, row) => {
+                        const value = parseFloat(row.original.sitE_AREAINSQMT);
+                        return isNaN(value) ? sum : sum + value;
+                    }, 0);
+
+                    return (
+                        <strong>
+                            {totalSqft.toLocaleString()} [Sq.ft] - {totalSqmt.toLocaleString()} [Sq.mtr]
+                        </strong>
+                    );
+                },
             },
+
             {
                 Header: "Corner Site",
                 accessor: (row) => {
@@ -3655,12 +3866,12 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
             {
                 Header: "Type of Site",
                 accessor: (row) => {
-                    return row.sitE_NO ? row.sitE_NO : "-";
-                    return `${row.sitE_TYPE}`;
+                    return row.sitE_TYPE ? row.sitE_TYPE : "-";
+                    // return `${row.sitE_TYPE}`;
                 },
             },
             {
-                id: "chakbandi",  // 👈 you must add this
+                id: "chakbandi",
                 Header: (
                     <>
                         Chakbandi<br />
@@ -3668,7 +3879,11 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
                     </>
                 ),
                 accessor: (row) => {
-                    return `${row.sitE_EAST} | ${row.sitE_WEST} | ${row.sitE_NORTH} | ${row.sitE_SOUTH}`;
+                    const east = row.sitE_EAST || "-";
+                    const west = row.sitE_WEST || "-";
+                    const north = row.sitE_NORTH || "-";
+                    const south = row.sitE_SOUTH || "-";
+                    return `${east} | ${west} | ${north} | ${south}`;
                 },
             },
             {
@@ -3685,6 +3900,7 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
         getTableBodyProps,
         headerGroups,
         page,
+        footerGroups,
         prepareRow,
         canPreviousPage,
         canNextPage,
@@ -3792,6 +4008,29 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
                             );
                         })}
                     </tbody>
+                    <tfoot>
+                        {footerGroups.map((group, idx) => (
+                            <tr {...group.getFooterGroupProps()} key={idx}>
+                                {group.headers.map((column, i) => (
+                                    <td
+                                        {...column.getFooterProps()}
+                                        key={i}
+                                        style={{
+                                            border: "1px solid #e5e7eb",
+                                            padding: "12px 16px",
+                                            fontWeight: "bold",
+                                            textAlign: "center",
+                                            backgroundColor: "#f3f4f6",
+                                            color: "#374151",
+                                        }}
+                                    >
+                                        {column.render("Footer")}
+                                    </td>
+                                ))}
+                            </tr>
+                        ))}
+                    </tfoot>
+
                 </table>
 
                 {/* Pagination Controls */}

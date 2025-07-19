@@ -64,7 +64,7 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
 
 
 
-    
+
     const fetch_details = async () => {
         const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
         if (LKRS_ID) {
@@ -84,48 +84,48 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
 
 
 
- const handleGetLKRSID = async (localLKRSID) => {
-    const payload = {
-        level: 1,
-        LkrsId: localLKRSID,
-    };
-    try {
-        const response = await fetch_LKRSID(localLKRSID);
+    const handleGetLKRSID = async (localLKRSID) => {
+        const payload = {
+            level: 1,
+            LkrsId: localLKRSID,
+        };
+        try {
+            const response = await fetch_LKRSID(localLKRSID);
 
-        if (response && response.surveyNumberDetails && response.surveyNumberDetails.length > 0) {
-            // const parsedSurveyDetails = mapSurveyDetails(response.surveyNumberDetails);
+            if (response && response.surveyNumberDetails && response.surveyNumberDetails.length > 0) {
+                // const parsedSurveyDetails = mapSurveyDetails(response.surveyNumberDetails);
 
-            // ✅ Combine suR_SURVEYNO/suR_SURNOC/suR_HISSA
-            const surveySet = new Set();
-            response.surveyNumberDetails.forEach(detail => {
-                const combined = `${detail.suR_SURVEYNO}/${detail.suR_SURNOC}/${detail.suR_HISSA}`;
-                surveySet.add(combined);
-            });
+                // ✅ Combine suR_SURVEYNO/suR_SURNOC/suR_HISSA
+                const surveySet = new Set();
+                response.surveyNumberDetails.forEach(detail => {
+                    const combined = `${detail.suR_SURVEYNO}/${detail.suR_SURNOC}/${detail.suR_HISSA}`;
+                    surveySet.add(combined);
+                });
 
-            // ✅ Convert to array and log
-            const uniqueSurveyNumbers = Array.from(surveySet);
-            console.log("Unique Survey Numbers:", uniqueSurveyNumbers);
+                // ✅ Convert to array and log
+                const uniqueSurveyNumbers = Array.from(surveySet);
+                console.log("Unique Survey Numbers:", uniqueSurveyNumbers);
 
-            // ✅ Set RTC data without duplicate owners
-            // setRtcAddedData(prev => {
-            //     const existingKeys = new Set(
-            //         prev.map(item => `${item.surveyNumber}_${item.ownerName}`)
-            //     );
+                // ✅ Set RTC data without duplicate owners
+                // setRtcAddedData(prev => {
+                //     const existingKeys = new Set(
+                //         prev.map(item => `${item.surveyNumber}_${item.ownerName}`)
+                //     );
 
-            //     const filteredNewData = parsedSurveyDetails.filter(item => {
-            //         const key = `${item.surveyNumber}_${item.ownerName}`;
-            //         return !existingKeys.has(key);
-            //     });
+                //     const filteredNewData = parsedSurveyDetails.filter(item => {
+                //         const key = `${item.surveyNumber}_${item.ownerName}`;
+                //         return !existingKeys.has(key);
+                //     });
 
-            //     return [...prev, ...filteredNewData];
-            // });
+                //     return [...prev, ...filteredNewData];
+                // });
+            }
+
+        } catch (error) {
+            stop_loader();
+            console.error("Failed to fetch LKRSID data:", error);
         }
-
-    } catch (error) {
-        stop_loader();
-        console.error("Failed to fetch LKRSID data:", error);
-    }
-};
+    };
 
 
 
@@ -232,12 +232,13 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
 
         try {
 
-            const response = await bhommiDCConversionFetchAPI(affidavitID);
+            const response = await bhommiDCConversionFetchAPI(affidavitID, localLKRSID);
 
-            if (response.responsE_CODE === "200") {
+            if (response.responsE_CODE === "200" && response.isvalidSurveyNo === true) {
                 console.log(response);
                 const requestDetails = response.requesT_DETAILS[0];
                 const DCJSON = JSON.stringify(response);
+
                 try {
                     const payload = {
                         dC_id: 0,
@@ -292,7 +293,7 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
 
                     } else {
                         Swal.fire({
-                            title: response.responseMessage,
+                            title: "Something Went wrong, Please try again later!",
                             icon: "error",
                             confirmButtonText: "OK",
                         });
@@ -303,9 +304,16 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
                     alert("Failed to save DC details. Please try again.");
                 }
 
-            } else {
+            } else if (response.responsE_CODE === "200" && response.isvalidSurveyNo === false) {
                 Swal.fire({
-                    title: response.responseMessage,
+                    title: response.responsE_MESSAGE,
+                    icon: "error",
+                    confirmButtonText: "OK",
+                });
+            }
+            else {
+                Swal.fire({
+                    title: response.responsE_MESSAGE,
                     icon: "error",
                     confirmButtonText: "OK",
                 });
@@ -313,7 +321,11 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
 
         } catch (error) {
             console.error("API Error:", error);
-            alert("Failed to fetch DC conversion info. Please try again.");
+              Swal.fire({
+                    title:"Something went wrong, Please try again later!ss",
+                    icon: "error",
+                    confirmButtonText: "OK",
+                });
         }
     };
 

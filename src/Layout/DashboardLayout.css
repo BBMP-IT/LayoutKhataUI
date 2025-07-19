@@ -16482,3 +16482,6 @@
 }
 
 
+.swal2-top-modal {
+  z-index: 2000 !important;
+}

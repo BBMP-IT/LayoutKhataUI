@@ -879,11 +879,11 @@ const buttonRef = useRef(null);
                                 </div>
                             )}
                             {hasJDA === false && (
-                                <></>
+                                <><h6 hidden>JDA Not Exist</h6></>
                             )}
 
                         </div>
-                        {isRegistered === true && (
+                        {isRegistered === true && hasJDA === true && (
                             <>
                                 <div className='row'>
                                     <hr />

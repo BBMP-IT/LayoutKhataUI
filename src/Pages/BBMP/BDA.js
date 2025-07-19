@@ -112,7 +112,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                     const totalSites = listResponse.map(item => item.lkrS_NUMBEROFSITES);
 
 
-                    sessionStorage.setItem('totalNoOfSites', JSON.stringify(totalSites));
+                    sessionStorage.setItem('totalNoOfSites', totalSites);
                     setTotalNoofsites(totalSites);
 
                     return {
