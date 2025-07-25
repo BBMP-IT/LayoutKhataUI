@@ -205,7 +205,10 @@ export const fetchRTCDetailsAPI = async ({
   talukCode,
   hobliCode,
   villageCode,
-  landCode
+  landCode,
+  createdBy,
+  createdName,
+  createdRole
 }) => {
   try {
     const payload = {
@@ -214,6 +217,9 @@ export const fetchRTCDetailsAPI = async ({
       hoblI_CODE: hobliCode.toString(),
       villagE_CODE: villageCode.toString(),
       lanD_CODE: landCode.toString(),
+      createdBy: createdBy, 
+      createdName: createdName.toString(),
+      createdRole: createdRole.toString(),
     };
 
     const response = await apiService.postRequest(`${config.endpoints.kaveriFetchDetails}`, payload);
@@ -286,10 +292,13 @@ export const submitsurveyNoDetails = async (payload) => {
 //   }
 // };
 
-export const handleFetchEPIDDetails = async (epidNumber) => {
+export const handleFetchEPIDDetails = async (epidNumber, createdBy, createdName, roleID) => {
   try {
     const response = await apiService.postRequest(`${config.endpoints.epid}`, {
       propertyEPID: epidNumber,
+      createdBy: createdBy,
+      createdName: createdName,
+      createdRole: roleID,
     });
 
     const epidKhataDetails = response?.epidKhataDetails;
@@ -748,3 +757,15 @@ export const fetchStreetFromWardList = async (wardId) => {
     throw error;
   }
 };
+//ARO fetching API
+export const fetchAROList = async(LKRS_ID) =>{
+  
+   try {
+    const url = `${config.endpoints.fetchARO}?LKRS_ID=${LKRS_ID}`;
+    const response = await apiService.getRequest(url);
+    return response;
+  } catch (error) {
+    console.error("Error fetching Aro from LKSRID", error);
+    throw error;
+  }
+}

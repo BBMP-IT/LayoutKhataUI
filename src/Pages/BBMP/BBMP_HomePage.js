@@ -46,7 +46,7 @@ const BBMP_Home = () => {
 
 
 
-        
+
         // { iconClass: "fas fa-info-circle", title: "Submitted Property Status", link: "https://bbmpeaasthi.karnataka.gov.in/forms/CitzApplicationStatus.aspx" },
 
 
@@ -79,6 +79,10 @@ const BBMP_Home = () => {
     return (
         <HomePageLayout>
             {loading && <Loader />}
+            {/* Add Marquee Here */}
+            <marquee behavior="scroll" direction="left" scrollamount="5" className="text-primary fw-bold">
+                🔔 This is an important announcement scrolling across the page! 🔔
+            </marquee>
             <div className="container mt-4">
                 <div className="row justify-content-center">
                     {cardData.map((card, index) => (

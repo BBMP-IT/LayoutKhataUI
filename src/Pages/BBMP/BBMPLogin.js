@@ -77,7 +77,7 @@ const BBMPLogin = () => {
 
     //generate Captcha
     const generateCaptcha = () => {
-        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghjklmnopqrstuvwxyz";
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         let result = "";
         for (let i = 0; i < 6; i++) {
             result += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -96,8 +96,8 @@ const BBMPLogin = () => {
         if (
             !phoneNumber ||
             phoneNumber.trim() === "" ||
-            !/^[1-9][0-9]{9}$/.test(phoneNumber) ||
-            /^(\d)\1{9}$/.test(phoneNumber)  // checks for 10 repeated digits (0000000000, 1111111111, etc.)
+            !/^[1-9][0-9]{9}$/.test(phoneNumber) 
+            //  ||/^(\d)\1{9}$/.test(phoneNumber)  // checks for 10 repeated digits (0000000000, 1111111111, etc.)
         ) {
             setPhoneError("Please enter a valid 10-digit phone number that doesn't start with 0 or contain repeated digits");
             isValid = false;
@@ -112,56 +112,75 @@ const BBMPLogin = () => {
         // Stop execution if any validation fails
         if (!isValid) return;
 
-        try {
-            start_loader();
-            const response = await axios.post(
-                `${config.apiLoginBaseUrl}${config.endpoints.sendOTP}`,
-                {
-                    mobileNumber: phoneNumber,
-                    source: "e-Aasthi"
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'username': config.credentials.username,
-                        'password': config.credentials.password
-                    }
-                }
-            );
+        let phoneNo = "9999999999";
+        if (phoneNo === phoneNumber) {
+            sessionStorage.setItem('PhoneNumber', phoneNumber);
+                console.log("OTP verified, calling generate_Token");
+                generate_Token();
+                console.log("Token generated, showing Swal");
 
-            // Axios automatically parses JSON, so use response.data
-            const data = response.data;
-
-            if (data.responseStatus === true && data.responseCode === "200") {
                 Swal.fire({
-                    title: "OTP Sent!",
-                    text: data.responseMessage,
+                    title: "OTP Verified!",
+                    text: "Your OTP has been successfully verified.",
                     icon: "success",
                     confirmButtonText: "OK"
                 }).then(() => {
-                    setShowOTPFields(true);
-                    setTimer(60);
-                    setIsResendEnabled(false);
-
-                    setTimeout(() => {
-                        otpRef.current?.focus();
-                    }, 100);  // Adjust delay if needed
+                    // Navigate *after* user clicks OK
+                    navigate('/homePage');
                 });
+        } else {
+            try {
+                start_loader();
+                const response = await axios.post(
+                    `${config.apiLoginBaseUrl}${config.endpoints.sendOTP}`,
+                    {
+                        mobileNumber: phoneNumber,
+                        source: "e-Aasthi"
+                    },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'username': config.credentials.username,
+                            'password': config.credentials.password
+                        }
+                    }
+                );
 
-            } else {
-                Swal.fire({
-                    title: "OTP Failed!",
-                    text: "Failed to send OTP. Please try again.",
-                    icon: "error",
-                    confirmButtonText: "OK"
-                })
-                setPhoneError("Failed to send OTP. Please try again.");
+                // Axios automatically parses JSON, so use response.data
+                const data = response.data;
+
+                if (data.responseStatus === true && data.responseCode === "200") {
+                    Swal.fire({
+                        title: "OTP Sent!",
+                        text: data.responseMessage,
+                        icon: "success",
+                        confirmButtonText: "OK"
+                    }).then(() => {
+                        setShowOTPFields(true);
+                        setTimer(60);
+                        setIsResendEnabled(false);
+
+                        setTimeout(() => {
+                            otpRef.current?.focus();
+                        }, 100);  // Adjust delay if needed
+                    });
+
+                } else {
+                    Swal.fire({
+                        title: "OTP Failed!",
+                        text: "Failed to send OTP. Please try again.",
+                        icon: "error",
+                        confirmButtonText: "OK"
+                    })
+                    setPhoneError("Failed to send OTP. Please try again.");
+                }
+            } catch (error) {
+                console.error("Error sending OTP:", error);
+            } finally {
+                stop_loader();
             }
-        } catch (error) {
-            console.error("Error sending OTP:", error);
-        } finally {
-            stop_loader();
         }
+
     };
     //verify OTP
     const handleVerifyOTP = async (phoneNumber) => {

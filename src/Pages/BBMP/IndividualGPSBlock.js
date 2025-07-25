@@ -233,8 +233,9 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             if (response && Object.keys(response).length > 0) {
                 setLandDetails(response.lkrS_LANDTYPE);
 
-                setTotalSQFT(response.lkrS_SITEAREA_SQFT);
-                setTotalSQM(response.lkrS_SITEAREA_SQMT);
+                setTotalSQFT(Math.floor(response.lkrS_SITEAREA_SQFT));       // Only integer
+                setTotalSQM(Number(response.lkrS_SITEAREA_SQMT).toFixed(1)); // One decimal place
+                setLayoutSiteCount(response.lkrS_NUMBEROFSITES);
                 stop_loader();
             } else {
                 stop_loader();
@@ -558,7 +559,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             if (!firstErrorField) firstErrorField = longitudeRef;
             isValid = false;
         }
-        
+
         // Zone, Ward, and Street validation only if landDetails !== "khata"
         if (landDetails !== "khata") {
             // Zone Validation
@@ -904,7 +905,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             isValid = false;
         }
 
-      // Zone, Ward, and Street validation only if landDetails !== "khata"
+        // Zone, Ward, and Street validation only if landDetails !== "khata"
         if (landDetails !== "khata") {
             // Zone Validation
             if (!selectedZone || isNaN(selectedZone)) {
@@ -1853,46 +1854,45 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             return;
         }
         // Area Validation Logic Ends Here
+        // Deed Required Check After 40%
+        if (isDeedRequired && deedFetchSuccess === false) {
+            if (!uploadedDeedFile) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Relinquishment Deed Required",
+                    text: "Please upload the Deed document before adding more sites.",
+                });
+                return;
+            }
+        }
+        if (isDeedRequired) {
+            if (!deedNumber || deedNumber.trim() === "") {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Relinquishment Deed Number Required",
+                    text: "You have reached 40% of total sites. Please enter the deed number. Before saving the sites",
+                });
+                return;
+            }
 
-        //  Deed Required Check After 40%
-        // if (isDeedRequired && deedFetchSuccess === false) {
-        //     if (!uploadedDeedFile) {
-        //         Swal.fire({
-        //             icon: "warning",
-        //             title: "Relinquishment Deed Required",
-        //             text: "Please upload the Deed document before adding more sites.",
-        //         });
-        //         return;
-        //     }
-        // }
-        // if (isDeedRequired) {
-        //     if (!deedNumber || deedNumber.trim() === "") {
-        //         Swal.fire({
-        //             icon: "warning",
-        //             title: "Relinquishment Deed Number Required",
-        //             text: "You have reached 40% of total sites. Please enter the deed number. Before saving the sites",
-        //         });
-        //         return;
-        //     }
+            if (deedFetchSuccess === false && !uploadedDeedFile) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Deed Document Required",
+                    text: "Deed fetch failed. Please upload the deed document before saving.",
+                });
+                return;
+            }
 
-        //     if (deedFetchSuccess === false && !uploadedDeedFile) {
-        //         Swal.fire({
-        //             icon: "warning",
-        //             title: "Deed Document Required",
-        //             text: "Deed fetch failed. Please upload the deed document before saving.",
-        //         });
-        //         return;
-        //     }
-
-        //     if (deedFetchSuccess !== true && deedFetchSuccess !== false) {
-        //         Swal.fire({
-        //             icon: "warning",
-        //             title: "Deed Verification Needed",
-        //             text: "Please fetch and verify the deed before proceeding.",
-        //         });
-        //         return;
-        //     }
-        // }
+            if (deedFetchSuccess !== true && deedFetchSuccess !== false) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Deed Verification Needed",
+                    text: "Please fetch and verify the deed before proceeding.",
+                });
+                return;
+            }
+        }
 
 
 

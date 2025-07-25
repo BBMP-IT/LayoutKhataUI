@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import bbmpLogo from '../../assets/bbmp.png';
 import Swal from "sweetalert2";
-import { individualSiteListAPI, fetch_LKRSID } from '../../API/authService';
+import { individualSiteListAPI, fetch_LKRSID, fetchAROList } from '../../API/authService';
 import { useLocation } from 'react-router-dom';
 
 const Endorsement = () => {
@@ -11,6 +11,11 @@ const Endorsement = () => {
 
   const { LKRS_ID, createdBy, createdName, roleID, display_LKRS_ID } = location.state || {};
   const [localLKRSID, setLocalLKRSID] = useState(LKRS_ID || "");
+  const [aroName, setAROName] = useState("");
+  const [zoneName, setZoneName] = useState("");
+  const [wardName, setWardName] = useState("");
+  const [address, setAddress] = useState("");
+
 
   useEffect(() => {
 
@@ -44,9 +49,22 @@ const Endorsement = () => {
 
         // Format to DD-MM-YYYY
         const formattedDate = `${String(createdDate.getDate()).padStart(2, '0')}-${String(createdDate.getMonth() + 1).padStart(2, '0')}-${createdDate.getFullYear()}`;
-
         // Append to label
         document.getElementById("app_date").innerText = formattedDate;
+
+         try {
+      const aro_response = await fetchAROList(localLKRSID);
+
+      if (aro_response) {
+        setAddress(aro_response[0].aaddress);
+        setZoneName(aro_response[0].bbmpZoneName);
+        setWardName(aro_response[0].bbmpWardName);
+        setAROName(aro_response[0].aronamE_EN)
+      }
+
+    } catch (error) {
+      console.error("Failed to fetch LKRSID data:", error);
+    }
       }
 
     } catch (error) {
@@ -145,7 +163,7 @@ const Endorsement = () => {
               <p style={{ fontSize: 18 }}>
                 Non-TransactabIe Provisional Layout Khata at {' '} <a href="https://BBMPeAasthi.Karnataka.gov.in" target="_blank" rel="noopener noreferrer">https://BBMPeAasthi.Karnataka.gov.in </a>{' '} (Using your temporary ePID) </p>
               <p style={{ fontSize: 18 }}>Pay upto-date Property Tax at <a href="https://BBMPtax.Karnataka.gov.in">https://BBMPtax.Karnataka.gov.in </a>(Using your SAS Application No. given at top)</p>
-              <p style={{ fontSize: 18 }} hidden><p>Your case has been referred to ARO <b>VASANTHANAGAR</b>, Zone <b>East</b>, ARO Address <b>BBMP OFFICES, Ground Floor, NEXT TO KSFC BUILDING, THIMMAIAH ROAD, VASANTHNAGAR, BANGALORE</b></p></p>
+              <p style={{ fontSize: 18 }} ><p>Your case has been referred to ARO <b>{aroName}</b>, Zone <b>{zoneName}</b>, Ward <b>{wardName}</b>, ARO Address <b>{address}</b></p></p>
             </div>
             <div className='row' hidden>
               <p style={{ fontSize: 18 }}><strong>For the following reasons/purposes:</strong> <br /></p>

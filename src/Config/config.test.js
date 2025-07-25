@@ -67,6 +67,7 @@ const config = {
         releaseEKYCInsert: '/api/Release/fnInsertReleaseEkycinfo',
         fetchZoneWard: '/api/LKRS/fnGetZonefromWardList',
         fetchStreet: '/api/LKRS/fnGetStreetList',
+        fetchARO: '/api/LKRS/fnGetARODetails',
 
     }
 };

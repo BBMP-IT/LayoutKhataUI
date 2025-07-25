@@ -1257,7 +1257,7 @@ const ReleaseDashboard = () => {
             });
             return;
         }
-       
+
         if (!siteRelID) {
             Swal.fire({
                 icon: 'warning',
@@ -1273,7 +1273,7 @@ const ReleaseDashboard = () => {
             trimmedLKRSID = localLKRSID.substring(1);
         }
 
-        
+
         try {
             start_loader();
 
@@ -2034,6 +2034,7 @@ const ReleaseDashboard = () => {
     const [isEKYCCompleted, setIsEKYCCompleted] = useState(false);
     const [ekyc_Data, setEkyc_Data] = useState(null);
     const [isEKYCVerified, setIsEKYCVerified] = useState(false);
+    const [isEKYCAttempted, setIsEKYCAttempted] = useState(false);
     const [orderReleaseStatus, setOrderReleaseStatus] = useState(false);
 
 
@@ -2224,7 +2225,8 @@ const ReleaseDashboard = () => {
             } catch (error) {
                 console.error('Error fetching data:', error);
             } finally {
-
+                setIsEKYCAttempted(true);  // <-- This ensures it runs after API call
+                stop_loader();
             }
         } else {
 
@@ -2765,12 +2767,12 @@ const ReleaseDashboard = () => {
                                         <button className='btn btn-info btn-block' disabled={!selectedOwner || isEKYCVerified} onClick={handleDoEKYC}>Do eKYC</button>
                                     </div>
                                     <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 mt-5">
-                                        {isEKYCVerified && (
+                                        {isEKYCAttempted && isEKYCVerified && (
                                             <div className="mb-2 text-success font-weight-bold">
                                                 eKYC Verified!
                                             </div>
                                         )}
-                                        {!isEKYCVerified && (
+                                        {isEKYCAttempted && !isEKYCVerified && (
                                             <div className="mb-2 text-danger font-weight-bold">
                                                 eKYC Failed!
                                             </div>

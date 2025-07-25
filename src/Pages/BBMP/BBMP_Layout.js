@@ -622,6 +622,9 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                 hobliCode: selectedHobli,
                 villageCode: selectedVillage,
                 landCode: landCode,
+                createdBy: createdBy,
+                createdName: createdName,
+                createdRole: roleID,
             });
 
             if (result.success) {
@@ -671,290 +674,94 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
     const isAKharabIncludedRef = useRef(null);
     const [isAKharabIncludedError, setIsAKharabIncludedError] = useState("");
 
-
-
-
-
-
-  
-
-    //modal popup
-    // const handleViewRTC = async (item) => {
-    //     const mainOwnerNo = item.main_owner_no;
-
-    //     // Get all owners under this main owner
-    //     const ownersToAdd = data.filter(o => o.main_owner_no === mainOwnerNo);
-
-    //     // Filter out already added owners
-    //     const newOwners = ownersToAdd.filter((ownerItem) => {
-    //         return !rtcAddedData.some(
-    //             (data) =>
-    //                 data.survey_no === ownerItem.survey_no &&
-    //                 data.surnoc === ownerItem.surnoc &&
-    //                 data.hissa_no === ownerItem.hissa_no &&
-    //                 data.owner === ownerItem.owner &&
-    //                 data.father === ownerItem.father &&
-    //                 data.owner_no === ownerItem.owner_no
-    //         );
-    //     });
-
-    //     if (newOwners.length === 0) {
-    //         Swal.fire('Duplicate!', 'All selected records already exist in the table.', 'warning');
-    //         return;
-    //     }
-
-    //     // Remove duplicate survey entries
-    //     const seenSurveyKeys = new Set();
-    //     const uniqueSurveyOwners = newOwners.filter(o => {
-    //         const key = `${o.survey_no}-${o.surnoc}-${o.hissa_no}`;
-    //         if (seenSurveyKeys.has(key)) return false;
-    //         seenSurveyKeys.add(key);
-    //         return true;
-    //     });
-
-    //     // Location mapping
-    //     const selectedDistrictObj = districts.find(d => String(d.districT_CODE) === String(selectedDistrict)) || {};
-    //     const selectedTalukObj = taluks.find(t => String(t.talukA_CODE) === String(selectedTaluk)) || {};
-    //     const selectedHobliObj = hoblis.find(h => String(h.hoblI_CODE) === String(selectedHobli)) || {};
-    //     const selectedVillageObj = villages.find(v => String(v.villagE_CODE) === String(selectedVillage)) || {};
-
-    //     const locationData = {
-    //         district: selectedDistrictObj.districT_NAME || '',
-    //         districtCode: selectedDistrictObj.districT_CODE || '',
-    //         taluk: selectedTalukObj.displayName || '',
-    //         talukCode: selectedTalukObj.talukA_CODE || '',
-    //         hobli: selectedHobliObj.displayName || '',
-    //         hobliCode: selectedHobliObj.hoblI_CODE || '',
-    //         village: selectedVillageObj.displayName || '',
-    //         villageCode: selectedVillageObj.villagE_CODE || '',
-    //     };
-
-    //     const ownersWithLocation = uniqueSurveyOwners.map(o => ({
-    //         ...o,
-    //         ...locationData,
-    //     }));
-
-    //     const mainOwnerRecord = data.find(
-    //         o => o.main_owner_no === mainOwnerNo && o.owner_no === mainOwnerNo
-    //     );
-
-    //     // Clear state before update
-    //     // setTotal_Acre('');
-    //     // setTotal_Gunta('');
-    //     // setTotal_FGunta('');
-
-    //     // setTimeout(() => {
-    //     //     let updatedAcre = '';
-    //     //     let updatedGunta = '';
-    //     //     let updatedFGunta = '';
-
-    //     //     if (mainOwnerRecord) {
-    //     //         updatedAcre = mainOwnerRecord.ext_acre ?? '';
-    //     //         updatedGunta = mainOwnerRecord.ext_gunta ?? '';
-    //     //         updatedFGunta = mainOwnerRecord.ext_fgunta ?? '';
-
-    //     //         setTotal_Acre(updatedAcre);
-    //     //         setTotal_Gunta(updatedGunta);
-    //     //         setTotal_FGunta(updatedFGunta);
-    //     //     }
-
-    //     //     setPendingRTCData(ownersWithLocation);
-
-    //     //     const formattedDetails = ownersWithLocation
-    //     //         .map(o => `${o.survey_no}/${o.surnoc}/${o.hissa_no}`)
-    //     //         .join(', ');
-
-    //     //     setModalTitle(`Survey Number/Surnoc/Hissa No Details: ${formattedDetails}`);
-
-    //     //     setModalContent(() => (
-    //     //         <div className="row mt-3">
-    //     //             {/* Total Extent */}
-    //     //             <div className="col-md-3"><label>Total Extent:<span className="text-danger">*</span></label></div>
-    //     //             <div className="col-md-3">
-    //     //                 <input type="text" placeholder="Acre" className="form-control" value={updatedAcre} readOnly />
-    //     //             </div>
-    //     //             <div className="col-md-3">
-    //     //                 <input type="text" placeholder="Gunta" className="form-control" value={updatedGunta} readOnly />
-    //     //             </div>
-    //     //             <div className="col-md-3">
-    //     //                 <input type="text" placeholder="FGunta" className="form-control" value={updatedFGunta} readOnly />
-    //     //             </div>
-
-    //     //             {/* BDA Approved Extent */}
-    //     //             <div className="col-md-3 mt-3"><label>BDA Approved Extent:<span className="text-danger">*</span></label></div>
-    //     //             <div className="col-md-3">
-    //     //                 <input type="text" placeholder="Acre" className="form-control" value={bdaAcre} onChange={(e) => setBdaAcre(e.target.value)} />
-    //     //             </div>
-    //     //             <div className="col-md-3">
-    //     //                 <input type="text" placeholder="Gunta" className="form-control" value={bdaGunta} onChange={(e) => setBdaGunta(e.target.value)} />
-    //     //             </div>
-    //     //             <div className="col-md-3">
-    //     //                 <input type="text" placeholder="FGunta" className="form-control" value={bdaFGunta} onChange={(e) => setBdaFGunta(e.target.value)} />
-    //     //             </div>
-
-
-    //     //             {/* Is A-Kharab Included Dropdown */}
-    //     //             <div className="row mt-3">
-    //     //                 {/* your JSX content */}
-    //     //                 <div className="col-md-6 mt-3">
-    //     //                     <label>
-    //     //                         Is A-Kharab extent part of BDA approved plan: <span className="text-danger">*</span>
-    //     //                     </label>
-    //     //                     <select
-    //     //                         value={isAKharabIncluded}
-    //     //                         onChange={(e) => {
-    //     //                             const value = e.target.value;
-    //     //                             console.log(value);
-    //     //                             setIsAKharabIncluded(value);
-    //     //                             console.log(isAKharabIncluded);
-    //     //                         }}
-    //     //                     >
-    //     //                         <option value="">-- Select --</option>
-    //     //                         <option value="1">Yes</option>
-    //     //                         <option value="2">No</option>
-    //     //                     </select>
-    //     //                 </div>
-    //     //                 {/* rest of the fields shown conditionally */}
-    //     //             </div>
-
-    //     //             <div className="col-md-12">
-    //     //                 <div className="form-check form-check-inline">
-    //     //                     <input
-    //     //                         className="form-check-input"
-    //     //                         type="radio"
-    //     //                         id="akharab-yes"
-    //     //                         name="isAKharabIncluded"
-    //     //                         checked={isAKharabIncluded === true}
-    //     //                         onChange={() => setIsAKharabIncluded(true)}
-    //     //                     />
-    //     //                     <label className="form-check-label" htmlFor="akharab-yes">Yes</label>
-    //     //                 </div>
-
-    //     //                 <div className="form-check form-check-inline">
-    //     //                     <input
-    //     //                         className="form-check-input"
-    //     //                         type="radio"
-    //     //                         id="akharab-no"
-    //     //                         name="isAKharabIncluded"
-    //     //                         checked={isAKharabIncluded === false}
-    //     //                         onChange={() => setIsAKharabIncluded(false)}
-    //     //                     />
-    //     //                     <label className="form-check-label" htmlFor="akharab-no">No</label>
-    //     //                 </div>
-    //     //             </div>
-
-    //     //             {/* Note */}
-    //     //             <div className="col-md-12 mt-3">
-    //     //                 <span className="text-danger fw-bold">Note: Do Not include B-Kharab land</span>
-    //     //             </div>
-    //     //         </div>
-    //     //     ));
-
-    //     //     showModal();
-    //     // }, 0);
-    // };
-
-    //  const [totalSQFT, setTotalSQFT] = useState('');
     const [totalSQM, setTotalSQM] = useState('');
 
-
-
-
     const handleViewRTC = async (item) => {
-  const mainOwnerNo = item.main_owner_no;
+        const mainOwnerNo = item.main_owner_no;
 
-  const ownersToAdd = data.filter(o => o.main_owner_no === mainOwnerNo);
-  const newOwners = ownersToAdd.filter((ownerItem) => {
-    return !rtcAddedData.some(
-      (data) =>
-        data.survey_no === ownerItem.survey_no &&
-        data.surnoc === ownerItem.surnoc &&
-        data.hissa_no === ownerItem.hissa_no &&
-        data.owner === ownerItem.owner &&
-        data.father === ownerItem.father &&
-        data.owner_no === ownerItem.owner_no
-    );
-  });
+        // Step 1: Get all owners (main + joint) with the same main_owner_no
+        const ownersToAdd = data.filter(o => o.main_owner_no === mainOwnerNo);
 
-  if (newOwners.length === 0) {
-    Swal.fire('Duplicate!', 'All selected records already exist in the table.', 'warning');
-    return;
-  }
+        // Step 2: Filter out already added owners to avoid duplicates
+        const newOwners = ownersToAdd.filter((ownerItem) => {
+            return !rtcAddedData.some(
+                (data) =>
+                    data.survey_no === ownerItem.survey_no &&
+                    data.surnoc === ownerItem.surnoc &&
+                    data.hissa_no === ownerItem.hissa_no &&
+                    data.owner === ownerItem.owner &&
+                    data.father === ownerItem.father &&
+                    data.owner_no === ownerItem.owner_no
+            );
+        });
 
-  const seenSurveyKeys = new Set();
-  const uniqueSurveyOwners = newOwners.filter(o => {
-    const key = `${o.survey_no}-${o.surnoc}-${o.hissa_no}`;
-    if (seenSurveyKeys.has(key)) return false;
-    seenSurveyKeys.add(key);
-    return true;
-  });
+        // Step 3: Show alert if no new owners to add
+        if (newOwners.length === 0) {
+            Swal.fire('Duplicate!', 'All selected records already exist in the table.', 'warning');
+            return;
+        }
 
-  const selectedDistrictObj = districts.find(d => String(d.districT_CODE) === String(selectedDistrict)) || {};
-  const selectedTalukObj = taluks.find(t => String(t.talukA_CODE) === String(selectedTaluk)) || {};
-  const selectedHobliObj = hoblis.find(h => String(h.hoblI_CODE) === String(selectedHobli)) || {};
-  const selectedVillageObj = villages.find(v => String(v.villagE_CODE) === String(selectedVillage)) || {};
+        // Step 4: Get location data
+        const selectedDistrictObj = districts.find(d => String(d.districT_CODE) === String(selectedDistrict)) || {};
+        const selectedTalukObj = taluks.find(t => String(t.talukA_CODE) === String(selectedTaluk)) || {};
+        const selectedHobliObj = hoblis.find(h => String(h.hoblI_CODE) === String(selectedHobli)) || {};
+        const selectedVillageObj = villages.find(v => String(v.villagE_CODE) === String(selectedVillage)) || {};
 
-  const locationData = {
-    district: selectedDistrictObj.districT_NAME || '',
-    districtCode: selectedDistrictObj.districT_CODE || '',
-    taluk: selectedTalukObj.displayName || '',
-    talukCode: selectedTalukObj.talukA_CODE || '',
-    hobli: selectedHobliObj.displayName || '',
-    hobliCode: selectedHobliObj.hoblI_CODE || '',
-    village: selectedVillageObj.displayName || '',
-    villageCode: selectedVillageObj.villagE_CODE || '',
-  };
+        const locationData = {
+            district: selectedDistrictObj.districT_NAME || '',
+            districtCode: selectedDistrictObj.districT_CODE || '',
+            taluk: selectedTalukObj.displayName || '',
+            talukCode: selectedTalukObj.talukA_CODE || '',
+            hobli: selectedHobliObj.displayName || '',
+            hobliCode: selectedHobliObj.hoblI_CODE || '',
+            village: selectedVillageObj.displayName || '',
+            villageCode: selectedVillageObj.villagE_CODE || '',
+        };
 
-  const ownersWithLocation = uniqueSurveyOwners.map(o => ({
-    ...o,
-    ...locationData,
-  }));
+        // Step 5: Get main owner's extent values
+        const mainOwnerRecord = data.find(
+            o => o.main_owner_no === mainOwnerNo && o.owner_no === mainOwnerNo
+        );
 
-  const mainOwnerRecord = data.find(
-    o => o.main_owner_no === mainOwnerNo && o.owner_no === mainOwnerNo
-  );
+        if (mainOwnerRecord) {
+            setTotal_Acre(mainOwnerRecord.ext_acre);
+            setTotal_Gunta(mainOwnerRecord.ext_gunta);
+            setTotal_FGunta(mainOwnerRecord.ext_fgunta);
+        }
 
-  if (mainOwnerRecord) {
-    setTotal_Acre(mainOwnerRecord.ext_acre);
-    setTotal_Gunta(mainOwnerRecord.ext_gunta);
-    setTotal_FGunta(mainOwnerRecord.ext_fgunta);
-  }
+        // Step 6: Survey info for modal title
+        const surveyDetails = newOwners
+            .map(o => `${o.survey_no}/${o.surnoc}/${o.hissa_no}`)
+            .join(', ');
 
-  const surveyDetails = uniqueSurveyOwners
-    .map(o => `${o.survey_no}/${o.surnoc}/${o.hissa_no}`)
-    .join(', ');
+        // Step 7: Show modal with MyFormComponent
+        setModalTitle(`Survey Number/Surnoc/Hissa No Details: ${surveyDetails}`);
+        setModalContent(
+            <MyFormComponent
+                totalAcre={mainOwnerRecord?.ext_acre}
+                totalGunta={mainOwnerRecord?.ext_gunta}
+                totalFGunta={mainOwnerRecord?.ext_fgunta}
+                onSave={(ldaAcre, ldaGunta, ldaFGunta) => {
+                    const ownersWithLocationAndLda = newOwners.map(o => ({
+                        ...o,
+                        ...locationData,
+                        lda_acre: ldaAcre,
+                        lda_gunta: ldaGunta,
+                        lda_fgunta: ldaFGunta
+                    }));
 
-  setModalTitle(`Survey Number/Surnoc/Hissa No Details: ${surveyDetails}`);
-  setModalContent(
-    <MyFormComponent
-      totalAcre={mainOwnerRecord?.ext_acre}
-      totalGunta={mainOwnerRecord?.ext_gunta}
-      totalFGunta={mainOwnerRecord?.ext_fgunta}
-      onSave={(ldaAcre, ldaGunta, ldaFGunta) => {
-        const ownersWithLocationAndLda = ownersWithLocation.map(o => ({
-          ...o,
-          lda_acre: ldaAcre,
-          lda_gunta: ldaGunta,
-          lda_fgunta: ldaFGunta
-        }));
+                    setRtcAddedData(prev => [...prev, ...ownersWithLocationAndLda]);
+                    setLdaAcre(ldaAcre);
+                    setLdaGunta(ldaGunta);
+                    setLdaFGunta(ldaFGunta);
 
-        setRtcAddedData(prev => [...prev, ...ownersWithLocationAndLda]);
-        setLdaAcre(ldaAcre);
-        setLdaGunta(ldaGunta);
-        setLdaFGunta(ldaFGunta);
-
-        // ✅ close modal after data is added
-        hideModal();
-      }}
-    />
-  );
-  showModal();
-};
-
-
-
-
-
+                    // ✅ Close modal after data is added
+                    hideModal();
+                }}
+            />
+        );
+        showModal();
+    };
 
 
     const handleSaveRTC = async () => {
@@ -966,21 +773,13 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
             Swal.fire("Area Required", "The area cannot be zero. Please provide a valid area.", "warning");
             return;
         }
-        // ✅ Check DC Conversion No
-        // if (!dcNumber.trim()) {
-        //     Swal.fire("Missing Field", "Please enter DC Conversion Order No.", "warning");
-        //     return
-        // }
-        // if (!uploadedFile) {
-        //     Swal.fire("Missing File", "Please upload DC Conversion Order file.", "warning");
-        //     return
-        // }
+
         const payload = {
             lkrS_ID: 0,
             lkrS_LANDTYPE: "surveyNo",
             lkrS_EPID: "",
-            lkrS_SITEAREA_SQFT: totalSqFt.toFixed(2),
-            lkrS_SITEAREA_SQMT: totalSqM.toFixed(2),
+            lkrS_SITEAREA_SQFT: totalSqFt_LDA.toFixed(2),
+            lkrS_SITEAREA_SQMT: totalSqM_LDA.toFixed(2),
             lkrS_REMARKS: "",
             lkrS_ADDITIONALINFO: "",
             lkrS_CREATEDBY: createdBy,
@@ -1005,14 +804,21 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                 suR_EXTACRE: item.ext_acre,
                 suR_EXTGUNTA: item.ext_gunta,
                 suR_EXTFGUNTA: item.ext_fgunta,
-                suR_EXTINSQFT: item.ext_in_sqft,
-                suR_EXTINSQMT: item.ext_in_sqmt,
+                suR_EXTINSQFT: ((parseFloat(item.ext_acre) * 43560) + (parseFloat(item.ext_gunta) * 1089) + (parseFloat(item.ext_fgunta) * 68.0625)).toFixed(2),
+                suR_EXTINSQMT: (((parseFloat(item.ext_acre) * 43560) + (parseFloat(item.ext_gunta) * 1089) + (parseFloat(item.ext_fgunta) * 68.0625)) * 0.092903).toFixed(2),
                 suR_ISAADHAARSEEDED: 0,
                 suR_REMARKS: "",
                 suR_ADDITIONALINFO: "",
                 suR_CREATEDBY: createdBy,
                 suR_CREATEDNAME: createdName,
-                suR_CREATEDROLE: roleID
+                suR_CREATEDROLE: roleID,
+                suR_LDA_APR_EXTACRE: item.lda_acre,
+                suR_LDA_APR_EXTGUNTA: item.lda_gunta,
+                suR_LDA_APR_EXTFGUNTA: item.lda_fgunta,
+                suR_LDA_APR_EXTINSQFT: ((parseFloat(item.lda_acre) * 43560) + (parseFloat(item.lda_gunta) * 1089) + (parseFloat(item.lda_fgunta) * 68.0625)).toFixed(2),
+
+                suR_LDA_APR_EXTINSQMT: (((parseFloat(item.lda_acre) * 43560) + (parseFloat(item.lda_gunta) * 1089) + (parseFloat(item.lda_fgunta) * 68.0625)) * 0.092903).toFixed(2),
+
             }))
         };
 
@@ -1125,6 +931,14 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
     let totalSqFt = 0;
     let totalSqM = 0;
 
+    let totalAcre_LDA = 0;
+    let totalGunta_LDA = 0;
+    let totalFGunta_LDA = 0;
+    let totalSqFt_LDA = 0;
+    let totalSqM_LDA = 0;
+
+    
+
     const mapSurveyDetails = (surveyDetails) => {
         return surveyDetails.map((item) => ({
             district: item.suR_DISTRICT_Name || "—",
@@ -1137,9 +951,17 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
             hissa_no: item.suR_HISSA,
             ext_acre: item.suR_EXTACRE || 0,
             ext_gunta: item.suR_EXTGUNTA || 0,
-            ext_fgunta: item.suR_EXTFGUNTA || 0, // Make sure to handle this if needed
+            ext_fgunta: item.suR_EXTFGUNTA || 0,
+            lda_acre: item.suR_LDA_APR_EXTACRE || 0,
+            lda_gunta: item.suR_LDA_APR_EXTGUNTA || 0,
+            lda_fgunta: item.suR_LDA_APR_EXTFGUNTA || 0,
+
+            // ✅ Add these new values
+            lda_sqft: item.suR_LDA_APR_EXTINSQFT || 0,
+            lda_sqm: item.suR_LDA_APR_EXTINSQMT || 0
         }));
     };
+
     //fetching Details from LKRSID
     const handleGetLKRSID = async (localLKRSID) => {
         const payload = {
@@ -1226,67 +1048,66 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
     const combinedData = [...rtcAddedData, ...rtcData];
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(5);
+
+
+
     combinedData.forEach(row => {
         const acre = parseFloat(row.ext_acre || 0);
         const gunta = parseFloat(row.ext_gunta || 0);
         const fgunta = parseFloat(row.ext_fgunta || 0);
 
+        const acre_LDA = parseFloat(row.lda_acre || 0);
+        const gunta_LDA = parseFloat(row.lda_gunta || 0);
+        const fgunta_LDA = parseFloat(row.lda_fgunta || 0);
+
         totalAcre += acre;
         totalGunta += gunta;
         totalFGunta += fgunta;
 
+        totalAcre_LDA += acre_LDA;
+        totalGunta_LDA += gunta_LDA;
+        totalFGunta_LDA += fgunta_LDA;
+
         const sqft = (acre * 43560) + (gunta * 1089) + (fgunta * 68.0625);
+        const sqft_LDA = (acre_LDA * 43560) + (gunta_LDA * 1089) + (fgunta_LDA * 68.0625);
+
         totalSqFt += sqft;
         totalSqM += sqft * 0.092903;
 
-        setAreaSqft(totalSqFt);
-        sessionStorage.setItem('areaSqft', totalSqFt);
+        totalSqFt_LDA += sqft_LDA;
+        totalSqM_LDA += sqft_LDA * 0.092903;
     });
 
-    const { bhoomiTotals, ldaTotals } = React.useMemo(() => {
-  const base = () => ({ acre: 0, gunta: 0, fgunta: 0, sqft: 0, sqm: 0 });
-  const totals = { bhoomi: base(), lda: base() };
-
-  combinedData.forEach((row) => {
-    // ---------- Bhoomi ----------
-    totals.bhoomi.fgunta += +row.ext_fgunta || 0;
-    totals.bhoomi.gunta  += +row.ext_gunta  || 0;
-    totals.bhoomi.acre   += +row.ext_acre   || 0;
-
-    // ---------- LDA (may be blank) ----------
-    totals.lda.fgunta += +row.lda_fgunta || 0;
-    totals.lda.gunta  += +row.lda_gunta  || 0;
-    totals.lda.acre   += +row.lda_acre   || 0;
-  });
-
-  const normalize = (o) => {
-    o.gunta += Math.floor(o.fgunta / 16);
-    o.fgunta = o.fgunta % 16;
-    o.acre  += Math.floor(o.gunta / 40);
-    o.gunta  = o.gunta % 40;
-    o.sqft   = o.acre * 43560 + o.gunta * 1089 + o.fgunta * 68.0625;
-    o.sqm    = o.sqft * 0.092903;
-  };
-
-  normalize(totals.bhoomi);
-  normalize(totals.lda);
-  return { bhoomiTotals: totals.bhoomi, ldaTotals: totals.lda };
-}, [combinedData]);
-
-// ——————————————————————————————————————————————————————————————
-// 2️⃣  Persist in sessionStorage (once per change)
-// ——————————————————————————————————————————————————————————————
-React.useEffect(() => {
-  sessionStorage.setItem('areaSqft',      bhoomiTotals.sqft);  // existing key
-  sessionStorage.setItem('ldaAreaSqft',   ldaTotals.sqft);     // new key
-}, [bhoomiTotals.sqft, ldaTotals.sqft]);
-
-
-    // Normalize fgunta -> gunta and acre
+    // Normalize Non-LDA
     totalGunta += Math.floor(totalFGunta / 16);
     totalFGunta = totalFGunta % 16;
     totalAcre += Math.floor(totalGunta / 40);
     totalGunta = totalGunta % 40;
+
+    // Normalize LDA
+    totalGunta_LDA += Math.floor(totalFGunta_LDA / 16);
+    totalFGunta_LDA = totalFGunta_LDA % 16;
+    totalAcre_LDA += Math.floor(totalGunta_LDA / 40);
+    totalGunta_LDA = totalGunta_LDA % 40;
+
+    // ✅ Calculate overall total in FGunta
+    const totalFG_Acre = totalAcre * 640 + totalGunta * 16 + totalFGunta;
+    const totalFG_LDA = totalAcre_LDA * 640 + totalGunta_LDA * 16 + totalFGunta_LDA;
+    const overallTotalFG = totalFG_Acre + totalFG_LDA;
+
+    // ✅ Convert back to Acre.Gunta.FGunta format
+    let overallAcre = Math.floor(overallTotalFG / 640);
+    let remainingFG = overallTotalFG % 640;
+    let overallGunta = Math.floor(remainingFG / 16);
+    let overallFGunta = remainingFG % 16;
+
+    const formattedOverall = `${overallAcre}.${overallGunta}.${overallFGunta}`;
+
+    // Optional: Store for later use
+    setAreaSqft(totalSqFt_LDA);
+    sessionStorage.setItem('areaSqft', totalSqFt_LDA);
+
+
     const totalPages = Math.ceil(combinedData.length / rowsPerPage);
     const paginatedData = combinedData.slice(
         (currentPage - 1) * rowsPerPage,
@@ -1528,7 +1349,7 @@ React.useEffect(() => {
             )}
 
 
-         
+
 
             <hr />
             {/* Added RTC Table */}
@@ -1564,8 +1385,11 @@ React.useEffect(() => {
                                     <th>Survey Number / Surnoc / Hissa Number</th>
                                     <th>Bhoomi Extent (Acre.Gunta.Fgunta)</th>
                                     <th>LDA Extent (Acre.Gunta.Fgunta)</th>
-                                    <th>SqFt</th>
-                                    <th>SqM</th>
+                                    <th>LDA Total Area in SqFt</th>
+                                    <th>LDA Total Area in SqM</th>
+
+                                    <th>Bhoomi Total Area in SqFt</th>
+                                    <th>Bhoomi Total Area in SqM</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1586,16 +1410,34 @@ React.useEffect(() => {
                                         <td>{row.village}</td>
                                         <td>{row.owner}</td>
                                         <td>{`${row.survey_no}/${row.surnoc}/${row.hissa_no}`}</td>
+                                        {/* Bhoomi extent */}
                                         <td>{`${row.ext_acre}.${row.ext_gunta}.${row.ext_fgunta}`}</td>
-                                        {/* NEW – LDA extent */}
+                                        {/* LDA extent */}
                                         <td>{`${row.lda_acre ?? ''}.${row.lda_gunta ?? ''}.${row.lda_fgunta ?? ''}`}</td>
-
+                                        {/* LDA extent total area */}
+                                        <td>
+                                            {Math.floor(
+                                                (parseFloat(row.lda_acre) * 43560) +
+                                                (parseFloat(row.lda_gunta) * 1089) +
+                                                (parseFloat(row.lda_fgunta) * 68.0625)
+                                            )}
+                                        </td>
                                         <td>
                                             {(
+                                                (
+                                                    (parseFloat(row.lda_acre) * 43560) +
+                                                    (parseFloat(row.lda_gunta) * 1089) +
+                                                    (parseFloat(row.lda_fgunta) * 68.0625)
+                                                ) * 0.092903
+                                            ).toFixed(1)}
+                                        </td>
+                                        {/* Bhommi extent total area */}
+                                        <td>
+                                            {Math.floor(
                                                 (parseFloat(row.ext_acre) * 43560) +
                                                 (parseFloat(row.ext_gunta) * 1089) +
                                                 (parseFloat(row.ext_fgunta) * 68.0625)
-                                            ).toFixed(2)}
+                                            )}
                                         </td>
                                         <td>
                                             {(
@@ -1604,22 +1446,31 @@ React.useEffect(() => {
                                                     (parseFloat(row.ext_gunta) * 1089) +
                                                     (parseFloat(row.ext_fgunta) * 68.0625)
                                                 ) * 0.092903
-                                            ).toFixed(2)}
+                                            ).toFixed(1)}
                                         </td>
+
+
                                     </tr>
                                 ))}
                             </tbody>
-                            <tfoot >
+                            <tfoot>
                                 <tr>
                                     <th colSpan={6}></th>
                                     <th colSpan={2} className="text-end fw-bold">Total Area:</th>
-                                    <th className="text-left fw-bold" >{`${totalAcre}.${totalGunta}.${totalFGunta}`}</th>
-                                    
-                                    <th className="text-left fw-bold" >{`${totalAcre}.${totalGunta}.${totalFGunta}`}</th>
-                                    <th className='fw-bold'>{totalSqFt.toFixed(2)}</th>
-                                    <th className='fw-bold'>{totalSqM.toFixed(2)}</th>
+                                    <th className="text-left fw-bold">{`${totalAcre}.${totalGunta}.${totalFGunta}`}</th>
+                                    <th className="text-left fw-bold">{`${totalAcre_LDA}.${totalGunta_LDA}.${totalFGunta_LDA}`}</th>
+                                    <th className='fw-bold' style={{ backgroundColor: 'orange', color: '#fff' }}>
+                                        {Math.floor(totalSqFt_LDA)}
+                                    </th>
+                                    <th className='fw-bold' style={{ backgroundColor: 'orange', color: '#fff' }}>
+                                        {totalSqM_LDA.toFixed(1)}
+                                    </th>
+                                    <th className='fw-bold'>{Math.floor(totalSqFt)}</th>
+                                    <th className='fw-bold'>{totalSqM.toFixed(1)}</th>
                                 </tr>
                             </tfoot>
+
+
                         </table>
                     </div>
 
@@ -1974,7 +1825,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
         }
 
         try {
-            const fetchedData = await handleFetchEPIDDetails(epidNumber);
+            const fetchedData = await handleFetchEPIDDetails(epidNumber, createdBy, createdName, roleID);
 
             // ✅ Store epidKhataDetails in session/sessionStorage
             sessionStorage.setItem("epid_JSON", JSON.stringify(fetchedData.epidKhataDetails));
@@ -2637,7 +2488,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>{epid_fetchedData.SiteDetails?.siteArea}</td>
+                                    <td>{epid_fetchedData.SiteDetails?.siteArea ? parseFloat(epid_fetchedData.SiteDetails.siteArea).toFixed(1) : ''}</td>
                                     <td>{epid_fetchedData.SiteDetails?.dimensions?.eastWest || '-'}</td>
                                     <td>{epid_fetchedData.SiteDetails?.dimensions?.northSouth || '-'}</td>
                                 </tr>
@@ -2686,92 +2537,92 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
 
 
 const MyFormComponent = ({ totalAcre, totalGunta, totalFGunta, onSave }) => {
-  const [ldaAcre, setLdaAcre] = useState(totalAcre);
-  const [ldaGunta, setLdaGunta] = useState(totalGunta);
-  const [ldaFGunta, setLdaFGunta] = useState(totalFGunta);
-  const [errorMsg, setErrorMsg] = useState("");
+    const [ldaAcre, setLdaAcre] = useState(totalAcre);
+    const [ldaGunta, setLdaGunta] = useState(totalGunta);
+    const [ldaFGunta, setLdaFGunta] = useState(totalFGunta);
+    const [errorMsg, setErrorMsg] = useState("");
 
-  const toSqFt = (acre = 0, gunta = 0, fgunta = 0) =>
-    Number(acre) * 43560 + Number(gunta) * 1089 + Number(fgunta) * 68.0625;
+    const toSqFt = (acre = 0, gunta = 0, fgunta = 0) =>
+        Number(acre) * 43560 + Number(gunta) * 1089 + Number(fgunta) * 68.0625;
 
-  const handleSubmit = () => {
-    const totalSqFt = toSqFt(totalAcre, totalGunta, totalFGunta);
-    const ldaSqFt = toSqFt(ldaAcre, ldaGunta, ldaFGunta);
+    const handleSubmit = () => {
+        const totalSqFt = toSqFt(totalAcre, totalGunta, totalFGunta);
+        const ldaSqFt = toSqFt(ldaAcre, ldaGunta, ldaFGunta);
 
-    if (ldaSqFt > totalSqFt) {
-      setErrorMsg("LDA Approved Extent cannot exceed the Total Extent.");
-      return;
-    }
+        if (ldaSqFt > totalSqFt) {
+            setErrorMsg("LDA Approved Extent cannot exceed the Total Extent.");
+            return;
+        }
 
-    setErrorMsg("");
-    onSave(ldaAcre, ldaGunta, ldaFGunta); // ✅ parent will handle closing
-  };
+        setErrorMsg("");
+        onSave(ldaAcre, ldaGunta, ldaFGunta); // ✅ parent will handle closing
+    };
 
-  return (
-    <div>
-      {/* Total Extent */}
-      <div className="row mb-3">
-        <div className="col-3">
-          <label className="form-label">Total Extent: <span className='mandatory_color'>*</span></label>
-        </div>
-        <div className="col-3">
-          <label className="form-label">Acre *</label>
-          <input type="text" className="form-control" value={totalAcre} readOnly />
-        </div>
-        <div className="col-3">
-          <label className="form-label">Gunta *</label>
-          <input type="text" className="form-control" value={totalGunta} readOnly />
-        </div>
-        <div className="col-3">
-          <label className="form-label">FGunta *</label>
-          <input type="text" className="form-control" value={totalFGunta} readOnly />
-        </div>
-      </div>
+    return (
+        <div>
+            {/* Total Extent */}
+            <div className="row mb-3">
+                <div className="col-3">
+                    <label className="form-label">Total Extent: <span className='mandatory_color'>*</span></label>
+                </div>
+                <div className="col-3">
+                    <label className="form-label">Acre *</label>
+                    <input type="text" className="form-control" value={totalAcre} readOnly />
+                </div>
+                <div className="col-3">
+                    <label className="form-label">Gunta *</label>
+                    <input type="text" className="form-control" value={totalGunta} readOnly />
+                </div>
+                <div className="col-3">
+                    <label className="form-label">FGunta *</label>
+                    <input type="text" className="form-control" value={totalFGunta} readOnly />
+                </div>
+            </div>
 
-      {/* LDA Approved Extent */}
-      <div className="row mb-3">
-        <div className="col-3">
-          <label className="form-label">LDA Approved Extent: <span className='mandatory_color'>*</span></label>
-        </div>
-        <div className="col-3">
-          <input
-            type="text"
-            className="form-control"
-            value={ldaAcre}
-            onChange={(e) => setLdaAcre(e.target.value)}
-          />
-        </div>
-        <div className="col-3">
-          <input
-            type="text"
-            className="form-control"
-            value={ldaGunta}
-            onChange={(e) => setLdaGunta(e.target.value)}
-          />
-        </div>
-        <div className="col-3">
-          <input
-            type="text"
-            className="form-control"
-            value={ldaFGunta}
-            onChange={(e) => setLdaFGunta(e.target.value)}
-          />
-        </div>
-        {errorMsg && (
-          <div className="col-12">
-            <small className="text-danger fw-semibold">{errorMsg}</small>
-          </div>
-        )}
-      </div>
+            {/* LDA Approved Extent */}
+            <div className="row mb-3">
+                <div className="col-3">
+                    <label className="form-label">LDA Approved Extent: <span className='mandatory_color'>*</span></label>
+                </div>
+                <div className="col-3">
+                    <input
+                        type="text"
+                        className="form-control"
+                        value={ldaAcre}
+                        onChange={(e) => setLdaAcre(e.target.value)}
+                    />
+                </div>
+                <div className="col-3">
+                    <input
+                        type="text"
+                        className="form-control"
+                        value={ldaGunta}
+                        onChange={(e) => setLdaGunta(e.target.value)}
+                    />
+                </div>
+                <div className="col-3">
+                    <input
+                        type="text"
+                        className="form-control"
+                        value={ldaFGunta}
+                        onChange={(e) => setLdaFGunta(e.target.value)}
+                    />
+                </div>
+                {errorMsg && (
+                    <div className="col-12">
+                        <small className="text-danger fw-semibold">{errorMsg}</small>
+                    </div>
+                )}
+            </div>
 
-      {/* Submit */}
-      <div className="text-end">
-        <button className="btn btn-primary" onClick={handleSubmit}>
-          Save and Close
-        </button>
-      </div>
-    </div>
-  );
+            {/* Submit */}
+            <div className="text-end">
+                <button className="btn btn-primary" onClick={handleSubmit}>
+                    Save and Close
+                </button>
+            </div>
+        </div>
+    );
 };
 
 
