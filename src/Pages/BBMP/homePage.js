@@ -12,7 +12,6 @@ const BBMP_Homepage = () => {
 //     setLoading(false); 
 //   };
 
-
  const { loading, start_loader, stop_loader } = useContext(LoaderContext);
 
     return (

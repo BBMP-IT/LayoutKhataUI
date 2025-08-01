@@ -1264,7 +1264,7 @@ const ReleaseDashboard = () => {
             Swal.fire({
                 icon: 'warning',
                 title: 'Save Release Order First',
-                text: 'Please save the release order details before selecting and releasing sites.',
+                text: 'Please enter and save release order details before releasing sites',
                 confirmButtonColor: '#3085d6',
             });
             return;
@@ -2816,11 +2816,11 @@ const ReleaseDashboard = () => {
                                                 <tr style={{ backgroundColor: "#fff", color: "#000", textAlign: "left" }}>
                                                     {/* <th style={thStyle}>ID</th> */}
                                                     {/* <th style={thStyle}>KRS ID</th> */}
-                                                    <th style={thStyle}>Site Approval order Number</th>
-                                                    <th style={thStyle}>Date of Order</th>
+                                                    <th style={thStyle}>Site Approval No</th>
+                                                    <th style={thStyle}>Date Of App.</th>
                                                     <th style={thStyle}>Approval Authority</th>
-                                                    <th style={thStyle}>Designation of Authority issued </th>
-                                                    <th style={thStyle}>Total Number of sites </th>
+                                                    <th style={thStyle}>Designation of Approval Authority</th>
+                                                    <th style={thStyle}>Total Sites</th>
                                                     <th style={thStyle} hidden>Release Type</th>
                                                 </tr>
                                             </thead>
@@ -2869,7 +2869,7 @@ const ReleaseDashboard = () => {
       th {
         font-weight: bold;
         color: #000;
-        
+        background-color: lightblue;
       }
       tr:nth-child(even) {
         background-color: #f9f9f9;
@@ -2910,18 +2910,19 @@ const ReleaseDashboard = () => {
                                                         </thead>
                                                         <tbody>
                                                             <tr>
-                                                                <td>{epid_fetchedData.PropertyID}</td>
-                                                                <td>{epid_fetchedData.PropertyCategory}</td>
-                                                                <td>{epid_fetchedData.PropertyClassification}</td>
-                                                                <td>{epid_fetchedData.WardNumber}</td>
-                                                                <td>{epid_fetchedData.WardName?.trim()}</td>
-                                                                <td>{epid_fetchedData.StreetName?.trim()}</td>
+                                                                <td>{epid_fetchedData.PropertyID?.toString().trim() || '-'}</td>
+                                                                <td>{epid_fetchedData.PropertyCategory?.toString().trim() || '-'}</td>
+                                                                <td>{epid_fetchedData.PropertyClassification?.toString().trim() || '-'}</td>
+                                                                <td>{epid_fetchedData.WardNumber?.toString().trim() || '-'}</td>
+                                                                <td>{epid_fetchedData.WardName?.toString().trim() || '-'}</td>
+                                                                <td>{epid_fetchedData.StreetName?.toString().trim() || '-'}</td>
                                                             </tr>
+
                                                         </tbody>
                                                     </table>
 
                                                     {/* Kaveri Registration Numbers */}
-                                                    {epid_fetchedData.KaveriRegistrationNumber?.length > 0 && (
+                                                    {epid_fetchedData.KaveriRegistrationNumber && (
                                                         <>
                                                             <h4>Kaveri Registration Numbers</h4>
                                                             <table>
@@ -2934,8 +2935,9 @@ const ReleaseDashboard = () => {
                                                                 <tbody>
                                                                     {epid_fetchedData.KaveriRegistrationNumber.map((item, idx) => (
                                                                         <tr key={idx}>
-                                                                            <td>{item.kaveriRegistrationNumber}</td>
-                                                                            <td>{item.kaveriECNumber}</td>
+                                                                            <td>{item.kaveriRegistrationNumber?.trim() ? item.kaveriRegistrationNumber : '-'}</td>
+                                                                            <td>{item.kaveriECNumber?.trim() ? item.kaveriECNumber : '-'}</td>
+
                                                                         </tr>
                                                                     ))}
                                                                 </tbody>
@@ -2957,18 +2959,19 @@ const ReleaseDashboard = () => {
                                                         </thead>
                                                         <tbody>
                                                             <tr>
-                                                                <td>{epid_fetchedData.Streetcode}</td>
-                                                                <td>{epid_fetchedData.SASApplicationNumber}</td>
-                                                                <td>{epid_fetchedData.IsMuation}</td>
-                                                                <td>{epid_fetchedData.AssessmentNumber}</td>
-                                                                <td>{epid_fetchedData.courtStay}</td>
-                                                                <td>{epid_fetchedData.enquiryDispute}</td>
+                                                                <td>{epid_fetchedData.Streetcode?.toString().trim() ? epid_fetchedData.Streetcode : '-'}</td>
+                                                                <td>{epid_fetchedData.SASApplicationNumber?.toString().trim() ? epid_fetchedData.SASApplicationNumber : '-'}</td>
+                                                                <td>{epid_fetchedData.IsMuation?.toString().trim() ? epid_fetchedData.IsMuation : '-'}</td>
+                                                                <td>{epid_fetchedData.AssessmentNumber?.toString().trim() ? epid_fetchedData.AssessmentNumber : '-'}</td>
+                                                                <td>{epid_fetchedData.courtStay?.toString().trim() ? epid_fetchedData.courtStay : '-'}</td>
+                                                                <td>{epid_fetchedData.enquiryDispute?.toString().trim() ? epid_fetchedData.enquiryDispute : '-'}</td>
                                                             </tr>
+
                                                         </tbody>
                                                     </table>
 
                                                     {/* Check Bandi */}
-                                                    <h4>Check Bandi</h4>
+                                                    <h4>Chakbandi</h4>
                                                     <table>
                                                         <thead>
                                                             <tr>
@@ -2980,10 +2983,12 @@ const ReleaseDashboard = () => {
                                                         </thead>
                                                         <tbody>
                                                             <tr>
-                                                                <td>{epid_fetchedData.CheckBandi?.north}</td>
-                                                                <td>{epid_fetchedData.CheckBandi?.south}</td>
-                                                                <td>{epid_fetchedData.CheckBandi?.east}</td>
-                                                                <td>{epid_fetchedData.CheckBandi?.west}</td>
+                                                                <td>{epid_fetchedData.CheckBandi?.north?.toString().trim() ? epid_fetchedData.CheckBandi.north : '-'}</td>
+                                                                <td>{epid_fetchedData.CheckBandi?.south?.toString().trim() ? epid_fetchedData.CheckBandi.south : '-'}</td>
+                                                                <td>{epid_fetchedData.CheckBandi?.east?.toString().trim() ? epid_fetchedData.CheckBandi.east : '-'}</td>
+                                                                <td>{epid_fetchedData.CheckBandi?.west?.toString().trim() ? epid_fetchedData.CheckBandi.west : '-'}</td>
+
+
                                                             </tr>
                                                         </tbody>
                                                     </table>
@@ -2993,14 +2998,14 @@ const ReleaseDashboard = () => {
                                                     <table>
                                                         <thead>
                                                             <tr>
-                                                                <th>Site Area (sq ft)</th>
+                                                                <th>Site Area (SQ Mtr)</th>
                                                                 <th>East-West Dimension</th>
                                                                 <th>North-South Dimension</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
                                                             <tr>
-                                                                <td>{epid_fetchedData.SiteDetails?.siteArea}</td>
+                                                                <td>{epid_fetchedData.SiteDetails?.siteArea ? parseFloat(epid_fetchedData.SiteDetails.siteArea).toFixed(1) : ''}</td>
                                                                 <td>{epid_fetchedData.SiteDetails?.dimensions?.eastWest || '-'}</td>
                                                                 <td>{epid_fetchedData.SiteDetails?.dimensions?.northSouth || '-'}</td>
                                                             </tr>
@@ -3014,7 +3019,7 @@ const ReleaseDashboard = () => {
                                                             <tr>
                                                                 <th>Owner Name</th>
                                                                 <th>ID Type</th>
-                                                                <th>ID Number</th>
+                                                                {/* <th>ID Number</th> */}
                                                                 <th>Address</th>
                                                                 <th>Identifier Name</th>
                                                                 <th>Gender</th>
@@ -3026,7 +3031,7 @@ const ReleaseDashboard = () => {
                                                                 <tr key={index}>
                                                                     <td>{owner.ownerName}</td>
                                                                     <td>{owner.idType}</td>
-                                                                    <td>{owner.idNumber}</td>
+                                                                    {/* <td>{owner.idNumber ? owner.idNumber.replace(/\d(?=\d{4})/g, 'X') : '-'}</td> */}
                                                                     <td>{owner.ownerAddress}</td>
                                                                     <td>{owner.identifierName}</td>
                                                                     <td>{owner.gender}</td>

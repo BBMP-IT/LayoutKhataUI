@@ -65,24 +65,6 @@ const BBMP_LayoutForm = () => {
         setTimeout(() => stop_loader(), 3000); // simulate load
     }, []);
 
-    useEffect(() => {
-      const navbar = document.querySelector('.navbar');
-      const header = document.querySelector('.header');
-      const main = document.querySelector('main');
-    
-      const handleScroll = () => {
-        if (window.scrollY > 10) {
-          navbar.style.top = '0px';
-          main.style.marginTop = '170px';
-        } else {
-          navbar.style.top = '155px';
-          main.style.marginTop = '120px';
-        }
-      };
-      window.addEventListener('scroll', handleScroll);
-    
-      return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
 
     const [siteData, setSiteData] = useState([]);
     const [gpsData, setGpsData] = useState({});
@@ -2500,7 +2482,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                         </table>
 
                         {/* Check Bandi */}
-                        <h4>Check Bandi</h4>
+                        <h4>Chakbandi</h4>
                         <table>
                             <thead>
                                 <tr>

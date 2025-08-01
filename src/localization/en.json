@@ -669,7 +669,7 @@
         "documentDateTime":"Document Registered Date (dd-mm-yyyy)",
         "documentRegistrationNo":"Document Registration No",
         "uploadDocument":"Upload Document",
-        "slno":"Sl.No",
+        "slno":"S.No",
         "action":"Action"
       },
       "select":{
@@ -737,7 +737,7 @@
       },
       "table":{
         "heading":"Layout Approval order",
-        "slno":"Sl. No",
+        "slno":"S.No",
         "approvalNo":"Layout Approval No",
         "approvalOrder":"Approved Order",
         "approvalMap":"Approved Map",
@@ -757,7 +757,7 @@
       },
       "table1":{
         "heading":"Layout Release order",
-        "slno":"Sl. No",
+        "slno":"S.No",
         "siteOrderNo":"Site Release Order Number",
         "siteOrder":"Order of site Release",
         "dateOforder":"Date of Order",

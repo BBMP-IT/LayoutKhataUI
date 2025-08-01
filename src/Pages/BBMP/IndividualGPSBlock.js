@@ -109,7 +109,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
     const [totalArea, setTotalArea] = useState(""); // Total Area Input
 
-    const [cornerSite, setCornerSite] = useState(""); // Corner Site Selection (Yes/No)
+    const [cornerSite, setCornerSite] = useState(true); // Corner Site Selection (Yes/No)
     const [cornerSiteError, setCornerSiteError] = useState("");
 
     const [areaFeet, setAreaFeet] = useState(""); // Area in Feet Input

@@ -237,7 +237,7 @@ useEffect(() => {
       main.style.marginTop = '170px';
     } else {
       navbar.style.top = '155px';
-      main.style.marginTop = '120px';
+      main.style.marginTop = '220px';
     }
   };
   window.addEventListener('scroll', handleScroll);
@@ -626,11 +626,11 @@ useEffect(() => {
                     {/* logout */}
                     <div className="d-flex align-items-center">
                       <button
-                        className="btn btn-sm"
+                        className="btn btn-sm button_size"
                         style={{ backgroundColor: "#fff", color: "#023e8a" }}
                         onClick={handleLogout}
                       >
-                        <i className="fa fa-sign-out"></i>
+                        <i className="fa fa-sign-out button_size"> logout</i>
                       </button>
 
                     </div> &nbsp;

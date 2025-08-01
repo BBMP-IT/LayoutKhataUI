@@ -83,6 +83,7 @@ const AppRoutes = () => {
           <Routes>
       
             <Route path="/Login" element={<DashboardLayout><BBMPLogin /></DashboardLayout>} />
+            
             <Route path="/" element={<BBMP_Home/>}/>
             {/* <Route path='/home' element={<BBMP_HP/>}/> */}
 

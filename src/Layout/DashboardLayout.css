@@ -9565,7 +9565,7 @@
   }
   
   .header {
-    position: fixed; /* Fix the header */
+    /* position: fixed; */
     top: 0;
     width: 100%;
     z-index:1030;
@@ -16482,6 +16482,12 @@
 }
 
 
+
+
 .swal2-top-modal {
   z-index: 2000 !important;
+}
+
+.button_size{
+  background-color: red;
 }

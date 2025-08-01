@@ -12,7 +12,7 @@ import Swal from "sweetalert2";
 import Loader from "../../Layout/Loader";
 import config from '../../Config/config';
 import axios from 'axios';
-
+import '../../Layout/DashboardLayout.css';
 import cmlogo from '../../assets/chief_minister_of_karrnataka_icon.png';
 import dcmlogo from '../../assets/DeputyCM.jpeg';
 import gokLogo from '../../assets/gok.png';
@@ -347,7 +347,7 @@ const BBMPLogin = () => {
         // <DashboardLayout>
         //     {loading && <Loader />}
           
-            <div className="container mt-4 login_container">
+            <div className="container mt-4">
                 <div className="d-block d-md-none">
                     <div className="d-flex flex-wrap justify-content-center text-center align-items-center gap-3 px-2">
 
