@@ -3,6 +3,7 @@ import bbmpLogo from '../../assets/bbmp.png';
 import Swal from "sweetalert2";
 import { individualSiteListAPI, fetch_LKRSID, fetchAROList } from '../../API/authService';
 import { useLocation } from 'react-router-dom';
+import '../../Styles/CSS/Endorsement.css';
 
 const Endorsement = () => {
 
@@ -253,15 +254,12 @@ const Endorsement = () => {
             </div>
 
             {/* Buttons */}
-            <div className="row" style={{ paddingTop: 40 }}>
+            <div className="row no-print" style={{ paddingTop: 40 }}>
               <div className="col-sm-6">
                 <input type="button" className="form-control btn btn-info rounded-pill" value="Print" onClick={printData} />
               </div>
               <div className="col-sm-6">
                 <input type="button" className="form-control btn btn-info rounded-pill" value="Back To Dashboard" onClick={backToDashboard} />
-              </div>
-              <div className="col-sm-5" hidden>
-                <input type="button" className="form-control btn btn-info rounded-pill" value="View Submitted Application" onClick={FnviewApplication} />
               </div>
             </div>
 

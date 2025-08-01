@@ -1028,9 +1028,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                             item.survey_no === rowToRemove.survey_no &&
                             item.surnoc === rowToRemove.surnoc &&
                             item.hissa_no === rowToRemove.hissa_no &&
-                            item.owner === rowToRemove.owner &&
-                            item.father === rowToRemove.father &&
-                            item.owner_no === rowToRemove.owner_no &&
+                            item.land_code === rowToRemove.land_code &&
                             item.main_owner_no === rowToRemove.main_owner_no
                         )
                     )
