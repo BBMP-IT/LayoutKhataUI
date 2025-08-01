@@ -65,6 +65,24 @@ const BBMP_LayoutForm = () => {
         setTimeout(() => stop_loader(), 3000); // simulate load
     }, []);
 
+    useEffect(() => {
+      const navbar = document.querySelector('.navbar');
+      const header = document.querySelector('.header');
+      const main = document.querySelector('main');
+    
+      const handleScroll = () => {
+        if (window.scrollY > 10) {
+          navbar.style.top = '0px';
+          main.style.marginTop = '170px';
+        } else {
+          navbar.style.top = '155px';
+          main.style.marginTop = '120px';
+        }
+      };
+      window.addEventListener('scroll', handleScroll);
+    
+      return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     const [siteData, setSiteData] = useState([]);
     const [gpsData, setGpsData] = useState({});
@@ -742,13 +760,17 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                 totalGunta={mainOwnerRecord?.ext_gunta}
                 totalFGunta={mainOwnerRecord?.ext_fgunta}
                 onSave={(ldaAcre, ldaGunta, ldaFGunta) => {
-                    const ownersWithLocationAndLda = newOwners.map(o => ({
-                        ...o,
-                        ...locationData,
-                        lda_acre: ldaAcre,
-                        lda_gunta: ldaGunta,
-                        lda_fgunta: ldaFGunta
-                    }));
+                    const ownersWithLocationAndLda = newOwners.map(o => {
+                        const isMainOwner = o.owner_no === o.main_owner_no;
+
+                        return {
+                            ...o,
+                            ...locationData,
+                            lda_acre: isMainOwner ? ldaAcre : 0,
+                            lda_gunta: isMainOwner ? ldaGunta : 0,
+                            lda_fgunta: isMainOwner ? ldaFGunta : 0
+                        };
+                    });
 
                     setRtcAddedData(prev => [...prev, ...ownersWithLocationAndLda]);
                     setLdaAcre(ldaAcre);
@@ -937,7 +959,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
     let totalSqFt_LDA = 0;
     let totalSqM_LDA = 0;
 
-    
+
 
     const mapSurveyDetails = (surveyDetails) => {
         return surveyDetails.map((item) => ({
@@ -1399,7 +1421,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
 
                                     <tr key={index}>
                                         <td >
-                                            <button className="btn btn-sm btn-outline-danger" onClick={() => handleRemoveRTC(row)}>
+                                            <button className="btn btn-sm btn-outline-danger" disabled={isSurveyNoSectionDisabled} onClick={() => handleRemoveRTC(row)}>
                                                 <i className="fa fa-trash" />
                                             </button>
                                         </td>
@@ -1734,13 +1756,14 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
     const [roleID, setRoleID] = useState('');
 
     useEffect(() => {
-        if (area_Sqft && !isNaN(area_Sqft)) {
-            const sqm = parseFloat(area_Sqft) * 0.092903;
-            setArea_Sqm(sqm.toFixed(2));
+        if (area_Sqm && !isNaN(area_Sqm)) {
+            const sqft = parseFloat(area_Sqm) * 10.7639;
+            setArea_Sqft(sqft.toFixed(2)); // Round to 2 decimal places if needed
+            console.log("SQFT", sqft);
         } else {
-            setArea_Sqm("");
+            setArea_Sqft('');
         }
-    }, [area_Sqft]);
+    }, [area_Sqm]);
     useEffect(() => {
         const storedCreatedBy = sessionStorage.getItem('createdBy');
         const storedCreatedName = sessionStorage.getItem('createdName');
@@ -1875,7 +1898,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
 
                 const area = siteDetails?.siteArea || 0;
                 setAreaSqft(area);
-                setArea_Sqft(area);
+                setArea_Sqm(area);
                 sessionStorage.setItem("areaSqft", area);
 
                 Swal.fire({
@@ -1935,16 +1958,34 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
         { name: 'Property ID', width: '140px', selector: () => epid_fetchedData?.PropertyID, center: true },
         {
             name: 'Owner Name',
-            center: true,
-            // Access ownerName directly from the 'row' object
-            selector: (row) => row.ownerName || '-'
+            selector: row => row.ownerName || '-',
+            sortable: true
         },
-        { name: 'Identifier Type', width: '220px', selector: () => epid_fetchedData?.OwnerDetails?.[0].relationShipType || '-', center: true },
-        { name: 'Identifier Name', width: '220px', selector: () => epid_fetchedData?.OwnerDetails?.[0].identifierName || '-', center: true },
+        {
+            name: 'ID Type',
+            selector: row => row.idType || '-',
+            sortable: true
+        },
+        //   {
+        //     name: 'ID Number',
+        //     selector: row => row.idNumber 
+        //       ? row.idNumber.replace(/\d(?=\d{4})/g, 'X')  // masks all digits except last 4
+        //       : '-',
+        //     sortable: true
+        //   },
+        {
+            name: 'Relation Type',
+            selector: row => row.relationShipType || '-',
+        },
+        {
+            name: 'Identifier Name',
+            selector: row => row.identifierName || '-',
+        },
 
-        { name: 'ID Type', width: '120px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idType || '-', center: true },
-
-        { name: 'ID Number', width: '220px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idNumber || '-', center: true },
+        {
+            name: 'Mobile Number',
+            selector: row => row.mobileNumber || '-',
+        }
         // {
         //     name: 'Validate OTP',
         //     width: '250px',
@@ -2398,18 +2439,19 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>{epid_fetchedData.PropertyID}</td>
-                                    <td>{epid_fetchedData.PropertyCategory}</td>
-                                    <td>{epid_fetchedData.PropertyClassification}</td>
-                                    <td>{epid_fetchedData.WardNumber}</td>
-                                    <td>{epid_fetchedData.WardName?.trim()}</td>
-                                    <td>{epid_fetchedData.StreetName?.trim()}</td>
+                                    <td>{epid_fetchedData.PropertyID?.toString().trim() || '-'}</td>
+                                    <td>{epid_fetchedData.PropertyCategory?.toString().trim() || '-'}</td>
+                                    <td>{epid_fetchedData.PropertyClassification?.toString().trim() || '-'}</td>
+                                    <td>{epid_fetchedData.WardNumber?.toString().trim() || '-'}</td>
+                                    <td>{epid_fetchedData.WardName?.toString().trim() || '-'}</td>
+                                    <td>{epid_fetchedData.StreetName?.toString().trim() || '-'}</td>
                                 </tr>
+
                             </tbody>
                         </table>
 
                         {/* Kaveri Registration Numbers */}
-                        {epid_fetchedData.KaveriRegistrationNumber?.length > 0 && (
+                        {epid_fetchedData.KaveriRegistrationNumber && (
                             <>
                                 <h4>Kaveri Registration Numbers</h4>
                                 <table>
@@ -2422,8 +2464,9 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                                     <tbody>
                                         {epid_fetchedData.KaveriRegistrationNumber.map((item, idx) => (
                                             <tr key={idx}>
-                                                <td>{item.kaveriRegistrationNumber}</td>
-                                                <td>{item.kaveriECNumber}</td>
+                                                <td>{item.kaveriRegistrationNumber?.trim() ? item.kaveriRegistrationNumber : '-'}</td>
+                                                <td>{item.kaveriECNumber?.trim() ? item.kaveriECNumber : '-'}</td>
+
                                             </tr>
                                         ))}
                                     </tbody>
@@ -2445,13 +2488,14 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>{epid_fetchedData.Streetcode}</td>
-                                    <td>{epid_fetchedData.SASApplicationNumber}</td>
-                                    <td>{epid_fetchedData.IsMuation}</td>
-                                    <td>{epid_fetchedData.AssessmentNumber}</td>
-                                    <td>{epid_fetchedData.courtStay}</td>
-                                    <td>{epid_fetchedData.enquiryDispute}</td>
+                                    <td>{epid_fetchedData.Streetcode?.toString().trim() ? epid_fetchedData.Streetcode : '-'}</td>
+                                    <td>{epid_fetchedData.SASApplicationNumber?.toString().trim() ? epid_fetchedData.SASApplicationNumber : '-'}</td>
+                                    <td>{epid_fetchedData.IsMuation?.toString().trim() ? epid_fetchedData.IsMuation : '-'}</td>
+                                    <td>{epid_fetchedData.AssessmentNumber?.toString().trim() ? epid_fetchedData.AssessmentNumber : '-'}</td>
+                                    <td>{epid_fetchedData.courtStay?.toString().trim() ? epid_fetchedData.courtStay : '-'}</td>
+                                    <td>{epid_fetchedData.enquiryDispute?.toString().trim() ? epid_fetchedData.enquiryDispute : '-'}</td>
                                 </tr>
+
                             </tbody>
                         </table>
 
@@ -2468,10 +2512,12 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>{epid_fetchedData.CheckBandi?.north}</td>
-                                    <td>{epid_fetchedData.CheckBandi?.south}</td>
-                                    <td>{epid_fetchedData.CheckBandi?.east}</td>
-                                    <td>{epid_fetchedData.CheckBandi?.west}</td>
+                                    <td>{epid_fetchedData.CheckBandi?.north?.toString().trim() ? epid_fetchedData.CheckBandi.north : '-'}</td>
+                                    <td>{epid_fetchedData.CheckBandi?.south?.toString().trim() ? epid_fetchedData.CheckBandi.south : '-'}</td>
+                                    <td>{epid_fetchedData.CheckBandi?.east?.toString().trim() ? epid_fetchedData.CheckBandi.east : '-'}</td>
+                                    <td>{epid_fetchedData.CheckBandi?.west?.toString().trim() ? epid_fetchedData.CheckBandi.west : '-'}</td>
+
+
                                 </tr>
                             </tbody>
                         </table>
@@ -2481,7 +2527,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Site Area (sq ft)</th>
+                                    <th>Site Area (SQ Mtr)</th>
                                     <th>East-West Dimension</th>
                                     <th>North-South Dimension</th>
                                 </tr>
@@ -2502,7 +2548,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                                 <tr>
                                     <th>Owner Name</th>
                                     <th>ID Type</th>
-                                    <th>ID Number</th>
+                                    {/* <th>ID Number</th> */}
                                     <th>Address</th>
                                     <th>Identifier Name</th>
                                     <th>Gender</th>
@@ -2514,7 +2560,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                                     <tr key={index}>
                                         <td>{owner.ownerName}</td>
                                         <td>{owner.idType}</td>
-                                        <td>{owner.idNumber}</td>
+                                        {/* <td>{owner.idNumber ? owner.idNumber.replace(/\d(?=\d{4})/g, 'X') : '-'}</td> */}
                                         <td>{owner.ownerAddress}</td>
                                         <td>{owner.identifierName}</td>
                                         <td>{owner.gender}</td>
@@ -2582,7 +2628,7 @@ const MyFormComponent = ({ totalAcre, totalGunta, totalFGunta, onSave }) => {
             {/* LDA Approved Extent */}
             <div className="row mb-3">
                 <div className="col-3">
-                    <label className="form-label">LDA Approved Extent: <span className='mandatory_color'>*</span></label>
+                    <label className="form-label">LDA (Local Development Authority) Approved Extent:  <span className='mandatory_color'>*</span></label>
                 </div>
                 <div className="col-3">
                     <input

@@ -68,8 +68,46 @@ const config = {
         fetchZoneWard: '/api/LKRS/fnGetZonefromWardList',
         fetchStreet: '/api/LKRS/fnGetStreetList',
         fetchARO: '/api/LKRS/fnGetARODetails',
-
-    }
+        relinquishmentDeed: '/api/LKRS/fnRelinquishmentDeed',
+    },
+        citizenServicesURL: {
+        login: "https://testlayoutkhata.bbmpgov.in/Login",
+        getEkhata: "",
+        layoutDashboard: "https://testlayoutkhata.bbmpgov.in/LayoutForm",
+        amalgamation: "",
+        downloadEkhata: "",
+        onlineFormatAB: "https://bbmpeaasthi.karnataka.gov.in/office/frmKhathaDownload.aspx",
+        fileobjection: "",
+        newKhata: "https://bbmp.karnataka.gov.in/newkhata",
+        singleSiteApproval: "",
+        donotfindMyProperty: "",
+    },
+    applicationStatus: {
+        finalekhataStatusEPID: "",
+        neweKhathastatusbasedonePID: "",
+        pendingMutation: "",
+        searchByPropertyName: "",
+    },
+    verification: {
+        formABVerification: "https://bbmpeaasthi.karnataka.gov.in/office/frmForm3_2Verify.aspx",
+        formABView: "https://bbmpeaasthi.karnataka.gov.in/office/frmForm3_2View.aspx?formid=menu",
+        ScannedProperty: "",
+        propertyRegistered: "https://bbmpeaasthi.karnataka.gov.in/office/frmSearchKaveriProperties.aspx",
+        propertyRegisteredUnderKaveri: "https://bbmpeaasthi.karnataka.gov.in/office/frmSearchKaveriProp.aspx",
+    },
+    reports: {
+        reportsDashboard: "https://bbmpeaasthi.karnataka.gov.in/office/PublicReports/frmDashBoardNew.aspx",
+        eSwathuDraftReport: "https://bbmpeaasthi.karnataka.gov.in/office/PublicReports/frmDashBoardNew.aspx",
+        districtWise: "https://bbmpeaasthi.karnataka.gov.in/office/PublicReports/frmMutationDistrictwise.aspx",
+    },
+    externalLinks: {
+        kaveri: "https://kaveri.karnataka.gov.in/landing-page",
+        bhoomi: "https://landrecords.karnataka.gov.in/service2/RTC.aspx",
+        easthi: "https://bbmpeaasthi.karnataka.gov.in/",
+        propertyTax: "https://bbmptax.karnataka.gov.in/",
+        bangloreOne: "https://bbmpeaasthi.karnataka.gov.in/frmBangalore1CentersbyZone.aspx?zone=East",
+        processFlow: "https://bbmpeaasthi.karnataka.gov.in/frmProcessFlowDisplay.aspx",
+    },
 };
 
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useContext } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import ReactDOM from 'react-dom';
-import DashboardLayout, { LoaderContext }  from '../../Layout/DashboardLayout';
+import DashboardLayout, { LoaderContext } from '../../Layout/DashboardLayout';
 import { useTranslation } from "react-i18next";
 import i18n from "../../localization/i18n";
 import SAS_Sample from '../../assets/Sample_SAS_APPLICATIONNO.jpeg';
@@ -77,54 +77,102 @@ const BBMP_SubmittedInfo = () => {
     const [rowsPerPage, setRowsPerPage] = useState(5);
 
     // Define state variables for your totals - keep them as numbers
-    const [totalAcre, setTotalAcre] = useState(0);
-    const [totalGunta, setTotalGunta] = useState(0);
-    const [totalFGunta, setTotalFGunta] = useState(0);
-    const [totalSqFt, setTotalSqFt] = useState(0); // Changed to number (0)
-    const [totalSqM, setTotalSqM] = useState(0); // Changed to number (0)
+    let totalAcre = 0;
+    let totalGunta = 0;
+    let totalFGunta = 0;
+    let totalSqFt = 0;
+    let totalSqM = 0;
+
+    let totalAcre_LDA = 0;
+    let totalGunta_LDA = 0;
+    let totalFGunta_LDA = 0;
+    let totalSqFt_LDA = 0;
+    let totalSqM_LDA = 0;
+    const [total_SqFt, setTotalSqFt] = useState(0); // Changed to number (0)
+    const [total_SqM, setTotalSqM] = useState(0);
 
 
+
+    const mapSurveyDetails = (surveyDetails) => {
+        return surveyDetails.map((item) => ({
+            district: item.suR_DISTRICT_Name || "—",
+            taluk: item.suR_TALUK_Name || "—",
+            hobli: item.suR_HOBLI_Name || "—",
+            village: item.suR_VILLAGE_Name || "—",
+            owner: item.suR_OWNERNAME || "—",
+            survey_no: item.suR_SURVEYNO,
+            surnoc: item.suR_SURNOC,
+            hissa_no: item.suR_HISSA,
+            ext_acre: item.suR_EXTACRE || 0,
+            ext_gunta: item.suR_EXTGUNTA || 0,
+            ext_fgunta: item.suR_EXTFGUNTA || 0,
+            lda_acre: item.suR_LDA_APR_EXTACRE || 0,
+            lda_gunta: item.suR_LDA_APR_EXTGUNTA || 0,
+            lda_fgunta: item.suR_LDA_APR_EXTFGUNTA || 0,
+
+            // ✅ Add these new values
+            lda_sqft: item.suR_LDA_APR_EXTINSQFT || 0,
+            lda_sqm: item.suR_LDA_APR_EXTINSQMT || 0
+        }));
+    };
     const combinedData = [...rtcAddedData, ...rtcData];
 
-    useEffect(() => {
-        let calculatedTotalAcre = 0;
-        let calculatedTotalGunta = 0;
-        let calculatedTotalFGunta = 0;
-        let calculatedTotalSqFt = 0;
-        let calculatedTotalSqM = 0;
 
-        combinedData.forEach((row) => {
-            const acre = parseFloat(row.ext_acre || 0);
-            const gunta = parseFloat(row.ext_gunta || 0);
-            const fgunta = parseFloat(row.ext_fgunta || 0);
+    combinedData.forEach(row => {
+        const acre = parseFloat(row.ext_acre || 0);
+        const gunta = parseFloat(row.ext_gunta || 0);
+        const fgunta = parseFloat(row.ext_fgunta || 0);
 
-            calculatedTotalAcre += acre;
-            calculatedTotalGunta += gunta;
-            calculatedTotalFGunta += fgunta;
+        const acre_LDA = parseFloat(row.lda_acre || 0);
+        const gunta_LDA = parseFloat(row.lda_gunta || 0);
+        const fgunta_LDA = parseFloat(row.lda_fgunta || 0);
 
-            const sqft = (acre * 43560) + (gunta * 1089) + (fgunta * 68.0625);
-            calculatedTotalSqFt += sqft;
-            calculatedTotalSqM += sqft * 0.092903;
-        });
+        totalAcre += acre;
+        totalGunta += gunta;
+        totalFGunta += fgunta;
 
-        // Normalize fgunta -> gunta -> acre
-        calculatedTotalGunta += Math.floor(calculatedTotalFGunta / 16);
-        calculatedTotalFGunta = calculatedTotalFGunta % 16;
-        calculatedTotalAcre += Math.floor(calculatedTotalGunta / 40);
-        calculatedTotalGunta = calculatedTotalGunta % 40;
+        totalAcre_LDA += acre_LDA;
+        totalGunta_LDA += gunta_LDA;
+        totalFGunta_LDA += fgunta_LDA;
 
-        // Update state variables with the calculated totals
-        setTotalAcre(calculatedTotalAcre);
-        setTotalGunta(calculatedTotalGunta);
-        setTotalFGunta(calculatedTotalFGunta);
-        // Store them as numbers in state
-        setTotalSqFt(calculatedTotalSqFt);
-        setTotalSqM(calculatedTotalSqM);
+        const sqft = (acre * 43560) + (gunta * 1089) + (fgunta * 68.0625);
+        const sqft_LDA = (acre_LDA * 43560) + (gunta_LDA * 1089) + (fgunta_LDA * 68.0625);
 
-        // Store the rounded value in sessionStorage if that's what's intended
-        sessionStorage.setItem('areaSqft', calculatedTotalSqFt.toFixed(2));
+        totalSqFt += sqft;
+        totalSqM += sqft * 0.092903;
 
-    }, [combinedData]);
+        totalSqFt_LDA += sqft_LDA;
+        totalSqM_LDA += sqft_LDA * 0.092903;
+    });
+
+    // Normalize Non-LDA
+    totalGunta += Math.floor(totalFGunta / 16);
+    totalFGunta = totalFGunta % 16;
+    totalAcre += Math.floor(totalGunta / 40);
+    totalGunta = totalGunta % 40;
+
+    // Normalize LDA
+    totalGunta_LDA += Math.floor(totalFGunta_LDA / 16);
+    totalFGunta_LDA = totalFGunta_LDA % 16;
+    totalAcre_LDA += Math.floor(totalGunta_LDA / 40);
+    totalGunta_LDA = totalGunta_LDA % 40;
+
+    // ✅ Calculate overall total in FGunta
+    const totalFG_Acre = totalAcre * 640 + totalGunta * 16 + totalFGunta;
+    const totalFG_LDA = totalAcre_LDA * 640 + totalGunta_LDA * 16 + totalFGunta_LDA;
+    const overallTotalFG = totalFG_Acre + totalFG_LDA;
+
+    // ✅ Convert back to Acre.Gunta.FGunta format
+    let overallAcre = Math.floor(overallTotalFG / 640);
+    let remainingFG = overallTotalFG % 640;
+    let overallGunta = Math.floor(remainingFG / 16);
+    let overallFGunta = remainingFG % 16;
+
+    const formattedOverall = `${overallAcre}.${overallGunta}.${overallFGunta}`;
+
+    // Optional: Store for later use
+    // setAreaSqft(totalSqFt_LDA);
+    sessionStorage.setItem('areaSqft', totalSqFt_LDA);
 
     const totalPages = Math.ceil(combinedData.length / rowsPerPage);
     const paginatedData = combinedData.slice(
@@ -150,21 +198,6 @@ const BBMP_SubmittedInfo = () => {
         }
     }, [LKRS_ID]);
 
-    const mapSurveyDetails = (surveyDetails) => {
-        return surveyDetails.map((item) => ({
-            district: item.suR_DISTRICT_Name || "—",
-            taluk: item.suR_TALUK_Name || "—",
-            hobli: item.suR_HOBLI_Name || "—",
-            village: item.suR_VILLAGE_Name || "—",
-            owner: item.suR_OWNERNAME || "—",
-            survey_no: item.suR_SURVEYNO,
-            surnoc: item.suR_SURNOC,
-            hissa_no: item.suR_HISSA,
-            ext_acre: item.suR_EXTACRE || 0,
-            ext_gunta: item.suR_EXTGUNTA || 0,
-            ext_fgunta: item.suR_EXTFGUNTA || 0,
-        }));
-    };
 
     const [dcrecords, setDCRecords] = useState([]);
     //fetch DC conversion values
@@ -290,22 +323,35 @@ const BBMP_SubmittedInfo = () => {
         { name: 'S.No', selector: (row, index) => index + 1, width: '70px', center: true },
         { name: 'Property ID', width: '140px', selector: () => epid_fetchedData?.PropertyID, center: true },
         {
-            name: 'Owner Name', center: true,
-
-            cell: () => (
-                <div style={{
-
-                }}>
-                    {epid_fetchedData?.OwnerDetails?.[0].ownerName || 'N/A'}
-                </div>
-            )
+            name: 'Owner Name',
+            selector: row => row.ownerName || '-',
+            sortable: true
         },
-        { name: 'Identifier Type', width: '220px', selector: () => epid_fetchedData?.OwnerDetails?.[0].relationShipType || '-', center: true },
-        { name: 'Identifier Name', width: '220px', selector: () => epid_fetchedData?.OwnerDetails?.[0].identifierName || '-', center: true },
+        {
+            name: 'ID Type',
+            selector: row => row.idType || '-',
+            sortable: true
+        },
+        // {
+        //     name: 'ID Number',
+        //     selector: row => row.idNumber
+        //         ? row.idNumber.replace(/\d(?=\d{4})/g, 'X')  // masks all digits except last 4
+        //         : '-',
+        //     sortable: true
+        // },
+        {
+            name: 'Relation Type',
+            selector: row => row.relationShipType || '-',
+        },
+        {
+            name: 'Identifier Name',
+            selector: row => row.identifierName || '-',
+        },
 
-        { name: 'ID Type', width: '120px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idType || 'N/A', center: true },
-        { name: 'ID Number', width: '220px', selector: () => epid_fetchedData?.OwnerDetails?.[0].idNumber || 'N/A', center: true },
-
+        {
+            name: 'Mobile Number',
+            selector: row => row.mobileNumber || '-',
+        }
 
     ];
 
@@ -388,7 +434,18 @@ const BBMP_SubmittedInfo = () => {
                         };
                     }) || [];
 
-                const mergedOwnerDetails = [...ownerDetailsFromJson, ...ownerDetailsFromApi];
+                const combined = [...ownerDetailsFromJson, ...ownerDetailsFromApi];
+
+                // Deduplicate based on ownerName + idNumber
+                const uniqueOwnerMap = new Map();
+                combined.forEach((owner) => {
+                    const key = `${owner.ownerName}_${owner.idNumber}`;
+                    if (!uniqueOwnerMap.has(key)) {
+                        uniqueOwnerMap.set(key, owner);
+                    }
+                });
+
+                const mergedOwnerDetails = Array.from(uniqueOwnerMap.values());
 
                 setEPID_FetchedData({
                     PropertyID: response.lkrS_EPID || "",
@@ -1001,194 +1058,229 @@ const BBMP_SubmittedInfo = () => {
             {/* {loading && <Loader />}
             <DashboardLayout>
                 <div className={`layout-form-container ${loading ? 'no-interaction' : ''}`}> */}
-                    <div className="my-3 my-md-5">
-                        <button className='btn btn-block' onClick={fetch_details} ref={buttonRef} hidden>Click me</button>
-                        <div className="container mt-6">
-                            <div className="card">
-                                <div className="card-header layout_btn_color" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <h5 className="card-title" style={{ margin: 0 }}>Submitted Application information</h5>
-                                    <h5 style={{ color: '#fff' }}>KRSID : {display_LKRS_ID}</h5>
-                                </div>
+            <div className="my-3 my-md-5">
+                <button className='btn btn-block' onClick={fetch_details} ref={buttonRef} hidden>Click me</button>
+                <div className="container mt-6">
+                    <div className="card">
+                        <div className="card-header layout_btn_color" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <h5 className="card-title" style={{ margin: 0 }}>Submitted Application information</h5>
+                            <h5 style={{ color: '#fff' }}>KRSID : {display_LKRS_ID}</h5>
+                        </div>
 
-                                <div className="card-body">
-                                    <Link
-                                        onClick={handleBackToDashboard}
-                                        style={{ textDecoration: 'none', color: '#006879', display: 'flex', alignItems: 'center' }}
-                                    >
-                                        <i className='fa fa-arrow-left' style={{ marginRight: '8px' }}></i>
-                                        Back to Dashboard
-                                    </Link>
-                                    <div className='row'>
-                                        <div className='col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10 mt-3'></div>
-                                        {shouldShowReleaseButton && (
-                                            <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-3'>
-                                                <button className='btn btn-success btn-block' onClick={final_Save_Release}>
-                                                    Proceed to Release
-                                                </button>
+                        <div className="card-body">
+                            <Link
+                                onClick={handleBackToDashboard}
+                                style={{ textDecoration: 'none', color: '#006879', display: 'flex', alignItems: 'center' }}
+                            >
+                                <i className='fa fa-arrow-left' style={{ marginRight: '8px' }}></i>
+                                Back to Dashboard
+                            </Link>
+                            <div className='row'>
+                                <div className='col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10 mt-3'></div>
+                                {shouldShowReleaseButton && (
+                                    <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-3'>
+                                        <button className='btn btn-success btn-block' onClick={final_Save_Release}>
+                                            Proceed to Release
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
+
+                            <div style={{ padding: '20px' }}>
+                                {/* survey number preview block */}
+                                {selectedLandType === "surveyNo" && (
+                                    <>
+                                        {combinedData.length > 0 && (
+                                            <div className="col-12">
+                                                <div className="d-flex justify-content-between align-items-center mb-3">
+                                                    <h4 className=" m-0">Added Survey Number Details</h4>
+                                                    <div className="d-flex align-items-center">
+                                                        <label className="me-2 mb-0">Rows per page:</label>
+                                                        <select
+                                                            className="form-select form-select-sm w-auto"
+                                                            value={rowsPerPage}
+                                                            onChange={handlePageSizeChange}
+                                                        >
+                                                            {[5, 10, 15, 20, 25, 30].map((size) => (
+                                                                <option key={size} value={size}>{size}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <div className="table-responsive custom-scroll-table">
+                                                    <table className="table table-striped table-hover table-bordered rounded-table">
+                                                        <thead className="table-primary sticky-header">
+                                                            <tr>
+                                                                <th>S.No</th>
+                                                                <th>District</th>
+                                                                <th>Taluk</th>
+                                                                <th>Hobli</th>
+                                                                <th>Village</th>
+                                                                <th>Owner Name</th>
+                                                                <th>Survey Number / Surnoc / Hissa Number</th>
+                                                                <th>Bhoomi Extent (Acre.Gunta.Fgunta)</th>
+                                                                <th>LDA Extent (Acre.Gunta.Fgunta)</th>
+                                                                <th>LDA Total Area in SqFt</th>
+                                                                <th>LDA Total Area in SqM</th>
+                                                                <th>Bhoomi Total Area in SqFt</th>
+                                                                <th>Bhoomi Total Area in SqM</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {paginatedData.map((row, index) => (
+
+
+
+                                                                <tr key={index}>
+
+                                                                    <td>{index + 1 + (currentPage - 1) * rowsPerPage}</td>
+                                                                    <td>{row.district}</td>
+                                                                    <td>{row.taluk}</td>
+                                                                    <td>{row.hobli}</td>
+                                                                    <td>{row.village}</td>
+                                                                    <td>{row.owner}</td>
+                                                                    <td>{`${row.survey_no}/${row.surnoc}/${row.hissa_no}`}</td>
+                                                                    {/* Bhoomi extent */}
+                                                                    <td>{`${row.ext_acre}.${row.ext_gunta}.${row.ext_fgunta}`}</td>
+                                                                    {/* LDA extent */}
+                                                                    <td>{`${row.lda_acre ?? ''}.${row.lda_gunta ?? ''}.${row.lda_fgunta ?? ''}`}</td>
+                                                                    {/* LDA extent total area */}
+                                                                    <td>
+                                                                        {Math.floor(
+                                                                            (parseFloat(row.lda_acre) * 43560) +
+                                                                            (parseFloat(row.lda_gunta) * 1089) +
+                                                                            (parseFloat(row.lda_fgunta) * 68.0625)
+                                                                        )}
+                                                                    </td>
+                                                                    <td>
+                                                                        {(
+                                                                            (
+                                                                                (parseFloat(row.lda_acre) * 43560) +
+                                                                                (parseFloat(row.lda_gunta) * 1089) +
+                                                                                (parseFloat(row.lda_fgunta) * 68.0625)
+                                                                            ) * 0.092903
+                                                                        ).toFixed(1)}
+                                                                    </td>
+                                                                    {/* Bhommi extent total area */}
+                                                                    <td>
+                                                                        {Math.floor(
+                                                                            (parseFloat(row.ext_acre) * 43560) +
+                                                                            (parseFloat(row.ext_gunta) * 1089) +
+                                                                            (parseFloat(row.ext_fgunta) * 68.0625)
+                                                                        )}
+                                                                    </td>
+                                                                    <td>
+                                                                        {(
+                                                                            (
+                                                                                (parseFloat(row.ext_acre) * 43560) +
+                                                                                (parseFloat(row.ext_gunta) * 1089) +
+                                                                                (parseFloat(row.ext_fgunta) * 68.0625)
+                                                                            ) * 0.092903
+                                                                        ).toFixed(1)}
+                                                                    </td>
+
+
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                        <tfoot>
+                                                            <tr>
+                                                                <th colSpan={5}></th>
+                                                                <th colSpan={2} className="text-end fw-bold">Total Area:</th>
+                                                                <th className="text-left fw-bold">{`${totalAcre}.${totalGunta}.${totalFGunta}`}</th>
+                                                                <th className="text-left fw-bold">{`${totalAcre_LDA}.${totalGunta_LDA}.${totalFGunta_LDA}`}</th>
+                                                                <th className='fw-bold' style={{ backgroundColor: 'orange', color: '#fff' }}>
+                                                                    {Math.floor(totalSqFt_LDA)}
+                                                                </th>
+                                                                <th className='fw-bold' style={{ backgroundColor: 'orange', color: '#fff' }}>
+                                                                    {totalSqM_LDA.toFixed(1)}
+                                                                </th>
+                                                                <th className='fw-bold'>{Math.floor(totalSqFt)}</th>
+                                                                <th className='fw-bold'>{totalSqM.toFixed(1)}</th>
+                                                            </tr>
+                                                        </tfoot>
+
+
+                                                    </table>
+                                                </div>
+
+                                                {/* Pagination Summary and Controls */}
+                                                <div className="d-flex justify-content-between align-items-center mt-3 flex-wrap">
+                                                    <div>
+                                                        Showing {Math.min((currentPage - 1) * rowsPerPage + 1, combinedData.length)}–{Math.min(currentPage * rowsPerPage, combinedData.length)} of {combinedData.length} records
+                                                    </div>
+
+                                                    <div>
+                                                        <button
+                                                            className="btn btn-outline-secondary btn-sm mx-1"
+                                                            onClick={() => goToPage(currentPage - 1)}
+                                                            disabled={currentPage === 1}
+                                                        >
+                                                            Previous
+                                                        </button>
+                                                        {[...Array(totalPages).keys()].map((num) => (
+                                                            <button
+                                                                key={num}
+                                                                className={`btn btn-sm mx-1 ${currentPage === num + 1 ? 'btn-primary' : 'btn-outline-primary'}`}
+                                                                onClick={() => goToPage(num + 1)}
+                                                            >
+                                                                {num + 1}
+                                                            </button>
+                                                        ))}
+                                                        <button
+                                                            className="btn btn-outline-secondary btn-sm mx-1"
+                                                            onClick={() => goToPage(currentPage + 1)}
+                                                            disabled={currentPage === totalPages}
+                                                        >
+                                                            Next
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <br />
+
                                             </div>
                                         )}
-                                    </div>
-
-
-                                    <div style={{ padding: '20px' }}>
-                                        {/* survey number preview block */}
-                                        {selectedLandType === "surveyNo" && (
-                                            <>
-                                                {combinedData.length > 0 && (
-                                                    <div className="col-12">
-                                                        <div className="">
-                                                            <div className="d-flex justify-content-between align-items-center mb-3">
-                                                                <h4 className=" m-0">Added Survey No Details</h4>
-                                                                <div className="d-flex align-items-center">
-                                                                    <label className="me-2 mb-0">Rows per page:</label>
-                                                                    <select
-                                                                        className="form-select form-select-sm w-auto"
-                                                                        value={rowsPerPage}
-                                                                        onChange={handlePageSizeChange}
-                                                                    >
-                                                                        {[5, 10, 15, 20, 25, 30].map((size) => (
-                                                                            <option key={size} value={size}>{size}</option>
-                                                                        ))}
-                                                                    </select>
-                                                                </div>
-                                                            </div>
-
-                                                            <div className="table-responsive custom-scroll-table">
-                                                                <table className="table table-striped table-hover table-bordered rounded-table">
-                                                                    <thead className="table-primary sticky-header">
-                                                                        <tr>
-                                                                            <th hidden>Action</th>
-                                                                            <th>S.No</th>
-                                                                            <th>District</th>
-                                                                            <th>Taluk</th>
-                                                                            <th>Hobli</th>
-                                                                            <th>Village</th>
-                                                                            <th>Owner Name</th>
-                                                                            <th>Survey No / Surnoc / Hissa No</th>
-                                                                            <th>Extent (Acre.Gunta.Fgunta)</th>
-                                                                            <th>SqFt</th>
-                                                                            <th>SqM</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        {paginatedData.map((row, index) => (
-                                                                            <tr key={index}>
-                                                                                <td hidden>
-                                                                                </td>
-                                                                                <td>{index + 1 + (currentPage - 1) * rowsPerPage}</td>
-                                                                                <td>{row.district}</td>
-                                                                                <td>{row.taluk}</td>
-                                                                                <td>{row.hobli}</td>
-                                                                                <td>{row.village}</td>
-                                                                                <td>{row.owner}</td>
-                                                                                <td>{`${row.survey_no}/${row.surnoc}/${row.hissa_no}`}</td>
-                                                                                <td>{`${row.ext_acre}.${row.ext_gunta}.${row.ext_fgunta}`}</td>
-                                                                                <td>
-                                                                                    {(
-                                                                                        (parseFloat(row.ext_acre) * 43560) +
-                                                                                        (parseFloat(row.ext_gunta) * 1089) +
-                                                                                        (parseFloat(row.ext_fgunta) * 68.0625)
-                                                                                    ).toFixed(2)}
-                                                                                </td>
-                                                                                <td>
-                                                                                    {(
-                                                                                        (
-                                                                                            (parseFloat(row.ext_acre) * 43560) +
-                                                                                            (parseFloat(row.ext_gunta) * 1089) +
-                                                                                            (parseFloat(row.ext_fgunta) * 68.0625)
-                                                                                        ) * 0.092903
-                                                                                    ).toFixed(2)}
-                                                                                </td>
-                                                                            </tr>
-                                                                        ))}
-                                                                    </tbody>
-                                                                    <tfoot >
-                                                                        <tr>
-                                                                            <th colSpan={5}></th>
-                                                                            <th colSpan={2} className="text-end fw-bold">Total Area:</th>
-                                                                            <th className="text-left fw-bold" >{`${totalAcre}.${totalGunta}.${totalFGunta}`}</th>
-                                                                            <th className='fw-bold'>{totalSqFt.toFixed(2)}</th>
-                                                                            <th className='fw-bold'>{totalSqFt.toFixed(2)}</th>
-                                                                        </tr>
-                                                                    </tfoot>
-                                                                </table>
-                                                            </div>
-
-                                                            {/* Pagination Summary and Controls */}
-                                                            <div className="d-flex justify-content-between align-items-center mt-3 flex-wrap">
-                                                                <div>
-                                                                    Showing {Math.min((currentPage - 1) * rowsPerPage + 1, combinedData.length)}–{Math.min(currentPage * rowsPerPage, combinedData.length)} of {combinedData.length} records
-                                                                </div>
-
-                                                                <div>
-                                                                    <button
-                                                                        className="btn btn-outline-secondary btn-sm mx-1"
-                                                                        onClick={() => goToPage(currentPage - 1)}
-                                                                        disabled={currentPage === 1}
-                                                                    >
-                                                                        Previous
-                                                                    </button>
-                                                                    {[...Array(totalPages).keys()].map((num) => (
-                                                                        <button
-                                                                            key={num}
-                                                                            className={`btn btn-sm mx-1 ${currentPage === num + 1 ? 'btn-primary' : 'btn-outline-primary'}`}
-                                                                            onClick={() => goToPage(num + 1)}
-                                                                        >
-                                                                            {num + 1}
-                                                                        </button>
-                                                                    ))}
-                                                                    <button
-                                                                        className="btn btn-outline-secondary btn-sm mx-1"
-                                                                        onClick={() => goToPage(currentPage + 1)}
-                                                                        disabled={currentPage === totalPages}
-                                                                    >
-                                                                        Next
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-
-                                                        </div>
-                                                    </div>
-                                                )}
-                                                <hr />
-                                                {dcrecords.length > 0 && (
-                                                    <div className="mt-4">
-                                                        <h4>DC Conversion Details</h4>
-                                                        <DataTable
-                                                            columns={dccolumns}
-                                                            data={dcrecords}
-                                                            customStyles={customStyles}
-                                                            pagination
-                                                            highlightOnHover
-                                                            striped
-                                                        />
-                                                    </div>
-                                                )}
-                                            </>
+                                        <hr />
+                                        {dcrecords.length > 0 && (
+                                            <div className="mt-4">
+                                                <h4>DC Conversion Details</h4>
+                                                <DataTable
+                                                    columns={dccolumns}
+                                                    data={dcrecords}
+                                                    customStyles={customStyles}
+                                                    pagination
+                                                    highlightOnHover
+                                                    striped
+                                                />
+                                            </div>
                                         )}
-                                        {/* EPID preview block */}
-                                        {(selectedLandType === "khata") && (
+                                    </>
+                                )}
+                                {/* EPID preview block */}
+                                {(selectedLandType === "khata") && (
+                                    <>
+                                        {epidshowTable && epid_fetchedData && (
+                                            <div>
+                                                <h5>Property Owner details as per BBMP eKhata</h5>
+                                                <h6>Note: Plot-wise New Khata will be issued in owner's name. Hence, if owner has changed then first get Mutation done in eKhata.</h6>
+
+                                                <DataTable
+                                                    columns={columns}
+                                                    data={epid_fetchedData?.OwnerDetails || []}
+                                                    pagination
+                                                    noHeader
+                                                    dense={false}
+                                                    customStyles={customStyles}
+                                                />
+
+                                            </div>
+                                        )}
+
+                                        {epid_fetchedData && (
                                             <>
-                                                {epidshowTable && epid_fetchedData && (
-                                                    <div>
-                                                        <h5>Property Owner details as per BBMP eKhata</h5>
-                                                        <h6>Note: Plot-wise New Khata will be issued in owner's name. Hence, if owner has changed then first get Mutation done in eKhata.</h6>
-
-                                                        <DataTable
-                                                            columns={columns}
-                                                            data={epid_fetchedData?.OwnerDetails || []}
-                                                            pagination
-                                                            noHeader
-                                                            dense={false}
-                                                            customStyles={customStyles}
-                                                        />
-
-                                                    </div>
-                                                )}
-
-                                                {epid_fetchedData && (
-                                                    <>
-                                                        <style>{`
+                                                <style>{`
       /* Wrapper for horizontal scroll on small screens */
       .table-responsive-wrapper { /* Renamed to avoid conflict if parent also uses table-responsive */
       width: 100%;
@@ -1233,497 +1325,497 @@ const BBMP_SubmittedInfo = () => {
         margin-bottom: 10px; /* Space between heading/button and table */
       }
     `}</style>
-                                                        <div className="table-responsive-wrapper">
-                                                            <div className="header-with-button">
-                                                                <h4>Property Details</h4>
-                                                                {/* <button className='btn btn-warning' onClick={showImplementationAlert}>View eKhata</button> */}
-                                                            </div>
+                                                <div className="table-responsive-wrapper">
+                                                    <div className="header-with-button">
+                                                        <h4>Property Details</h4>
+                                                        {/* <button className='btn btn-warning' onClick={showImplementationAlert}>View eKhata</button> */}
+                                                    </div>
 
-                                                            {/* Property Details */}
+                                                    {/* Property Details */}
+                                                    <table>
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Property ID</th>
+                                                                <th>Category</th>
+                                                                <th>Classification</th>
+                                                                <th>Ward Number</th>
+                                                                <th>Ward Name</th>
+                                                                <th>Street Name</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td>{epid_fetchedData.PropertyID}</td>
+                                                                <td>{epid_fetchedData.PropertyCategory}</td>
+                                                                <td>{epid_fetchedData.PropertyClassification}</td>
+                                                                <td>{epid_fetchedData.WardNumber}</td>
+                                                                <td>{epid_fetchedData.WardName?.trim()}</td>
+                                                                <td>{epid_fetchedData.StreetName?.trim()}</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+
+                                                    {/* Kaveri Registration Numbers */}
+                                                    {epid_fetchedData.KaveriRegistrationNumber?.length > 0 && (
+                                                        <>
+                                                            <h4>Kaveri Registration Numbers</h4>
                                                             <table>
                                                                 <thead>
                                                                     <tr>
-                                                                        <th>Property ID</th>
-                                                                        <th>Category</th>
-                                                                        <th>Classification</th>
-                                                                        <th>Ward Number</th>
-                                                                        <th>Ward Name</th>
-                                                                        <th>Street Name</th>
+                                                                        <th>Registration Number</th>
+                                                                        <th>EC Number</th>
                                                                     </tr>
                                                                 </thead>
                                                                 <tbody>
-                                                                    <tr>
-                                                                        <td>{epid_fetchedData.PropertyID}</td>
-                                                                        <td>{epid_fetchedData.PropertyCategory}</td>
-                                                                        <td>{epid_fetchedData.PropertyClassification}</td>
-                                                                        <td>{epid_fetchedData.WardNumber}</td>
-                                                                        <td>{epid_fetchedData.WardName?.trim()}</td>
-                                                                        <td>{epid_fetchedData.StreetName?.trim()}</td>
-                                                                    </tr>
-                                                                </tbody>
-                                                            </table>
-
-                                                            {/* Kaveri Registration Numbers */}
-                                                            {epid_fetchedData.KaveriRegistrationNumber?.length > 0 && (
-                                                                <>
-                                                                    <h4>Kaveri Registration Numbers</h4>
-                                                                    <table>
-                                                                        <thead>
-                                                                            <tr>
-                                                                                <th>Registration Number</th>
-                                                                                <th>EC Number</th>
-                                                                            </tr>
-                                                                        </thead>
-                                                                        <tbody>
-                                                                            {epid_fetchedData.KaveriRegistrationNumber.map((item, idx) => (
-                                                                                <tr key={idx}>
-                                                                                    <td>{item.kaveriRegistrationNumber}</td>
-                                                                                    <td>{item.kaveriECNumber}</td>
-                                                                                </tr>
-                                                                            ))}
-                                                                        </tbody>
-                                                                    </table>
-                                                                </>
-                                                            )}
-
-                                                            {/* More Property Info */}
-                                                            <table>
-                                                                <thead>
-                                                                    <tr>
-                                                                        <th>Street Code</th>
-                                                                        <th>SAS Application No</th>
-                                                                        <th>Is Mutation</th>
-                                                                        <th>Assessment No</th>
-                                                                        <th>Court Stay</th>
-                                                                        <th>Enquiry Dispute</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    <tr>
-                                                                        <td>{epid_fetchedData.Streetcode}</td>
-                                                                        <td>{epid_fetchedData.SASApplicationNumber}</td>
-                                                                        <td>{epid_fetchedData.IsMuation}</td>
-                                                                        <td>{epid_fetchedData.AssessmentNumber}</td>
-                                                                        <td>{epid_fetchedData.courtStay}</td>
-                                                                        <td>{epid_fetchedData.enquiryDispute}</td>
-                                                                    </tr>
-                                                                </tbody>
-                                                            </table>
-
-                                                            {/* Check Bandi */}
-                                                            <h4>Check Bandi</h4>
-                                                            <table>
-                                                                <thead>
-                                                                    <tr>
-                                                                        <th>North</th>
-                                                                        <th>South</th>
-                                                                        <th>East</th>
-                                                                        <th>West</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    <tr>
-                                                                        <td>{epid_fetchedData.CheckBandi?.north}</td>
-                                                                        <td>{epid_fetchedData.CheckBandi?.south}</td>
-                                                                        <td>{epid_fetchedData.CheckBandi?.east}</td>
-                                                                        <td>{epid_fetchedData.CheckBandi?.west}</td>
-                                                                    </tr>
-                                                                </tbody>
-                                                            </table>
-
-                                                            {/* Site Details */}
-                                                            <h4>Site Details</h4>
-                                                            <table>
-                                                                <thead>
-                                                                    <tr>
-                                                                        <th>Site Area (sq ft)</th>
-                                                                        <th>East-West Dimension</th>
-                                                                        <th>North-South Dimension</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    <tr>
-                                                                        <td>{epid_fetchedData.SiteDetails?.siteArea}</td>
-                                                                        <td>{epid_fetchedData.SiteDetails?.dimensions?.eastWest || '-'}</td>
-                                                                        <td>{epid_fetchedData.SiteDetails?.dimensions?.northSouth || '-'}</td>
-                                                                    </tr>
-                                                                </tbody>
-                                                            </table>
-
-                                                            {/* Owner Details */}
-                                                            <h4>Owner Details</h4>
-                                                            <table>
-                                                                <thead>
-                                                                    <tr>
-                                                                        <th>Owner Name</th>
-                                                                        <th>ID Type</th>
-                                                                        <th>ID Number</th>
-                                                                        <th>Address</th>
-                                                                        <th>Identifier Name</th>
-                                                                        <th>Gender</th>
-                                                                        <th>Mobile Number</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    {epid_fetchedData.OwnerDetails?.map((owner, index) => (
-                                                                        <tr key={index}>
-                                                                            <td>{owner.ownerName}</td>
-                                                                            <td>{owner.idType}</td>
-                                                                            <td>{owner.idNumber}</td>
-                                                                            <td>{owner.ownerAddress}</td>
-                                                                            <td>{owner.identifierName}</td>
-                                                                            <td>{owner.gender}</td>
-                                                                            <td>{owner.mobileNumber}</td>
+                                                                    {epid_fetchedData.KaveriRegistrationNumber.map((item, idx) => (
+                                                                        <tr key={idx}>
+                                                                            <td>{item.kaveriRegistrationNumber}</td>
+                                                                            <td>{item.kaveriECNumber}</td>
                                                                         </tr>
                                                                     ))}
                                                                 </tbody>
                                                             </table>
+                                                        </>
+                                                    )}
+
+                                                    {/* More Property Info */}
+                                                    <table>
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Street Code</th>
+                                                                <th>SAS Application No</th>
+                                                                <th>Is Mutation</th>
+                                                                <th>Assessment No</th>
+                                                                <th>Court Stay</th>
+                                                                <th>Enquiry Dispute</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td>{epid_fetchedData.Streetcode}</td>
+                                                                <td>{epid_fetchedData.SASApplicationNumber}</td>
+                                                                <td>{epid_fetchedData.IsMuation}</td>
+                                                                <td>{epid_fetchedData.AssessmentNumber}</td>
+                                                                <td>{epid_fetchedData.courtStay}</td>
+                                                                <td>{epid_fetchedData.enquiryDispute}</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+
+                                                    {/* Check Bandi */}
+                                                    <h4>Check Bandi</h4>
+                                                    <table>
+                                                        <thead>
+                                                            <tr>
+                                                                <th>North</th>
+                                                                <th>South</th>
+                                                                <th>East</th>
+                                                                <th>West</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td>{epid_fetchedData.CheckBandi?.north}</td>
+                                                                <td>{epid_fetchedData.CheckBandi?.south}</td>
+                                                                <td>{epid_fetchedData.CheckBandi?.east}</td>
+                                                                <td>{epid_fetchedData.CheckBandi?.west}</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+
+                                                    {/* Site Details */}
+                                                    <h4>Site Details</h4>
+                                                    <table>
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Site Area (sq ft)</th>
+                                                                <th>East-West Dimension</th>
+                                                                <th>North-South Dimension</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td>{epid_fetchedData.SiteDetails?.siteArea}</td>
+                                                                <td>{epid_fetchedData.SiteDetails?.dimensions?.eastWest || '-'}</td>
+                                                                <td>{epid_fetchedData.SiteDetails?.dimensions?.northSouth || '-'}</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+
+                                                    {/* Owner Details */}
+                                                    <h4>Owner Details</h4>
+                                                    <table>
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Owner Name</th>
+                                                                <th>ID Type</th>
+                                                                <th>ID Number</th>
+                                                                <th>Address</th>
+                                                                <th>Identifier Name</th>
+                                                                <th>Gender</th>
+                                                                <th>Mobile Number</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {epid_fetchedData.OwnerDetails?.map((owner, index) => (
+                                                                <tr key={index}>
+                                                                    <td>{owner.ownerName}</td>
+                                                                    <td>{owner.idType}</td>
+                                                                    <td>{owner.idNumber}</td>
+                                                                    <td>{owner.ownerAddress}</td>
+                                                                    <td>{owner.identifierName}</td>
+                                                                    <td>{owner.gender}</td>
+                                                                    <td>{owner.mobileNumber}</td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </>
+                                        )}
+
+                                        <hr />
+                                    </>
+                                )}
+
+                                {records.length > 0 && (
+                                    <div className="mt-4">
+                                        <h4>Layout Approval order</h4>
+                                        <DataTable
+                                            columns={approval_columns}
+                                            data={records}
+                                            customStyles={customStyles}
+                                            pagination
+                                            highlightOnHover
+                                            striped
+                                        />
+                                        <hr />
+                                    </div>
+                                )}
+                                {order_records.length > 0 && (
+                                    <div className="mt-4">
+                                        <h4>{t('translation.BDA.table1.heading')}</h4>
+                                        <DataTable
+                                            columns={order_columns}
+                                            data={order_records}
+                                            customStyles={customStyles}
+                                            pagination
+                                            highlightOnHover
+                                            striped
+                                        />
+                                    </div>
+                                )}
+                                {allSites.length > 0 && (
+                                    <>
+                                        <Preview_siteDetailsTable
+                                            data={allSites}
+                                            setData={setAllSites}
+                                            totalSitesCount={totalSitesCount}
+                                            LKRS_ID={localLKRSID}
+                                            createdBy={createdBy}
+                                            createdName={createdName}
+                                            roleID={roleID}
+                                        />
+                                        <hr />
+                                    </>
+                                )}
+
+                                {/* EC Details */}
+                                {(ecNumber || typeof isJDA === 'boolean') && (
+                                    <>
+                                        <div style={{ marginTop: '20px' }}>
+                                            <h5>EC Details & JDA Details</h5>
+                                            <p className='mb-4'>Note : EC should be atleast 1 day before registered deed of property until 31-10-2024 or later. If sale / registered deed date is before 01-04-2004 then EC should be from 01-04-2004 to 31-10-2024 after</p>
+
+                                            <div className='row'>
+                                                <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mt-3">
+                                                    <div className="form-group mt-2">
+                                                        <label className='form-label'>EC Number of Mother Property</label>
+                                                        <input
+                                                            type="text"
+                                                            className='form-control'
+                                                            placeholder="Enter EC Number of Mother Property"
+                                                            value={ecNumber}
+                                                            readOnly
+                                                        />
+                                                    </div>
+                                                    <div className="text-success">
+                                                        <strong>EC Check successfully <i className="fa fa-check-circle"></i></strong>
+                                                    </div>
+                                                </div>
+                                                <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-7">
+                                                    <div className="form-group">
+                                                        <button className="btn btn-warning btn-block" onClick={() => viewEC(ecNumber)}>
+                                                            View EC
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <hr />
+                                                <div className='col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6'>
+                                                    <div className="d-flex align-items-center gap-3">
+                                                        <label className="form-check-label fw-bold">Is there a Joint Development Agreement?</label>
+                                                        <div className="form-check">
+                                                            <label className="form-check-label">
+                                                                <input
+                                                                    className="form-check-input radioStyle"
+                                                                    type="radio"
+                                                                    name="hasJDA"
+                                                                    value="yes"
+                                                                    checked={hasJDA === true}
+                                                                    onChange={() => setHasJDA(true)}
+                                                                    disabled
+                                                                />
+                                                                Yes</label>
+                                                        </div>
+                                                        <div className="form-check">
+                                                            <label className="form-check-label">
+                                                                <input className="form-check-input radioStyle"
+                                                                    type="radio"
+                                                                    name="hasJDA"
+                                                                    value="no"
+                                                                    checked={hasJDA === false}
+                                                                    onChange={() => setHasJDA(false)}
+                                                                    disabled
+                                                                />
+                                                                No</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {hasJDA === true && (
+                                                    <div className='col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6'>
+                                                        <div className="d-flex align-items-center gap-3 ">
+                                                            <label className="form-check-label fw-bold">Is Joint Development Agreement Registered?</label>
+                                                            <div className="form-check">
+                                                                <label className="form-check-label">
+                                                                    <input
+                                                                        className="form-check-input radioStyle"
+                                                                        type="radio"
+                                                                        name="isRegistered"
+                                                                        value="yes"
+                                                                        checked={isRegistered === true}
+                                                                        onChange={() => setIsRegistered(true)}
+                                                                        disabled
+                                                                    />
+                                                                    Yes</label>
+                                                            </div>
+                                                            <div className="form-check">
+                                                                <label className="form-check-label">
+                                                                    <input
+                                                                        className="form-check-input radioStyle"
+                                                                        type="radio"
+                                                                        name="isRegistered"
+                                                                        value="yes"
+                                                                        checked={isRegistered === false}
+                                                                        onChange={() => setIsRegistered(false)}
+                                                                        disabled
+                                                                    />
+                                                                    No</label>
+                                                            </div>
+                                                        </div></div>
+                                                )}
+                                                {hasJDA === true && isRegistered === true && (
+                                                    <>
+                                                        <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6" >
+                                                            <label className='form-label'>Enter JDA registered Deed Number <span className='mandatory_color'>*</span></label>
+                                                            <input
+                                                                type="text"
+                                                                className="form-control"
+                                                                placeholder="Enter your Deed Number"
+                                                                value={deedNumber}
+                                                                maxLength={50} readOnly
+                                                            />
+                                                            <div className="text-success">
+                                                                <strong>Deed Check successfully <i className="fa fa-check-circle"></i></strong>
+                                                            </div>
+                                                        </div>
+                                                        <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-5">
+                                                            <div className="form-group">
+                                                                <button className="btn btn-warning btn-block" onClick={handleViewDeed}>
+                                                                    View Deed
+                                                                </button>
+                                                            </div>
+
                                                         </div>
                                                     </>
                                                 )}
+                                                {hasJDA === true && isRegistered === false && (
+                                                    <>
 
-                                                <hr />
-                                            </>
-                                        )}
-
-                                        {records.length > 0 && (
-                                            <div className="mt-4">
-                                                <h4>Layout Approval order</h4>
-                                                <DataTable
-                                                    columns={approval_columns}
-                                                    data={records}
-                                                    customStyles={customStyles}
-                                                    pagination
-                                                    highlightOnHover
-                                                    striped
-                                                />
-                                                <hr />
-                                            </div>
-                                        )}
-                                        {order_records.length > 0 && (
-                                            <div className="mt-4">
-                                                <h4>{t('translation.BDA.table1.heading')}</h4>
-                                                <DataTable
-                                                    columns={order_columns}
-                                                    data={order_records}
-                                                    customStyles={customStyles}
-                                                    pagination
-                                                    highlightOnHover
-                                                    striped
-                                                />
-                                            </div>
-                                        )}
-                                        {allSites.length > 0 && (
-                                            <>
-                                                <Preview_siteDetailsTable
-                                                    data={allSites}
-                                                    setData={setAllSites}
-                                                    totalSitesCount={totalSitesCount}
-                                                    LKRS_ID={localLKRSID}
-                                                    createdBy={createdBy}
-                                                    createdName={createdName}
-                                                    roleID={roleID}
-                                                />
-                                                <hr />
-                                            </>
-                                        )}
-
-                                        {/* EC Details */}
-                                        {(ecNumber || typeof isJDA === 'boolean') && (
-                                            <>
-                                                <div style={{ marginTop: '20px' }}>
-                                                    <h5>EC Details & JDA Details</h5>
-                                                    <p className='mb-4'>Note : EC should be atleast 1 day before registered deed of property until 31-10-2024 or later. If sale / registered deed date is before 01-04-2004 then EC should be from 01-04-2004 to 31-10-2024 after</p>
-
-                                                    <div className='row'>
-                                                        <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mt-3">
-                                                            <div className="form-group mt-2">
-                                                                <label className='form-label'>EC Number of Mother Property</label>
-                                                                <input
-                                                                    type="text"
-                                                                    className='form-control'
-                                                                    placeholder="Enter EC Number of Mother Property"
-                                                                    value={ecNumber}
-                                                                    readOnly
-                                                                />
-                                                            </div>
-                                                            <div className="text-success">
-                                                                <strong>EC Check successfully <i className="fa fa-check-circle"></i></strong>
-                                                            </div>
+                                                        <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4">
+                                                            <label className='form-label'>Enter JDA Document ID <span className='mandatory_color'>*</span></label>
+                                                            <input
+                                                                type="text"
+                                                                className="form-control"
+                                                                placeholder="Enter your JDA Document ID"
+                                                                value={jdaDocumentId}
+                                                                maxLength={15}
+                                                                readOnly
+                                                            />
                                                         </div>
-                                                        <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-7">
-                                                            <div className="form-group">
-                                                                <button className="btn btn-warning btn-block" onClick={() => viewEC(ecNumber)}>
-                                                                    View EC
-                                                                </button>
-                                                            </div>
+
+                                                        <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4">
+                                                            <label className='form-label'>Enter JDA Document Date <span className='mandatory_color'>*</span></label>
+                                                            <input
+                                                                type="date"
+                                                                className="form-control"
+                                                                value={jdaDocumentDate}
+                                                                readOnly
+                                                            />
                                                         </div>
-                                                        <hr />
-                                                        <div className='col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6'>
-                                                            <div className="d-flex align-items-center gap-3">
-                                                                <label className="form-check-label fw-bold">Is there a Joint Development Agreement?</label>
-                                                                <div className="form-check">
-                                                                    <label className="form-check-label">
-                                                                        <input
-                                                                            className="form-check-input radioStyle"
-                                                                            type="radio"
-                                                                            name="hasJDA"
-                                                                            value="yes"
-                                                                            checked={hasJDA === true}
-                                                                            onChange={() => setHasJDA(true)}
-                                                                            disabled
-                                                                        />
-                                                                        Yes</label>
-                                                                </div>
-                                                                <div className="form-check">
-                                                                    <label className="form-check-label">
-                                                                        <input className="form-check-input radioStyle"
-                                                                            type="radio"
-                                                                            name="hasJDA"
-                                                                            value="no"
-                                                                            checked={hasJDA === false}
-                                                                            onChange={() => setHasJDA(false)}
-                                                                            disabled
-                                                                        />
-                                                                        No</label>
+                                                        {deedNoURL && (
+                                                            <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4">
+                                                                <div style={{ marginTop: '10px' }}>
+                                                                    <label className='form-check-label fw-bold'>Uploaded the JDA Document</label> &nbsp;
+                                                                    <span
+                                                                        onClick={() => window.open(deedNoURL, '_blank')}
+                                                                        style={{
+                                                                            cursor: 'pointer',
+                                                                            color: '#007bff',
+                                                                            textDecoration: 'none',
+                                                                            fontSize: '0.875rem',
+                                                                            userSelect: 'none',
+                                                                        }}
+                                                                        role="button"
+                                                                        tabIndex={0}
+                                                                        onKeyPress={(e) => { if (e.key === 'Enter') window.open(deedNoURL, '_blank'); }}
+                                                                    >
+                                                                        View file
+                                                                    </span>
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                        {hasJDA === true && (
-                                                            <div className='col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6'>
-                                                                <div className="d-flex align-items-center gap-3 ">
-                                                                    <label className="form-check-label fw-bold">Is Joint Development Agreement Registered?</label>
-                                                                    <div className="form-check">
-                                                                        <label className="form-check-label">
-                                                                            <input
-                                                                                className="form-check-input radioStyle"
-                                                                                type="radio"
-                                                                                name="isRegistered"
-                                                                                value="yes"
-                                                                                checked={isRegistered === true}
-                                                                                onChange={() => setIsRegistered(true)}
-                                                                                disabled
-                                                                            />
-                                                                            Yes</label>
-                                                                    </div>
-                                                                    <div className="form-check">
-                                                                        <label className="form-check-label">
-                                                                            <input
-                                                                                className="form-check-input radioStyle"
-                                                                                type="radio"
-                                                                                name="isRegistered"
-                                                                                value="yes"
-                                                                                checked={isRegistered === false}
-                                                                                onChange={() => setIsRegistered(false)}
-                                                                                disabled
-                                                                            />
-                                                                            No</label>
-                                                                    </div>
-                                                                </div></div>
                                                         )}
-                                                        {hasJDA === true && isRegistered === true && (
-                                                            <>
-                                                                <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6" >
-                                                                    <label className='form-label'>Enter JDA registered Deed Number <span className='mandatory_color'>*</span></label>
-                                                                    <input
-                                                                        type="text"
-                                                                        className="form-control"
-                                                                        placeholder="Enter your Deed Number"
-                                                                        value={deedNumber}
-                                                                        maxLength={50} readOnly
-                                                                    />
-                                                                    <div className="text-success">
-                                                                        <strong>Deed Check successfully <i className="fa fa-check-circle"></i></strong>
-                                                                    </div>
-                                                                </div>
-                                                                <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-5">
-                                                                    <div className="form-group">
-                                                                        <button className="btn btn-warning btn-block" onClick={handleViewDeed}>
-                                                                            View Deed
-                                                                        </button>
-                                                                    </div>
-
-                                                                </div>
-                                                            </>
-                                                        )}
-                                                        {hasJDA === true && isRegistered === false && (
-                                                            <>
-
-                                                                <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4">
-                                                                    <label className='form-label'>Enter JDA Document ID <span className='mandatory_color'>*</span></label>
-                                                                    <input
-                                                                        type="text"
-                                                                        className="form-control"
-                                                                        placeholder="Enter your JDA Document ID"
-                                                                        value={jdaDocumentId}
-                                                                        maxLength={15}
-                                                                        readOnly
-                                                                    />
-                                                                </div>
-
-                                                                <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4">
-                                                                    <label className='form-label'>Enter JDA Document Date <span className='mandatory_color'>*</span></label>
-                                                                    <input
-                                                                        type="date"
-                                                                        className="form-control"
-                                                                        value={jdaDocumentDate}
-                                                                        readOnly
-                                                                    />
-                                                                </div>
-                                                                {deedNoURL && (
-                                                                    <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4">
-                                                                        <div style={{ marginTop: '10px' }}>
-                                                                            <label className='form-check-label fw-bold'>Uploaded the JDA Document</label> &nbsp;
-                                                                            <span
-                                                                                onClick={() => window.open(deedNoURL, '_blank')}
-                                                                                style={{
-                                                                                    cursor: 'pointer',
-                                                                                    color: '#007bff',
-                                                                                    textDecoration: 'none',
-                                                                                    fontSize: '0.875rem',
-                                                                                    userSelect: 'none',
-                                                                                }}
-                                                                                role="button"
-                                                                                tabIndex={0}
-                                                                                onKeyPress={(e) => { if (e.key === 'Enter') window.open(deedNoURL, '_blank'); }}
-                                                                            >
-                                                                                View file
-                                                                            </span>
-                                                                        </div>
-                                                                    </div>
-                                                                )}
-                                                            </>
-                                                        )}
-                                                        {hasJDA === false && (
-                                                            <></>
-                                                        )}
-                                                    </div>
-
-
-
-                                                </div>
-                                                <hr />
-                                            </>
-                                        )}
-                                        {/* Owner EKYC */}
-                                        <div className='row'>
-                                            <div className='col-12'>
-                                                <h5>Owner / Owner Representative EKYC Details</h5>
-                                                <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
-                                                    <thead className="table-light">
-                                                        <tr>
-                                                            <th>ಫೋಟೋ / Photo</th>
-                                                            <th>ಮಾಲೀಕರ ಹೆಸರು / Owner Name</th>
-                                                            <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>
-                                                            <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhar Number</th>
-                                                            <th>ಲಿಂಗ / Gender</th>
-                                                            <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th>
-                                                            <th>ವಿಳಾಸ / Address</th>
-                                                            <th>ಇಕೆವೈಸಿ ಸ್ಥಿತಿ / EKYC Status</th>
-                                                            <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {ownerDataList
-                                                            .filter(owner => owner.owN_AADHAARVERISTATUS === "Success")
-                                                            .map((owner, index) => {
-                                                                let parsedAadhaar = {};
-                                                                try {
-                                                                    parsedAadhaar = JSON.parse(owner.owN_AADHAAR_RESPONSE).ekycResponse || {};
-                                                                } catch (err) {
-                                                                    console.warn("Invalid Aadhaar JSON for owner:", owner.owN_NAME_EN);
-                                                                }
-
-                                                                return (
-                                                                    <tr key={index}>
-                                                                        <td style={{ textAlign: 'center' }}>
-                                                                            <img src={usericon} alt="Owner" width="50" height="50" />
-                                                                        </td>
-                                                                        <td style={{ textAlign: 'center' }}>{owner.owN_NAME_EN || 'N/A'}</td>
-                                                                        <td style={{ textAlign: 'center' }}>{parsedAadhaar.ownerNameEng || 'N/A'}</td>
-                                                                        <td style={{ textAlign: 'center' }}>{parsedAadhaar.maskedAadhaar || 'N/A'}</td>
-                                                                        <td style={{ textAlign: 'center' }}>{parsedAadhaar.gender || 'N/A'}</td>
-                                                                        <td style={{ textAlign: 'center' }}>{parsedAadhaar.dateOfBirth || 'N/A'}</td>
-                                                                        <td style={{ textAlign: 'center' }}>{parsedAadhaar.addressEng || 'N/A'}</td>
-                                                                        <td style={{ textAlign: 'center' }}>Verified</td>
-                                                                        <td style={{ textAlign: 'center' }}>
-                                                                            {owner.owN_NAMEMATCHSCORE > 80 ? 'Matched' : 'Not Matched'}
-                                                                        </td>
-                                                                    </tr>
-                                                                );
-                                                            })}
-                                                    </tbody>
-                                                </table>
+                                                    </>
+                                                )}
+                                                {hasJDA === false && (
+                                                    <></>
+                                                )}
                                             </div>
+
+
+
                                         </div>
+                                        <hr />
+                                    </>
+                                )}
+                                {/* Owner EKYC */}
+                                <div className='row'>
+                                    <div className='col-12'>
+                                        <h5>Owner / Owner Representative EKYC Details</h5>
+                                        <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
+                                            <thead className="table-light">
+                                                <tr>
+                                                    <th>ಫೋಟೋ / Photo</th>
+                                                    <th>ಮಾಲೀಕರ ಹೆಸರು / Owner Name</th>
+                                                    <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>
+                                                    <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhar Number</th>
+                                                    <th>ಲಿಂಗ / Gender</th>
+                                                    <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th>
+                                                    <th>ವಿಳಾಸ / Address</th>
+                                                    <th>ಇಕೆವೈಸಿ ಸ್ಥಿತಿ / EKYC Status</th>
+                                                    {/* <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th> */}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {ownerDataList
+                                                    .filter(owner => owner.owN_AADHAARVERISTATUS === "Success")
+                                                    .map((owner, index) => {
+                                                        let parsedAadhaar = {};
+                                                        try {
+                                                            parsedAadhaar = JSON.parse(owner.owN_AADHAAR_RESPONSE).ekycResponse || {};
+                                                        } catch (err) {
+                                                            console.warn("Invalid Aadhaar JSON for owner:", owner.owN_NAME_EN);
+                                                        }
 
-                                        {/* JDA EKYC */}
+                                                        return (
+                                                            <tr key={index}>
+                                                                <td style={{ textAlign: 'center' }}>
+                                                                    <img src={usericon} alt="Owner" width="50" height="50" />
+                                                                </td>
+                                                                <td style={{ textAlign: 'center' }}>{owner.owN_NAME_EN || 'N/A'}</td>
+                                                                <td style={{ textAlign: 'center' }}>{parsedAadhaar.ownerNameEng || 'N/A'}</td>
+                                                                <td style={{ textAlign: 'center' }}>{parsedAadhaar.maskedAadhaar || 'N/A'}</td>
+                                                                <td style={{ textAlign: 'center' }}>{parsedAadhaar.gender || 'N/A'}</td>
+                                                                <td style={{ textAlign: 'center' }}>{parsedAadhaar.dateOfBirth || 'N/A'}</td>
+                                                                <td style={{ textAlign: 'center' }}>{parsedAadhaar.addressEng || 'N/A'}</td>
+                                                                <td style={{ textAlign: 'center' }}>Verified</td>
+                                                                {/* <td style={{ textAlign: 'center' }}>
+                                                                    {owner.owN_NAMEMATCHSCORE > 80 ? 'Matched' : 'Not Matched'}
+                                                                </td> */}
+                                                            </tr>
+                                                        );
+                                                    })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                {/* JDA EKYC */}
 
 
 
-                                        {ownerEKYCDataList.length > 0 && (
-                                            <div className="col-12">
-                                                <h5>JDA / JDA Representative EKYC Details</h5>
-                                                <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
-                                                    <thead className="table-light">
-                                                        <tr>
-                                                            <th>ಫೋಟೋ / Photo</th>
-                                                            <th>ಜೆಡಿಎ ಹೆಸರು / JDA Name</th>
-                                                            <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>
-                                                            <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhar Number</th>
-                                                            <th>ಲಿಂಗ / Gender</th> {/* New column */}
-                                                            <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th> {/* New column */}
-                                                            <th>ವಿಳಾಸ / Address</th> {/* New column */}
-                                                            <th>ಇಕೆವೈಸಿ ಸ್ಥಿತಿ / EKYC Status</th> {/* New column */}
-                                                            <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th> {/* New column */}
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {ownerEKYCDataList.map((owner, index) => {
-                                                            let aadhaarResponse = {};
-                                                            try {
-                                                                aadhaarResponse = JSON.parse(owner.jdaekyC_AADHAAR_RESPONSE || '{}').ekycResponse || {};
-                                                            } catch (e) {
-                                                                console.error("Error parsing AADHAAR_RESPONSE:", e);
-                                                            }
+                                {ownerEKYCDataList.length > 0 && (
+                                    <div className="col-12">
+                                        <h5>JDA / JDA Representative EKYC Details</h5>
+                                        <table className="table table-striped table-bordered table-hover shadow" style={{ fontFamily: 'Arial, sans-serif' }}>
+                                            <thead className="table-light">
+                                                <tr>
+                                                    <th>ಫೋಟೋ / Photo</th>
+                                                    <th>ಜೆಡಿಎ ಹೆಸರು / JDA Name</th>
+                                                    <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಹೆಸರು / EKYC Verified Aadhar Name</th>
+                                                    <th>ಇಕೆವೈಸಿ ಪರಿಶೀಲಿಸಿದ ಆಧಾರ್ ಸಂಖ್ಯೆ / EKYC Verified Aadhar Number</th>
+                                                    <th>ಲಿಂಗ / Gender</th> {/* New column */}
+                                                    <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th> {/* New column */}
+                                                    <th>ವಿಳಾಸ / Address</th> {/* New column */}
+                                                    <th>ಇಕೆವೈಸಿ ಸ್ಥಿತಿ / EKYC Status</th> {/* New column */}
+                                                    <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th> New column
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {ownerEKYCDataList.map((owner, index) => {
+                                                    let aadhaarResponse = {};
+                                                    try {
+                                                        aadhaarResponse = JSON.parse(owner.jdaekyC_AADHAAR_RESPONSE || '{}').ekycResponse || {};
+                                                    } catch (e) {
+                                                        console.error("Error parsing AADHAAR_RESPONSE:", e);
+                                                    }
 
-                                                            const nameMatchStatus = parseFloat(owner.jdAekyc_NameMatchScore) > 60 ? 'Name Match Successful' : 'Not Matched';
-                                                            const ekycStatus = aadhaarResponse.maskedAadhaar ? 'Verified' : 'Not Verified'; // Assuming if maskedAadhaar exists, EKYC is complete
+                                                    const nameMatchStatus = parseFloat(owner.jdAekyc_NameMatchScore) > 60 ? 'Name Match Successful' : 'Not Matched';
+                                                    const ekycStatus = aadhaarResponse.maskedAadhaar ? 'Verified' : 'Not Verified'; // Assuming if maskedAadhaar exists, EKYC is complete
 
-                                                            return (
-                                                                <tr key={index}>
-                                                                    <td style={{ textAlign: 'center' }}><img src={usericon} alt="Owner" width="50" height="50" /></td>
+                                                    return (
+                                                        <tr key={index}>
+                                                            <td style={{ textAlign: 'center' }}><img src={usericon} alt="Owner" width="50" height="50" /></td>
 
-                                                                    <td style={{ textAlign: 'center' }}>{owner.jdAekyc_JDA_Name || 'N/A'}</td>
-                                                                    <td style={{ textAlign: 'center' }}>{aadhaarResponse.ownerNameEng || 'N/A'}</td>
-                                                                    <td style={{ textAlign: 'center' }}>{owner.jdAekyc_AadhaarNumber || 'N/A'}</td>
-                                                                    <td style={{ textAlign: 'center' }}>{aadhaarResponse.gender || 'N/A'}</td>
-                                                                    <td style={{ textAlign: 'center' }}>{aadhaarResponse.dateOfBirth || 'N/A'}</td>
-                                                                    <td style={{ textAlign: 'center' }}>{aadhaarResponse.addressEng || 'N/A'}</td>
+                                                            <td style={{ textAlign: 'center' }}>{owner.jdAekyc_JDA_Name || 'N/A'}</td>
+                                                            <td style={{ textAlign: 'center' }}>{aadhaarResponse.ownerNameEng || 'N/A'}</td>
+                                                            <td style={{ textAlign: 'center' }}>{owner.jdAekyc_AadhaarNumber || 'N/A'}</td>
+                                                            <td style={{ textAlign: 'center' }}>{aadhaarResponse.gender || 'N/A'}</td>
+                                                            <td style={{ textAlign: 'center' }}>{aadhaarResponse.dateOfBirth || 'N/A'}</td>
+                                                            <td style={{ textAlign: 'center' }}>{aadhaarResponse.addressEng || 'N/A'}</td>
 
-                                                                    {/*                                                
+                                                            {/*                                                
                                                 <td style={{ textAlign: 'center' }}>
                                                     {aadhaarResponse.photoContent ? <img src={`data:image/jpeg;base64,${aadhaarResponse.photoContent}`} alt="Aadhaar Photo" style={{ width: '50px', height: '50px' }} /> : 'No Photo'}
                                                 </td> */}
 
 
 
-                                                                    <td style={{ textAlign: 'center' }}>{ekycStatus}</td>
-                                                                    <td style={{ textAlign: 'center' }}>{nameMatchStatus}</td>
-                                                                </tr>
-                                                            );
-                                                        })}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        )}
+                                                            <td style={{ textAlign: 'center' }}>{ekycStatus}</td>
+                                                            {/* <td style={{ textAlign: 'center' }}>{nameMatchStatus}</td> */}
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
                                     </div>
-                                </div>
+                                )}
                             </div>
                         </div>
-
                     </div>
-                {/* </div>
+                </div>
+
+            </div>
+            {/* </div>
             </DashboardLayout> */}
         </>
     );

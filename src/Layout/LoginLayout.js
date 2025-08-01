@@ -1,7 +1,7 @@
-﻿import React, { useEffect, useState, useRef, createContext } from 'react';
+import React, { useEffect, useState, useRef, createContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReactDOM from 'react-dom';
-import './DashboardLayout.css';
+import './LoginLayout.css';
 import cmlogo from '../assets/chief_minister_of_karrnataka_icon.png';
 import dcmlogo from '../assets/DeputyCM.jpeg';
 import gokLogo from '../assets/gok.png';
@@ -17,13 +17,12 @@ import { LocalLaundryService } from '@mui/icons-material';
 import Swal from "sweetalert2";
 import { useAuth } from "../AuthContext";
 import Loader from './Loader';
-import { ModalContext } from './ModalContext';
+
 
 export const LoaderContext = createContext();
 
 
-
-const DashboardLayout = ({ children }) => {
+const LoginLayout = ({ children }) => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const isEnglish = i18n.language === 'kn';
@@ -202,7 +201,7 @@ const [isDropdownFiveOpen, setIsDropdownFiveOpen] = useState(false);
     sessionStorage.removeItem('display_LKRSID');
     sessionStorage.removeItem('totalNoOfSites');
     sessionStorage.removeItem('ownerName');
-    window.open(`${window.location.origin}/LayoutForm`);
+    window.open(`${window.location.origin}/Layout_Khata_test/LayoutForm`);
   };
 
   const handleReleaseClick = (e) => {
@@ -211,7 +210,7 @@ const [isDropdownFiveOpen, setIsDropdownFiveOpen] = useState(false);
     sessionStorage.removeItem('display_LKRSID');
     sessionStorage.removeItem('totalNoOfSites');
     sessionStorage.removeItem('ownerName');
-    window.open(`${window.location.origin}/SiteRelease`);
+    window.open(`${window.location.origin}/Layout_Khata_test/SiteRelease`);
   };
 
 
@@ -226,69 +225,11 @@ const [isDropdownFiveOpen, setIsDropdownFiveOpen] = useState(false);
   const setModalTitleSafe = (title) => setModalTitle(title);
 
 
-useEffect(() => {
-  const navbar = document.querySelector('.navbar');
-  const header = document.querySelector('.header');
-  const main = document.querySelector('main');
-
-  const handleScroll = () => {
-    if (window.scrollY > 10) {
-      navbar.style.top = '0px';
-      main.style.marginTop = '170px';
-    } else {
-      navbar.style.top = '155px';
-      main.style.marginTop = '120px';
-    }
-  };
-  window.addEventListener('scroll', handleScroll);
-
-  return () => window.removeEventListener('scroll', handleScroll);
-}, []);
-
-
-useEffect(() => {
-  const handleClickOutside = (event) => {
-    if (navbarRef.current && !navbarRef.current.contains(event.target)) {
-      // Click is outside the navbar
-      setIsDropdownOneOpen(false);
-      setIsDropdownTwoOpen(false);
-      setIsDropdownThreeOpen(false);
-      setIsDropdownFourOpen(false);
-      setIsDropdownFiveOpen(false);
-    }
-  };
-
-  document.addEventListener('mousedown', handleClickOutside);
-  return () => {
-    document.removeEventListener('mousedown', handleClickOutside);
-  };
-}, []);
-
 
   return (
-    <LoaderContext.Provider value={{ loading, start_loader, stop_loader }}>
-      <ModalContext.Provider value={{ showModal, hideModal, setModalContent, setModalTitle: setModalTitleSafe }}>
-        {loading && <Loader />}
-        {modalVisible &&
-          ReactDOM.createPortal(
-            <div
-              className="modal fade show d-block"
-              tabIndex="-1"
-              role="dialog"
-              style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
-            >
-              <div className="modal-dialog modal-xl" role="document">
-                <div className="modal-content">
-                  <div className="modal-header">
-                    <h5 className="modal-title">{modalTitle}</h5>
-                    <button type="button" className="btn-close" onClick={hideModal}></button>
-                  </div>
-                  <div className="modal-body">{modalBody}</div>
-                </div>
-              </div>
-            </div>,
-            document.body
-          )}
+    // <LoaderContext.Provider value={{ loading, start_loader, stop_loader }}>
+    //     {loading && <Loader />}
+     
 
         <div className="App">
           <Toaster toastOptions={{ duration: 4000, style: { fontSize: '14px', padding: '16px 24px', minWidth: '300px', textAlign: 'center', }, }} position="bottom-right" />
@@ -665,11 +606,7 @@ useEffect(() => {
                 </div>
               </nav>
 
-
-
-
-
-              <main>{children}</main>
+              <main style={{marginTop:'280px'}}>{children}</main>
 
               {/* <FloatingButton onClick={handleClick} /> */}
               <section id="contact">
@@ -755,8 +692,8 @@ useEffect(() => {
             </div>
           </div>
         </div>
-      </ModalContext.Provider>
-    </LoaderContext.Provider>
+      
+    // </LoaderContext.Provider>
 
   );
 }
@@ -805,4 +742,4 @@ const MyFormComponent = () => {
 };
 
 
-export default DashboardLayout;
+export default LoginLayout;

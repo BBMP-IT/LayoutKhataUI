@@ -60,111 +60,159 @@ export const useLoader = () => {
 
 
 
-    const columns = React.useMemo(
-        () => [
+  const columns = React.useMemo(
+          () => [
 
-            {
-                Header: "S.No",
-                id: "serialNo",
-                accessor: (row, index) => index + 1,
-            },
-            {
-                Header: "Shape",
-                accessor: (row) => {
-                    return `${row.sitE_SHAPETYPE} `;
-                },
-            },
-            {
-                Header: "Site Number",
-                accessor: (row) => {
-                    return `${row.sitE_NO}`;
-                },
-            },
-            {
-                Header: "Block/Area",
-                accessor: (row) => {
-                    return `${row.sitE_AREA}`;
-                },
-            },
-            {
-                Header: "Number of sides",
-                accessor: (row) => {
-                    return `${row.sitE_NO_OF_SIDES}`;
-                },
-            },
-            {
-                Header: "Dimension",
-                accessor: (row) => {
-
-                    if (row.sitE_SHAPETYPE === "Regular") {
-                        // Extract arrays for each property
-                        const feetSides = row.siteDimensions.map(dim => dim.sitediM_SIDEINFT);
-                        const meterSides = row.siteDimensions.map(dim => dim.sitediM_SIDEINMT);
-                        const roadFacingStatuses = row.siteDimensions.map(dim => dim.sitediM_ROADFACING ? "yes" : "no");
-
-                        return (
-                            <>
-                                {feetSides.join(" x ")} (ft)<br />
-                                {meterSides.join(" x ")} (mtr)<br />
-                                <b>Road Facing:</b> {roadFacingStatuses.join(", ")}
-                            </>
-                        );
-                    } else if (row.sitE_SHAPETYPE === "Irregular" && Array.isArray(row.siteDimensions)) {
-                        const feetString = row.siteDimensions.map(side => side.sitediM_SIDEINFT).join(' x ');
-                        const meterString = row.siteDimensions.map(side => side.sitediM_SIDEINMT).join(' x ');
-                        const roadFacingString = row.siteDimensions.map(side => side.sitediM_ROADFACING ? "Yes" : "No").join(', ');
-
-                        return (
-                            <div>
-                                <div>{feetString} (ft)</div>
-                                <div>{meterString} (m)</div>
-                                <div><b>Road Facing:</b> {roadFacingString}</div>
-                            </div>
-                        );
-                    }
-
-                },
-            },
-
-            {
-                Header: "Total Area",
-                accessor: (row) => {
-                    return `${row.sitE_AREAINSQFT} [Sq.ft], ${row.sitE_AREAINSQMT} [Sq.mtr]`;
-                },
-            },
-            {
-                Header: "Corner Site",
-                accessor: (row) => {
-                    return row.sitE_CORNERPLOT ? "YES" : "NO";
-                },
-            },
-            {
-                Header: "Type of Site",
-                accessor: (row) => {
-                    return `${row.sitE_TYPE}`;
-                },
-            },
-            {
-                id: "chakbandi",  // 👈 you must add this
-                Header: (
-                    <>
-                        Chakbandi<br />
-                        [East | West | North | South]
-                    </>
-                ),
-                accessor: (row) => {
-                    return `${row.sitE_EAST} | ${row.sitE_WEST} | ${row.sitE_NORTH} | ${row.sitE_SOUTH}`;
-                },
-            },
-            {
-                Header: "Latitude, Longitude",
-                accessor: (row) => {
-                    return `${row.sitE_LATITUDE}, ${row.sitE_LONGITUDE}`;
-                },
-            },
-        ],
-        []
-    );
+              {
+                  Header: "S.No",
+                  id: "serialNo",
+                  accessor: (row, index) => index + 1,
+              },
+              {
+                  Header: "Shape",
+                  accessor: (row) => {
+                      return row.sitE_SHAPETYPE ? row.sitE_SHAPETYPE : "-";
+                  },
+              },
+              {
+                  Header: "Site Number",
+                  accessor: (row) => {
+                      return row.sitE_NO ? row.sitE_NO : "-";
+                  },
+              },
+              {
+                  Header: "Block/Area",
+                  accessor: (row) => {
+                      return row.sitE_AREA ? row.sitE_AREA : "-";
+                  },
+              },
+              {
+                  Header: "Number of sides",
+                  accessor: (row) => {
+                      return row.sitE_NO_OF_SIDES ? row.sitE_NO_OF_SIDES : "-";
+                  },
+              },
+              {
+                  Header: "Dimension",
+                  accessor: (row) => {
+  
+                      if (row.sitE_SHAPETYPE === "Regular") {
+                          // Extract arrays for each property
+                          const feetSides = row.siteDimensions.map(dim => dim.sitediM_SIDEINFT);
+                          const meterSides = row.siteDimensions.map(dim => dim.sitediM_SIDEINMT);
+                          const roadFacingStatuses = row.siteDimensions.map(dim => dim.sitediM_ROADFACING ? "yes" : "no");
+  
+                          return (
+                              <>
+                                  {feetSides.join(" x ")} (ft)<br />
+                                  {meterSides.join(" x ")} (mtr)<br />
+                                  <b>Road Facing:</b> {roadFacingStatuses.join(", ")}
+                              </>
+                          );
+                      } else if (row.sitE_SHAPETYPE === "Irregular" && Array.isArray(row.siteDimensions)) {
+                          const feetString = row.siteDimensions.map(side => side.sitediM_SIDEINFT).join(' x ');
+                          const meterString = row.siteDimensions.map(side => side.sitediM_SIDEINMT).join(' x ');
+                          const roadFacingString = row.siteDimensions.map(side => side.sitediM_ROADFACING ? "Yes" : "No").join(', ');
+  
+                          return (
+                              <div>
+                                  <div>{feetString} (ft)</div>
+                                  <div>{meterString} (m)</div>
+                                  <div><b>Road Facing:</b> {roadFacingString}</div>
+                              </div>
+                          );
+                      } else {
+                          return "-";
+                      }
+  
+                  },
+                  Footer: (info) => {
+  
+                      return (
+                          <strong>
+                              Total Area:
+                          </strong>
+                      );
+                  },
+              },
+              // {
+              //     Header: "Total Area",
+              //     accessor: (row) => {
+              //         if (row.sitE_AREAINSQFT && row.sitE_AREAINSQMT) {
+              //             return `${row.sitE_AREAINSQFT} [Sq.ft] - ${row.sitE_AREAINSQMT} [Sq.mtr]`;
+              //         } else {
+              //             return "-";
+              //         }
+              //     },
+              // },
+              {
+                  Header: "Total Area",
+                  accessor: (row) => {
+                      if (row.sitE_AREAINSQFT && row.sitE_AREAINSQMT) {
+                          return `${row.sitE_AREAINSQFT} [Sq.ft] - ${row.sitE_AREAINSQMT} [Sq.mtr]`;
+                      } else {
+                          return "-";
+                      }
+                  },
+                  Footer: (info) => {
+                      const totalSqft = info.rows.reduce((sum, row) => {
+                          const value = parseFloat(row.original.sitE_AREAINSQFT);
+                          return isNaN(value) ? sum : sum + value;
+                      }, 0);
+  
+                      const totalSqmt = info.rows.reduce((sum, row) => {
+                          const value = parseFloat(row.original.sitE_AREAINSQMT);
+                          return isNaN(value) ? sum : sum + value;
+                      }, 0);
+  
+                      return (
+                          <strong>
+                              {totalSqft.toLocaleString()} [Sq.ft] - {totalSqmt.toLocaleString()} [Sq.mtr]
+                          </strong>
+                      );
+                  },
+              },
+  
+              {
+                  Header: "Corner Site",
+                  accessor: (row) => {
+                      return row.sitE_NO ? row.sitE_NO : "-";
+  
+                      return row.sitE_CORNERPLOT ? "YES" : "NO";
+                  },
+              },
+              {
+                  Header: "Type of Site",
+                  accessor: (row) => {
+                      return row.sitE_TYPE ? row.sitE_TYPE : "-";
+                      // return `${row.sitE_TYPE}`;
+                  },
+              },
+              {
+                  id: "chakbandi",
+                  Header: (
+                      <>
+                          Chakbandi<br />
+                          [East | West | North | South]
+                      </>
+                  ),
+                  accessor: (row) => {
+                      const east = row.sitE_EAST || "-";
+                      const west = row.sitE_WEST || "-";
+                      const north = row.sitE_NORTH || "-";
+                      const south = row.sitE_SOUTH || "-";
+                      return `${east} | ${west} | ${north} | ${south}`;
+                  },
+              },
+              {
+                  Header: "Latitude, Longitude",
+                  accessor: (row) => {
+                      return `${row.sitE_LATITUDE}, ${row.sitE_LONGITUDE}`;
+                  },
+              },
+          ],
+          []
+      );
     const {
         getTableProps,
         getTableBodyProps,

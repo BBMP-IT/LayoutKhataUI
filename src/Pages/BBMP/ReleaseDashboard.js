@@ -1116,24 +1116,46 @@ const ReleaseDashboard = () => {
 
     const columns = [
         { name: 'S.No', selector: (row, index) => index + 1, width: '70px', center: true },
-        { name: 'Property ID', width: '140px', selector: () => epid_fetchedData?.PropertyID || 'N/A', center: true },
+        { name: 'Property ID', width: '140px', selector: () => epid_fetchedData?.PropertyID, center: true },
         {
             name: 'Owner Name',
-            center: true,
-            selector: (row) => row.ownerName || 'N/A',
+            selector: row => row.ownerName || '-',
+            sortable: true
         },
         {
             name: 'ID Type',
-            width: '120px',
-            selector: (row) => row.idType || 'N/A',
-            center: true,
+            selector: row => row.idType || '-',
+            sortable: true
+        },
+        // {
+        //     name: 'ID Number',
+        //     selector: row => row.idNumber
+        //         ? row.idNumber.replace(/\d(?=\d{4})/g, 'X')  // masks all digits except last 4
+        //         : '-',
+        //     sortable: true
+        // },
+        {
+            name: 'Relation Type',
+            selector: row => row.relationShipType || '-',
         },
         {
-            name: 'ID Number',
-            width: '220px',
-            selector: (row) => row.idNumber || 'N/A',
-            center: true,
+            name: 'Identifier Name',
+            selector: row => row.identifierName || '-',
         },
+
+        {
+            name: 'Mobile Number',
+            selector: row => row.mobileNumber || '-',
+        }
+        // {
+        //     name: 'ID Number',
+        //     width: '220px',
+        //     selector: () => {
+        //         const idNumber = epid_fetchedData?.OwnerDetails?.[0]?.idNumber;
+        //         return idNumber ? idNumber.replace(/\d(?=\d{4})/g, 'X') : '-';
+        //     },
+        //     center: true
+        // }
         // {
         //   name: 'Validate OTP',
         //   width: '250px',
@@ -2210,14 +2232,71 @@ const ReleaseDashboard = () => {
                         } finally {
                             stop_loader();
                         }
-                    } else {
-                        setIsEKYCVerified(false); // Optional, but ensures clarity
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Name Mismatch',
-                            text: 'The name in the Aadhaar and the selected owner’s name do not match. Please verify the details to proceed with eKYC.',
-                            confirmButtonColor: '#d33'
-                        });
+                    } else if (response.vaultIdisPresent === false) {
+                        if (score < EkycNameMatch) {
+                            setIsEKYCVerified(false); // Optional, but ensures clarity
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Name Mismatch',
+                                text: 'The name in the Aadhaar and the selected owner’s name do not match. Please verify the details to proceed with eKYC.',
+                                confirmButtonColor: '#d33'
+                            });
+                        } else {
+                            setOwnerData(response);
+
+                            const payloadReleaseOwner = {
+                                relsekyC_ID: 0,
+                                relsekyC_LKRS_ID: parseInt(trimmedLKRSID),
+                                relsekyC_Own_ID: selectedOwner.id,
+                                relsekyC_NAME_KN: "",
+                                relsekyC_NAME_EN: selectedOwner.name,
+                                relsekyC_MOBILENUMBER: "",
+                                relsekyC_AADHAARNUMBER: response?.ekycResponse?.maskedAadhaar ?? null,
+                                relsekyC_NAMEASINAADHAAR: response?.ekycResponse?.ownerNameEng ?? null,
+                                relsekyC_AADHAARVERISTATUS: ekycStatus,
+                                relsekyC_NAMEMATCHSCORE: response?.nameMatchScore,
+                                relsekyC_REMARKS: "",
+                                relsekyC_ADDITIONALINFO: "",
+                                relsekyC_CREATEDBY: CreatedBy,
+                                relsekyC_CREATEDNAME: CreatedName,
+                                relsekyC_CREATEDROLE: RoleID,
+                                relsekyC_TransactionNo: txnno,
+                                relsEkyc_AADHAAR_RESPONSE: JSON.stringify(response) ?? null,
+                            };
+                            try {
+                                start_loader();
+                                const insert_response = await ekyc_insertReleaseDetails(payloadReleaseOwner);
+
+                                if (insert_response.responseStatus === true) {
+                                    setEKYC_Status(true);
+                                    setIsEKYCVerified(true);
+                                    setIsEKYCCompleted(true);
+                                    Swal.fire({
+                                        text: insert_response.responseMessage,
+                                        icon: "success",
+                                        confirmButtonText: "OK",
+                                        allowOutsideClick: false, // prevents closing on outside click
+                                    });
+                                    stop_loader();
+                                } else {
+                                    setEKYC_Status(false);
+                                    setIsEKYCVerified(false);
+                                    setIsEKYCCompleted(false);
+                                    Swal.fire({
+                                        text: insert_response.responseMessage,
+                                        icon: "error",
+                                        confirmButtonText: "OK",
+                                    });
+                                    stop_loader();
+                                }
+
+                            } catch (error) {
+                                console.error("Failed to insert data:", error);
+                            } finally {
+                                stop_loader();
+                            }
+                        }
+
                     }
 
 
@@ -2324,8 +2403,8 @@ const ReleaseDashboard = () => {
                                             <td style={tdStyle}>{approvalTableData.approvalOrderNo || 'N/A'}</td>
                                         </tr>
                                         <tr>
-                                            <th style={thStyle}>Release Type</th>
-                                            <td style={tdStyle}>{approvalTableData.releaseType || 'N/A'}</td>
+                                            {/* <th style={thStyle}>Release Type</th>
+                                            <td style={tdStyle}>{approvalTableData.releaseType || 'N/A'}</td> */}
                                             <th style={thStyle}>EC Number</th>
                                             <td style={tdStyle}>{lkrsTableData.lkrS_ECNUMBER || 'N/A'}</td>
                                         </tr>
@@ -2472,201 +2551,7 @@ const ReleaseDashboard = () => {
                                             dense={false}
                                             customStyles={customStyles}
                                         />
-                                        {epid_fetchedData && (
-                                            <>
-                                                <style>{`
-      /* Wrapper for horizontal scroll on small screens */
-      .table-responsive-wrapper { /* Renamed to avoid conflict if parent also uses table-responsive */
-      width: 100%;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        margin-bottom: 20px;
-        border: 2px solid lightgray; /* stronger outer border */
-        padding: 20px;
-      }
-      table {
-        border-collapse: collapse;
-        width: 100%;
-        font-family: Arial, sans-serif;
-        min-width: 600px; /* ensures horizontal scroll on small screens */
-      }
-      th, td {
-        border: 1.5px solid lightblue; /* distinct cell borders */
-        padding: 8px;
-        text-align: left;
-      }
-      th {
-        font-weight: bold;
-        color: #000;
-        
-      }
-      tr:nth-child(even) {
-        background-color: #f9f9f9;
-      }
-      tr:hover {
-        background-color: #f1f1f1;
-      }
-      h3, h4 {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        color: #333;
-        margin-top: 1.5em;
-        margin-bottom: 0.5em;
-      }
-      .header-with-button {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 10px; /* Space between heading/button and table */
-      }
-    `}</style>
-                                                <div className="table-responsive-wrapper">
-                                                    <div className="header-with-button">
-                                                        <h4>Property Details</h4>
-                                                        {/* <button className='btn btn-warning' onClick={showImplementationAlert}>View eKhata</button> */}
-                                                    </div>
 
-                                                    {/* Property Details */}
-                                                    <table>
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Property ID</th>
-                                                                <th>Category</th>
-                                                                <th>Classification</th>
-                                                                <th>Ward Number</th>
-                                                                <th>Ward Name</th>
-                                                                <th>Street Name</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr>
-                                                                <td>{epid_fetchedData.PropertyID}</td>
-                                                                <td>{epid_fetchedData.PropertyCategory}</td>
-                                                                <td>{epid_fetchedData.PropertyClassification}</td>
-                                                                <td>{epid_fetchedData.WardNumber}</td>
-                                                                <td>{epid_fetchedData.WardName?.trim()}</td>
-                                                                <td>{epid_fetchedData.StreetName?.trim()}</td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-
-                                                    {/* Kaveri Registration Numbers */}
-                                                    {epid_fetchedData.KaveriRegistrationNumber?.length > 0 && (
-                                                        <>
-                                                            <h4>Kaveri Registration Numbers</h4>
-                                                            <table>
-                                                                <thead>
-                                                                    <tr>
-                                                                        <th>Registration Number</th>
-                                                                        <th>EC Number</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    {epid_fetchedData.KaveriRegistrationNumber.map((item, idx) => (
-                                                                        <tr key={idx}>
-                                                                            <td>{item.kaveriRegistrationNumber}</td>
-                                                                            <td>{item.kaveriECNumber}</td>
-                                                                        </tr>
-                                                                    ))}
-                                                                </tbody>
-                                                            </table>
-                                                        </>
-                                                    )}
-
-                                                    {/* More Property Info */}
-                                                    <table>
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Street Code</th>
-                                                                <th>SAS Application No</th>
-                                                                <th>Is Mutation</th>
-                                                                <th>Assessment No</th>
-                                                                <th>Court Stay</th>
-                                                                <th>Enquiry Dispute</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr>
-                                                                <td>{epid_fetchedData.Streetcode}</td>
-                                                                <td>{epid_fetchedData.SASApplicationNumber}</td>
-                                                                <td>{epid_fetchedData.IsMuation}</td>
-                                                                <td>{epid_fetchedData.AssessmentNumber}</td>
-                                                                <td>{epid_fetchedData.courtStay}</td>
-                                                                <td>{epid_fetchedData.enquiryDispute}</td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-
-                                                    {/* Check Bandi */}
-                                                    <h4>Check Bandi</h4>
-                                                    <table>
-                                                        <thead>
-                                                            <tr>
-                                                                <th>North</th>
-                                                                <th>South</th>
-                                                                <th>East</th>
-                                                                <th>West</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr>
-                                                                <td>{epid_fetchedData.CheckBandi?.north}</td>
-                                                                <td>{epid_fetchedData.CheckBandi?.south}</td>
-                                                                <td>{epid_fetchedData.CheckBandi?.east}</td>
-                                                                <td>{epid_fetchedData.CheckBandi?.west}</td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-
-                                                    {/* Site Details */}
-                                                    <h4>Site Details</h4>
-                                                    <table>
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Site Area (sq ft)</th>
-                                                                <th>East-West Dimension</th>
-                                                                <th>North-South Dimension</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr>
-                                                                <td>{epid_fetchedData.SiteDetails?.siteArea}</td>
-                                                                <td>{epid_fetchedData.SiteDetails?.dimensions?.eastWest || '-'}</td>
-                                                                <td>{epid_fetchedData.SiteDetails?.dimensions?.northSouth || '-'}</td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-
-                                                    {/* Owner Details */}
-                                                    <h4>Owner Details</h4>
-                                                    <table>
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Owner Name</th>
-                                                                <th>ID Type</th>
-                                                                <th>ID Number</th>
-                                                                <th>Address</th>
-                                                                <th>Identifier Name</th>
-                                                                <th>Gender</th>
-                                                                <th>Mobile Number</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {epid_fetchedData.OwnerDetails?.map((owner, index) => (
-                                                                <tr key={index}>
-                                                                    <td>{owner.ownerName}</td>
-                                                                    <td>{owner.idType}</td>
-                                                                    <td>{owner.idNumber}</td>
-                                                                    <td>{owner.ownerAddress}</td>
-                                                                    <td>{owner.identifierName}</td>
-                                                                    <td>{owner.gender}</td>
-                                                                    <td>{owner.mobileNumber}</td>
-                                                                </tr>
-                                                            ))}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </>
-                                        )}
 
                                     </div>
                                 )}
@@ -2676,43 +2561,7 @@ const ReleaseDashboard = () => {
                         {/* Approval details table  */}
                         {releaseDetails.length > 0 && (
                             <div style={{ marginTop: '20px' }}>
-                                <h5 style={{ marginBottom: '15px', fontSize: '20px', fontWeight: 'bold', color: '#333' }}>
-                                    Layout Approval Order
-                                </h5>
-                                <table style={{
-                                    borderCollapse: "collapse",
-                                    width: "100%",
-                                    fontFamily: "Arial, sans-serif",
-                                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
-                                }}>
-                                    <thead>
-                                        <tr style={{ backgroundColor: "#fff", color: "#000", textAlign: "left" }}>
-                                            {/* <th style={thStyle}>ID</th> */}
-                                            {/* <th style={thStyle}>KRS ID</th> */}
-                                            <th style={thStyle}>Site Approval order Number</th>
-                                            <th style={thStyle}>Date of Order</th>
-                                            <th style={thStyle}>Approval Authority</th>
-                                            <th style={thStyle}>Designation of Authority issued </th>
-                                            <th style={thStyle}>Total Number of sites </th>
-                                            <th style={thStyle} hidden>Release Type</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {releaseDetails.map((item, index) => (
-                                            <tr key={index} style={{ backgroundColor: index % 2 === 0 ? "#f9f9f9" : "#fff" }}>
-                                                {/* <td style={tdStyle}>{item.sitE_RELS_ID}</td> */}
-                                                {/* <td style={tdStyle}>{item.apr_LKRS_Id}</td> */}
-                                                <td style={tdStyle}>{item.apr_Approval_No}</td>
-                                                <td style={tdStyle}>{new Date(item.apr_Approval_Date).toLocaleDateString()}</td>
-                                                <td style={tdStyle}>{item.apR_APPROVALAUTHORITY_Text}</td>
-                                                <td style={tdStyle}>{item.apR_APPROVALDESIGNATION}</td>
-                                                <td style={tdStyle}>{item.lkrS_NUMBEROFSITES}</td>
-                                                <td style={tdStyle} hidden>{item.sitE_RELS_SITE_RELSTYPE}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                                <hr />
+
                                 <div className='row mt-2'>
                                     <h5 style={{ marginBottom: '15px', fontSize: '20px', fontWeight: 'bold', color: '#333' }}>Owner EKYC</h5>
 
@@ -2720,6 +2569,7 @@ const ReleaseDashboard = () => {
                                         <label className="form-label">Select Owner <span className='mandatory_color'>*</span></label>
                                         <button
                                             className="form-control text-start"
+                                            disabled={isEKYCVerified}
                                             onClick={() => {
                                                 const shouldOpen = !isDropdownOpen;
                                                 setIsDropdownOpen(shouldOpen);
@@ -2947,6 +2797,249 @@ const ReleaseDashboard = () => {
 
                                     </div>
                                 </div>
+                                <hr />
+                                {isEKYCAttempted && isEKYCVerified && (
+
+
+                                    <>
+                                        {/* APPROVAL ORDER STARTS*/}
+                                        <h5 style={{ marginBottom: '15px', fontSize: '20px', fontWeight: 'bold', color: '#333' }}>
+                                            Layout Approval Order
+                                        </h5>
+                                        <table style={{
+                                            borderCollapse: "collapse",
+                                            width: "100%",
+                                            fontFamily: "Arial, sans-serif",
+                                            boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
+                                        }}>
+                                            <thead>
+                                                <tr style={{ backgroundColor: "#fff", color: "#000", textAlign: "left" }}>
+                                                    {/* <th style={thStyle}>ID</th> */}
+                                                    {/* <th style={thStyle}>KRS ID</th> */}
+                                                    <th style={thStyle}>Site Approval order Number</th>
+                                                    <th style={thStyle}>Date of Order</th>
+                                                    <th style={thStyle}>Approval Authority</th>
+                                                    <th style={thStyle}>Designation of Authority issued </th>
+                                                    <th style={thStyle}>Total Number of sites </th>
+                                                    <th style={thStyle} hidden>Release Type</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {releaseDetails.map((item, index) => (
+                                                    <tr key={index} style={{ backgroundColor: index % 2 === 0 ? "#f9f9f9" : "#fff" }}>
+                                                        {/* <td style={tdStyle}>{item.sitE_RELS_ID}</td> */}
+                                                        {/* <td style={tdStyle}>{item.apr_LKRS_Id}</td> */}
+                                                        <td style={tdStyle}>{item.apr_Approval_No}</td>
+                                                        <td style={tdStyle}>{new Date(item.apr_Approval_Date).toLocaleDateString()}</td>
+                                                        <td style={tdStyle}>{item.apR_APPROVALAUTHORITY_Text}</td>
+                                                        <td style={tdStyle}>{item.apR_APPROVALDESIGNATION}</td>
+                                                        <td style={tdStyle}>{item.lkrS_NUMBEROFSITES}</td>
+                                                        <td style={tdStyle} hidden>{item.sitE_RELS_SITE_RELSTYPE}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                        <hr />
+                                        {/* APPROVAL ORDER ENDS */}
+
+                                        {/* EPID DETAILS */}
+                                        {epid_fetchedData && (
+                                            <>
+                                                <style>{`
+      /* Wrapper for horizontal scroll on small screens */
+      .table-responsive-wrapper { /* Renamed to avoid conflict if parent also uses table-responsive */
+      width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 20px;
+        border: 2px solid lightgray; /* stronger outer border */
+        padding: 20px;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-family: Arial, sans-serif;
+        min-width: 600px; /* ensures horizontal scroll on small screens */
+      }
+      th, td {
+        border: 1.5px solid lightblue; /* distinct cell borders */
+        padding: 8px;
+        text-align: left;
+      }
+      th {
+        font-weight: bold;
+        color: #000;
+        
+      }
+      tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+      tr:hover {
+        background-color: #f1f1f1;
+      }
+      h3, h4 {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #333;
+        margin-top: 1.5em;
+        margin-bottom: 0.5em;
+      }
+      .header-with-button {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px; /* Space between heading/button and table */
+      }
+    `}</style>
+                                                <div className="table-responsive-wrapper">
+                                                    <div className="header-with-button">
+                                                        <h4>Property Details</h4>
+                                                        {/* <button className='btn btn-warning' onClick={showImplementationAlert}>View eKhata</button> */}
+                                                    </div>
+
+                                                    {/* Property Details */}
+                                                    <table>
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Property ID</th>
+                                                                <th>Category</th>
+                                                                <th>Classification</th>
+                                                                <th>Ward Number</th>
+                                                                <th>Ward Name</th>
+                                                                <th>Street Name</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td>{epid_fetchedData.PropertyID}</td>
+                                                                <td>{epid_fetchedData.PropertyCategory}</td>
+                                                                <td>{epid_fetchedData.PropertyClassification}</td>
+                                                                <td>{epid_fetchedData.WardNumber}</td>
+                                                                <td>{epid_fetchedData.WardName?.trim()}</td>
+                                                                <td>{epid_fetchedData.StreetName?.trim()}</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+
+                                                    {/* Kaveri Registration Numbers */}
+                                                    {epid_fetchedData.KaveriRegistrationNumber?.length > 0 && (
+                                                        <>
+                                                            <h4>Kaveri Registration Numbers</h4>
+                                                            <table>
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>Registration Number</th>
+                                                                        <th>EC Number</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {epid_fetchedData.KaveriRegistrationNumber.map((item, idx) => (
+                                                                        <tr key={idx}>
+                                                                            <td>{item.kaveriRegistrationNumber}</td>
+                                                                            <td>{item.kaveriECNumber}</td>
+                                                                        </tr>
+                                                                    ))}
+                                                                </tbody>
+                                                            </table>
+                                                        </>
+                                                    )}
+
+                                                    {/* More Property Info */}
+                                                    <table>
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Street Code</th>
+                                                                <th>SAS Application No</th>
+                                                                <th>Is Mutation</th>
+                                                                <th>Assessment No</th>
+                                                                <th>Court Stay</th>
+                                                                <th>Enquiry Dispute</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td>{epid_fetchedData.Streetcode}</td>
+                                                                <td>{epid_fetchedData.SASApplicationNumber}</td>
+                                                                <td>{epid_fetchedData.IsMuation}</td>
+                                                                <td>{epid_fetchedData.AssessmentNumber}</td>
+                                                                <td>{epid_fetchedData.courtStay}</td>
+                                                                <td>{epid_fetchedData.enquiryDispute}</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+
+                                                    {/* Check Bandi */}
+                                                    <h4>Check Bandi</h4>
+                                                    <table>
+                                                        <thead>
+                                                            <tr>
+                                                                <th>North</th>
+                                                                <th>South</th>
+                                                                <th>East</th>
+                                                                <th>West</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td>{epid_fetchedData.CheckBandi?.north}</td>
+                                                                <td>{epid_fetchedData.CheckBandi?.south}</td>
+                                                                <td>{epid_fetchedData.CheckBandi?.east}</td>
+                                                                <td>{epid_fetchedData.CheckBandi?.west}</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+
+                                                    {/* Site Details */}
+                                                    <h4>Site Details</h4>
+                                                    <table>
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Site Area (sq ft)</th>
+                                                                <th>East-West Dimension</th>
+                                                                <th>North-South Dimension</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td>{epid_fetchedData.SiteDetails?.siteArea}</td>
+                                                                <td>{epid_fetchedData.SiteDetails?.dimensions?.eastWest || '-'}</td>
+                                                                <td>{epid_fetchedData.SiteDetails?.dimensions?.northSouth || '-'}</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+
+                                                    {/* Owner Details */}
+                                                    <h4>Owner Details</h4>
+                                                    <table>
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Owner Name</th>
+                                                                <th>ID Type</th>
+                                                                <th>ID Number</th>
+                                                                <th>Address</th>
+                                                                <th>Identifier Name</th>
+                                                                <th>Gender</th>
+                                                                <th>Mobile Number</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {epid_fetchedData.OwnerDetails?.map((owner, index) => (
+                                                                <tr key={index}>
+                                                                    <td>{owner.ownerName}</td>
+                                                                    <td>{owner.idType}</td>
+                                                                    <td>{owner.idNumber}</td>
+                                                                    <td>{owner.ownerAddress}</td>
+                                                                    <td>{owner.identifierName}</td>
+                                                                    <td>{owner.gender}</td>
+                                                                    <td>{owner.mobileNumber}</td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </>
+                                        )}
+                                    </>
+                                )}
                             </div>
                         )}
 

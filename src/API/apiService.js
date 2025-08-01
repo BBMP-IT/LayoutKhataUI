@@ -1,5 +1,6 @@
 //apiService.js
 
+import Swal from 'sweetalert2';
 import axiosInstance from './axiosInstance';
 
 const apiService = {
@@ -7,7 +8,7 @@ const apiService = {
   postRequest: async (url, data) => {
     try {
       const response = await axiosInstance.post(url, data);
-     
+
       if (response.status === 200) {
         return response.data;
       } else {
@@ -27,7 +28,7 @@ const apiService = {
       if (response.status === 200) {
         return response.data;
       } else {
-        
+
       }
     } catch (error) {
       console.error(`GET request to ${url} failed:`, error);

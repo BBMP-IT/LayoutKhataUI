@@ -347,11 +347,19 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
 
     //Final API for Redirecting to RELEASE DASHBOARD
     const final_Save_Release = async () => {
-        if (isRTCSectionSaved === false && isEPIDSectionSaved === false) {
+        if (isRTCSectionSaved === false) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Important!',
-                text: 'Please save the land details before proceeding with layout approval.',
+                text: 'Please save the land details before proceeding.',
+                confirmButtonText: 'Ok'
+            });
+            return;
+        }else if(isEPIDSectionSaved === false){
+           Swal.fire({
+                icon: 'warning',
+                title: 'Important!',
+                text: 'Please save the EPID details before proceeding.',
                 confirmButtonText: 'Ok'
             });
             return;
@@ -480,77 +488,22 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
     // =======================================================survey no details starts=========================================
     const [rtcAddedData, setRtcAddedData] = useState([]);
     const [rtcData, setRtcData] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [rowsPerPage, setRowsPerPage] = useState(5);
 
     // Define state variables for your totals - keep them as numbers
-    const [totalAcre, setTotalAcre] = useState(0);
-    const [totalGunta, setTotalGunta] = useState(0);
-    const [totalFGunta, setTotalFGunta] = useState(0);
-    const [totalSqFt, setTotalSqFt] = useState(0); // Changed to number (0)
-    const [totalSqM, setTotalSqM] = useState(0); // Changed to number (0)
+    let totalAcre = 0;
+    let totalGunta = 0;
+    let totalFGunta = 0;
+    let totalSqFt = 0;
+    let totalSqM = 0;
+
+    let totalAcre_LDA = 0;
+    let totalGunta_LDA = 0;
+    let totalFGunta_LDA = 0;
+    let totalSqFt_LDA = 0;
+    let totalSqM_LDA = 0;
 
 
-    const combinedData = [...rtcAddedData, ...rtcData];
-    useEffect(() => {
-        let calculatedTotalAcre = 0;
-        let calculatedTotalGunta = 0;
-        let calculatedTotalFGunta = 0;
-        let calculatedTotalSqFt = 0;
-        let calculatedTotalSqM = 0;
 
-        combinedData.forEach((row) => {
-            const acre = parseFloat(row.ext_acre || 0);
-            const gunta = parseFloat(row.ext_gunta || 0);
-            const fgunta = parseFloat(row.ext_fgunta || 0);
-
-            calculatedTotalAcre += acre;
-            calculatedTotalGunta += gunta;
-            calculatedTotalFGunta += fgunta;
-
-            const sqft = (acre * 43560) + (gunta * 1089) + (fgunta * 68.0625);
-            calculatedTotalSqFt += sqft;
-            calculatedTotalSqM += sqft * 0.092903;
-        });
-
-        // Normalize fgunta -> gunta -> acre
-        calculatedTotalGunta += Math.floor(calculatedTotalFGunta / 16);
-        calculatedTotalFGunta = calculatedTotalFGunta % 16;
-        calculatedTotalAcre += Math.floor(calculatedTotalGunta / 40);
-        calculatedTotalGunta = calculatedTotalGunta % 40;
-
-        // Update state variables with the calculated totals
-        setTotalAcre(calculatedTotalAcre);
-        setTotalGunta(calculatedTotalGunta);
-        setTotalFGunta(calculatedTotalFGunta);
-        // Store them as numbers in state
-        setTotalSqFt(calculatedTotalSqFt);
-        setTotalSqM(calculatedTotalSqM);
-
-        // Store the rounded value in sessionStorage if that's what's intended
-        sessionStorage.setItem('areaSqft', calculatedTotalSqFt.toFixed(2));
-
-    }, [combinedData]);
-    const totalPages = Math.ceil(combinedData.length / rowsPerPage);
-    const paginatedData = combinedData.slice(
-        (currentPage - 1) * rowsPerPage,
-        currentPage * rowsPerPage
-    );
-    const goToPage = (page) => {
-        if (page >= 1 && page <= totalPages) {
-            setCurrentPage(page);
-        }
-    };
-    const handlePageSizeChange = (e) => {
-        setRowsPerPage(Number(e.target.value));
-        setCurrentPage(1);
-    };
-    const [localLKRSID, setLocalLKRSID] = useState(LKRS_ID || "");
-    useEffect(() => {
-        if (LKRS_ID) {
-            setLocalLKRSID(LKRS_ID);
-        }
-    }, [LKRS_ID]);
     const mapSurveyDetails = (surveyDetails) => {
         return surveyDetails.map((item) => ({
             district: item.suR_DISTRICT_Name || "—",
@@ -564,8 +517,103 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
             ext_acre: item.suR_EXTACRE || 0,
             ext_gunta: item.suR_EXTGUNTA || 0,
             ext_fgunta: item.suR_EXTFGUNTA || 0,
+            lda_acre: item.suR_LDA_APR_EXTACRE || 0,
+            lda_gunta: item.suR_LDA_APR_EXTGUNTA || 0,
+            lda_fgunta: item.suR_LDA_APR_EXTFGUNTA || 0,
+
+            // ✅ Add these new values
+            lda_sqft: item.suR_LDA_APR_EXTINSQFT || 0,
+            lda_sqm: item.suR_LDA_APR_EXTINSQMT || 0
         }));
     };
+    const combinedData = [...rtcAddedData, ...rtcData];
+    const [currentPage, setCurrentPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(5);
+
+
+
+    combinedData.forEach(row => {
+        const acre = parseFloat(row.ext_acre || 0);
+        const gunta = parseFloat(row.ext_gunta || 0);
+        const fgunta = parseFloat(row.ext_fgunta || 0);
+
+        const acre_LDA = parseFloat(row.lda_acre || 0);
+        const gunta_LDA = parseFloat(row.lda_gunta || 0);
+        const fgunta_LDA = parseFloat(row.lda_fgunta || 0);
+
+        totalAcre += acre;
+        totalGunta += gunta;
+        totalFGunta += fgunta;
+
+        totalAcre_LDA += acre_LDA;
+        totalGunta_LDA += gunta_LDA;
+        totalFGunta_LDA += fgunta_LDA;
+
+        const sqft = (acre * 43560) + (gunta * 1089) + (fgunta * 68.0625);
+        const sqft_LDA = (acre_LDA * 43560) + (gunta_LDA * 1089) + (fgunta_LDA * 68.0625);
+
+        totalSqFt += sqft;
+        totalSqM += sqft * 0.092903;
+
+        totalSqFt_LDA += sqft_LDA;
+        totalSqM_LDA += sqft_LDA * 0.092903;
+    });
+
+    // Normalize Non-LDA
+    totalGunta += Math.floor(totalFGunta / 16);
+    totalFGunta = totalFGunta % 16;
+    totalAcre += Math.floor(totalGunta / 40);
+    totalGunta = totalGunta % 40;
+
+    // Normalize LDA
+    totalGunta_LDA += Math.floor(totalFGunta_LDA / 16);
+    totalFGunta_LDA = totalFGunta_LDA % 16;
+    totalAcre_LDA += Math.floor(totalGunta_LDA / 40);
+    totalGunta_LDA = totalGunta_LDA % 40;
+
+    // ✅ Calculate overall total in FGunta
+    const totalFG_Acre = totalAcre * 640 + totalGunta * 16 + totalFGunta;
+    const totalFG_LDA = totalAcre_LDA * 640 + totalGunta_LDA * 16 + totalFGunta_LDA;
+    const overallTotalFG = totalFG_Acre + totalFG_LDA;
+
+    // ✅ Convert back to Acre.Gunta.FGunta format
+    let overallAcre = Math.floor(overallTotalFG / 640);
+    let remainingFG = overallTotalFG % 640;
+    let overallGunta = Math.floor(remainingFG / 16);
+    let overallFGunta = remainingFG % 16;
+
+    const formattedOverall = `${overallAcre}.${overallGunta}.${overallFGunta}`;
+
+    // Optional: Store for later use
+    // setAreaSqft(totalSqFt_LDA);
+    sessionStorage.setItem('areaSqft', totalSqFt_LDA);
+
+
+    const totalPages = Math.ceil(combinedData.length / rowsPerPage);
+    const paginatedData = combinedData.slice(
+        (currentPage - 1) * rowsPerPage,
+        currentPage * rowsPerPage
+    );
+    const goToPage = (page) => {
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        }
+    };
+    const handlePageSizeChange = (e) => {
+        setRowsPerPage(Number(e.target.value));
+        setCurrentPage(1); // Reset to first page when page size changes
+    };
+
+
+
+
+    const [localLKRSID, setLocalLKRSID] = useState(LKRS_ID || "");
+    useEffect(() => {
+        if (LKRS_ID) {
+            setLocalLKRSID(LKRS_ID);
+        }
+    }, [LKRS_ID]);
+
 
     const [dcrecords, setDCRecords] = useState([]);
     //fetch DC conversion values
@@ -688,203 +736,214 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
             },
         },
     };
-   const columns = [
-  {
-    name: 'S.No',
-    selector: (row, index) => index + 1,
-    width: '70px',
-    center: true
-  },
-  {
-    name: 'Property ID',
-    width: '140px',
-    selector: () => epid_fetchedData?.PropertyID || 'N/A',
-    center: true
-  },
-  {
-    name: 'Owner Name',
-    selector: row => row.ownerName || 'N/A',
-    center: true
-  },
-  {
-    name: 'Identifier Type',
-    selector: row => row.relationShipType || '-',
-    center: true,
-    width: '220px'
-  },
-  {
-    name: 'Identifier Name',
-    selector: row => row.identifierName || '-',
-    center: true,
-    width: '220px'
-  },
-  {
-    name: 'ID Type',
-    selector: row => row.idType || 'N/A',
-    center: true,
-    width: '120px'
-  },
-  {
-    name: 'ID Number',
-    selector: row => row.idNumber || 'N/A',
-    center: true,
-    width: '220px'
-  }
-];
+    const columns = [
+        {
+            name: 'S.No',
+            selector: (row, index) => index + 1,
+            width: '70px',
+            center: true
+        },
+        {
+            name: 'Property ID',
+            width: '140px',
+            selector: () => epid_fetchedData?.PropertyID || 'N/A',
+            center: true
+        },
+        {
+            name: 'Owner Name',
+            selector: row => row.ownerName || '-',
+            sortable: true
+        },
+        {
+            name: 'ID Type',
+            selector: row => row.idType || '-',
+            sortable: true
+        },
+        {
+            name: 'ID Number',
+            selector: row => row.idNumber
+                ? row.idNumber.replace(/\d(?=\d{4})/g, 'X')  // masks all digits except last 4
+                : '-',
+            sortable: true
+        },
+        {
+            name: 'Relation Type',
+            selector: row => row.relationShipType || '-',
+        },
+        {
+            name: 'Identifier Name',
+            selector: row => row.identifierName || '-',
+        },
 
+        {
+            name: 'Mobile Number',
+            selector: row => row.mobileNumber || '-',
+        }
+        // {
+        //     name: 'ID Number',
+        //     width: '220px',
+        //     selector: () => {
+        //         const idNumber = epid_fetchedData?.OwnerDetails?.[0]?.idNumber;
+        //         return idNumber ? idNumber.replace(/\d(?=\d{4})/g, 'X') : '-';
+        //     },
+        //     center: true
+        // }
+    ];
+    const [total_SqFt, setTotalSqFt] = useState(0); // Changed to number (0)
+    const [total_SqM, setTotalSqM] = useState(0);
 
     //fetching Details from LKRSID
-   const handleGetLKRSID = async (localLKRSID) => {
-    const payload = {
-        level: 1,
-        LkrsId: localLKRSID,
-    };
+    const handleGetLKRSID = async (localLKRSID) => {
+        const payload = {
+            level: 1,
+            LkrsId: localLKRSID,
+        };
 
-    try {
-        start_loader();
-        const response = await fetch_LKRSID(localLKRSID);
+        try {
+            start_loader();
+            const response = await fetch_LKRSID(localLKRSID);
 
-        if (response && response.surveyNumberDetails && response.surveyNumberDetails.length > 0) {
+            if (response && response.surveyNumberDetails && response.surveyNumberDetails.length > 0) {
 
-            setSelectedLandType(response.lkrS_LANDTYPE); //  Store the land type
-            setECNumber(response.lkrS_ECNUMBER);
+                setSelectedLandType(response.lkrS_LANDTYPE); //  Store the land type
+                setECNumber(response.lkrS_ECNUMBER);
 
-            if (response.lkrS_ISJDA === "1") {
-                setJDASection(true);
-            } else {
-                setJDASection(false);
-            }
+                if (response.lkrS_ISJDA === "1") {
+                    setJDASection(true);
+                } else {
+                    setJDASection(false);
+                }
 
-            const parsedSurveyDetails = mapSurveyDetails(response.surveyNumberDetails);
+                const parsedSurveyDetails = mapSurveyDetails(response.surveyNumberDetails);
 
-            setRtcAddedData(prev => {
-                const existingKeys = new Set(
-                    prev.map(item => `${item.surveyNumber}_${item.ownerName}`)
-                );
+                setRtcAddedData(prev => {
+                    const existingKeys = new Set(
+                        prev.map(item => `${item.surveyNumber}_${item.ownerName}`)
+                    );
 
-                const filteredNewData = parsedSurveyDetails.filter(item => {
-                    const key = `${item.surveyNumber}_${item.ownerName}`;
-                    return !existingKeys.has(key);
+                    const filteredNewData = parsedSurveyDetails.filter(item => {
+                        const key = `${item.surveyNumber}_${item.ownerName}`;
+                        return !existingKeys.has(key);
+                    });
+
+                    return [...prev, ...filteredNewData];
                 });
 
-                return [...prev, ...filteredNewData];
-            });
+                stop_loader();
 
-            stop_loader();
+            } else if (
+                response &&
+                response.khataDetails &&
+                response.khataOwnerDetails &&
+                response.khataOwnerDetails.length > 0
+            ) {
+                setSelectedLandType(response.lkrS_LANDTYPE);
+                setECNumber(response.lkrS_ECNUMBER);
+                setHasJDA(response.lkrS_ISJDA === "1");
+                setEPIDShowTable(true);
 
-        } else if (
-            response &&
-            response.khataDetails &&
-            response.khataOwnerDetails &&
-            response.khataOwnerDetails.length > 0
-        ) {
-            setSelectedLandType(response.lkrS_LANDTYPE);
-            setECNumber(response.lkrS_ECNUMBER);
-            setHasJDA(response.lkrS_ISJDA === "1");
-            setEPIDShowTable(true);
-
-            let khataDetailsJson = {};
-            if (response.khataDetails?.khatA_JSON) {
-                try {
-                    const parsedJson = JSON.parse(response.khataDetails.khatA_JSON);
-                    khataDetailsJson = parsedJson.response?.approvedPropertyDetails || {};
-                } catch (err) {
-                    console.warn("Failed to parse khatA_JSON", err);
-                }
-            }
-
-            const ownerDetailsFromJson = khataDetailsJson.ownerDetails || [];
-
-            const ownerDetailsFromApi = (response.khataOwnerDetails || []).map(item => {
-                let aadhaarResponse = {};
-                try {
-                    aadhaarResponse = JSON.parse(item.owN_AADHAAR_RESPONSE || "{}")?.ekycResponse || {};
-                } catch (err) {
-                    console.warn("Failed to parse owN_AADHAAR_RESPONSE", err);
+                let khataDetailsJson = {};
+                if (response.khataDetails?.khatA_JSON) {
+                    try {
+                        const parsedJson = JSON.parse(response.khataDetails.khatA_JSON);
+                        khataDetailsJson = parsedJson.response?.approvedPropertyDetails || {};
+                    } catch (err) {
+                        console.warn("Failed to parse khatA_JSON", err);
+                    }
                 }
 
-                return {
-                    ownerName: item.owN_NAME_EN || "",
-                    idType: item.owN_IDTYPE || "AADHAR",
-                    idNumber: item.owN_IDNUMBER || item.owN_AADHAARNUMBER || "",
-                    ownerAddress: aadhaarResponse.addressEng || "",
-                    identifierName: aadhaarResponse.identifierNameEng || "",
-                    gender: aadhaarResponse.gender || "",
-                    mobileNumber: aadhaarResponse.mobileNumber || "",
-                };
-            });
+                const ownerDetailsFromJson = khataDetailsJson.ownerDetails || [];
 
-// Combine owners from JSON and API
-const combinedOwners = [...ownerDetailsFromJson, ...ownerDetailsFromApi];
+                const ownerDetailsFromApi = (response.khataOwnerDetails || []).map(item => {
+                    let aadhaarResponse = {};
+                    try {
+                        aadhaarResponse = JSON.parse(item.owN_AADHAAR_RESPONSE || "{}")?.ekycResponse || {};
+                    } catch (err) {
+                        console.warn("Failed to parse owN_AADHAAR_RESPONSE", err);
+                    }
 
-//  Deduplicate by ownerName + idNumber
-const uniqueOwnersMap = new Map();
+                    return {
+                        ownerName: item.owN_NAME_EN || "",
+                        idType: item.owN_IDTYPE || "AADHAR",
+                        idNumber: item.owN_IDNUMBER || item.owN_AADHAARNUMBER || "",
+                        ownerAddress: aadhaarResponse.addressEng || "",
+                        identifierName: aadhaarResponse.identifierNameEng || "",
+                        gender: aadhaarResponse.gender || "",
+                        mobileNumber: aadhaarResponse.mobileNumber || "",
+                    };
+                });
 
-combinedOwners.forEach((owner) => {
-  const name = (owner.ownerName || "").trim().toLowerCase();
-  const id = (owner.idNumber || "").trim();
-  const uniqueKey = `${name}_${id}`;
+                // Combine owners from JSON and API
+                const combinedOwners = [...ownerDetailsFromJson, ...ownerDetailsFromApi];
 
-  if (!uniqueOwnersMap.has(uniqueKey)) {
-    uniqueOwnersMap.set(uniqueKey, owner);
-  }
-});
+                //  Deduplicate by ownerName + idNumber
+                const uniqueOwnersMap = new Map();
 
-const mergedOwnerDetails = Array.from(uniqueOwnersMap.values());
+                combinedOwners.forEach((owner) => {
+                    const name = (owner.ownerName || "").trim().toLowerCase();
+                    const id = (owner.idNumber || "").trim();
+                    const uniqueKey = `${name}_${id}`;
 
-            //  Set EPID Data
-            setEPID_FetchedData({
-                PropertyID: response.lkrS_EPID || "",
-                PropertyCategory: khataDetailsJson.propertyCategory || "",
-                PropertyClassification: khataDetailsJson.propertyClassification || "",
-                WardNumber: khataDetailsJson.wardNumber || "",
-                WardName: khataDetailsJson.wardName || "",
-                StreetName: khataDetailsJson.streetName || "",
-                Streetcode: khataDetailsJson.streetcode || "",
-                SASApplicationNumber: khataDetailsJson.sasApplicationNumber || "",
-                IsMuation: khataDetailsJson.isMuation || "",
-                KaveriRegistrationNumber: khataDetailsJson.kaveriRegistrationNumber || [],
-                AssessmentNumber: khataDetailsJson.assessmentNumber || "",
-                courtStay: khataDetailsJson.courtStay || "",
-                enquiryDispute: khataDetailsJson.enquiryDispute || "",
-                CheckBandi: khataDetailsJson.checkBandi || {},
-                SiteDetails: khataDetailsJson.siteDetails || {},
-               OwnerDetails: mergedOwnerDetails,
-                rawResponse: response,
-            });
+                    if (!uniqueOwnersMap.has(uniqueKey)) {
+                        uniqueOwnersMap.set(uniqueKey, owner);
+                    }
+                });
 
-            if (khataDetailsJson.siteDetails?.siteArea) {
-                setTotalSqFt(khataDetailsJson.siteDetails.siteArea);
-                sessionStorage.setItem("areaSqft", khataDetailsJson.siteDetails.siteArea);
+                const mergedOwnerDetails = Array.from(uniqueOwnersMap.values());
+
+                //  Set EPID Data
+                setEPID_FetchedData({
+                    PropertyID: response.lkrS_EPID || "",
+                    PropertyCategory: khataDetailsJson.propertyCategory || "",
+                    PropertyClassification: khataDetailsJson.propertyClassification || "",
+                    WardNumber: khataDetailsJson.wardNumber || "",
+                    WardName: khataDetailsJson.wardName || "",
+                    StreetName: khataDetailsJson.streetName || "",
+                    Streetcode: khataDetailsJson.streetcode || "",
+                    SASApplicationNumber: khataDetailsJson.sasApplicationNumber || "",
+                    IsMuation: khataDetailsJson.isMuation || "",
+                    KaveriRegistrationNumber: khataDetailsJson.kaveriRegistrationNumber || [],
+                    AssessmentNumber: khataDetailsJson.assessmentNumber || "",
+                    courtStay: khataDetailsJson.courtStay || "",
+                    enquiryDispute: khataDetailsJson.enquiryDispute || "",
+                    CheckBandi: khataDetailsJson.checkBandi || {},
+                    SiteDetails: khataDetailsJson.siteDetails || {},
+                    OwnerDetails: mergedOwnerDetails,
+                    rawResponse: response,
+                });
+
+                if (khataDetailsJson.siteDetails?.siteArea) {
+                    setTotalSqFt(khataDetailsJson.siteDetails.siteArea);
+                    sessionStorage.setItem("areaSqft", khataDetailsJson.siteDetails.siteArea);
+                } else {
+                    setTotalSqFt(0);
+                    sessionStorage.removeItem("areaSqft");
+                }
+
+                setOwnerTableData(mergedOwnerDetails);
+
+                // ✅ Optional: Set formatted created date in UI label (if required)
+                if (response.lkrS_CREATEDDATE) {
+                    const d = new Date(response.lkrS_CREATEDDATE);
+                    const formattedDate = `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
+                    const label = document.getElementById("app_date");
+                    if (label) label.innerText = formattedDate;
+                }
+
+                stop_loader();
             } else {
-                setTotalSqFt(0);
-                sessionStorage.removeItem("areaSqft");
+                stop_loader();
+                Swal.fire({
+                    text: "No survey details found.",
+                    icon: "warning",
+                    confirmButtonText: "OK",
+                });
             }
-
-            setOwnerTableData(mergedOwnerDetails);
-
-            // ✅ Optional: Set formatted created date in UI label (if required)
-            if (response.lkrS_CREATEDDATE) {
-                const d = new Date(response.lkrS_CREATEDDATE);
-                const formattedDate = `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
-                const label = document.getElementById("app_date");
-                if (label) label.innerText = formattedDate;
-            }
-
+        } catch (error) {
             stop_loader();
-        } else {
-            stop_loader();
-            Swal.fire({
-                text: "No survey details found.",
-                icon: "warning",
-                confirmButtonText: "OK",
-            });
+            console.error("Failed to fetch LKRSID data:", error);
         }
-    } catch (error) {
-        stop_loader();
-        console.error("Failed to fetch LKRSID data:", error);
-    }
-};
+    };
 
 
     // ================================================Approval and release order Details starts=======================
@@ -1501,118 +1560,153 @@ const mergedOwnerDetails = Array.from(uniqueOwnersMap.values());
                                 <>
                                     {combinedData.length > 0 && (
                                         <div className="col-12">
-                                            <div className="">
-                                                <div className="d-flex justify-content-between align-items-center mb-3">
-                                                    <h4 className=" m-0">Added Survey Number Details</h4>
-                                                    <div className="d-flex align-items-center">
-                                                        <label className="me-2 mb-0">Rows per page:</label>
-                                                        <select
-                                                            className="form-select form-select-sm w-auto"
-                                                            value={rowsPerPage}
-                                                            onChange={handlePageSizeChange}
-                                                        >
-                                                            {[5, 10, 15, 20, 25, 30].map((size) => (
-                                                                <option key={size} value={size}>{size}</option>
-                                                            ))}
-                                                        </select>
-                                                    </div>
+                                            <div className="d-flex justify-content-between align-items-center mb-3">
+                                                <h4 className=" m-0">Added Survey Number Details</h4>
+                                                <div className="d-flex align-items-center">
+                                                    <label className="me-2 mb-0">Rows per page:</label>
+                                                    <select
+                                                        className="form-select form-select-sm w-auto"
+                                                        value={rowsPerPage}
+                                                        onChange={handlePageSizeChange}
+                                                    >
+                                                        {[5, 10, 15, 20, 25, 30].map((size) => (
+                                                            <option key={size} value={size}>{size}</option>
+                                                        ))}
+                                                    </select>
                                                 </div>
+                                            </div>
 
-                                                <div className="table-responsive custom-scroll-table">
-                                                    <table className="table table-striped table-hover table-bordered rounded-table">
-                                                        <thead className="table-primary sticky-header">
-                                                            <tr>
-                                                                <th hidden>Action</th>
-                                                                <th>S.No</th>
-                                                                <th>District</th>
-                                                                <th>Taluk</th>
-                                                                <th>Hobli</th>
-                                                                <th>Village</th>
-                                                                <th>Owner Name</th>
-                                                                <th>Survey Number / Surnoc / Hissa Number</th>
-                                                                <th>Extent (Acre.Gunta.Fgunta)</th>
-                                                                <th>SqFt</th>
-                                                                <th>SqM</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {paginatedData.map((row, index) => (
-                                                                <tr key={index}>
-                                                                    <td hidden>
-                                                                    </td>
-                                                                    <td>{index + 1 + (currentPage - 1) * rowsPerPage}</td>
-                                                                    <td>{row.district}</td>
-                                                                    <td>{row.taluk}</td>
-                                                                    <td>{row.hobli}</td>
-                                                                    <td>{row.village}</td>
-                                                                    <td>{row.owner}</td>
-                                                                    <td>{`${row.survey_no}/${row.surnoc}/${row.hissa_no}`}</td>
-                                                                    <td>{`${row.ext_acre}.${row.ext_gunta}.${row.ext_fgunta}`}</td>
-                                                                    <td>
-                                                                        {(
+                                            <div className="table-responsive custom-scroll-table">
+                                                <table className="table table-striped table-hover table-bordered rounded-table">
+                                                    <thead className="table-primary sticky-header">
+                                                        <tr>
+                                                            <th>S.No</th>
+                                                            <th>District</th>
+                                                            <th>Taluk</th>
+                                                            <th>Hobli</th>
+                                                            <th>Village</th>
+                                                            <th>Owner Name</th>
+                                                            <th>Survey Number / Surnoc / Hissa Number</th>
+                                                            <th>Bhoomi Extent (Acre.Gunta.Fgunta)</th>
+                                                            <th>LDA Extent (Acre.Gunta.Fgunta)</th>
+                                                            <th>LDA Total Area in SqFt</th>
+                                                            <th>LDA Total Area in SqM</th>
+                                                            <th>Bhoomi Total Area in SqFt</th>
+                                                            <th>Bhoomi Total Area in SqM</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {paginatedData.map((row, index) => (
+
+
+
+                                                            <tr key={index}>
+
+                                                                <td>{index + 1 + (currentPage - 1) * rowsPerPage}</td>
+                                                                <td>{row.district}</td>
+                                                                <td>{row.taluk}</td>
+                                                                <td>{row.hobli}</td>
+                                                                <td>{row.village}</td>
+                                                                <td>{row.owner}</td>
+                                                                <td>{`${row.survey_no}/${row.surnoc}/${row.hissa_no}`}</td>
+                                                                {/* Bhoomi extent */}
+                                                                <td>{`${row.ext_acre}.${row.ext_gunta}.${row.ext_fgunta}`}</td>
+                                                                {/* LDA extent */}
+                                                                <td>{`${row.lda_acre ?? ''}.${row.lda_gunta ?? ''}.${row.lda_fgunta ?? ''}`}</td>
+                                                                {/* LDA extent total area */}
+                                                                <td>
+                                                                    {Math.floor(
+                                                                        (parseFloat(row.lda_acre) * 43560) +
+                                                                        (parseFloat(row.lda_gunta) * 1089) +
+                                                                        (parseFloat(row.lda_fgunta) * 68.0625)
+                                                                    )}
+                                                                </td>
+                                                                <td>
+                                                                    {(
+                                                                        (
+                                                                            (parseFloat(row.lda_acre) * 43560) +
+                                                                            (parseFloat(row.lda_gunta) * 1089) +
+                                                                            (parseFloat(row.lda_fgunta) * 68.0625)
+                                                                        ) * 0.092903
+                                                                    ).toFixed(1)}
+                                                                </td>
+                                                                {/* Bhommi extent total area */}
+                                                                <td>
+                                                                    {Math.floor(
+                                                                        (parseFloat(row.ext_acre) * 43560) +
+                                                                        (parseFloat(row.ext_gunta) * 1089) +
+                                                                        (parseFloat(row.ext_fgunta) * 68.0625)
+                                                                    )}
+                                                                </td>
+                                                                <td>
+                                                                    {(
+                                                                        (
                                                                             (parseFloat(row.ext_acre) * 43560) +
                                                                             (parseFloat(row.ext_gunta) * 1089) +
                                                                             (parseFloat(row.ext_fgunta) * 68.0625)
-                                                                        ).toFixed(2)}
-                                                                    </td>
-                                                                    <td>
-                                                                        {(
-                                                                            (
-                                                                                (parseFloat(row.ext_acre) * 43560) +
-                                                                                (parseFloat(row.ext_gunta) * 1089) +
-                                                                                (parseFloat(row.ext_fgunta) * 68.0625)
-                                                                            ) * 0.092903
-                                                                        ).toFixed(2)}
-                                                                    </td>
-                                                                </tr>
-                                                            ))}
-                                                        </tbody>
-                                                        <tfoot >
-                                                            <tr>
-                                                                <th colSpan={5}></th>
-                                                                <th colSpan={2} className="text-end fw-bold">Total Area:</th>
-                                                                <th className="text-left fw-bold" >{`${totalAcre}.${totalGunta}.${totalFGunta}`}</th>
-                                                                <th className='fw-bold'>{totalSqFt.toFixed(2)}</th>
-                                                                <th className='fw-bold'>{totalSqFt.toFixed(2)}</th>
+                                                                        ) * 0.092903
+                                                                    ).toFixed(1)}
+                                                                </td>
+
+
                                                             </tr>
-                                                        </tfoot>
-                                                    </table>
-                                                </div>
-
-                                                {/* Pagination Summary and Controls */}
-                                                <div className="d-flex justify-content-between align-items-center mt-3 flex-wrap">
-                                                    <div>
-                                                        Showing {Math.min((currentPage - 1) * rowsPerPage + 1, combinedData.length)}–{Math.min(currentPage * rowsPerPage, combinedData.length)} of {combinedData.length} records
-                                                    </div>
-
-                                                    <div>
-                                                        <button
-                                                            className="btn btn-outline-secondary btn-sm mx-1"
-                                                            onClick={() => goToPage(currentPage - 1)}
-                                                            disabled={currentPage === 1}
-                                                        >
-                                                            Previous
-                                                        </button>
-                                                        {[...Array(totalPages).keys()].map((num) => (
-                                                            <button
-                                                                key={num}
-                                                                className={`btn btn-sm mx-1 ${currentPage === num + 1 ? 'btn-primary' : 'btn-outline-primary'}`}
-                                                                onClick={() => goToPage(num + 1)}
-                                                            >
-                                                                {num + 1}
-                                                            </button>
                                                         ))}
-                                                        <button
-                                                            className="btn btn-outline-secondary btn-sm mx-1"
-                                                            onClick={() => goToPage(currentPage + 1)}
-                                                            disabled={currentPage === totalPages}
-                                                        >
-                                                            Next
-                                                        </button>
-                                                    </div>
+                                                    </tbody>
+                                                    <tfoot>
+                                                        <tr>
+                                                            <th colSpan={5}></th>
+                                                            <th colSpan={2} className="text-end fw-bold">Total Area:</th>
+                                                            <th className="text-left fw-bold">{`${totalAcre}.${totalGunta}.${totalFGunta}`}</th>
+                                                            <th className="text-left fw-bold">{`${totalAcre_LDA}.${totalGunta_LDA}.${totalFGunta_LDA}`}</th>
+                                                            <th className='fw-bold' style={{ backgroundColor: 'orange', color: '#fff' }}>
+                                                                {Math.floor(totalSqFt_LDA)}
+                                                            </th>
+                                                            <th className='fw-bold' style={{ backgroundColor: 'orange', color: '#fff' }}>
+                                                                {totalSqM_LDA.toFixed(1)}
+                                                            </th>
+                                                            <th className='fw-bold'>{Math.floor(totalSqFt)}</th>
+                                                            <th className='fw-bold'>{totalSqM.toFixed(1)}</th>
+                                                        </tr>
+                                                    </tfoot>
+
+
+                                                </table>
+                                            </div>
+
+                                            {/* Pagination Summary and Controls */}
+                                            <div className="d-flex justify-content-between align-items-center mt-3 flex-wrap">
+                                                <div>
+                                                    Showing {Math.min((currentPage - 1) * rowsPerPage + 1, combinedData.length)}–{Math.min(currentPage * rowsPerPage, combinedData.length)} of {combinedData.length} records
                                                 </div>
 
+                                                <div>
+                                                    <button
+                                                        className="btn btn-outline-secondary btn-sm mx-1"
+                                                        onClick={() => goToPage(currentPage - 1)}
+                                                        disabled={currentPage === 1}
+                                                    >
+                                                        Previous
+                                                    </button>
+                                                    {[...Array(totalPages).keys()].map((num) => (
+                                                        <button
+                                                            key={num}
+                                                            className={`btn btn-sm mx-1 ${currentPage === num + 1 ? 'btn-primary' : 'btn-outline-primary'}`}
+                                                            onClick={() => goToPage(num + 1)}
+                                                        >
+                                                            {num + 1}
+                                                        </button>
+                                                    ))}
+                                                    <button
+                                                        className="btn btn-outline-secondary btn-sm mx-1"
+                                                        onClick={() => goToPage(currentPage + 1)}
+                                                        disabled={currentPage === totalPages}
+                                                    >
+                                                        Next
+                                                    </button>
+                                                </div>
                                             </div>
+                                            <br />
+
                                         </div>
                                     )}
                                     <hr />
@@ -1801,7 +1895,7 @@ const mergedOwnerDetails = Array.from(uniqueOwnersMap.values());
                                                 <table>
                                                     <thead>
                                                         <tr>
-                                                            <th>Site Area (sq ft)</th>
+                                                            <th>Site Area (SQMtr)</th>
                                                             <th>East-West Dimension</th>
                                                             <th>North-South Dimension</th>
                                                         </tr>
@@ -1822,7 +1916,7 @@ const mergedOwnerDetails = Array.from(uniqueOwnersMap.values());
                                                         <tr>
                                                             <th>Owner Name</th>
                                                             <th>ID Type</th>
-                                                            <th>ID Number</th>
+                                                            {/* <th>ID Number</th> */}
                                                             <th>Address</th>
                                                             <th>Identifier Name</th>
                                                             <th>Gender</th>
@@ -1834,7 +1928,7 @@ const mergedOwnerDetails = Array.from(uniqueOwnersMap.values());
                                                             <tr key={index}>
                                                                 <td>{owner.ownerName}</td>
                                                                 <td>{owner.idType}</td>
-                                                                <td>{owner.idNumber}</td>
+                                                                {/* <td>{owner.idNumber ? owner.idNumber.replace(/\d(?=\d{4})/g, 'X') : '-'}</td> */}
                                                                 <td>{owner.ownerAddress}</td>
                                                                 <td>{owner.identifierName}</td>
                                                                 <td>{owner.gender}</td>
@@ -2269,7 +2363,7 @@ const Modal = ({ isOpen, onClose, children, lkrSid }) => {
         <div style={styles.modal}>
             <div style={styles.modalContent}>
                 <div style={styles.modalHeader}>
-                    <h4 style={{ margin: 0 }}>Submitted Preview Application</h4>
+                    <h3 style={{ margin: 0, color: '#fff' }}>Submitted Preview Application</h3>
                     <button style={styles.closeButton} onClick={onClose}>
                         &times;
                     </button>

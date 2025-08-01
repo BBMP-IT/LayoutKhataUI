@@ -188,44 +188,46 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             stop_loader();
         }
     }
-   const handleChange = (e) => {
-  const { name, value } = e.target;
+    const handleChange = (e) => {
+        const { name, value } = e.target;
 
-  if (name === "totalSites") {
-    // Don't allow spaces
-    if (/\s/.test(value)) return;
+        if (name === "totalSites") {
+            if (/\s/.test(value)) return;
+            if (!/^\d*$/.test(value)) return;
+            const trimmedValue = value.replace(/^0+/, '');
+            setFormData({ ...formData, [name]: trimmedValue });
 
-    // Prevent anything other than digits
-    if (!/^\d*$/.test(value)) return;
+            const numberValue = Number(trimmedValue);
 
-    // Remove leading zeros
-    const trimmedValue = value.replace(/^0+/, '');
+            if (trimmedValue === "") {
+                setErrors((prev) => ({ ...prev, [name]: "Total Number of sites is required" }));
+            } else if (isNaN(numberValue)) {
+                setErrors((prev) => ({ ...prev, [name]: "Invalid number" }));
+            } else if (numberValue < `${config.sites}` || numberValue > 5000) {
+                setErrors((prev) => ({
+                    ...prev,
+                    [name]: `Total number of sites must be between ${config.sites} and 5000`,
+                }));
+            } else {
+                setErrors((prev) => ({ ...prev, [name]: "" }));
+            }
 
-    // Always update formData to prevent input freeze
-    setFormData({ ...formData, [name]: trimmedValue });
+        } else if (name === "layoutApprovalNumber") {
+            // Only allow letters, numbers, hyphen, slash (optional)
+            const alphanumericPattern = /^[a-zA-Z0-9-/]*$/;
 
-    // Convert to number
-    const numberValue = Number(trimmedValue);
+            if (!alphanumericPattern.test(value)) return;
 
-    // Set validation errors
-    if (trimmedValue === "") {
-      setErrors((prev) => ({ ...prev, [name]: "Total Number of sites is required" }));
-    } else if (isNaN(numberValue)) {
-      setErrors((prev) => ({ ...prev, [name]: "Invalid number" }));
-    } else if (numberValue < `${config.sites}` || numberValue > 5000) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: `Total number of sites must be between ${config.sites} and 5000`,
-      }));
-    } else {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
-    }
-  } else {
-    // Default handler for other fields
-    setFormData({ ...formData, [name]: value });
-    setErrors((prev) => ({ ...prev, [name]: "" }));
-  }
-};
+            setFormData({ ...formData, [name]: value });
+            setErrors((prev) => ({ ...prev, [name]: "" }));
+
+        } else {
+            // Default handler
+            setFormData({ ...formData, [name]: value });
+            setErrors((prev) => ({ ...prev, [name]: "" }));
+        }
+    };
+
 
     const [approvalOrderURL, setApprovalOrderURL] = useState(null);
     const [approvalMapURL, setApprovalMapURL] = useState(null);
@@ -311,9 +313,9 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             newErrors.layoutApprovalNumber = "Layout Approval Number is required.";
         } else if (/\s/.test(formData.layoutApprovalNumber)) {
             newErrors.layoutApprovalNumber = "Spaces are not allowed in the Layout Approval Number.";
-         } else if (!layoutAuthorityRegex.test(formData.layoutApprovalNumber)){
-            newErrors.layoutApprovalNumber  = "Only alphanumeric, '-', '/', and single spaces are allowed. No special characters or multiple spaces.";
-        }   
+        } else if (!layoutAuthorityRegex.test(formData.layoutApprovalNumber)) {
+            newErrors.layoutApprovalNumber = "Only alphanumeric, '-', '/', and single spaces are allowed. No special characters or multiple spaces.";
+        }
         if (!formData.approvalOrder) {
             newErrors.approvalOrder = "Please upload a valid PDF (max 5MB).";
         }
@@ -329,15 +331,15 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             newErrors.layoutApprovalAuthority = "Layout approval authority is required.";
         }
 
-       if (!formData.approvalAuthority.trim()) {
-    newErrors.approvalAuthority   = "Layout approval authority is required.";
-} else {
-    
+        if (!formData.approvalAuthority.trim()) {
+            newErrors.approvalAuthority = "Layout approval authority is required.";
+        } else {
 
-    if (!layoutAuthorityRegex.test(formData.approvalAuthority )) {
-        newErrors.approvalAuthority  = "Only alphanumeric, '-', '/', and single spaces are allowed. No special characters or multiple spaces.";
-    }
-}
+
+            if (!layoutAuthorityRegex.test(formData.approvalAuthority)) {
+                newErrors.approvalAuthority = "Only alphanumeric, '-', '/', and single spaces are allowed. No special characters or multiple spaces.";
+            }
+        }
 
         if (!formData.totalSites.trim()) {
             newErrors.totalSites = "Total number of sites is required.";
@@ -419,7 +421,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             Swal.fire("Please save the land details before proceeding with layout approval", "", "warning");
             return;
         }
-const releaseType = 999;
+        const releaseType = 999;
         //  Proceed to next step here if any one is true
         const payload = {
             apR_ID: 0,
@@ -983,9 +985,10 @@ const releaseType = 999;
 
         //First section save button condition
         if (!isRTCSectionSaved && !isEPIDSectionSaved) {
-            Swal.fire("Please save the land details before proceeding with layout approval", "", "warning");
+            Swal.fire("Please save the land or Khata details before proceeding with site details", "", "warning");
             return;
         }
+
         const releaseType = 999;
         const payload = {
             sitE_RELS_ID: 0,
@@ -1420,9 +1423,9 @@ const releaseType = 999;
                                 <div className="form-group">
                                     <label className='form-label'>
                                         Total Number of Sites <span className='mandatory_color'>*</span>&nbsp;
-                                          <span className="note_color">
-                                        (Minimum {config.sites} sites and maximum 5000 sites allowed)
-                                    </span>
+                                        <span className="note_color">
+                                            (Minimum {config.sites} sites and maximum 5000 sites allowed)
+                                        </span>
                                     </label>
                                     <input
                                         type="text"
@@ -1432,7 +1435,7 @@ const releaseType = 999;
                                         value={formData.totalSites}
                                         maxLength={4}
                                         onChange={handleChange}
-                                        disabled={!isEditing} 
+                                        disabled={!isEditing}
 
                                     />
                                     {errors.totalSites && (

@@ -329,6 +329,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
                 owN_RELATIONNAME: owner.owN_RELATIONNAME,
                 owN_NAME_KN: owner.owN_NAME_KN,
                 owN_VAULT_REMARKS: owner.owN_VAULT_REMARKS,
+                owN_ALREADYEXIST_INEAASTHI: owner.owN_ALREADYEXIST_INEAASTHI,
             }));
 
             setOwnerList(owners);
@@ -440,7 +441,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
     };
     const fetchEKYC_ResponseDetails = async (ownerNo, ownerName, txnno, localLKRSID) => {
         const transaction_No = sessionStorage.getItem("tranNo");
-        
+
         if (transaction_No === txnno) {
             try {
                 // const payload = {
@@ -510,8 +511,8 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
             newOwner = true;
             ownerPhoneNo = selectedOwner.phoneNo || phone;
         }
-const matchedOwner = ownerList.find(owner => owner.id === selectedOwner.id);
-        
+        const matchedOwner = ownerList.find(owner => owner.id === selectedOwner.id);
+
 
         const payloadOwner = {
             owN_ID: ownerID,
@@ -537,7 +538,7 @@ const matchedOwner = ownerList.find(owner => owner.id === selectedOwner.id);
             owN_CREATEDROLE: roleID,
             owN_VAULTREFID: ownerData?.ekycResponse?.vaultRefNumber,
             owN_VAULT_REMARKS: matchedOwner.owN_VAULT_REMARKS,
-            owN_ALREADYEXIST_INEAASTHI: false,
+            owN_ALREADYEXIST_INEAASTHI: matchedOwner.owN_ALREADYEXIST_INEAASTHI,
             owN_AADHAAR_RESPONSE: JSON.stringify(ownerData),
             own_OwnOrRep: selectedOption,
             own_IsNewlyAddedOwner: newOwner,

@@ -1,0 +1,248 @@
+
+/* Custom Styles for e-Khatha Component */
+.gradient-bg {
+  background-color: whitesmoke;
+}
+
+.main-card {
+  border: none;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  background: white;
+}
+
+.header-gradient {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  padding: 1.5rem;
+  position: relative;
+}
+
+.header-gradient::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  opacity: 0.3;
+}
+
+.header-content {
+  position: relative;
+  z-index: 1;
+}
+
+.instruction-card {
+  border-left: 4px solid;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.instruction-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.instruction-card:hover::before {
+  transform: translateX(100%);
+}
+
+.instruction-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.info-card {
+  background: linear-gradient(135deg, #e0f2fe 0%, #b3e5fc 100%);
+  border-left-color: #0288d1;
+}
+
+.warning-card {
+  background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+  border-left-color: #ffa000;
+}
+
+.success-card {
+  background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+  border-left-color: #388e3c;
+}
+
+.requirements-section {
+  background: linear-gradient(135deg, #f8f9ff 0%, #e8eaff 100%);
+  border-radius: 15px;
+  padding: 2rem;
+  margin: 2rem 0;
+  border: 1px solid #e0e7ff;
+}
+
+.requirement-item {
+  background: white;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  border-left: 3px solid #023e8a;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.requirement-item:hover {
+  transform: translateX(5px);
+  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.15);
+  border-left-color: #7c3aed;
+}
+
+.requirement-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(45deg, #023e8a, #0077b6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+  margin-right: 1rem;
+  flex-shrink: 0;
+}
+
+.action-section {
+  background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%);
+  border-radius: 15px;
+  padding: 2rem;
+  margin: 2rem 0;
+  border: 1px solid #f3e8ff;
+  text-align: center;
+}
+
+.update-btn {
+  background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
+  border: none;
+  padding: 12px 30px;
+  border-radius: 25px;
+  color: white;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
+}
+
+.update-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(236, 72, 153, 0.4);
+  background: linear-gradient(135deg, #be185d 0%, #ec4899 100%);
+}
+
+.contact-section {
+  background: linear-gradient(45deg, #023e8a, #0077b6);
+  border-radius: 15px;
+  padding: 2rem;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.contact-section::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(79, 70, 229, 0.1) 0%, transparent 70%);
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(5deg); }
+}
+
+.contact-item {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.contact-item:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.contact-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.1rem;
+  margin-right: 1rem;
+}
+
+.section-title {
+  color: #1f2937;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  position: relative;
+  padding-left: 1rem;
+}
+
+.section-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+ background: linear-gradient(45deg, #023e8a, #0077b6);
+  border-radius: 2px;
+}
+
+.emoji-icon {
+  font-size: 1.5rem;
+  margin-right: 1rem;
+  display: inline-block;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-5px); }
+  60% { transform: translateY(-3px); }
+}
+
+@media (max-width: 768px) {
+  .gradient-bg {
+    padding: 1rem 0;
+  }
+  
+  .main-card {
+    margin: 0 10px;
+  }
+  
+  .requirements-section,
+  .action-section,
+  .contact-section {
+    padding: 1.5rem;
+  }
+}

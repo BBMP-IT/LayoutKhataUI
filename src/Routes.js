@@ -65,7 +65,9 @@ import Acknowledgement from './Pages/BBMP/Acknowledgement';
 import BBMP_Home from './Pages/BBMP/BBMP_HomePage';
 import BBMP_HP from './Pages/BBMP/BBMP_HP';
 import DashboardLayout from './Layout/DashboardLayout';
+import LoginLayout from './Layout/LoginLayout';
 import ReleaseDashboard from './Pages/BBMP/ReleaseDashboard';
+
 
 
 const AppRoutes = () => {
@@ -82,7 +84,7 @@ const AppRoutes = () => {
       
             <Route path="/Login" element={<DashboardLayout><BBMPLogin /></DashboardLayout>} />
             <Route path="/" element={<BBMP_Home/>}/>
-            <Route path='/home' element={<BBMP_HP/>}/>
+            {/* <Route path='/home' element={<BBMP_HP/>}/> */}
 
             {/* Protected Routes */}
             <Route path="/homePage" element={<ProtectedRoute element={<DashboardLayout><BBMP_Homepage /></DashboardLayout>} />} />

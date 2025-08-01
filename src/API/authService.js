@@ -769,3 +769,14 @@ export const fetchAROList = async(LKRS_ID) =>{
     throw error;
   }
 }
+//relinquishmentDeed Insert API
+
+export const insertRelinquishmentDeed = async (payload) => {
+  try {
+    const response = await apiService.postRequest(config.endpoints.relinquishmentDeed, payload);
+    return response;
+  } catch (error) {
+    console.error("Error inserting Relinquishment Deed", error);
+    throw error;
+  }
+};

@@ -39,7 +39,7 @@ export const useLoader = () => {
     return { loading, start_loader, stop_loader };
 };
 
-const  ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsECSectionSaved, ownerName, setIsJDAEKYCSectionSaved, setIsOwnerEKYCSectionSaved, setValidate_OwnerDataList, landDetails }) => {
+const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsECSectionSaved, ownerName, setIsJDAEKYCSectionSaved, setIsOwnerEKYCSectionSaved, setValidate_OwnerDataList, landDetails }) => {
     const [ecNumber, setECNumber] = useState("");
     const [ecNumberError, setEcNumberError] = useState('');
     const [hasJDA, setHasJDA] = useState(false);
@@ -85,12 +85,12 @@ const  ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIs
             if (id) setLocalLKRSID(id);
         }
     }, [LKRS_ID]);
-const buttonRef = useRef(null);
+    const buttonRef = useRef(null);
 
     useEffect(() => {
         if (buttonRef.current) {
-                buttonRef.current.click();
-            }
+            buttonRef.current.click();
+        }
     }, [localLKRSID]);
 
 
@@ -104,7 +104,7 @@ const buttonRef = useRef(null);
         }
     };
     const handleGetLKRSID = async (localLKRSID) => {
-        
+
         const payload = {
             level: 1,
             LkrsId: localLKRSID,
@@ -114,15 +114,15 @@ const buttonRef = useRef(null);
             const response = await fetch_LKRSID(localLKRSID);
 
             if (response) {
-                if(response.lkrS_ECNUMBER){
-                setECNumber(response.lkrS_ECNUMBER); //  set ecNumber from response
-                
-                setIsJDASectionDisabled(true);
-                setShowViewECButton(true);
-                setIsECSectionSaved(true);
-                stop_loader();
+                if (response.lkrS_ECNUMBER) {
+                    setECNumber(response.lkrS_ECNUMBER); //  set ecNumber from response
+
+                    setIsJDASectionDisabled(true);
+                    setShowViewECButton(true);
+                    setIsECSectionSaved(true);
+                    stop_loader();
                 }
-                
+
             } else {
                 stop_loader();
                 console.warn("EC Number is missing in the response.");
@@ -284,10 +284,10 @@ const buttonRef = useRef(null);
         } catch (error) {
             console.error("Failed to insert data:", error);
             Swal.fire({
-                    text: "Unable to retrieve EC. Please try again",
-                    icon: "error",
-                    confirmButtonText: "OK",
-                });
+                text: "Unable to retrieve EC. Please try again",
+                icon: "error",
+                confirmButtonText: "OK",
+            });
         } finally {
             stop_loader();
         }
@@ -392,7 +392,7 @@ const buttonRef = useRef(null);
         let JDAReg;
         //First section save button condition
         if (!isRTCSectionSaved && !isEPIDSectionSaved) {
-            Swal.fire("Please save the land details before proceeding with layout approval", "", "warning");
+            Swal.fire("Please save the land or Khata details before proceeding with site details", "", "warning");
             return;
         }
 
@@ -445,7 +445,7 @@ const buttonRef = useRef(null);
                     return;
                 }
             }
-        }else{
+        } else {
             setJdaDocumentDate("2025-06-23T08:31:07.668Z");
         }
 
@@ -464,7 +464,7 @@ const buttonRef = useRef(null);
                 jdA_CREATEDROLE: roleID,
                 lkrS_EC: ecNumber,
                 lkrS_IsJDAEXITS: hasJDA,
-               jdA_REGISTEREDDATE: jdaDocumentDate ? jdaDocumentDate : null
+                jdA_REGISTEREDDATE: jdaDocumentDate ? jdaDocumentDate : null
 
             };
 
@@ -479,8 +479,8 @@ const buttonRef = useRef(null);
                             icon: "success",
                             confirmButtonText: "OK",
                         });
-                        sessionStorage.setItem('jdA_ID',response.jdA_ID);
-                        console.log("JDAID",sessionStorage.setItem('jdA_ID',response.jdA_ID));
+                        sessionStorage.setItem('jdA_ID', response.jdA_ID);
+                        console.log("JDAID", sessionStorage.setItem('jdA_ID', response.jdA_ID));
                         setJdaID(response.jdA_ID);
                         setIsJDASectionDisabled(true);
                         setIsECSectionSaved(true);
@@ -520,9 +520,9 @@ const buttonRef = useRef(null);
                                 return;
                             }
                         }
-                        
-                        sessionStorage.setItem('jdA_ID',response.jdA_ID);
-                        console.log("JDAID",sessionStorage.setItem('jdA_ID',response.jdA_ID));
+
+                        sessionStorage.setItem('jdA_ID', response.jdA_ID);
+                        console.log("JDAID", sessionStorage.setItem('jdA_ID', response.jdA_ID));
                         setJdaID(response.jdA_ID);
                         setIsJDASectionDisabled(true);
                         setIsECSectionSaved(true);
@@ -1071,10 +1071,10 @@ const buttonRef = useRef(null);
                 </div>
             </div>
             <>
-                <Owner_EKYCBlock LKRS_ID={LKRS_ID} ownerName={ownerName} setIsOwnerEKYCSectionSaved={setIsOwnerEKYCSectionSaved} 
-                setValidate_OwnerDataList={setValidate_OwnerDataList} landDetails={landDetails}/>
+                <Owner_EKYCBlock LKRS_ID={LKRS_ID} ownerName={ownerName} setIsOwnerEKYCSectionSaved={setIsOwnerEKYCSectionSaved}
+                    setValidate_OwnerDataList={setValidate_OwnerDataList} landDetails={landDetails} />
 
-                {hasJDA && <JDA_EKYCBlock LKRS_ID={LKRS_ID} jdaID={jdaID} setIsJDAEKYCSectionSaved={setIsJDAEKYCSectionSaved}/>}
+                {hasJDA && <JDA_EKYCBlock LKRS_ID={LKRS_ID} jdaID={jdaID} setIsJDAEKYCSectionSaved={setIsJDAEKYCSectionSaved} />}
             </>
         </div>
     );

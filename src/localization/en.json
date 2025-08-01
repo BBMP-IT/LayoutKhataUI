@@ -519,7 +519,7 @@
       "phone1":"(080) 2266 0000"
     },
     "bussinessHours":{
-      "heading":"Business Hours",
+      "heading":"Working Hours",
       "days":"Monday - Saturday",
       "hours":"10am to 5.30pm",
       "timings":"(Except 2nd & 4th Saturday)",
@@ -815,6 +815,24 @@
       "village":"Select Village",
       "surnoc":"No Surnocs Available",
       "hissaNo":"No Hissas Available"
+    },
+    "navbar":{
+      "header":{
+        "CMName": "Sri Siddaramaiah",
+        "CMTitle": "Hon'ble CM",
+        "DCMName":"Sri DK. Shivakumar",
+        "DCMTitle":"Hon'ble Deputy CM",
+        "bbmp" : "BBMP",
+        "BBMPFullform" :"Bruhat Bengaluru Mahanagara Palike",
+        "GOK":"Government of Karnataka"
+      }
+    },
+    "CS":{
+      "ekhata": "Get e-Khata",
+      "LKD": "Layout Khata Dashboard",
+      "Amalgamation":"Amalgamation",
+      "downloadEkhata": "Download eKhata"
+
     }
   }
 

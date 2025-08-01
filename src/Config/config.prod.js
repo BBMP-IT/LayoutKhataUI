@@ -20,7 +20,7 @@ const config = {
     rd_nameScore: ApiCredentials.releaseEKYCnamescore,
       sites:  ApiCredentials.credentials.totalNoofSites,
 
-    credentials: ApiCredentials.credentials.credentials,
+    credentials: ApiCredentials.credentials,
     endpoints: {
         sendOTP: '/fnSendOtp',
         verifyOTP: '/fnValidateOtp',
@@ -69,7 +69,8 @@ const config = {
         fetchStreet: '/api/LKRS/fnGetStreetList',
         fetchARO: '/api/LKRS/fnGetARODetails',
 
-    }
+    },
+    
 };
 
 

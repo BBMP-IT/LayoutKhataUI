@@ -50,7 +50,7 @@ const BBMP_Layout_Dashboard = () => {
     sessionStorage.setItem('LKRSID', lkrS_ID);
     sessionStorage.setItem('display_LKRSID', lkrS_DISPLAYLKRSID);
     // navigate("/Release", {
-      navigate("/SiteRelease",{
+    navigate("/SiteRelease", {
       state: {
         LKRS_ID: lkrS_ID,
         display_LKRS_ID: lkrS_DISPLAYLKRSID,
@@ -141,7 +141,7 @@ const BBMP_Layout_Dashboard = () => {
         } else if (row.lkrS_APPSTATUS === 9) {
           return (
             <div style={{ display: 'flex', flexDirection: 'row', gap: '6px', alignItems: 'center' }}>
-             <button
+              <button
                 className="btn btn-success btn-sm"
                 data-bs-toggle="tooltip"
                 data-bs-placement="top"
@@ -254,8 +254,11 @@ const BBMP_Layout_Dashboard = () => {
               borderRadius: '4px',
             }}
           >
-            {row.lkrS_APPDETAILEDSTATUS}
+            {row.lkrS_APPDETAILEDSTATUS === "Application Submitted"
+              ? "The application has been initiated. Please proceed with the release."
+              : row.lkrS_APPDETAILEDSTATUS}
           </div>
+
         );
       },
     },
@@ -410,7 +413,7 @@ const BBMP_Layout_Dashboard = () => {
     // <DashboardLayout>
     //   <div className={`layout-form-container ${loading ? 'no-interaction' : ''}`}>
     //     {loading && <Loader />}
-    <div className="container pt-4 pb-4">
+    <div className="container  pb-4">
 
       {/* Dashboard Cards */}
       <div className="row">

@@ -21,7 +21,7 @@ import {
     handleFetchDistricts, handleFetchTalukOptions, handleFetchHobliOptions, handleFetchVillageOptions,
     handleFetchHissaOptions, fetchRTCDetailsAPI, handleFetchEPIDDetails, getAccessToken, sendOtpAPI, verifyOtpAPI, submitEPIDDetails, submitsurveyNoDetails,
     insertApprovalInfo, listApprovalInfo, deleteApprovalInfo, insertReleaseInfo, deleteReleaseInfo, listReleaseInfo, fileUploadAPI, fileListAPI, insertJDA_details, ownerEKYC_Details,
-    ekyc_Details, ekyc_Response, ekyc_insertOwnerDetails, jdaEKYC_Details,
+    ekyc_Details, ekyc_Response, ekyc_insertOwnerDetails, jdaEKYC_Details, insertRelinquishmentDeed,
     individualSiteAPI, individualSiteListAPI, fetchECDetails, fetchDeedDocDetails, fetchDeedDetails, fetchJDA_details, deleteSiteInfo, fetch_LKRSID,
     update_Final_SaveAPI, fetchZoneFromWardList, fetchStreetFromWardList,
 } from '../../API/authService';
@@ -109,7 +109,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
     const [totalArea, setTotalArea] = useState(""); // Total Area Input
 
-    const [cornerSite, setCornerSite] = useState(true); // Corner Site Selection (Yes/No)
+    const [cornerSite, setCornerSite] = useState(""); // Corner Site Selection (Yes/No)
     const [cornerSiteError, setCornerSiteError] = useState("");
 
     const [areaFeet, setAreaFeet] = useState(""); // Area in Feet Input
@@ -1109,7 +1109,8 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         if (totalAddedSites >= totalSitesCount) {
             Swal.fire({
                 title: "Limit Reached",
-                text: `Only ${totalSitesCount} sites allowed. Please update the total number of sites if needed.`,
+                text: `A maximum of ${totalSitesCount} sites can be added. Please update the total number of sites if required.`,
+                
                 icon: "warning",
                 confirmButtonText: "OK",
                 allowOutsideClick: false,
@@ -1744,15 +1745,18 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         if (!layoutSiteCount || totalSitesCount <= 0) {
             setLayoutSiteCountError("Please enter a valid number of total sites");
             layoutSiteCountRef.current?.focus();
+            Swal.fire("Please enter a Total no of Sites in the Approval section", "", "warning");
             return;
         }
 
         if (!isRTCSectionSaved && !isEPIDSectionSaved) {
-            Swal.fire("Please save the land details before proceeding with layout approval", "", "warning");
+            Swal.fire("Please save the land or Khata details before proceeding with site details", "", "warning");
             return;
         }
 
-        const totalAddedSites = allSites.length;
+       const totalAddedSites = allSites.filter(site => site.sitE_TYPE !== "Road").length;
+    console.log("Filtered Sites Count:", totalAddedSites);
+
         const textboxSitesCount = parseInt(layoutSiteCount, 10);
         const storedSiteCount = parseInt(sessionStorage.getItem("NUMBEROFSITES"), 10);
 
@@ -1771,7 +1775,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         if (totalAddedSites >= totalSitesCount) {
             Swal.fire({
                 title: "Limit Reached",
-                text: `Only ${totalSitesCount} sites allowed. Please update the total number of sites if needed.`,
+                text: `A maximum of ${totalSitesCount} sites can be added. Please update the total number of sites if required.`,
                 icon: "warning",
                 confirmButtonText: "OK",
                 allowOutsideClick: false,
@@ -2013,7 +2017,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                     sitE_LATITUDE: latitude,
                     sitE_LONGITUDE: longitude,
                     sitE_OWNER: ownerNames,
-                    sitE_CORNERPLOT: true,
+                    sitE_CORNERPLOT: false,
                     sitE_NO_OF_SIDES: 0,
                     sitE_EPID: "",
                     sitE_SASNO: "",
@@ -2291,7 +2295,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         setDeedNumber(e.target.value.toUpperCase());
         validateDeedNumber(e.target.value);
     };
-
+const [deedDocumentDate, setDeedDocumentDate] = useState('');
     const handleDeed_FetchDetails = async () => {
         const deedNumberPattern = /^[A-Z0-9-/]+$/;
         if (!deedNumber) {
@@ -2325,6 +2329,8 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                 response.json
             ) {
                 const deedData = JSON.parse(response.json);
+                
+                setDeedDocumentDate(deedData.registrationdatetime);
                 setShowViewDeedButton(true);
                 setIsDeedSectionDisabled(true); // ✅ Disable input + button
                 setDeedFetchSuccess(true);
@@ -2333,7 +2339,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                     icon: "success",
                     confirmButtonText: "OK",
                 });
-            } else {
+            } else if (response.responseStatus === false ) {
                 Swal.fire({
                     text: response.responseMessage,
                     icon: "error",
@@ -2428,6 +2434,39 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
 
     };
+    const handleInsertDeed = async () => {
+        const payload = {
+            lkrS_ID: 1,
+            relinquishmentDeedNo: deedNumber,
+            relinquishmentDeedRegDate: deedDocumentDate,
+            remarks: "",
+            additionalinfo: "",
+            createdby: createdBy,
+            createdname: createdName,
+            createdrole: roleID,
+        };
+        try {
+            start_loader();
+            const response = await insertRelinquishmentDeed(payload);
+
+            if (response.responseStatus === true) {
+                Swal.fire({
+                    text: response.responseMessage,
+                    icon: "error",
+                    confirmButtonText: "OK",
+                });
+                stop_loader();
+            } else {
+                stop_loader();
+                console.log("failed to fetch data!")
+            }
+        } catch (error) {
+            stop_loader();
+            console.error("Failed to fetch LKRSID data:", error);
+        } finally {
+            stop_loader();
+        }
+    }
 
 
 
@@ -2519,6 +2558,92 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
 
                         <div className="row mt-4">
+
+                            {/* Deed section starts */}
+                            <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mt-3">
+                                <label className='form-label'>
+                                    Enter Relinquishment Deed Number (For park, open space, road + Civic Amenity)
+                                    {isDeedRequired && <span className='mandatory_color'>*</span>}
+                                </label>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="Enter Relinquishment Deed Number"
+                                    value={deedNumber}
+                                    onChange={(e) => setDeedNumber(e.target.value)}
+                                    maxLength={50}
+                                    disabled={isDeedSectionDisabled} // keep your logic
+                                />
+                                {deedError && <div className="text-danger">{deedError}</div>}
+                            </div>
+
+                            <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-3">
+                                <div className="form-group">
+                                    <label> </label>
+                                    <button
+                                        className="btn btn-primary btn-block"
+                                        onClick={handleDeed_FetchDetails}
+                                        disabled={isDeedSectionDisabled}
+                                    >
+                                        Fetch Deed
+                                    </button>
+                                </div>
+                            </div>
+
+
+
+                            {/* Deed View Button */}
+                            {deedFetchSuccess === true && (
+                                <>
+                                    <div className="text-success mt-2">
+                                        <strong>Deed Check successful <i className="fa fa-check-circle"></i></strong>
+                                    </div>
+                                    <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2">
+                                        <div className="form-group">
+                                            <button className="btn btn-warning btn-block" onClick={handleViewDeed}>
+                                                View Deed
+                                            </button>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+
+                            {deedFetchSuccess === false && (
+                                <div className="row mt-3">
+                                    <strong className='text-danger'>Deed Check Failed <i className="fa fa-times-circle"></i></strong>
+
+                                    <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                                        <label className="form-label">Upload Relinquishment Deed Document <span className="mandatory_color">*</span></label>
+                                        <input
+                                            type="file"
+                                            accept="application/pdf"
+                                            className="form-control"
+                                            onChange={(e) => setUploadedDeedFile(e.target.files[0])}
+                                        />
+                                        {uploadError && <div className="text-danger">{uploadError}</div>}
+                                    </div>
+
+                                    <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-4">
+                                        <button className="btn btn-success btn-block" onClick={handleDeedUpload}>
+                                            Save Deed
+                                        </button>
+                                    </div>
+                                </div>
+
+                            )}
+                            <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 mt-2">
+                               <div className='row'>
+                                <div className="col-10 col-sm-10 col-md-10 col-lg-10 col-xl-10"></div>
+                                    <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2">
+                                    <button className="btn btn-success btn-block" onClick={handleInsertDeed}>
+                                        Save and Continue
+                                    </button>
+                                </div>
+                                </div> 
+                            </div>
+                            {/* Deed section ends */}
+                            <br />
+                            <hr className='mt-4' />
                             <div className="col-0 col-sm-0 col-md-2 col-lg-2 col-xl-2"></div>
 
                             {/* Type of Site Dropdown */}
@@ -2553,82 +2678,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                                 )}
                             </div>
 
-                            {/* Deed section starts */}
-                            {isDeedRequired && (
-                                <>
-                                    <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mt-3">
-                                        <label className='form-label'>Enter Relinquishment Deed Number (For park, open space, road + Civic Amenity) <span className='mandatory_color'>*</span></label>
-                                        <input
-                                            type="text"
-                                            className="form-control"
-                                            placeholder="Enter Relinquishment Deed Number"
-                                            value={deedNumber}
-                                            onChange={(e) => setDeedNumber(e.target.value)}
-                                            maxLength={50}
-                                            disabled={!isDeedRequired}
-                                        />
-                                        {deedError && <div className="text-danger">{deedError}</div>}
-                                    </div>
 
-                                    <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-3">
-                                        <div className="form-group">
-                                            <label> </label>
-                                            <button
-                                                className="btn btn-primary btn-block"
-                                                onClick={handleDeed_FetchDetails}
-                                                disabled={!isDeedRequired}
-                                            >
-                                                Fetch Deed
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div className="alert alert-warning mt-3">
-                                        <i className="fa fa-exclamation-circle me-2"></i>
-                                        You have reached 40% of your total site entries. Uploading the <strong>Relinquishment Deed</strong> is now <strong>mandatory</strong>.
-                                    </div>
-                                </>
-                            )}
-
-                            {/* Deed View Button */}
-                            {isDeedRequired && deedFetchSuccess === true && (
-                                <>
-                                    <div className="text-success">
-                                        <strong>Deed Check successful <i className="fa fa-check-circle"></i></strong>
-                                    </div>
-                                    <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2">
-                                        <div className="form-group">
-                                            <button className="btn btn-warning btn-block" onClick={handleViewDeed}>
-                                                View Deed
-                                            </button>
-                                        </div>
-                                    </div>
-                                </>
-                            )}
-
-                            {/* Deed Upload Section - If fetch failed */}
-                            {isDeedRequired && deedFetchSuccess === false && (
-                                <div className="row mt-3">
-                                    <strong className='text-danger'>Deed Check Failed <i className="fa fa-times-circle"></i></strong>
-
-                                    <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
-                                        <label className="form-label">Upload Relinquishment Deed Document <span className="mandatory_color">*</span></label>
-                                        <input
-                                            type="file"
-                                            accept="application/pdf"
-                                            className="form-control"
-                                            onChange={(e) => setUploadedDeedFile(e.target.files[0])}
-                                        />
-                                        {uploadError && <div className="text-danger">{uploadError}</div>}
-                                    </div>
-
-                                    <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-4">
-                                        <button className="btn btn-success btn-block" onClick={handleDeedUpload}>
-                                            Save Deed
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                            {/* Deed section ends */}
 
                             <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 mb-3">
                                 <br />
@@ -2749,7 +2799,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                                         {/* Block/Area */}
                                         <div className='col-md-6'>
                                             <div className="form-group mt-2">
-                                                <label className='form-label'>Block/Area <span className='mandatory_color'>*</span></label>
+                                                <label className='form-label'>Street Name / Block / Area <span className='mandatory_color'>*</span></label>
                                                 <input
                                                     type="text"
                                                     className="form-control"
@@ -3150,7 +3200,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                                         {/* Block/Area */}
                                         <div className='col-md-6'>
                                             <div className="form-group mt-2">
-                                                <label className='form-label'>Block/Area <span className='mandatory_color'>*</span></label>
+                                                <label className='form-label'>Street Name / Block / Area <span className='mandatory_color'>*</span></label>
                                                 <input type="text"
                                                     className="form-control"
                                                     maxLength={100}
@@ -3447,16 +3497,11 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                         </>
                         )}
                     </fieldset>
-                </div>
-            </div>
-            <div className="card" >
-                <div className="card-header layout_btn_color" >
-                    <h5 className="card-title" style={{ textAlign: 'center' }}>Find Layout on Google Map & tap in middle of site to capture sites GPS</h5>
-                </div>
-                <div className="card-body">
+                    <hr/>
+                     <h3 className="" style={{ textAlign: '', color:'#023e8a' }}>Find Layout on Google Map & tap in middle of site to capture sites GPS</h3>
                     <div className="row" >
                         <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
-                            <b>Search using nearest landmark near your layout - once you zoom there then locate your individual layout & tap on top middle of your layout</b>
+                            <b>Search using nearest landmark near your layout - once you zoom there then locate your individual site & tap on top middle of your site</b>
                             <br /><div className="alert alert-info">Note : Search nearest landmark & then find layout & site near the landmark</div>
 
                         </div>
@@ -3625,13 +3670,13 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                             setIsAddDisabled={setIsAddDisabled}
                         />
                     )}
+                </div>
+            </div>
+           
 
                 </div>
 
-            </div>
-
-
-        </div>
+            
     );
 };
 
@@ -3655,8 +3700,8 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
 
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
 
-    const totalAddedSites = data.length;
-
+    // const totalAddedSites = data.length;
+const totalAddedSites = data.filter(site => site.sitE_TYPEID !== 8).length;
 
     //delete site info API
     const handleDeleteSites = async (siteID) => {
@@ -3817,16 +3862,7 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
                     );
                 },
             },
-            // {
-            //     Header: "Total Area",
-            //     accessor: (row) => {
-            //         if (row.sitE_AREAINSQFT && row.sitE_AREAINSQMT) {
-            //             return `${row.sitE_AREAINSQFT} [Sq.ft] - ${row.sitE_AREAINSQMT} [Sq.mtr]`;
-            //         } else {
-            //             return "-";
-            //         }
-            //     },
-            // },
+
             {
                 Header: "Total Area",
                 accessor: (row) => {
@@ -3858,10 +3894,14 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
             {
                 Header: "Corner Site",
                 accessor: (row) => {
-                    return row.sitE_NO ? row.sitE_NO : "-";
-
-                    return row.sitE_CORNERPLOT ? "YES" : "NO";
-                },
+                    if (row.sitE_CORNERPLOT === true) {
+                        return "Yes";
+                    } else if (row.sitE_CORNERPLOT === false && row.sitE_NO_OF_SIDES !== 0) {
+                        return "No";
+                    } else {
+                        return "-";
+                    }
+                }
             },
             {
                 Header: "Type of Site",
@@ -3940,7 +3980,7 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
     return (
         <div >
             {loading && <Loader />}
-            <h4>Layout & Individual sites Details</h4>
+            <h3 style={{color:'#023e8a'}}>Layout & Individual sites Details</h3>
             <div style={{ overflowX: "auto", padding: "1rem" }}>
                 <table
                     {...getTableProps()}

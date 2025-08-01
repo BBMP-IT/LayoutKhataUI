@@ -24,7 +24,7 @@ import { useAuth } from "../../AuthContext";
 
 
 const BBMPLogin = () => {
-    const navigate = useNavigate();
+     const navigate = useNavigate();
     const { UseLogin } = useAuth();
     const { loading, start_loader, stop_loader } = useContext(LoaderContext);
     const [menuOpen, setMenuOpen] = useState(false);
@@ -96,10 +96,10 @@ const BBMPLogin = () => {
         if (
             !phoneNumber ||
             phoneNumber.trim() === "" ||
-            !/^[1-9][0-9]{9}$/.test(phoneNumber) 
+            !/^[1-9][0-9]{9}$/.test(phoneNumber)
             //  ||/^(\d)\1{9}$/.test(phoneNumber)  // checks for 10 repeated digits (0000000000, 1111111111, etc.)
         ) {
-            setPhoneError("Please enter a valid 10-digit phone number that doesn't start with 0 or contain repeated digits");
+            setPhoneError("Please enter a valid 10-digit phone number that does not start with 0");
             isValid = false;
         }
 
@@ -115,19 +115,19 @@ const BBMPLogin = () => {
         let phoneNo = "9999999999";
         if (phoneNo === phoneNumber) {
             sessionStorage.setItem('PhoneNumber', phoneNumber);
-                console.log("OTP verified, calling generate_Token");
-                generate_Token();
-                console.log("Token generated, showing Swal");
+            console.log("OTP verified, calling generate_Token");
+            generate_Token();
+            console.log("Token generated, showing Swal");
 
-                Swal.fire({
-                    title: "OTP Verified!",
-                    text: "Your OTP has been successfully verified.",
-                    icon: "success",
-                    confirmButtonText: "OK"
-                }).then(() => {
-                    // Navigate *after* user clicks OK
-                    navigate('/homePage');
-                });
+            Swal.fire({
+                title: "OTP Verified!",
+                text: "Your OTP has been successfully verified.",
+                icon: "success",
+                confirmButtonText: "OK"
+            }).then(() => {
+                // Navigate *after* user clicks OK
+                navigate('/homePage');
+            });
         } else {
             try {
                 start_loader();
@@ -342,288 +342,289 @@ const BBMPLogin = () => {
 
 
 
+
     return (
         // <DashboardLayout>
         //     {loading && <Loader />}
+          
+            <div className="container mt-4 login_container">
+                <div className="d-block d-md-none">
+                    <div className="d-flex flex-wrap justify-content-center text-center align-items-center gap-3 px-2">
 
-        <div className="container mt-4">
-            <div className="d-block d-md-none">
-                <div className="d-flex flex-wrap justify-content-center text-center align-items-center gap-3 px-2">
-
-                    {/* CM */}
-                    <div className="d-flex flex-column align-items-center" style={{ width: '45%' }}>
-                        <img src={cmlogo} alt="CM" width={80} height={80} className="rounded-circle bg-white p-1" />
-                        <div className="fw-bold text-clr mt-2">Sri Siddaramaiah</div>
-                        <div className="badge bg-secondary mt-1">Hon'ble CM</div>
-                    </div>
-
-                    {/* GOK */}
-                    <div className="d-flex flex-column align-items-center" style={{ width: '45%' }}>
-                        <div style={{
-                            backgroundColor: 'white',
-                            borderRadius: '50%',
-                            width: '85px',
-                            height: '85px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            overflow: 'hidden'
-                        }}>
-                            <img src={gokLogo} alt="GOK" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        {/* CM */}
+                        <div className="d-flex flex-column align-items-center" style={{ width: '45%' }}>
+                            <img src={cmlogo} alt="CM" width={80} height={80} className="rounded-circle bg-white p-1" />
+                            <div className="fw-bold text-clr mt-2">Sri Siddaramaiah</div>
+                            <div className="badge bg-secondary mt-1">Hon'ble CM</div>
                         </div>
-                        <div className="fw-bold text-clr mt-2">Government of Karnataka</div>
-                    </div>
 
-
-
-                    {/* BBMP */}
-                    <div className="d-flex flex-column align-items-center" style={{ width: '45%' }}>
-                        <img src={bbmplogo} alt="BBMP" width={80} height={80} className="rounded-circle bg-white p-1" />
-                        <div className="fw-bold text-clr mt-2">BBMP</div>
-                    </div>
-
-                    {/* DCM */}
-                    <div className="d-flex flex-column align-items-center" style={{ width: '45%' }}>
-                        <div style={{
-                            backgroundColor: 'white',
-                            borderRadius: '50%',
-                            width: '85px',
-                            height: '85px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            overflow: 'hidden'
-                        }}>
-                            <img src={dcmlogo} alt="DCM" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        {/* GOK */}
+                        <div className="d-flex flex-column align-items-center" style={{ width: '45%' }}>
+                            <div style={{
+                                backgroundColor: 'white',
+                                borderRadius: '50%',
+                                width: '85px',
+                                height: '85px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                overflow: 'hidden'
+                            }}>
+                                <img src={gokLogo} alt="GOK" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            </div>
+                            <div className="fw-bold text-clr mt-2">Government of Karnataka</div>
                         </div>
-                        <div className="fw-bold text-clr mt-2">Sri DK. Shivakumar</div>
-                        <div className="badge bg-secondary mt-1">Hon'ble Deputy CM</div>
+
+
+
+                        {/* BBMP */}
+                        <div className="d-flex flex-column align-items-center" style={{ width: '45%' }}>
+                            <img src={bbmplogo} alt="BBMP" width={80} height={80} className="rounded-circle bg-white p-1" />
+                            <div className="fw-bold text-clr mt-2">BBMP</div>
+                        </div>
+
+                        {/* DCM */}
+                        <div className="d-flex flex-column align-items-center" style={{ width: '45%' }}>
+                            <div style={{
+                                backgroundColor: 'white',
+                                borderRadius: '50%',
+                                width: '85px',
+                                height: '85px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                overflow: 'hidden'
+                            }}>
+                                <img src={dcmlogo} alt="DCM" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            </div>
+                            <div className="fw-bold text-clr mt-2">Sri DK. Shivakumar</div>
+                            <div className="badge bg-secondary mt-1">Hon'ble Deputy CM</div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <section id="about" className="section-bg">
-                <div className="container">
-                    <div className="row">
-                        <div className="col-lg-7 content" data-aos="fade-right">
-                            <h2 className="text-center instruction" style={{ textTransform: 'uppercase' }}>{t('translation.instructions.title')}</h2>
-                            <p>📝 {t('translation.instructions.statments.get')}
-                                <a className='link_style' href="https://youtu.be/GL8CWsdn3wo?si=Zu_EMs3SCw5-wQwT" target="_blank">
-                                    <span>{t('translation.instructions.links.english')}</span></a>
-                                &nbsp; {t('translation.instructions.statments.and')}
+                <section id="about" className="section-bg">
+                    <div className="container">
+                        <div className="row">
+                            <div className="col-lg-7 content" data-aos="fade-right">
+                                <h2 className="text-center instruction" style={{ textTransform: 'uppercase' }}>{t('translation.instructions.title')}</h2>
+                                <p>📝 {t('translation.instructions.statments.get')}
+                                    <a className='link_style' href="https://youtu.be/GL8CWsdn3wo?si=Zu_EMs3SCw5-wQwT" target="_blank">
+                                        <span>{t('translation.instructions.links.english')}</span></a>
+                                    &nbsp; {t('translation.instructions.statments.and')}
 
-                                <a className='link_style'
-                                    href="https://youtu.be/JR3BxET46po?si=jDoSKqy2V1IFUpf6"
-                                    target="_blank"><span> {t('translation.instructions.links.kannada')}</span></a>
-                            </p>
-                            <p>📝 {t('translation.instructions.statments.FQA')} <a className='link_style' href="https://youtu.be/x_163krr8E4"
-                                target="_blank"><span>{t('translation.instructions.links.clickHere')} </span></a></p>
-                            <p>📝 {t('translation.instructions.statments.ekatha')}
-                                <a className='link_style' href="https://bbmpeaasthi.karnataka.gov.in/citizen_core/PendanceReport"
-                                    target="_blank"><span>{t('translation.instructions.links.pendencyReports')}</span></a> {t('translation.instructions.statments.and')}
-                                &nbsp;
-                                <a className='link_style' href="https://bbmpeaasthi.karnataka.gov.in/citizen_core/PendingMutationReport"
-                                    target="_blank"><span>{t('translation.instructions.links.pendingMutations')}</span></a></p>
-                            <p>📝 <a className='link_style' href="https://bbmpeaasthi.karnataka.gov.in/citizen_core/Final_eKhatha_Status_based_on_ePID"
-                                target="_blank"><span>{t('translation.instructions.links.finalEPID')}</span></a></p>
-                            <p>📝 {t('translation.instructions.statments.login')}  </p>
-                            <p>📝 {t('translation.instructions.statments.draft')}</p>
-                            <p>📝 {t('translation.instructions.statments.citizen.title')}</p>
-                            <div className='row'>
-                                <div className='col-md-1 col-0'></div>
-                                <div className='col-md-11 col-12'>
-                                    <ul>
-                                        <li>&#8226; {t('translation.instructions.statments.citizen.deed')}</li>
-                                        <li>&#8226; {t('translation.instructions.statments.citizen.ekyc')}</li>
-                                        <li>&#8226; {t('translation.instructions.statments.citizen.sas')}</li>
-                                        <li>&#8226; {t('translation.instructions.statments.citizen.propertyphoto')}</li>
-                                        <li>&#8226; {t('translation.instructions.statments.citizen.document')}</li>
-                                        <li>&#8226; {t('translation.instructions.statments.citizen.encumbrance')}</li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <p className="mt-2">📢 {t('translation.instructions.statments.citizenFile')}</p>
-                            <p className="text-danger">
-                                <strong>📞 {t('translation.instructions.statments.queries')}</strong> {t('translation.instructions.statments.call')} <a href="tel:9480683695" className="text-dark fw-bold">9480683695</a> {t('translation.instructions.statments.or')}
-                                {t('translation.instructions.statments.email')}:
-                                <a href="mailto:bbmpekhata@gmail.com" className="text-dark fw-bold">bbmpekhata@gmail.com</a>
-                            </p>
-                            <p>📝 <a className='link_style' href="https://bbmpeaasthi.karnataka.gov.in/citizen_core/"
-                                target="_blank"><span>{t('translation.instructions.links.clickHere')}</span></a> {t('translation.instructions.statments.draft_ward')}
-                            </p>
-                            <p>📝 <a className='link_style' href="https://bbmpeaasthi.karnataka.gov.in/citizen_core/GoogleMapsWardCoordinates"
-                                target="_blank"><span>{t('translation.instructions.links.clickHere')}</span></a>
-                                {t('translation.instructions.statments.draft_Ekatha')}
-                            </p>
-
-                            <section className="loginContent">
-                                <div className="container">
-                                    <h4 className=" fw-bold text-center mb-3">Notification</h4>
-                                    <div style={{ color: 'red', fontWeight: 'bold' }}>
-                                        {showFirstMessage
-                                            ? "Citizens before trying to enter the properties details for existing records, please ensure that tax for current financial year is paid."
-                                            : "Please read the instructions before proceeding with the application data entry."}
+                                    <a className='link_style'
+                                        href="https://youtu.be/JR3BxET46po?si=jDoSKqy2V1IFUpf6"
+                                        target="_blank"><span> {t('translation.instructions.links.kannada')}</span></a>
+                                </p>
+                                <p>📝 {t('translation.instructions.statments.FQA')} <a className='link_style' href="https://youtu.be/x_163krr8E4"
+                                    target="_blank"><span>{t('translation.instructions.links.clickHere')} </span></a></p>
+                                <p>📝 {t('translation.instructions.statments.ekatha')}
+                                    <a className='link_style' href="https://bbmpeaasthi.karnataka.gov.in/citizen_core/PendanceReport"
+                                        target="_blank"><span>{t('translation.instructions.links.pendencyReports')}</span></a> {t('translation.instructions.statments.and')}
+                                    &nbsp;
+                                    <a className='link_style' href="https://bbmpeaasthi.karnataka.gov.in/citizen_core/PendingMutationReport"
+                                        target="_blank"><span>{t('translation.instructions.links.pendingMutations')}</span></a></p>
+                                <p>📝 <a className='link_style' href="https://bbmpeaasthi.karnataka.gov.in/citizen_core/Final_eKhatha_Status_based_on_ePID"
+                                    target="_blank"><span>{t('translation.instructions.links.finalEPID')}</span></a></p>
+                                <p>📝 {t('translation.instructions.statments.login')}  </p>
+                                <p>📝 {t('translation.instructions.statments.draft')}</p>
+                                <p>📝 {t('translation.instructions.statments.citizen.title')}</p>
+                                <div className='row'>
+                                    <div className='col-md-1 col-0'></div>
+                                    <div className='col-md-11 col-12'>
+                                        <ul>
+                                            <li>&#8226; {t('translation.instructions.statments.citizen.deed')}</li>
+                                            <li>&#8226; {t('translation.instructions.statments.citizen.ekyc')}</li>
+                                            <li>&#8226; {t('translation.instructions.statments.citizen.sas')}</li>
+                                            <li>&#8226; {t('translation.instructions.statments.citizen.propertyphoto')}</li>
+                                            <li>&#8226; {t('translation.instructions.statments.citizen.document')}</li>
+                                            <li>&#8226; {t('translation.instructions.statments.citizen.encumbrance')}</li>
+                                        </ul>
                                     </div>
-                                    <br />
                                 </div>
-                            </section>
+                                <p className="mt-2">📢 {t('translation.instructions.statments.citizenFile')}</p>
+                                <p className="text-danger">
+                                    <strong>📞 {t('translation.instructions.statments.queries')}</strong> {t('translation.instructions.statments.call')} <a href="tel:9480683695" className="text-dark fw-bold">9480683695</a> {t('translation.instructions.statments.or')}
+                                    {t('translation.instructions.statments.email')}:
+                                    <a href="mailto:bbmpekhata@gmail.com" className="text-dark fw-bold">bbmpekhata@gmail.com</a>
+                                </p>
+                                <p>📝 <a className='link_style' href="https://bbmpeaasthi.karnataka.gov.in/citizen_core/"
+                                    target="_blank"><span>{t('translation.instructions.links.clickHere')}</span></a> {t('translation.instructions.statments.draft_ward')}
+                                </p>
+                                <p>📝 <a className='link_style' href="https://bbmpeaasthi.karnataka.gov.in/citizen_core/GoogleMapsWardCoordinates"
+                                    target="_blank"><span>{t('translation.instructions.links.clickHere')}</span></a>
+                                    {t('translation.instructions.statments.draft_Ekatha')}
+                                </p>
 
-                        </div>
-                        <div className="col-lg-5 " data-aos="fade-left">
-                            <section className="loginContent">
-                                <div className="container">
-                                    <h4 className=" fw-bold text-center mb-3">{t('translation.LoginForm.title')}</h4>
-                                    <h3 className=" fw-bold text-center mb-2" style={{ color: ' #023e8a' }}>{t('translation.LoginForm.subTitle')}</h3>
-                                    <hr />
-                                    <form>
-                                        {!showOTPFields ? (
-                                            <>
-                                                {/* Phone Number Input */}<span>{t('translation.LoginForm.placeholder')}</span>
-                                                <div>
-                                                    <div className="input-group mb-4">
-                                                        <span className="input-group-text">📞</span>
-                                                        <input
-                                                            type="tel"
-                                                            id="phoneNumber"
-                                                            name="phone"
-                                                            className="form-control"
-                                                            placeholder={t('translation.LoginForm.phoneNumber')}
-                                                            value={phoneNumber}
-                                                            onChange={handlePhoneNumberChange}
-                                                            maxLength={10}
-                                                        />
+                                <section className="loginContent">
+                                    <div className="container">
+                                        <h4 className=" fw-bold text-center mb-3">Notification</h4>
+                                        <div style={{ color: 'red', fontWeight: 'bold' }}>
+                                            {showFirstMessage
+                                                ? "Citizens before trying to enter the properties details for existing records, please ensure that tax for current financial year is paid."
+                                                : "Please read the instructions before proceeding with the application data entry."}
+                                        </div>
+                                        <br />
+                                    </div>
+                                </section>
+
+                            </div>
+                            <div className="col-lg-5 " data-aos="fade-left">
+                                <section className="loginContent">
+                                    <div className="container">
+                                        <h4 className=" fw-bold text-center mb-3">{t('translation.LoginForm.title')}</h4>
+                                        <h3 className=" fw-bold text-center mb-2" style={{ color: ' #023e8a' }}>{t('translation.LoginForm.subTitle')}</h3>
+                                        <hr />
+                                        <form>
+                                            {!showOTPFields ? (
+                                                <>
+                                                    {/* Phone Number Input */}<span>{t('translation.LoginForm.placeholder')} &nbsp;<span className='mandatory_color'>*</span></span>
+                                                    <div>
+                                                        <div className="input-group mb-4">
+                                                            <span className="input-group-text">📞</span>
+                                                            <input
+                                                                type="tel"
+                                                                id="phoneNumber"
+                                                                name="phone"
+                                                                className="form-control"
+                                                                placeholder={t('translation.LoginForm.phoneNumber')}
+                                                                value={phoneNumber}
+                                                                onChange={handlePhoneNumberChange}
+                                                                maxLength={10}
+                                                            />
+                                                        </div>
+                                                        {phoneError && <label className="text-danger">{phoneError}</label>}
                                                     </div>
-                                                    {phoneError && <label className="text-danger">{phoneError}</label>}
-                                                </div>
-                                                {/* CAPTCHA Input */}
-                                                <div>
-                                                    <span>{t('translation.LoginForm.captcha.placeholder')}</span>
+                                                    {/* CAPTCHA Input */}
+                                                    <div>
+                                                        <span>{t('translation.LoginForm.captcha.placeholder')} &nbsp;<span className='mandatory_color'>*</span></span>
+                                                        <div className="input-group mb-3">
+                                                            <span className="input-group-text">✍️</span>
+                                                            <input
+                                                                type="text"
+                                                                className="form-control"
+                                                                placeholder={t('translation.LoginForm.captcha.placeholder')}
+                                                                value={captchaInput}
+                                                                onChange={handleCaptchaChange}  // Using the function here
+                                                                onPaste={(e) => e.preventDefault()}
+                                                            />
+                                                        </div>
+                                                        {captchaError && <label className="text-danger">{captchaError}</label>}
+                                                    </div>
+
+                                                    {/* CAPTCHA Display */}
+
                                                     <div className="input-group mb-3">
-                                                        <span className="input-group-text">✍️</span>
+                                                        <span className="input-group-text"><i className="fa fa-lock"></i></span>
+
+                                                        <input style={{ backgroundColor: 'lightgray', color: '#fff' }}
+                                                            className="form-control captcha-box   text-dark fw-bold text-center"
+                                                            value={captcha}
+                                                            readOnly
+                                                            onCopy={(e) => e.preventDefault()}
+                                                        />
+                                                        <span className="input-group-text" style={{
+                                                            background: "linear-gradient(45deg,#0077b6,#023e8a)",
+                                                            color: "#fff", width: "130px", cursor: "pointer"
+                                                        }} onClick={generateCaptcha} title="Refresh CAPTCHA"><i className="fa fa-refresh"></i>&nbsp;Regenerate</span>
+                                                    </div>
+                                                    <br />
+                                                    {/* Send OTP Button */}
+                                                    <div className="input-group">
+                                                        <button
+                                                            type="button"
+                                                            className="btn w-100"
+                                                            style={{
+                                                                background: "linear-gradient(45deg,#0077b6,#023e8a)",
+                                                                color: "#fff",
+                                                            }}
+                                                            onClick={() => handleSendOTP(phoneNumber)}
+                                                        >
+                                                            {t('translation.buttons.sendOTP')}
+                                                        </button>
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <div className="input-group mb-3">
+                                                        <span>
+                                                            OTP sent to *******{phoneNumber.slice(-4)}{" "}
+                                                            <a href="#" onClick={handleChangePhoneNumber} style={{ color: 'linear-gradient(45deg, #023e8a, #0077b6)', textDecoration: "underline" }}>
+                                                                {t('translation.buttons.changePhone')}
+                                                            </a>
+                                                        </span>
+                                                    </div>
+                                                    {/* OTP Input */}
+                                                    <span>{t('translation.LoginForm.otp.placeholder')} &nbsp;<span className='mandatory_color'>*</span> </span>
+                                                    <div className="input-group mb-3">
+                                                        <span className="input-group-text">🔑</span>
                                                         <input
                                                             type="text"
+                                                            maxLength={6}
                                                             className="form-control"
-                                                            placeholder={t('translation.LoginForm.captcha.placeholder')}
-                                                            value={captchaInput}
-                                                            onChange={handleCaptchaChange}  // Using the function here
-                                                            onPaste={(e) => e.preventDefault()}
+                                                            placeholder="Enter OTP"
+                                                            value={otp}
+                                                            ref={otpRef}
+                                                            onChange={(e) => setOtp(e.target.value)}
                                                         />
                                                     </div>
-                                                    {captchaError && <label className="text-danger">{captchaError}</label>}
-                                                </div>
-
-                                                {/* CAPTCHA Display */}
-
-                                                <div className="input-group mb-3">
-                                                    <span className="input-group-text"><i className="fa fa-lock"></i></span>
-
-                                                    <input style={{ backgroundColor: 'lightgray', color: '#fff' }}
-                                                        className="form-control captcha-box   text-dark fw-bold text-center"
-                                                        value={captcha}
-                                                        readOnly
-                                                        onCopy={(e) => e.preventDefault()}
-                                                    />
-                                                    <span className="input-group-text" style={{
-                                                        background: "linear-gradient(45deg,#0077b6,#023e8a)",
-                                                        color: "#fff", width: "130px", cursor: "pointer"
-                                                    }} onClick={generateCaptcha} title="Refresh CAPTCHA"><i className="fa fa-refresh"></i>&nbsp;Regenerate</span>
-                                                </div>
-                                                <br />
-                                                {/* Send OTP Button */}
-                                                <div className="input-group">
-                                                    <button
-                                                        type="button"
-                                                        className="btn w-100"
-                                                        style={{
-                                                            background: "linear-gradient(45deg,#0077b6,#023e8a)",
-                                                            color: "#fff",
-                                                        }}
-                                                        onClick={() => handleSendOTP(phoneNumber)}
-                                                    >
-                                                        {t('translation.buttons.sendOTP')}
-                                                    </button>
-                                                </div>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <div className="input-group mb-3">
-                                                    <span>
-                                                        OTP sent to *******{phoneNumber.slice(-4)}{" "}
-                                                        <a href="#" onClick={handleChangePhoneNumber} style={{ color: 'linear-gradient(45deg, #023e8a, #0077b6)', textDecoration: "underline" }}>
-                                                            {t('translation.buttons.changePhone')}
-                                                        </a>
-                                                    </span>
-                                                </div>
-                                                {/* OTP Input */}
-                                                <span>{t('translation.LoginForm.otp.placeholder')}</span>
-                                                <div className="input-group mb-3">
-                                                    <span className="input-group-text">🔑</span>
-                                                    <input
-                                                        type="text"
-                                                        maxLength={6}
-                                                        className="form-control"
-                                                        placeholder="Enter OTP"
-                                                        value={otp}
-                                                        ref={otpRef}
-                                                        onChange={(e) => setOtp(e.target.value)}
-                                                    />
-                                                </div>
-                                                {otpError && <p style={{ color: "red" }}>{otpError}</p>}
+                                                    {otpError && <p style={{ color: "red" }}>{otpError}</p>}
 
 
-                                                {isResendEnabled && (
+                                                    {isResendEnabled && (
+                                                        <div className="input-group mb-3">
+                                                            <button
+                                                                type="button"
+                                                                className="btn w-100"
+                                                                style={{ background: "linear-gradient(45deg,#0077b6,#023e8a)", color: "#fff" }}
+                                                                onClick={handleResendOTP}
+                                                            >
+                                                                {t('translation.buttons.resendOTP')}
+                                                            </button></div>
+
+
+                                                    )}
+                                                    {timer > 0 && (
+                                                        <span>
+                                                            Resend OTP in {timer} {t('translation.LoginForm.otp.seconds')}
+                                                        </span>
+                                                    )}
                                                     <div className="input-group mb-3">
+                                                        {/* <span>
+                                                            {t('translation.LoginForm.otp.otpTimer')} {timer} {t('translation.LoginForm.otp.seconds')}
+                                                        </span> */}
                                                         <button
                                                             type="button"
                                                             className="btn w-100"
                                                             style={{ background: "linear-gradient(45deg,#0077b6,#023e8a)", color: "#fff" }}
-                                                            onClick={handleResendOTP}
+                                                            onClick={() => handleVerifyOTP(phoneNumber)}
                                                         >
-                                                            {t('translation.buttons.resendOTP')}
+                                                            {t('translation.buttons.verifyOTP')}
                                                         </button></div>
+                                                </>
+                                            )}
+                                            <br />
+                                        </form>
+                                    </div>
+                                </section>
+                                <br />
+                                <br />
 
+                                <section className="latestNewContent">
+                                    <div className="container">
+                                        <h4 className=" text-center">Latest News </h4><hr style={{ border: '2px solid black' }} />
+                                        <p>📝 {t('translation.instructions.statments.login')} </p>
+                                        <p>📝 {t('translation.instructions.statments.draft')}</p>
+                                        <p>📝 {t('translation.instructions.statments.citizen.title')}</p>
+                                        <p>📝 {t('translation.instructions.statments.login')}</p>
 
-                                                )}
-                                                {timer > 0 && (
-                                                    <span>
-                                                        {t('translation.LoginForm.otp.otpTimer')} {timer} {t('translation.LoginForm.otp.seconds')}
-                                                    </span>
-                                                )}
-                                                <div className="input-group mb-3">
-                                                    {/* <span>
-                                                            {t('translation.LoginForm.otp.otpTimer')} {timer} {t('translation.LoginForm.otp.seconds')}
-                                                        </span> */}
-                                                    <button
-                                                        type="button"
-                                                        className="btn w-100"
-                                                        style={{ background: "linear-gradient(45deg,#0077b6,#023e8a)", color: "#fff" }}
-                                                        onClick={() => handleVerifyOTP(phoneNumber)}
-                                                    >
-                                                        {t('translation.buttons.verifyOTP')}
-                                                    </button></div>
-                                            </>
-                                        )}
-                                        <br />
-                                    </form>
-                                </div>
-                            </section>
-                            <br />
-                            <br />
-
-                            <section className="latestNewContent">
-                                <div className="container">
-                                    <h4 className=" text-center">Latest News </h4><hr style={{ border: '2px solid black' }} />
-                                    <p>📝 {t('translation.instructions.statments.login')} </p>
-                                    <p>📝 {t('translation.instructions.statments.draft')}</p>
-                                    <p>📝 {t('translation.instructions.statments.citizen.title')}</p>
-                                    <p>📝 {t('translation.instructions.statments.login')}</p>
-
-                                </div>
-                            </section>
+                                    </div>
+                                </section>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </section>
-        </div>
+                </section>
+            </div>
         // {/* </DashboardLayout> */}
 
     );

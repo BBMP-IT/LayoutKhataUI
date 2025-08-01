@@ -12,15 +12,15 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import { toast, Toaster } from 'react-hot-toast';
 import Swal from "sweetalert2";
-
+import config from '../Config/config';
 
 const HomePageLayout = ({ children }) => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const isEnglish = i18n.language === 'kn';
   const [language, setLanguage] = useState('kn');
-
-
+  const navbarRef = useRef(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const handleLanguageChange = (event) => {
     const newLang = event.target.value;
     setLanguage(newLang);
@@ -42,7 +42,7 @@ const HomePageLayout = ({ children }) => {
     }).then((result) => {
       if (result.isConfirmed) {
         sessionStorage.clear();
-       
+
         navigate("/Login", { replace: true });
       }
       // If cancelled, do nothing
@@ -50,41 +50,43 @@ const HomePageLayout = ({ children }) => {
   };
 
 
+  
+
   return (
     <div className="App">
       <Toaster toastOptions={{ duration: 4000, style: { fontSize: '14px', padding: '16px 24px', minWidth: '300px', textAlign: 'center', }, }} position="bottom-right" />
       <div className="page">
         <div className="page-main">
 
-            <div className="header py-1">
+          <div className="header py-1">
             <div className="container-fluid">
               {/* Mobile View */}
               <div className="d-block d-md-none mobile-header text-white px-3 mb-2">
-                <h5 className="mb-3  text-center">Bruhat Bengaluru Mahanagara Palike</h5>
+                <h5 className="mb-3  text-center">{ t('translation.navbar.header.BBMPFullform') }</h5>
                 <div className="row text-center">
                   <div className="col-6 mb-3">
                     <img src={cmlogo} alt="CM" width={60} height={60} className="rounded-circle bg-white p-1" />
-                    <div className="fw-bold mt-2">Sri Siddaramaiah</div>
-                    <small className="badge bg-secondary mt-1">Hon'ble CM</small>
+                    <div className="fw-bold mt-2">{t('translation.navbar.header.CMName')}</div>
+                    <small className="badge bg-secondary mt-1">{ t('translation.navbar.header.CMTitle') }</small>
                   </div>
                   <div className="col-6 mb-3">
                     <div className="rounded-circle bg-white d-flex align-items-center justify-content-center mx-auto" style={{ width: 60, height: 60, overflow: 'hidden' }}>
                       <img src={dcmlogo} alt="DCM" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
-                    <div className="fw-bold mt-2">Sri DK. Shivakumar</div>
-                    <small className="badge bg-secondary mt-1">Hon'ble Deputy CM</small>
+                    <div className="fw-bold mt-2">{ t('translation.navbar.header.DCMName') }</div>
+                    <small className="badge bg-secondary mt-1">{ t('translation.navbar.header.DCMTitle') }</small>
                   </div>
                   <div className="col-6 mb-3">
                     <div className="rounded-circle bg-white d-flex align-items-center justify-content-center mx-auto" style={{ width: 60, height: 60, overflow: 'hidden' }}>
                       <img src={gokLogo} alt="GOK" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
-                    <div className="fw-bold mt-2">Government of Karnataka</div>
+                    <div className="fw-bold mt-2">{ t('translation.navbar.header.GOK') }</div>
                   </div>
                   <div className="col-6 mb-3">
                     <img src={bbmplogo} alt="BBMP" width={60} height={60} className="rounded-circle bg-white p-1" />
-                    <div className="fw-bold mt-2">BBMP</div>
+                    <div className="fw-bold mt-2">{ t('translation.navbar.header.bbmp') }</div>
                   </div>
-                  
+
                 </div>
               </div>
 
@@ -92,34 +94,91 @@ const HomePageLayout = ({ children }) => {
               <div className="row text-center align-items-center d-none d-md-flex">
                 <div className="col-md-2 mb-3">
                   <img src={cmlogo} alt="CM" width={80} height={80} className="rounded-circle bg-white p-1" />
-                  <div className="fw-bold text-white mt-2">Sri Siddaramaiah</div>
-                  <div className="badge bg-secondary mt-1">Hon'ble CM</div>
+                  <div className="fw-bold text-white mt-2">{t('translation.navbar.header.CMName')}</div>
+                  <div className="badge bg-secondary mt-1">{t('translation.navbar.header.CMTitle')}</div>
                 </div>
                 <div className="col-md-2 mb-3">
                   <div className="rounded-circle bg-white d-flex align-items-center justify-content-center mx-auto" style={{ width: 85, height: 85, overflow: 'hidden' }}>
                     <img src={gokLogo} alt="GOK" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   </div>
-                  <div className="fw-bold text-white mt-2">Government of Karnataka</div>
+                  <div className="fw-bold text-white mt-2">{ t('translation.navbar.header.GOK') }</div>
                 </div>
                 <div className="col-md-4 mb-3">
-                  <h2 className="text-white">Bruhat Bengaluru Mahanagara Palike</h2>
+                  <h2 className="text-white">{ t('translation.navbar.header.BBMPFullform') }</h2>
                 </div>
                 <div className="col-md-2 mb-3">
                   <img src={bbmplogo} alt="BBMP" width={80} height={80} className="rounded-circle bg-white p-1" />
-                  <div className="fw-bold text-white mt-2">BBMP</div>
+                  <div className="fw-bold text-white mt-2">{ t('translation.navbar.header.bbmp') }</div>
                 </div>
                 <div className="col-md-2 mb-3">
                   <div className="rounded-circle bg-white d-flex align-items-center justify-content-center mx-auto" style={{ width: 85, height: 85, overflow: 'hidden' }}>
                     <img src={dcmlogo} alt="DCM" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   </div>
-                  <div className="fw-bold text-white mt-2">Sri DK. Shivakumar</div>
-                  <div className="badge bg-secondary mt-1">Hon'ble Deputy CM</div>
+                  <div className="fw-bold text-white mt-2">{ t('translation.navbar.header.DCMName') }</div>
+                  <div className="badge bg-secondary mt-1">{ t('translation.navbar.header.DCMTitle') }</div>
                 </div>
               </div>
             </div>
           </div>
+          <nav className=" navbar navbar-expand-lg navbar-light bg-light " ref={navbarRef}>
+            <div className="container-fluid">
+              {/* Navbar Toggle Button for Mobile */}
+              <button
+                className="navbar-toggler"
+                type="button"
+                onClick={() => setMenuOpen(!menuOpen)}
+              >
+                <span className="navbar-toggler-icon"></span>&nbsp;&nbsp;BBMP
+                <img src={bbmplogo} width={40} height={40} style={{ marginLeft: '60px' }} />
+              </button>
 
-        
+              <div
+                className={`collapse navbar-collapse ${menuOpen ? "show" : ""}`}
+                id="navbarMenu"
+              >
+                <div className="ms-auto d-flex align-items-center">
+                 
+
+                  {/* <button
+                    className="btn btn-sm"
+                    style={{ backgroundColor: "#fff", color: "#023e8a" }}
+                    onClick={handleLogout}
+                  >
+                    <i className="fa fa-sign-out"></i>
+                  </button> */}
+                  &nbsp;
+
+                
+
+                  <div className="d-flex">
+                    <button
+                      onClick={() => handleLanguageChange({ target: { value: 'kn' } })}
+                      className={`px-4 py-2 rounded ${setLanguage === 'kn' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-black'}`}
+                    >
+                      ಕನ್ನಡ
+                    </button>&nbsp;
+                    <button
+                      onClick={() => handleLanguageChange({ target: { value: 'en' } })}
+                      className={`px-4 py-2 rounded ${setLanguage === 'en' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-black'}`}
+                    >
+                      English
+                    </button>
+                  </div>&nbsp;&nbsp;
+                   <button
+                    className="btn"
+                    style={{ backgroundColor: "#fff", color: "#023e8a" }}
+                    onClick={() => window.location.href = config.citizenServicesURL.login}
+                  >
+                    <i className="fas fa-sign-in-alt"></i> Login
+                  </button>
+                  &nbsp;
+                </div>
+              </div>
+
+            </div>
+          </nav>
+
+
 
 
 

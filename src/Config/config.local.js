@@ -1,6 +1,7 @@
 // config.local.js
 
 import { Dashboard } from "@mui/icons-material";
+import { LayoutDashboard } from "lucide-react";
 
 const ApiCredentials = {
     credentials: {
@@ -12,19 +13,19 @@ const ApiCredentials = {
         ekycRequestURL: 0,
         releaseEKYCnamescore: 1,
         totalNoofSites: 5,
-        
+
     }
 };
 
 const config = {
-      apiBaseUrl: ApiCredentials.credentials.apiUrl,
-      apiLoginBaseUrl: ApiCredentials.credentials.loginUrl,
-      redirectBaseURL: ApiCredentials.credentials.layoutForm,
-      redirectionTypeURL: ApiCredentials.credentials.ekycRequestURL,
-      rd_nameScore:  ApiCredentials.credentials.releaseEKYCnamescore,
-      sites:  ApiCredentials.credentials.totalNoofSites,
+    apiBaseUrl: ApiCredentials.credentials.apiUrl,
+    apiLoginBaseUrl: ApiCredentials.credentials.loginUrl,
+    redirectBaseURL: ApiCredentials.credentials.layoutForm,
+    redirectionTypeURL: ApiCredentials.credentials.ekycRequestURL,
+    rd_nameScore: ApiCredentials.credentials.releaseEKYCnamescore,
+    sites: ApiCredentials.credentials.totalNoofSites,
 
-  credentials: ApiCredentials.credentials, 
+    credentials: ApiCredentials.credentials,
 
     endpoints: {
         sendOTP: '/fnSendOtp',
@@ -50,8 +51,8 @@ const config = {
         insertJDAInfo: '/api/JDA/fnInsertJDAinfo',
         fetchJDAInfo: '/api/JDA/fnGetJDAinfo',
         multipleOwnerfetch: '/api/Owner/fnGetOwnerInfo',
-        individualSiteDetails: '/api/Site/fnInsertSiteinfo', 
-        fetchIndividualSiteDetails: '/api/Site/fnGetSiteInfo', 
+        individualSiteDetails: '/api/Site/fnInsertSiteinfo',
+        fetchIndividualSiteDetails: '/api/Site/fnGetSiteInfo',
         fetchECDetails: '/api/Kaveri/FnKaveriGetECDetails',
         fetchDeedDetails: '/api/Kaveri/FnKaveriGetDeedDetails',
         fetchDeedDetailsDoc: '/api/Kaveri/FnKaveriGetDeedDocumentDetails',
@@ -61,7 +62,7 @@ const config = {
         delete_siteInfo: '/api/Site/fnDeleteSiteinfo',
         fetchLKRSID: '/api/LKRS/fnGetLKRSInfo',
         layoutKhata_Save: '/api/LKRS/fnSaveLKRSinfo',
-        releasePercentage:'/api/Release/fnGetReleasePercentage',
+        releasePercentage: '/api/Release/fnGetReleasePercentage',
         releaseSites: '/api/Site/fnReleaseSites',
         jdaEKYCOwnerfetch: '/api/JDA/fnGetJDAEkycinfo',
         jdaEKYCInsert: '/api/JDA/fnInsertJDAEkycinfo',
@@ -74,7 +75,45 @@ const config = {
         fetchZoneWard: '/api/LKRS/fnGetZonefromWardList',
         fetchStreet: '/api/LKRS/fnGetStreetList',
         fetchARO: '/api/LKRS/fnGetARODetails',
-    }
+    },
+    citizenServicesURL: {
+        login: "https://testlayoutkhata.bbmpgov.in/Login",
+        getEkhata: "",
+        layoutDashboard: "https://testlayoutkhata.bbmpgov.in/LayoutForm",
+        amalgamation: "",
+        downloadEkhata: "",
+        onlineFormatAB: "https://bbmpeaasthi.karnataka.gov.in/office/frmKhathaDownload.aspx",
+        fileobjection: "",
+        newKhata: "https://bbmp.karnataka.gov.in/newkhata",
+        singleSiteApproval: "",
+        donotfindMyProperty: "",
+    },
+    applicationStatus: {
+        finalekhataStatusEPID: "",
+        neweKhathastatusbasedonePID: "",
+        pendingMutation: "",
+        searchByPropertyName: "",
+    },
+    verification: {
+        formABVerification: "https://bbmpeaasthi.karnataka.gov.in/office/frmForm3_2Verify.aspx",
+        formABView: "https://bbmpeaasthi.karnataka.gov.in/office/frmForm3_2View.aspx?formid=menu",
+        ScannedProperty: "",
+        propertyRegistered: "https://bbmpeaasthi.karnataka.gov.in/office/frmSearchKaveriProperties.aspx",
+        propertyRegisteredUnderKaveri: "https://bbmpeaasthi.karnataka.gov.in/office/frmSearchKaveriProp.aspx",
+    },
+    reports: {
+        reportsDashboard: "https://bbmpeaasthi.karnataka.gov.in/office/PublicReports/frmDashBoardNew.aspx",
+        eSwathuDraftReport: "https://bbmpeaasthi.karnataka.gov.in/office/PublicReports/frmDashBoardNew.aspx",
+        districtWise: "https://bbmpeaasthi.karnataka.gov.in/office/PublicReports/frmMutationDistrictwise.aspx",
+    },
+    externalLinks: {
+        kaveri: "https://kaveri.karnataka.gov.in/landing-page",
+        bhoomi: "https://landrecords.karnataka.gov.in/service2/RTC.aspx",
+        easthi: "https://bbmpeaasthi.karnataka.gov.in/",
+        propertyTax: "https://bbmptax.karnataka.gov.in/",
+        bangloreOne: "https://bbmpeaasthi.karnataka.gov.in/frmBangalore1CentersbyZone.aspx?zone=East",
+        processFlow: "https://bbmpeaasthi.karnataka.gov.in/frmProcessFlowDisplay.aspx",
+    },
 };
 
 export default config;

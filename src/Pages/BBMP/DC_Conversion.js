@@ -322,7 +322,7 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
         } catch (error) {
             console.error("API Error:", error);
               Swal.fire({
-                    title:"Something went wrong, Please try again later!ss",
+                    title:"Something went wrong, Please try again later!",
                     icon: "error",
                     confirmButtonText: "OK",
                 });

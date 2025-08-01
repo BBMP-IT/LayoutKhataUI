@@ -1,10 +1,12 @@
 import axios from 'axios';
 import Swal from "sweetalert2";
 import { triggerLogout } from '../AuthContext';
+import config from '../Config/config';
 
 
 const axiosInstance = axios.create({
-  baseURL: 'https://testapps.bbmpgov.in/LayoutKhataAPI',
+  // baseURL: 'https://testapps.bbmpgov.in/LayoutKhataAPI',
+  baseURL: config.apiBaseUrl,
   headers: {
     Accept: '*/*',
   },
