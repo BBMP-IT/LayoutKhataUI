@@ -3778,7 +3778,7 @@
     display: block;
   }
   
-  .navbar {
+  .navbar1 {
     position: fixed;
     top: 155px; 
     width: 100%;
@@ -3791,27 +3791,27 @@
     background-color: #fff; 
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
-  main {
-    margin-top: 220px; /* Default for larger screens */
+  .main_style {
+    margin-top: 100px; /* Default for larger screens */
   }
   
   /* Tablet view (max-width: 1024px) */
   @media screen and (max-width: 1024px) {
-    main {
+    .main_style {
       margin-top: 150px; /* Adjust based on header + navbar height */
     }
   }
   
   /* Mobile view (max-width: 768px) */
   @media screen and (max-width: 768px) {
-    main {
+    .main_style {
       margin-top: 120px; /* Reduce spacing for smaller screens */
     }
   }
   
   /* Small mobile screens (max-width: 480px) */
   @media screen and (max-width: 480px) {
-    main {
+    .main_style {
       margin-top: 70px; /* Further reduce spacing for very small screens */
     }
   }
@@ -3823,8 +3823,8 @@
 }
 
   
-  .navbar > .container,
-  .navbar > .container-fluid {
+  .navbar1 > .container,
+  .navbar1 > .container-fluid {
     display: -ms-flexbox;
     display: flex;
     -ms-flex-wrap: wrap;
@@ -3929,7 +3929,7 @@
 
 /* Tablets only (including iPad Air) */
 @media (min-width: 768px) and (max-width: 1024px) {
-  .navbar {
+  .navbar1 {
     position: fixed; /* Fix the navbar below the header */
     top: 180px; /* Adjust this based on header height */
     width: 100%;
@@ -3946,7 +3946,7 @@
 
 
   @media (max-width: 768px) {
-    .navbar {
+    .navbar1 {
       position: fixed; /* Fix the navbar below the header */
       top: 0; /* Adjust this based on header height */
       width: 100%;
@@ -3959,7 +3959,7 @@
       background-color: #fff; /* Ensure it's visible on scroll */
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
-    .header {
+    .header1 {
       display: none;
     }
     .navbar-nav .nav-item .nav-link {
@@ -9124,7 +9124,7 @@
     .container {
       min-width: 992px !important;
     }
-    .navbar {
+    .navbar1 {
       display: none;
     }
     .badge {
@@ -9564,7 +9564,7 @@
     border-bottom: 1px solid rgba(0, 40, 100, 0.12);
   }
   
-  .header {
+  .header1 {
     /* position: fixed; */
     top: 0;
     width: 100%;
@@ -9575,7 +9575,7 @@
     border-bottom: 1px solid rgba(0, 40, 100, 0.12);
   }
   
-  body.fixed-header .header {
+  body.fixed-header .header1 {
     position: fixed;
     top: 0;
     left: 0;
@@ -9584,12 +9584,12 @@
   }
   
   @media print {
-    .header {
+    .header1 {
       display: none;
     }
   }
   
-  .header .dropdown-menu {
+  .header1 .dropdown-menu {
     margin-top: .75rem;
   }
   

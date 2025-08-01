@@ -227,17 +227,17 @@ const [isDropdownFiveOpen, setIsDropdownFiveOpen] = useState(false);
 
 
 useEffect(() => {
-  const navbar = document.querySelector('.navbar');
-  const header = document.querySelector('.header');
-  const main = document.querySelector('main');
+  const navbar = document.querySelector('.navbar1');
+  const header = document.querySelector('.header1');
+  const main = document.querySelector('.main_style');
 
   const handleScroll = () => {
     if (window.scrollY > 10) {
       navbar.style.top = '0px';
-      main.style.marginTop = '170px';
+      main.style.marginTop = '50px';
     } else {
       navbar.style.top = '155px';
-      main.style.marginTop = '220px';
+      main.style.marginTop = '100px';
     }
   };
   window.addEventListener('scroll', handleScroll);
@@ -295,7 +295,7 @@ useEffect(() => {
           <div className="page">
             <div className="page-main">
 
-              <div className="header py-1">
+              <div className="header1 py-1">
                 <div className="container-fluid">
                   <div className="row text-center align-items-center">
                     {/* CM */}
@@ -361,7 +361,7 @@ useEffect(() => {
                   </div>
                 </div>
               </div>
-              <nav className=" navbar navbar-expand-lg navbar-light bg-light " ref={navbarRef}>
+              <nav className=" navbar1 navbar-expand-lg navbar-light bg-light " ref={navbarRef}>
                 <div className="container-fluid">
                   {/* Navbar Toggle Button for Mobile */}
                   <button
@@ -630,7 +630,7 @@ useEffect(() => {
                         style={{ backgroundColor: "#fff", color: "#023e8a" }}
                         onClick={handleLogout}
                       >
-                        <i className="fa fa-sign-out button_size"> logout</i>
+                        <i className="fa fa-sign-out "></i>
                       </button>
 
                     </div> &nbsp;
@@ -669,7 +669,7 @@ useEffect(() => {
 
 
 
-              <main>{children}</main>
+              <main className='main_style'>{children}</main>
 
               {/* <FloatingButton onClick={handleClick} /> */}
               <section id="contact">
