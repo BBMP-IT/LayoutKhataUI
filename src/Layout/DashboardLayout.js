@@ -672,7 +672,7 @@ useEffect(() => {
               <main className='main_style'>{children}</main>
 
               {/* <FloatingButton onClick={handleClick} /> */}
-              <section id="contact">
+              <section id="contact" className='no-print'>
                 <div className="container">
                   <div className="row" data-aos="fade-up">
                     <div className="col-lg-4 col-md-4 col-sm-12 col-12">
@@ -739,7 +739,7 @@ useEffect(() => {
                 </div>
               </section>
 
-              <footer id="footer">
+              <footer id="footer" className='no-print'>
                 <div className="container">
                   <div className="row">
                     <div className="col-lg-12 text-lg-left text-center">

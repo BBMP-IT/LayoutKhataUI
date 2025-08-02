@@ -830,7 +830,27 @@ const BBMP_SubmittedInfo = () => {
             stop_loader();
         }
     }
+    const [rdeedNumber, setRDeedNumber] = useState("");
+    const RelinquishmentDeedFetch = async () => {
+        try {
+            start_loader();
 
+            const response = await fileListAPI(3, localLKRSID, 7, 0); // level, LKRSID, MdocID, docID
+
+            if (Array.isArray(response) && response.length > 0) {
+                const firstDeed = response[0].docTrn_Document_No || "";
+                const registrationDate = response[0].docTrn_RegDate || ""; // If available
+
+                setRDeedNumber(firstDeed);
+            } else {
+                console.log("No deed number found.");
+            }
+        } catch (error) {
+            console.error("Failed to fetch LKRSID data:", error);
+        } finally {
+            stop_loader();
+        }
+    };
     // =============================================OwnerEKYC details starts=====================================
 
     const [ownerDataList, setOwnerDataList] = useState([]);
@@ -1053,6 +1073,22 @@ const BBMP_SubmittedInfo = () => {
         e.preventDefault(); // Prevents the default anchor tag behavior
         navigate("/LayoutDashboard");
     };
+
+    const printData = () => {
+        const printHeader = document.getElementById('print-header');
+        if (printHeader) printHeader.style.display = 'block';
+
+        window.print();
+
+        // Optional: delay hiding to ensure print dialog completes
+        setTimeout(() => {
+            if (printHeader) printHeader.style.display = 'none';
+        }, 1000);
+    };
+
+    const backToDashboard = () => {
+        window.location.href = "/LayoutDashboard"; // update as needed
+    };
     return (
         <>
             {/* {loading && <Loader />}
@@ -1066,9 +1102,13 @@ const BBMP_SubmittedInfo = () => {
                             <h5 className="card-title" style={{ margin: 0 }}>Submitted Application information</h5>
                             <h5 style={{ color: '#fff' }}>KRSID : {display_LKRS_ID}</h5>
                         </div>
-
+                        <div id="print-header" style={{ display: 'none', textAlign: 'center', marginBottom: '20px', marginTop: '50px' }}>
+                            <h4>Online BBMP New Khata Issuance System</h4>
+                            <p>(Only for properties without BBMP Khata. If property has manual khata & you want eKhata then get at <br />
+                                <a href="https://bbmpeaasthi.karnataka.gov.in" target="_blank">https://bbmpeaasthi.karnataka.gov.in</a>)</p>
+                        </div>
                         <div className="card-body">
-                            <Link
+                            <Link className='no-print'
                                 onClick={handleBackToDashboard}
                                 style={{ textDecoration: 'none', color: '#006879', display: 'flex', alignItems: 'center' }}
                             >
@@ -1078,7 +1118,7 @@ const BBMP_SubmittedInfo = () => {
                             <div className='row'>
                                 <div className='col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10 mt-3'></div>
                                 {shouldShowReleaseButton && (
-                                    <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-3'>
+                                    <div className='col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-3 no-print'>
                                         <button className='btn btn-success btn-block' onClick={final_Save_Release}>
                                             Proceed to Release
                                         </button>
@@ -1325,157 +1365,157 @@ const BBMP_SubmittedInfo = () => {
         margin-bottom: 10px; /* Space between heading/button and table */
       }
     `}</style>
-                                              <div className="table-responsive-wrapper">
-                        <div className="header-with-button">
-                            <h4>Property Details</h4>
-                            {/* <button className='btn btn-warning' onClick={showImplementationAlert}>View eKhata</button> */}
-                        </div>
+                                                <div className="table-responsive-wrapper">
+                                                    <div className="header-with-button">
+                                                        <h4>Property Details</h4>
+                                                        {/* <button className='btn btn-warning' onClick={showImplementationAlert}>View eKhata</button> */}
+                                                    </div>
 
-                        {/* Property Details */}
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Property ID</th>
-                                    <th>Category</th>
-                                    <th>Classification</th>
-                                    <th>Ward Number</th>
-                                    <th>Ward Name</th>
-                                    <th>Street Name</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>{epid_fetchedData.PropertyID?.toString().trim() || '-'}</td>
-                                    <td>{epid_fetchedData.PropertyCategory?.toString().trim() || '-'}</td>
-                                    <td>{epid_fetchedData.PropertyClassification?.toString().trim() || '-'}</td>
-                                    <td>{epid_fetchedData.WardNumber?.toString().trim() || '-'}</td>
-                                    <td>{epid_fetchedData.WardName?.toString().trim() || '-'}</td>
-                                    <td>{epid_fetchedData.StreetName?.toString().trim() || '-'}</td>
-                                </tr>
+                                                    {/* Property Details */}
+                                                    <table>
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Property ID</th>
+                                                                <th>Category</th>
+                                                                <th>Classification</th>
+                                                                <th>Ward Number</th>
+                                                                <th>Ward Name</th>
+                                                                <th>Street Name</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td>{epid_fetchedData.PropertyID?.toString().trim() || '-'}</td>
+                                                                <td>{epid_fetchedData.PropertyCategory?.toString().trim() || '-'}</td>
+                                                                <td>{epid_fetchedData.PropertyClassification?.toString().trim() || '-'}</td>
+                                                                <td>{epid_fetchedData.WardNumber?.toString().trim() || '-'}</td>
+                                                                <td>{epid_fetchedData.WardName?.toString().trim() || '-'}</td>
+                                                                <td>{epid_fetchedData.StreetName?.toString().trim() || '-'}</td>
+                                                            </tr>
 
-                            </tbody>
-                        </table>
+                                                        </tbody>
+                                                    </table>
 
-                        {/* Kaveri Registration Numbers */}
-                        {epid_fetchedData.KaveriRegistrationNumber && (
-                            <>
-                                <h4>Kaveri Registration Numbers</h4>
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Registration Number</th>
-                                            <th>EC Number</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {epid_fetchedData.KaveriRegistrationNumber.map((item, idx) => (
-                                            <tr key={idx}>
-                                                <td>{item.kaveriRegistrationNumber?.trim() ? item.kaveriRegistrationNumber : '-'}</td>
-                                                <td>{item.kaveriECNumber?.trim() ? item.kaveriECNumber : '-'}</td>
+                                                    {/* Kaveri Registration Numbers */}
+                                                    {epid_fetchedData.KaveriRegistrationNumber && (
+                                                        <>
+                                                            <h4>Kaveri Registration Numbers</h4>
+                                                            <table>
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>Registration Number</th>
+                                                                        <th>EC Number</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {epid_fetchedData.KaveriRegistrationNumber.map((item, idx) => (
+                                                                        <tr key={idx}>
+                                                                            <td>{item.kaveriRegistrationNumber?.trim() ? item.kaveriRegistrationNumber : '-'}</td>
+                                                                            <td>{item.kaveriECNumber?.trim() ? item.kaveriECNumber : '-'}</td>
 
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </>
-                        )}
+                                                                        </tr>
+                                                                    ))}
+                                                                </tbody>
+                                                            </table>
+                                                        </>
+                                                    )}
 
-                        {/* More Property Info */}
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Street Code</th>
-                                    <th>SAS Application No</th>
-                                    <th>Is Mutation</th>
-                                    <th>Assessment No</th>
-                                    <th>Court Stay</th>
-                                    <th>Enquiry Dispute</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>{epid_fetchedData.Streetcode?.toString().trim() ? epid_fetchedData.Streetcode : '-'}</td>
-                                    <td>{epid_fetchedData.SASApplicationNumber?.toString().trim() ? epid_fetchedData.SASApplicationNumber : '-'}</td>
-                                    <td>{epid_fetchedData.IsMuation?.toString().trim() ? epid_fetchedData.IsMuation : '-'}</td>
-                                    <td>{epid_fetchedData.AssessmentNumber?.toString().trim() ? epid_fetchedData.AssessmentNumber : '-'}</td>
-                                    <td>{epid_fetchedData.courtStay?.toString().trim() ? epid_fetchedData.courtStay : '-'}</td>
-                                    <td>{epid_fetchedData.enquiryDispute?.toString().trim() ? epid_fetchedData.enquiryDispute : '-'}</td>
-                                </tr>
+                                                    {/* More Property Info */}
+                                                    <table>
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Street Code</th>
+                                                                <th>SAS Application No</th>
+                                                                <th>Is Mutation</th>
+                                                                <th>Assessment No</th>
+                                                                <th>Court Stay</th>
+                                                                <th>Enquiry Dispute</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td>{epid_fetchedData.Streetcode?.toString().trim() ? epid_fetchedData.Streetcode : '-'}</td>
+                                                                <td>{epid_fetchedData.SASApplicationNumber?.toString().trim() ? epid_fetchedData.SASApplicationNumber : '-'}</td>
+                                                                <td>{epid_fetchedData.IsMuation?.toString().trim() ? epid_fetchedData.IsMuation : '-'}</td>
+                                                                <td>{epid_fetchedData.AssessmentNumber?.toString().trim() ? epid_fetchedData.AssessmentNumber : '-'}</td>
+                                                                <td>{epid_fetchedData.courtStay?.toString().trim() ? epid_fetchedData.courtStay : '-'}</td>
+                                                                <td>{epid_fetchedData.enquiryDispute?.toString().trim() ? epid_fetchedData.enquiryDispute : '-'}</td>
+                                                            </tr>
 
-                            </tbody>
-                        </table>
+                                                        </tbody>
+                                                    </table>
 
-                        {/* Check Bandi */}
-                        <h4>Chakbandi</h4>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>North</th>
-                                    <th>South</th>
-                                    <th>East</th>
-                                    <th>West</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>{epid_fetchedData.CheckBandi?.north?.toString().trim() ? epid_fetchedData.CheckBandi.north : '-'}</td>
-                                    <td>{epid_fetchedData.CheckBandi?.south?.toString().trim() ? epid_fetchedData.CheckBandi.south : '-'}</td>
-                                    <td>{epid_fetchedData.CheckBandi?.east?.toString().trim() ? epid_fetchedData.CheckBandi.east : '-'}</td>
-                                    <td>{epid_fetchedData.CheckBandi?.west?.toString().trim() ? epid_fetchedData.CheckBandi.west : '-'}</td>
+                                                    {/* Check Bandi */}
+                                                    <h4>Chakbandi</h4>
+                                                    <table>
+                                                        <thead>
+                                                            <tr>
+                                                                <th>North</th>
+                                                                <th>South</th>
+                                                                <th>East</th>
+                                                                <th>West</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td>{epid_fetchedData.CheckBandi?.north?.toString().trim() ? epid_fetchedData.CheckBandi.north : '-'}</td>
+                                                                <td>{epid_fetchedData.CheckBandi?.south?.toString().trim() ? epid_fetchedData.CheckBandi.south : '-'}</td>
+                                                                <td>{epid_fetchedData.CheckBandi?.east?.toString().trim() ? epid_fetchedData.CheckBandi.east : '-'}</td>
+                                                                <td>{epid_fetchedData.CheckBandi?.west?.toString().trim() ? epid_fetchedData.CheckBandi.west : '-'}</td>
 
 
-                                </tr>
-                            </tbody>
-                        </table>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
 
-                        {/* Site Details */}
-                        <h4>Site Details</h4>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Site Area (SQ Mtr)</th>
-                                    <th>East-West Dimension</th>
-                                    <th>North-South Dimension</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>{epid_fetchedData.SiteDetails?.siteArea ? parseFloat(epid_fetchedData.SiteDetails.siteArea).toFixed(1) : ''}</td>
-                                    <td>{epid_fetchedData.SiteDetails?.dimensions?.eastWest || '-'}</td>
-                                    <td>{epid_fetchedData.SiteDetails?.dimensions?.northSouth || '-'}</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                                                    {/* Site Details */}
+                                                    <h4>Site Details</h4>
+                                                    <table>
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Site Area (SQ Mtr)</th>
+                                                                <th>East-West Dimension</th>
+                                                                <th>North-South Dimension</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td>{epid_fetchedData.SiteDetails?.siteArea ? parseFloat(epid_fetchedData.SiteDetails.siteArea).toFixed(1) : ''}</td>
+                                                                <td>{epid_fetchedData.SiteDetails?.dimensions?.eastWest || '-'}</td>
+                                                                <td>{epid_fetchedData.SiteDetails?.dimensions?.northSouth || '-'}</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
 
-                        {/* Owner Details */}
-                        <h4>Owner Details</h4>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Owner Name</th>
-                                    <th>ID Type</th>
-                                    {/* <th>ID Number</th> */}
-                                    <th>Address</th>
-                                    <th>Identifier Name</th>
-                                    <th>Gender</th>
-                                    <th>Mobile Number</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {epid_fetchedData.OwnerDetails?.map((owner, index) => (
-                                    <tr key={index}>
-                                        <td>{owner.ownerName}</td>
-                                        <td>{owner.idType}</td>
-                                        {/* <td>{owner.idNumber ? owner.idNumber.replace(/\d(?=\d{4})/g, 'X') : '-'}</td> */}
-                                        <td>{owner.ownerAddress}</td>
-                                        <td>{owner.identifierName}</td>
-                                        <td>{owner.gender}</td>
-                                        <td>{owner.mobileNumber}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                                    {/* Owner Details */}
+                                                    <h4>Owner Details</h4>
+                                                    <table>
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Owner Name</th>
+                                                                <th>ID Type</th>
+                                                                {/* <th>ID Number</th> */}
+                                                                <th>Address</th>
+                                                                <th>Identifier Name</th>
+                                                                <th>Gender</th>
+                                                                <th>Mobile Number</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {epid_fetchedData.OwnerDetails?.map((owner, index) => (
+                                                                <tr key={index}>
+                                                                    <td>{owner.ownerName}</td>
+                                                                    <td>{owner.idType}</td>
+                                                                    {/* <td>{owner.idNumber ? owner.idNumber.replace(/\d(?=\d{4})/g, 'X') : '-'}</td> */}
+                                                                    <td>{owner.ownerAddress}</td>
+                                                                    <td>{owner.identifierName}</td>
+                                                                    <td>{owner.gender}</td>
+                                                                    <td>{owner.mobileNumber}</td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
                                             </>
                                         )}
 
@@ -1510,8 +1550,35 @@ const BBMP_SubmittedInfo = () => {
                                         />
                                     </div>
                                 )}
+
+
                                 {allSites.length > 0 && (
                                     <>
+                                        <h4>Layout & Individual sites Details</h4>
+                                        <div className='row'>
+                                            <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mt-4">
+                                                <label className='form-label'>
+                                                    Relinquishment Deed Number (For park, open space, road + Civic Amenity)
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    className="form-control"
+                                                    placeholder="Relinquishment Deed Number"
+                                                    value={rdeedNumber}
+                                                    // keep your logic
+                                                    maxLength={20} readOnly
+                                                />
+                                            </div>
+                                            <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-6 no-print">
+                                                <div className="form-group">
+                                                    <button className="btn btn-warning btn-block" onClick={handleViewDeed}>
+                                                        View Deed
+                                                    </button>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                        <br />
                                         <Preview_siteDetailsTable
                                             data={allSites}
                                             setData={setAllSites}
@@ -1543,11 +1610,11 @@ const BBMP_SubmittedInfo = () => {
                                                             readOnly
                                                         />
                                                     </div>
-                                                    <div className="text-success">
+                                                    {/* <div className="text-success no-print">
                                                         <strong>EC Check successfully <i className="fa fa-check-circle"></i></strong>
-                                                    </div>
+                                                    </div> */}
                                                 </div>
-                                                <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-7">
+                                                <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-7 no-print">
                                                     <div className="form-group">
                                                         <button className="btn btn-warning btn-block" onClick={() => viewEC(ecNumber)}>
                                                             View EC
@@ -1628,11 +1695,11 @@ const BBMP_SubmittedInfo = () => {
                                                                 value={deedNumber}
                                                                 maxLength={50} readOnly
                                                             />
-                                                            <div className="text-success">
+                                                            {/* <div className="text-success no-print">
                                                                 <strong>Deed Check successfully <i className="fa fa-check-circle"></i></strong>
-                                                            </div>
+                                                            </div> */}
                                                         </div>
-                                                        <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-5">
+                                                        <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-5 no-print">
                                                             <div className="form-group">
                                                                 <button className="btn btn-warning btn-block" onClick={handleViewDeed}>
                                                                     View Deed
@@ -1771,7 +1838,7 @@ const BBMP_SubmittedInfo = () => {
                                                     <th>ಹುಟ್ಟಿದ ದಿನಾಂಕ / DOB</th> {/* New column */}
                                                     <th>ವಿಳಾಸ / Address</th> {/* New column */}
                                                     <th>ಇಕೆವೈಸಿ ಸ್ಥಿತಿ / EKYC Status</th> {/* New column */}
-                                                    <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th> New column
+                                                    {/* <th>ಹೆಸರು ಹೊಂದಾಣಿಕೆಯ ಸ್ಥಿತಿ / Name Match Status</th> New column */}
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -1813,10 +1880,20 @@ const BBMP_SubmittedInfo = () => {
                                         </table>
                                     </div>
                                 )}
+
+                                <div className="row no-print" style={{ paddingTop: 40 }}>
+                                    <div className="col-sm-6">
+                                        <input type="button" className="form-control btn btn-info rounded-pill" value="Print" onClick={printData} />
+                                    </div>
+                                    <div className="col-sm-6">
+                                        <input type="button" className="form-control btn btn-info rounded-pill" value="Back To Dashboard" onClick={backToDashboard} />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+                {/* Buttons */}
 
             </div>
             {/* </div>
@@ -1844,25 +1921,16 @@ const Preview_siteDetailsTable = ({ data, setData, totalSitesCount, }) => {
                 accessor: (row) => {
                     return `${row.sitE_SHAPETYPE} `;
                 },
+                width: 80,
             },
             {
                 Header: "Site Number",
                 accessor: (row) => {
                     return `${row.sitE_NO}`;
                 },
+                width: 180,
             },
-            {
-                Header: "Block/Area",
-                accessor: (row) => {
-                    return `${row.sitE_AREA}`;
-                },
-            },
-            {
-                Header: "Number of sides",
-                accessor: (row) => {
-                    return `${row.sitE_NO_OF_SIDES}`;
-                },
-            },
+
             {
                 Header: "Dimension",
                 accessor: (row) => {
@@ -1895,6 +1963,7 @@ const Preview_siteDetailsTable = ({ data, setData, totalSitesCount, }) => {
                     }
 
                 },
+                width: 220,
             },
             {
                 Header: "Is Released",
@@ -1908,17 +1977,13 @@ const Preview_siteDetailsTable = ({ data, setData, totalSitesCount, }) => {
                     return `${row.sitE_AREAINSQFT} [Sq.ft], ${row.sitE_AREAINSQMT} [Sq.mtr]`;
                 },
             },
-            {
-                Header: "Corner Site",
-                accessor: (row) => {
-                    return row.sitE_CORNERPLOT ? "YES" : "NO";
-                },
-            },
+
             {
                 Header: "Type of Site",
                 accessor: (row) => {
                     return `${row.sitE_TYPE}`;
                 },
+                width: '10px'
             },
             {
                 id: "chakbandi",  // 👈 you must add this
@@ -1931,13 +1996,33 @@ const Preview_siteDetailsTable = ({ data, setData, totalSitesCount, }) => {
                 accessor: (row) => {
                     return `${row.sitE_EAST} | ${row.sitE_WEST} | ${row.sitE_NORTH} | ${row.sitE_SOUTH}`;
                 },
+
             },
-            {
-                Header: "Latitude, Longitude",
-                accessor: (row) => {
-                    return `${row.sitE_LATITUDE}, ${row.sitE_LONGITUDE}`;
-                },
-            },
+
+            // {
+            //     Header: "Block/Area",
+            //     accessor: (row) => {
+            //         return `${row.sitE_AREA}`;
+            //     },
+            // },
+            // {
+            //     Header: "Number of sides",
+            //     accessor: (row) => {
+            //         return `${row.sitE_NO_OF_SIDES}`;
+            //     },
+            // },
+            // {
+            //     Header: "Corner Site",
+            //     accessor: (row) => {
+            //         return row.sitE_CORNERPLOT ? "YES" : "NO";
+            //     },
+            // },
+            // {
+            //     Header: "Latitude, Longitude",
+            //     accessor: (row) => {
+            //         return `${row.sitE_LATITUDE}, ${row.sitE_LONGITUDE}`;
+            //     },
+            // },
         ],
         []
     );
@@ -1960,7 +2045,7 @@ const Preview_siteDetailsTable = ({ data, setData, totalSitesCount, }) => {
         {
             columns,
             data,
-            initialState: { pageIndex: 0, pageSize: 10 },
+            initialState: { pageIndex: 0, pageSize: 1000 },
         },
         usePagination
     );
@@ -1988,7 +2073,7 @@ const Preview_siteDetailsTable = ({ data, setData, totalSitesCount, }) => {
             <h4>
 
             </h4>
-            <div style={{ overflowX: "auto", padding: "1rem" }}>
+            <div style={{ overflowX: "auto", padding: "1rem" }} className='print-table-container'>
                 <table
                     {...getTableProps()}
                     style={{

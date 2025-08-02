@@ -257,7 +257,7 @@ export const useLoader = () => {
     return (
         <div>
             {loading && <Loader />}
-            <h4>Layout & Individual Sites Details</h4>
+            {/* <h4>Layout & Individual Sites Details</h4> */}
             <div style={{ overflowX: "auto", padding: "1rem" }}>
                 <table
                     {...getTableProps()}

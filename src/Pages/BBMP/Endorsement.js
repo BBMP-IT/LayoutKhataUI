@@ -16,6 +16,7 @@ const Endorsement = () => {
   const [zoneName, setZoneName] = useState("");
   const [wardName, setWardName] = useState("");
   const [address, setAddress] = useState("");
+  const [reason, setReason] = useState("");
 
 
   useEffect(() => {
@@ -61,6 +62,7 @@ const Endorsement = () => {
         setZoneName(aro_response[0].bbmpZoneName);
         setWardName(aro_response[0].bbmpWardName);
         setAROName(aro_response[0].aronamE_EN)
+        setReason(response.lkrS_REASON_FOR_REFFERAL);
       }
 
     } catch (error) {
@@ -166,12 +168,9 @@ const Endorsement = () => {
               <p style={{ fontSize: 18 }}>Pay upto-date Property Tax at <a href="https://BBMPtax.Karnataka.gov.in">https://BBMPtax.Karnataka.gov.in </a>(Using your SAS Application No. given at top)</p>
               <p style={{ fontSize: 18 }} ><p>Your case has been referred to ARO <b>{aroName}</b>, Zone <b>{zoneName}</b>, Ward <b>{wardName}</b>, ARO Address <b>{address}</b></p></p>
             </div>
-            <div className='row' hidden>
+            <div className='row' >
               <p style={{ fontSize: 18 }}><strong>For the following reasons/purposes:</strong> <br /></p>
-              <p style={{ fontSize: 18 }}>1. BBMP will visit your property for verification.</p>
-              <p style={{ fontSize: 18 }}>2. Owner Name as per the Aadhaar is not matching with the name in registered deed.</p>
-              <p style={{ fontSize: 18 }}>3. Basis of A-khata Claim document is uploaded which required ARO approval.</p>
-              <p style={{ fontSize: 18 }}>4. The Consumer name as per Bescom is not matching with the name in registered deed which requires ARO approval.</p>
+              <p style={{ fontSize: 18 }}>{reason}</p>
 
 
             </div>

@@ -41,7 +41,7 @@ export const useLoader = () => {
 };
 
 const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, isApprovalSectionSaved, validate_ownerDataList,
-    isReleaseSectionSaved, isSitesSectionSaved, isECSectionSaved, isJDAEKYCSectionSaved, isOwnerEKYCSectionSaved }) => {
+    isReleaseSectionSaved, isSitesSectionSaved, isECSectionSaved, isJDAEKYCSectionSaved, isOwnerEKYCSectionSaved, isDCSectionSaved }) => {
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
@@ -195,6 +195,10 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
     const [jdaSection, setJDASection] = useState(false);
     //final Save API integration
     const final_Save = async () => {
+        let isOwnerEKYCSectionSaved = true;
+        let isJDAEKYCSectionSaved = true;
+
+
         if (isRTCSectionSaved === false && isEPIDSectionSaved === false) {
             Swal.fire({
                 icon: 'warning',
@@ -247,18 +251,18 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
         }
         console.log("ownerDataList", ownerDataList);
         //  Block if even one owner doesn't have successful EKYC
-        const missingEKYC = ownerDataList.some(owner =>
-            owner.owN_AADHAARVERISTATUS !== "Success"
-        );
+        // const missingEKYC = ownerDataList.some(owner =>
+        //     owner.owN_AADHAARVERISTATUS !== "Success"
+        // );
 
-        if (missingEKYC) {
-            Swal.fire({
-                text: "All owners must complete eKYC before saving.",
-                icon: "error",
-                confirmButtonText: "OK",
-            });
-            return;
-        }
+        // if (missingEKYC) {
+        //     Swal.fire({
+        //         text: "All owners must complete eKYC before saving.",
+        //         icon: "error",
+        //         confirmButtonText: "OK",
+        //     });
+        //     return;
+        // }
         if (isOwnerEKYCSectionSaved === false) {
             Swal.fire({
                 icon: 'warning',
@@ -279,6 +283,11 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                 return;
             }
         }
+
+
+
+
+
         // if (ownerList.some(owner => owner.owN_AADHAARVERISTATUS !== "Success")) {
         //     Swal.fire({
         //         icon: 'error',
@@ -347,19 +356,14 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
 
     //Final API for Redirecting to RELEASE DASHBOARD
     const final_Save_Release = async () => {
-        if (isRTCSectionSaved === false) {
+        let isOwnerEKYCSectionSaved = true;
+        let isJDAEKYCSectionSaved = true;
+
+        if (isRTCSectionSaved === false && isEPIDSectionSaved === false) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Important!',
-                text: 'Please save the land details before proceeding.',
-                confirmButtonText: 'Ok'
-            });
-            return;
-        }else if(isEPIDSectionSaved === false){
-           Swal.fire({
-                icon: 'warning',
-                title: 'Important!',
-                text: 'Please save the EPID details before proceeding.',
+                text: 'Please save the land details before proceeding with layout approval.',
                 confirmButtonText: 'Ok'
             });
             return;
@@ -385,7 +389,6 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
         //     return;
         // }
 
-
         if (isSitesSectionSaved === false) {
             Swal.fire({
                 icon: 'warning',
@@ -406,6 +409,20 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
             });
             return;
         }
+        console.log("ownerDataList", ownerDataList);
+        //  Block if even one owner doesn't have successful EKYC
+        // const missingEKYC = ownerDataList.some(owner =>
+        //     owner.owN_AADHAARVERISTATUS !== "Success"
+        // );
+
+        // if (missingEKYC) {
+        //     Swal.fire({
+        //         text: "All owners must complete eKYC before saving.",
+        //         icon: "error",
+        //         confirmButtonText: "OK",
+        //     });
+        //     return;
+        // }
         if (isOwnerEKYCSectionSaved === false) {
             Swal.fire({
                 icon: 'warning',
@@ -426,6 +443,8 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                 return;
             }
         }
+
+
         // if (ownerList.some(owner => owner.owN_AADHAARVERISTATUS !== "Success")) {
         //     Swal.fire({
         //         icon: 'error',
@@ -1277,6 +1296,27 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
             stop_loader();
         }
     }
+    const [rdeedNumber, setRDeedNumber] = useState("");
+    const RelinquishmentDeedFetch = async (LKRS_ID) => {
+        try {
+            start_loader();
+
+            const response = await fileListAPI(3, LKRS_ID, 7, 0); // level, LKRSID, MdocID, docID
+
+            if (Array.isArray(response) && response.length > 0) {
+                const firstDeed = response[0].docTrn_Document_No || "";
+                const registrationDate = response[0].docTrn_RegDate || ""; // If available
+
+                setRDeedNumber(firstDeed);
+            } else {
+                console.log("No deed number found.");
+            }
+        } catch (error) {
+            console.error("Failed to fetch LKRSID data:", error);
+        } finally {
+            stop_loader();
+        }
+    };
 
     // =============================================OwnerEKYC details starts=====================================
 
@@ -1352,6 +1392,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
         await fetch_DCConversion(localLKRSID);
         await fetchApprovalList(localLKRSID);
         await fetchReleaseList(localLKRSID);
+        await RelinquishmentDeedFetch(localLKRSID);
         await fetchSiteDetails(localLKRSID);
         await fetchJDAInfo(localLKRSID);
         await owner_EKYCDetails(localLKRSID);
@@ -1587,10 +1628,11 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                                                             <th>Village</th>
                                                             <th>Owner Name</th>
                                                             <th>Survey Number / Surnoc / Hissa Number</th>
-                                                            <th>Bhoomi Extent (Acre.Gunta.Fgunta)</th>
+
                                                             <th>LDA Extent (Acre.Gunta.Fgunta)</th>
                                                             <th>LDA Total Area in SqFt</th>
                                                             <th>LDA Total Area in SqM</th>
+                                                            <th>Bhoomi Extent (Acre.Gunta.Fgunta)</th>
                                                             <th>Bhoomi Total Area in SqFt</th>
                                                             <th>Bhoomi Total Area in SqM</th>
                                                         </tr>
@@ -1609,8 +1651,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                                                                 <td>{row.village}</td>
                                                                 <td>{row.owner}</td>
                                                                 <td>{`${row.survey_no}/${row.surnoc}/${row.hissa_no}`}</td>
-                                                                {/* Bhoomi extent */}
-                                                                <td>{`${row.ext_acre}.${row.ext_gunta}.${row.ext_fgunta}`}</td>
+
                                                                 {/* LDA extent */}
                                                                 <td>{`${row.lda_acre ?? ''}.${row.lda_gunta ?? ''}.${row.lda_fgunta ?? ''}`}</td>
                                                                 {/* LDA extent total area */}
@@ -1630,6 +1671,8 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                                                                         ) * 0.092903
                                                                     ).toFixed(1)}
                                                                 </td>
+                                                                {/* Bhoomi extent */}
+                                                                <td>{`${row.ext_acre}.${row.ext_gunta}.${row.ext_fgunta}`}</td>
                                                                 {/* Bhommi extent total area */}
                                                                 <td>
                                                                     {Math.floor(
@@ -1656,7 +1699,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                                                         <tr>
                                                             <th colSpan={5}></th>
                                                             <th colSpan={2} className="text-end fw-bold">Total Area:</th>
-                                                            <th className="text-left fw-bold">{`${totalAcre}.${totalGunta}.${totalFGunta}`}</th>
+
                                                             <th className="text-left fw-bold">{`${totalAcre_LDA}.${totalGunta_LDA}.${totalFGunta_LDA}`}</th>
                                                             <th className='fw-bold' style={{ backgroundColor: 'orange', color: '#fff' }}>
                                                                 {Math.floor(totalSqFt_LDA)}
@@ -1664,6 +1707,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                                                             <th className='fw-bold' style={{ backgroundColor: 'orange', color: '#fff' }}>
                                                                 {totalSqM_LDA.toFixed(1)}
                                                             </th>
+                                                            <th className="text-left fw-bold">{`${totalAcre}.${totalGunta}.${totalFGunta}`}</th>
                                                             <th className='fw-bold'>{Math.floor(totalSqFt)}</th>
                                                             <th className='fw-bold'>{totalSqM.toFixed(1)}</th>
                                                         </tr>
@@ -1974,6 +2018,31 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                             )}
                             {allSites.length > 0 && (
                                 <>
+                                    <h4>Layout & Individual sites Details</h4>
+                                    <div className='row'>
+                                        <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mt-4">
+                                            <label className='form-label'>
+                                                Relinquishment Deed Number (For park, open space, road + Civic Amenity)
+                                            </label>
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                placeholder="Relinquishment Deed Number"
+                                                value={rdeedNumber}
+                                                // keep your logic
+                                                maxLength={20} readOnly
+                                            />
+                                        </div>
+                                        <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-6 no-print">
+                                            <div className="form-group">
+                                                <button className="btn btn-warning btn-block" onClick={handleViewDeed}>
+                                                    View Deed
+                                                </button>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <br />
                                     <Preview_siteDetailsTable
                                         data={allSites}
                                         setData={setAllSites}

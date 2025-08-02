@@ -90,6 +90,7 @@ const BBMP_LayoutForm = () => {
 
     //save button varaiables
     const [isRTCSectionSaved, setIsRTCSectionSaved] = useState(false);
+    const [isDCSectionSaved, setIsDCSectionSaved] = useState(false);
     const [isEPIDSectionSaved, setIsEPIDSectionSaved] = useState(false);
     const [isApprovalSectionSaved, setIsApprovalSectionSaved] = useState(false);
     const [isReleaseSectionSaved, setIsReleaseSectionSaved] = useState(false);
@@ -291,7 +292,7 @@ const BBMP_LayoutForm = () => {
                         </div>
                     </div>
                     {selectedLandType === "convertedRevenue" && (
-                        <DCConversion LKRS_ID={LKRS_ID} isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} />
+                        <DCConversion LKRS_ID={LKRS_ID} isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsDCSectionSaved={setIsDCSectionSaved}/>
                     )}
 
 
@@ -309,7 +310,7 @@ const BBMP_LayoutForm = () => {
 
                     <DeclarationBlock LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID} display_LKRS_ID={display_LKRS_ID} isRTCSectionSaved={isRTCSectionSaved}
                         isEPIDSectionSaved={isEPIDSectionSaved} isApprovalSectionSaved={isApprovalSectionSaved} isReleaseSectionSaved={isReleaseSectionSaved} validate_ownerDataList={validate_ownerDataList}
-                        isSitesSectionSaved={isSitesSectionSaved} isECSectionSaved={isECSectionSaved} isJDAEKYCSectionSaved={isJDAEKYCSectionSaved} isOwnerEKYCSectionSaved={isOwnerEKYCSectionSaved} />
+                        isSitesSectionSaved={isSitesSectionSaved} isECSectionSaved={isECSectionSaved} isJDAEKYCSectionSaved={isJDAEKYCSectionSaved} isOwnerEKYCSectionSaved={isOwnerEKYCSectionSaved} isDCSectionSaved={isDCSectionSaved}/>
                 </div>
             </div>
             {/* </div> */}
@@ -1385,11 +1386,11 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                                     <th>Village</th>
                                     <th>Owner Name</th>
                                     <th>Survey Number / Surnoc / Hissa Number</th>
-                                    <th>Bhoomi Extent (Acre.Gunta.Fgunta)</th>
+                                    
                                     <th>LDA Extent (Acre.Gunta.Fgunta)</th>
                                     <th>LDA Total Area in SqFt</th>
                                     <th>LDA Total Area in SqM</th>
-
+                                    <th>Bhoomi Extent (Acre.Gunta.Fgunta)</th>
                                     <th>Bhoomi Total Area in SqFt</th>
                                     <th>Bhoomi Total Area in SqM</th>
                                 </tr>
@@ -1412,8 +1413,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                                         <td>{row.village}</td>
                                         <td>{row.owner}</td>
                                         <td>{`${row.survey_no}/${row.surnoc}/${row.hissa_no}`}</td>
-                                        {/* Bhoomi extent */}
-                                        <td>{`${row.ext_acre}.${row.ext_gunta}.${row.ext_fgunta}`}</td>
+                                        
                                         {/* LDA extent */}
                                         <td>{`${row.lda_acre ?? ''}.${row.lda_gunta ?? ''}.${row.lda_fgunta ?? ''}`}</td>
                                         {/* LDA extent total area */}
@@ -1433,6 +1433,8 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                                                 ) * 0.092903
                                             ).toFixed(1)}
                                         </td>
+                                        {/* Bhoomi extent */}
+                                        <td>{`${row.ext_acre}.${row.ext_gunta}.${row.ext_fgunta}`}</td>
                                         {/* Bhommi extent total area */}
                                         <td>
                                             {Math.floor(
@@ -1459,7 +1461,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                                 <tr>
                                     <th colSpan={6}></th>
                                     <th colSpan={2} className="text-end fw-bold">Total Area:</th>
-                                    <th className="text-left fw-bold">{`${totalAcre}.${totalGunta}.${totalFGunta}`}</th>
+                                    
                                     <th className="text-left fw-bold">{`${totalAcre_LDA}.${totalGunta_LDA}.${totalFGunta_LDA}`}</th>
                                     <th className='fw-bold' style={{ backgroundColor: 'orange', color: '#fff' }}>
                                         {Math.floor(totalSqFt_LDA)}
@@ -1467,6 +1469,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                                     <th className='fw-bold' style={{ backgroundColor: 'orange', color: '#fff' }}>
                                         {totalSqM_LDA.toFixed(1)}
                                     </th>
+                                    <th className="text-left fw-bold">{`${totalAcre}.${totalGunta}.${totalFGunta}`}</th>
                                     <th className='fw-bold'>{Math.floor(totalSqFt)}</th>
                                     <th className='fw-bold'>{totalSqM.toFixed(1)}</th>
                                 </tr>

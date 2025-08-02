@@ -109,7 +109,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
     const [totalArea, setTotalArea] = useState(""); // Total Area Input
 
-    const [cornerSite, setCornerSite] = useState(true); // Corner Site Selection (Yes/No)
+    const [cornerSite, setCornerSite] = useState(""); // Corner Site Selection (Yes/No)
     const [cornerSiteError, setCornerSiteError] = useState("");
 
     const [areaFeet, setAreaFeet] = useState(""); // Area in Feet Input
@@ -206,12 +206,12 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         }
     }, [localLKRSID, isRTCSectionSaved, isEPIDSectionSaved]);
     const [landDetails, setLandDetails] = useState("");
-    const loadData = () => {
+    const loadData = async () => {
         const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
         if (localLKRSID && (isRTCSectionSaved || isEPIDSectionSaved)) {
+            await RelinquishmentDeedFetch();
             delay(1000);
             fetchSiteDetails(localLKRSID);
-            delay(1000);
             handleGetLKRSID(localLKRSID);
             delay(1000); // 1 second delay
             fetchOwners(localLKRSID);
@@ -701,7 +701,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
     const [irregularchakbandiNorthError, setIrregularChakbandiNorthError] = useState('');
     const irregular_chakbandiNorthref = useRef(null);
 
-    const [irregularcornerSite, setIrregularCornerSite] = useState(true);
+    const [irregularcornerSite, setIrregularCornerSite] = useState("");
     const [irregularcornerSiteError, setIrregularCornerSiteError] = useState('');
     const irregular_cornerSiteref = useRef(null);
 
@@ -1110,7 +1110,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             Swal.fire({
                 title: "Limit Reached",
                 text: `A maximum of ${totalSitesCount} sites can be added. Please update the total number of sites if required.`,
-                
+
                 icon: "warning",
                 confirmButtonText: "OK",
                 allowOutsideClick: false,
@@ -1305,7 +1305,9 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             setLayoutSiteCountError("Total number of sites is required");
             return;
         }
-        const totalAddedSites = allSites.length;
+        const totalAddedSites = allSites.filter(site => site.sitE_TYPE !== "Road").length;
+        console.log("Filtered Sites Count:", totalAddedSites);
+        
         if (totalSitesCount !== totalAddedSites) return;
 
         if (totalSitesCount === totalAddedSites) {
@@ -1754,8 +1756,8 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             return;
         }
 
-       const totalAddedSites = allSites.filter(site => site.sitE_TYPE !== "Road").length;
-    console.log("Filtered Sites Count:", totalAddedSites);
+        const totalAddedSites = allSites.filter(site => site.sitE_TYPE !== "Road").length;
+        console.log("Filtered Sites Count:", totalAddedSites);
 
         const textboxSitesCount = parseInt(layoutSiteCount, 10);
         const storedSiteCount = parseInt(sessionStorage.getItem("NUMBEROFSITES"), 10);
@@ -1870,16 +1872,8 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             }
         }
         if (isDeedRequired) {
-            if (!deedNumber || deedNumber.trim() === "") {
-                Swal.fire({
-                    icon: "warning",
-                    title: "Relinquishment Deed Number Required",
-                    text: "You have reached 40% of total sites. Please enter the deed number. Before saving the sites",
-                });
-                return;
-            }
-
-            if (deedFetchSuccess === false && !uploadedDeedFile) {
+            // If deed was not fetched on load and fetch failed, check for file upload
+            if (!isDeedFetchedOnLoad && deedFetchSuccess === false && !uploadedDeedFile) {
                 Swal.fire({
                     icon: "warning",
                     title: "Deed Document Required",
@@ -1888,6 +1882,17 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                 return;
             }
 
+            // If deed number is missing
+            if (!deedNumber || deedNumber.trim() === "") {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Relinquishment Deed Number Required",
+                    text: "You have reached 40% of total sites. Please enter the deed number before saving the sites.",
+                });
+                return;
+            }
+
+            // If deed was neither fetched nor uploaded
             if (deedFetchSuccess !== true && deedFetchSuccess !== false) {
                 Swal.fire({
                     icon: "warning",
@@ -1896,7 +1901,12 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                 });
                 return;
             }
+
+            if (isDeedFetchedOnLoad) {
+
+            }
         }
+
 
 
 
@@ -1910,6 +1920,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             Swal.fire("Longitude is required", "", "warning");
             return;
         }
+
 
         // Prepare siteDimensions
         const siteDimensions = isRegular ? [
@@ -2223,6 +2234,20 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
         if (checked) {
             const regularSites = allSites.filter(site => site.sitE_SHAPETYPE === "Regular");
+
+            if (regularSites.length === 0) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'No Regular Site Found',
+                    text: 'There are no regular sites available to pre-fill data.',
+                    confirmButtonText: 'OK',
+                }).then(() => {
+                    // Uncheck the checkbox after alert is closed
+                    setIsChecked(false);
+                });
+                return;
+            }
+
             const sortedByDate = regularSites.sort((a, b) => new Date(b.sitE_CREATEDDATE) - new Date(a.sitE_CREATEDDATE));
             const latestSite = sortedByDate[0];
 
@@ -2230,18 +2255,15 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                 setRegular_SiteNumber(latestSite.sitE_NO);
                 setBlockArea(latestSite.sitE_AREA);
 
-                // Handle siteDimensions
                 const siteDims = latestSite.siteDimensions || [];
                 if (siteDims.length >= 2) {
                     const eastWest = siteDims[0];
                     const northSouth = siteDims[1];
 
-                    // East-West
                     setEastwestFeet(eastWest.sitediM_SIDEINFT);
                     setEastwestMeter(eastWest.sitediM_SIDEINMT);
                     setSide1RoadFacing(eastWest.sitediM_ROADFACING);
 
-                    // North-South
                     setNorthsouthFeet(northSouth.sitediM_SIDEINFT);
                     setNorthsouthMeter(northSouth.sitediM_SIDEINMT);
                     setSide2RoadFacing(northSouth.sitediM_ROADFACING);
@@ -2249,19 +2271,13 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
                 setRegularAreaSqFt(latestSite.sitE_AREAINSQFT);
                 setRegularAreaSqM(latestSite.sitE_AREAINSQMT);
-                if (latestSite.sitE_CORNERPLOT === "yes") {
-                    setCornerSite(true);
-                } else {
-                    setCornerSite(false);
-                }
+                setCornerSite(latestSite.sitE_CORNERPLOT === "yes");
 
                 setSiteType(latestSite.sitE_TYPEID);
                 setChakbandiEast(latestSite.sitE_EAST);
                 setChakbandiWest(latestSite.sitE_WEST);
                 setChakbandiSouth(latestSite.sitE_SOUTH);
                 setChakbandiNorth(latestSite.sitE_NORTH);
-                // setLatitude(latestSite.sitE_LATITUDE);
-                // setLongitude(latestSite.sitE_LONGITUDE);
             }
         } else {
             setRegular_SiteNumber("");
@@ -2270,14 +2286,16 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         handleFetchPrevious(e);
     };
 
+
     const [deedNumber, setDeedNumber] = useState("");
     const [deedError, setDeedError] = useState('');
     const [showViewDeedButton, setShowViewDeedButton] = useState(false);
     const [isDeedSectionDisabled, setIsDeedSectionDisabled] = useState(false);
+    const [isFetchDisabled, setIsFetchDisabled] = useState(false);
     const [deedFetchSuccess, setDeedFetchSuccess] = useState(null); // null | true | false
     const [uploadedDeedFile, setUploadedDeedFile] = useState(null);
     const [uploadError, setUploadError] = useState('');
-
+    const [isDeedFetchedOnLoad, setIsDeedFetchedOnLoad] = useState(false);
     const deedRequiredThreshold = Math.ceil(totalSitesCount * 0.4);
     const isDeedRequired = allSites.length >= deedRequiredThreshold;
 
@@ -2295,7 +2313,42 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         setDeedNumber(e.target.value.toUpperCase());
         validateDeedNumber(e.target.value);
     };
-const [deedDocumentDate, setDeedDocumentDate] = useState('');
+    const [deedDocumentDate, setDeedDocumentDate] = useState('');
+    const [showEditButton, setShowEditButton] = useState(false);
+    const [isDeedReadOnly, setIsDeedReadOnly] = useState(false);
+    const [checkDeedStatus, setCheckDeedStatus] = useState(false);
+
+    const handleEditClick = () => {
+        setIsDeedReadOnly(false);
+        setIsFetchDisabled(false);
+        setShowEditButton(false);
+        setShowViewDeedButton(false);
+        setDeedNumber('');
+        setDeedError('');
+    };
+
+    const handleDeedNumberChange = (e) => {
+        const value = e.target.value.toUpperCase(); // Force uppercase
+        const allowedPattern = /^[A-Z0-9-/]*$/;     // Allowed characters
+        const startsWithZero = /^0/;
+        const allZeros = /^0+$/.test(value.replace(/-/g, ''));
+
+        if (!allowedPattern.test(value)) {
+            setDeedError("Only uppercase letters, numbers, slash and hyphen are allowed");
+            return;
+        }
+
+        if (startsWithZero.test(value)) {
+            setDeedError("Deed Number cannot start with zero");
+        } else if (allZeros) {
+            setDeedError("Deed Number cannot be all zeros");
+        } else {
+            setDeedError("");
+        }
+
+        setDeedNumber(value);
+    };
+
     const handleDeed_FetchDetails = async () => {
         const deedNumberPattern = /^[A-Z0-9-/]+$/;
         if (!deedNumber) {
@@ -2329,17 +2382,32 @@ const [deedDocumentDate, setDeedDocumentDate] = useState('');
                 response.json
             ) {
                 const deedData = JSON.parse(response.json);
-                
+
+                //  Check the 'naturedeed' value
+                if (deedData.naturedeed !== 'Release deed') {
+                    Swal.fire({
+                        html: `Only <b>Relinquishment Deed</b> is allowed.`,
+                        icon: "warning",
+                        confirmButtonText: "OK",
+                    });
+                    return; // Stop further execution if not a Release deed
+                }
+
                 setDeedDocumentDate(deedData.registrationdatetime);
                 setShowViewDeedButton(true);
                 setIsDeedSectionDisabled(true); // ✅ Disable input + button
                 setDeedFetchSuccess(true);
+                setIsFetchDisabled(true);
+                setIsDeedReadOnly(true);
+                setShowEditButton(true);
+                setCheckDeedStatus(true);
+
                 Swal.fire({
                     title: response.responseMessage,
                     icon: "success",
                     confirmButtonText: "OK",
                 });
-            } else if (response.responseStatus === false ) {
+            } else if (response.responseStatus === false) {
                 Swal.fire({
                     text: response.responseMessage,
                     icon: "error",
@@ -2434,9 +2502,44 @@ const [deedDocumentDate, setDeedDocumentDate] = useState('');
 
 
     };
+    const RelinquishmentDeedFetch = async () => {
+        try {
+            start_loader();
+
+            const response = await fileListAPI(3, localLKRSID, 7, 0); // level, LKRSID, MdocID, docID
+
+            if (Array.isArray(response) && response.length > 0) {
+                const firstDeed = response[0].docTrn_Document_No || "";
+                const registrationDate = response[0].docTrn_RegDate || ""; // If available
+
+                // Set values
+                setDeedNumber(firstDeed);
+                setDeedDocumentDate(registrationDate);
+                setIsDeedFetchedOnLoad(true);
+
+                // Mimic successful fetch
+                setIsDeedSectionDisabled(true);
+                setDeedFetchSuccess(true);
+                setIsFetchDisabled(true);
+                setIsDeedReadOnly(true);
+                setShowEditButton(true);
+                setShowViewDeedButton(true);  // <-- This ensures View Deed button is visible
+
+            } else {
+                console.log("No deed number found.");
+            }
+        } catch (error) {
+            console.error("Failed to fetch LKRSID data:", error);
+        } finally {
+            stop_loader();
+        }
+    };
+
+
+
     const handleInsertDeed = async () => {
         const payload = {
-            lkrS_ID: 1,
+            lkrS_ID: localLKRSID,
             relinquishmentDeedNo: deedNumber,
             relinquishmentDeedRegDate: deedDocumentDate,
             remarks: "",
@@ -2452,12 +2555,17 @@ const [deedDocumentDate, setDeedDocumentDate] = useState('');
             if (response.responseStatus === true) {
                 Swal.fire({
                     text: response.responseMessage,
-                    icon: "error",
+                    icon: "success",
                     confirmButtonText: "OK",
                 });
                 stop_loader();
             } else {
                 stop_loader();
+                Swal.fire({
+                    text: response.responseMessage,
+                    icon: "error",
+                    confirmButtonText: "OK",
+                });
                 console.log("failed to fetch data!")
             }
         } catch (error) {
@@ -2570,9 +2678,9 @@ const [deedDocumentDate, setDeedDocumentDate] = useState('');
                                     className="form-control"
                                     placeholder="Enter Relinquishment Deed Number"
                                     value={deedNumber}
-                                    onChange={(e) => setDeedNumber(e.target.value)}
-                                    maxLength={50}
+                                    onChange={handleDeedNumberChange}
                                     disabled={isDeedSectionDisabled} // keep your logic
+                                    maxLength={20}
                                 />
                                 {deedError && <div className="text-danger">{deedError}</div>}
                             </div>
@@ -2583,13 +2691,25 @@ const [deedDocumentDate, setDeedDocumentDate] = useState('');
                                     <button
                                         className="btn btn-primary btn-block"
                                         onClick={handleDeed_FetchDetails}
-                                        disabled={isDeedSectionDisabled}
+                                        disabled={isFetchDisabled || isDeedSectionDisabled}
                                     >
                                         Fetch Deed
                                     </button>
                                 </div>
                             </div>
-
+                            {/* {showEditButton && (
+                                // <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-1">
+                                //     <div className="form-group mt-6">
+                                //         <button
+                                //             className="btn btn-info btn-block"
+                                //             onClick={handleEditClick}
+                                //             disabled={isDeedSectionDisabled}
+                                //         >
+                                //             Edit
+                                //         </button>
+                                //     </div>
+                                // </div>
+                            )} */}
 
 
                             {/* Deed View Button */}
@@ -2600,7 +2720,7 @@ const [deedDocumentDate, setDeedDocumentDate] = useState('');
                                     </div>
                                     <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2">
                                         <div className="form-group">
-                                            <button className="btn btn-warning btn-block" onClick={handleViewDeed}>
+                                            <button className="btn btn-warning btn-block" onClick={handleViewDeed} >
                                                 View Deed
                                             </button>
                                         </div>
@@ -2632,18 +2752,21 @@ const [deedDocumentDate, setDeedDocumentDate] = useState('');
 
                             )}
                             <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 mt-2">
-                               <div className='row'>
-                                <div className="col-10 col-sm-10 col-md-10 col-lg-10 col-xl-10"></div>
+                                <div className='row'>
+                                    <div className="col-10 col-sm-10 col-md-10 col-lg-10 col-xl-10"></div>
                                     <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2">
-                                    <button className="btn btn-success btn-block" onClick={handleInsertDeed}>
-                                        Save and Continue
-                                    </button>
+                                        <button className="btn btn-success btn-block" onClick={handleInsertDeed} disabled={isDeedSectionDisabled} >
+                                            Save and Continue
+                                        </button>
+                                    </div>
                                 </div>
-                                </div> 
                             </div>
                             {/* Deed section ends */}
-                            <br />
-                            <hr className='mt-4' />
+                            <br /><br />
+                            <div className='col-12 col-sm-12 com-md-12 col-lg-12 col-xl-12'>
+                                <br />
+                                <hr className='mt-1' style={{ border: '1px dashed #0077b6' }} />
+                            </div>
                             <div className="col-0 col-sm-0 col-md-2 col-lg-2 col-xl-2"></div>
 
                             {/* Type of Site Dropdown */}
@@ -3497,8 +3620,8 @@ const [deedDocumentDate, setDeedDocumentDate] = useState('');
                         </>
                         )}
                     </fieldset>
-                    <hr/>
-                     <h3 className="" style={{ textAlign: '', color:'#023e8a' }}>Find Layout on Google Map & tap in middle of site to capture sites GPS</h3>
+                    <hr />
+                    <h3 className="" style={{ textAlign: '', color: '#023e8a' }}>Find Layout on Google Map & tap in middle of site to capture sites GPS</h3>
                     <div className="row" >
                         <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
                             <b>Search using nearest landmark near your layout - once you zoom there then locate your individual site & tap on top middle of your site</b>
@@ -3672,19 +3795,82 @@ const [deedDocumentDate, setDeedDocumentDate] = useState('');
                     )}
                 </div>
             </div>
-           
 
-                </div>
 
-            
+        </div>
+
+
     );
 };
 
 const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit, LKRS_ID, createdBy, createdName, roleID, setIsSitesSectionSaved, isSaveDisabled, setIsAddDisabled }) => {
 
-    useEffect(() => {
+    const [areaSummary, setAreaSummary] = useState({
+        total: 0,
+        civicAmenity: 0,
+        commercial: 0,
+        industrial: 0,
+        park: 0,
+        residential: 0,
+        sump: 0,
+        utility: 0,
+        road: 0
+    });
 
+    useEffect(() => {
+        const summary = {
+            total: 0,
+            civicAmenity: 0,
+            commercial: 0,
+            industrial: 0,
+            park: 0,
+            residential: 0,
+            sump: 0,
+            utility: 0,
+            road: 0
+        };
+
+        data.forEach(site => {
+            const type = site.sitE_TYPE;
+            const area = parseFloat(site.sitE_AREAINSQFT || 0);
+
+            if (!isNaN(area)) {
+                summary.total += area;
+
+                switch (type) {
+                    case 'Civic Amenity':
+                        summary.civicAmenity += area;
+                        break;
+                    case 'Commercial':
+                        summary.commercial += area;
+                        break;
+                    case 'Industrial':
+                        summary.industrial += area;
+                        break;
+                    case 'Park':
+                        summary.park += area;
+                        break;
+                    case 'Residential':
+                        summary.residential += area;
+                        break;
+                    case 'Sump':
+                        summary.sump += area;
+                        break;
+                    case 'Utility':
+                        summary.utility += area;
+                        break;
+                    case 'Road':
+                        summary.road += area;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        });
+
+        setAreaSummary(summary);
     }, [data]);
+
 
     const [localLKRSID, setLocalLKRSID] = useState("");
 
@@ -3701,7 +3887,7 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
 
     // const totalAddedSites = data.length;
-const totalAddedSites = data.filter(site => site.sitE_TYPEID !== 8).length;
+    const totalAddedSites = data.filter(site => site.sitE_TYPEID !== 8).length;
 
     //delete site info API
     const handleDeleteSites = async (siteID) => {
@@ -3980,7 +4166,9 @@ const totalAddedSites = data.filter(site => site.sitE_TYPEID !== 8).length;
     return (
         <div >
             {loading && <Loader />}
-            <h3 style={{color:'#023e8a'}}>Layout & Individual sites Details</h3>
+
+
+            <h3 style={{ color: '#023e8a' }}>Layout & Individual sites Details</h3>
             <div style={{ overflowX: "auto", padding: "1rem" }}>
                 <table
                     {...getTableProps()}
@@ -4109,6 +4297,156 @@ const totalAddedSites = data.filter(site => site.sitE_TYPEID !== 8).length;
             </div>
             <br />
             <div className='row'>
+                <h3 style={{ color: '#023e8a' }}>Overall abstract of Area use</h3>
+                <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4 mb-3">
+                    <div className="form-group">
+                        <label htmlFor="totalArea" className="col-form-label fw-semibold">
+                            Total Area
+                        </label>
+                        <div className="input-group">
+                            <input
+                                type="tel"
+                                className="form-control"
+                                placeholder="Total Area"
+                                value={areaSummary.total}
+                                readOnly
+                            />
+                            <span className="input-group-text">Sq Ft</span>
+                        </div>
+                    </div>
+                </div>
+                <div className="col-0 col-sm-0 col-md-8 col-lg-8 col-xl-8 mb-3"></div>
+                <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                    <div className="form-group">
+                        <label htmlFor="totalArea" className="col-form-label fw-semibold">
+                            Civic Amenity
+                        </label>
+                        <div className="input-group">
+                            <input
+                                type="tel"
+                                className="form-control"
+                                placeholder="Civic Amenity" value={areaSummary.civicAmenity}
+                                readOnly
+                            />
+                            <span className="input-group-text">Sq Ft</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                    <div className="form-group">
+                        <label htmlFor="totalArea" className="col-form-label fw-semibold">
+                            Commercial
+                        </label>
+                        <div className="input-group">
+                            <input
+                                type="tel"
+                                className="form-control"
+                                placeholder="Commercial" value={areaSummary.commercial}
+                                readOnly
+                            />
+                            <span className="input-group-text">Sq Ft</span>
+                        </div>
+                    </div>
+                </div>
+                <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                    <div className="form-group">
+                        <label htmlFor="totalArea" className="col-form-label fw-semibold">
+                            Industrial
+                        </label>
+                        <div className="input-group">
+                            <input
+                                type="tel"
+                                className="form-control" value={areaSummary.industrial}
+                                placeholder="Industrial"
+                                readOnly
+                            />
+                            <span className="input-group-text">Sq Ft</span>
+                        </div>
+                    </div>
+                </div>
+                <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                    <div className="form-group">
+                        <label htmlFor="totalArea" className="col-form-label fw-semibold">
+                            Park
+                        </label>
+                        <div className="input-group">
+                            <input
+                                type="tel"
+                                className="form-control"
+                                placeholder="Park" value={areaSummary.park}
+                                readOnly
+                            />
+                            <span className="input-group-text">Sq Ft</span>
+                        </div>
+                    </div>
+                </div>
+                <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                    <div className="form-group">
+                        <label htmlFor="totalArea" className="col-form-label fw-semibold">
+                            Residential
+                        </label>
+                        <div className="input-group">
+                            <input
+                                type="tel"
+                                className="form-control"
+                                placeholder="Residential" value={areaSummary.residential}
+                                readOnly
+                            />
+                            <span className="input-group-text">Sq Ft</span>
+                        </div>
+                    </div>
+                </div>
+                <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                    <div className="form-group">
+                        <label htmlFor="totalArea" className="col-form-label fw-semibold">
+                            Sump
+                        </label>
+                        <div className="input-group">
+                            <input
+                                type="tel"
+                                className="form-control" value={areaSummary.sump}
+                                placeholder="Sump"
+                                readOnly
+                            />
+                            <span className="input-group-text">Sq Ft</span>
+                        </div>
+                    </div>
+                </div>
+                <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                    <div className="form-group">
+                        <label htmlFor="totalArea" className="col-form-label fw-semibold">
+                            Utility
+                        </label>
+                        <div className="input-group">
+                            <input
+                                type="tel"
+                                className="form-control"
+                                placeholder="Utility" value={areaSummary.utility}
+                                readOnly
+                            />
+                            <span className="input-group-text">Sq Ft</span>
+                        </div>
+                    </div>
+                </div>
+                <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                    <div className="form-group">
+                        <label htmlFor="totalArea" className="col-form-label fw-semibold">
+                            Road
+                        </label>
+                        <div className="input-group">
+                            <input
+                                type="tel"
+                                className="form-control"
+                                placeholder="Road" value={areaSummary.road}
+                                readOnly
+                            />
+                            <span className="input-group-text">Sq Ft</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div className='row'>
                 <div className="col-0 col-sm-0 col-md-10 col-lg-10 col-xl-10"></div>
                 <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2" hidden>
                     <div className="form-check">
@@ -4139,6 +4477,8 @@ const totalAddedSites = data.filter(site => site.sitE_TYPEID !== 8).length;
                     </div>
                 </div>
             </div>
+
+
         </div>
     );
 

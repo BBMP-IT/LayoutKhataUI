@@ -588,21 +588,50 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
         setRecords(records.filter((_, i) => i !== index));
     };
     const columns = [
-        {
-            name: t('translation.BDA.table.slno'),
-            cell: (row, index) => index + 1,
-            width: '80px',
-            center: true,
+         {
+            name: t('translation.BDA.table.action'),
+            cell: (row, index) => (
+                <div>
+                    {/* <button
+                        className="btn btn-warning btn-sm me-2"
+                        onClick={() => handleEdit(index)} disabled={!isEditing}
+                    >
+                        <i className="fa fa-pencil"></i>
+                    </button> */}
+                    <button
+                        className="btn btn-danger btn-sm"
+                        // onClick={() => handleDelete(index)}  
+                        onClick={() =>
+                            handleDeleteApproval(
+                                row.approvalID,
+                                row.approvalOrderDocID,
+                                row.approvalMapDocID
+                            )
+                        }
+                    >
+                        <i className="fa fa-trash"></i>
+                    </button>
+                </div>
+            ),
+            ignoreRowClick: true,
+            allowOverflow: true,
+            button: true,
         },
+        // {
+        //     name: t('translation.BDA.table.slno'),
+        //     cell: (row, index) => index + 1,
+        //     width: '80px',
+        //     center: true,
+        // },
         {
             name: "Approval No",
             selector: row => row.layoutApprovalNumber,
             sortable: true,
             center: true,
-            with: '150px'
+            width: '150px'
         },
         {
-            name: 'Date of Approval',
+            name: 'Date Of App.',
             selector: row => {
                 const date = new Date(row.dateOfApproval);
 
@@ -622,7 +651,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             width: '150px',
         },
         {
-            name: t('translation.BDA.table.approvalOrder'),
+            name: "Approved Order",
             cell: row => {
                 if (row.approvalOrder) {
                     const blob = base64ToBlob(row.approvalOrder);
@@ -653,7 +682,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             width: '150px',
         },
         {
-            name: t('translation.BDA.table.approvalMap'),
+            name: "Approved Order",
             cell: row => {
                 if (row.approvalMap) {
                     const blob = base64ToBlob(row.approvalMap);
@@ -683,7 +712,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             center: true,
         },
         {
-            name: 'Layout Approval Authority',
+            name: 'Approval Authority',
             selector: row => row.approvalAuthorityPlanning,
             sortable: true,
             minWidth: '220px', center: true,
@@ -695,7 +724,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             minWidth: '280px', center: true,
         },
         {
-            name: "Total No of sites",
+            name: "Total Sites",
             selector: row => row.totalNoOfSites,
             sortable: true,
             minWidth: '150px', center: true,
@@ -706,35 +735,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
         //     sortable: true,
         //     minWidth: '150px', center: true,
         // },
-        {
-            name: t('translation.BDA.table.action'),
-            cell: (row, index) => (
-                <div>
-                    {/* <button
-                        className="btn btn-warning btn-sm me-2"
-                        onClick={() => handleEdit(index)} disabled={!isEditing}
-                    >
-                        <i className="fa fa-pencil"></i>
-                    </button> */}
-                    <button
-                        className="btn btn-danger btn-sm"
-                        // onClick={() => handleDelete(index)}  
-                        onClick={() =>
-                            handleDeleteApproval(
-                                row.approvalID,
-                                row.approvalOrderDocID,
-                                row.approvalMapDocID
-                            )
-                        }
-                    >
-                        <i className="fa fa-trash"></i>
-                    </button>
-                </div>
-            ),
-            ignoreRowClick: true,
-            allowOverflow: true,
-            button: true,
-        },
+       
     ];
     const customStyles = {
         headCells: {
@@ -1418,6 +1419,8 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
                                     )}
                                 </div>
                             </div>
+                            <div className="alert alert-info">Note: Only Civic Amenity, Commercial, Industrial, Park, Residential, Sump, and Utility site types are included in the Total Number of Sites. Road site type is excluded.</div>
+                            
                             {/* Total number of sites */}
                             <div className='col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6'>
                                 <div className="form-group">

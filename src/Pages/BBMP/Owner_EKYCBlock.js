@@ -488,7 +488,7 @@ const Owner_EKYCBlock = ({ LKRS_ID, ownerName, setIsOwnerEKYCSectionSaved, setVa
             return;
         }
 
-        if (!(ekyc_Status === true && phone_Status === true)) {
+        if (ekyc_Status != true && phone_Status != true) {
             Swal.fire({
                 text: "Phone number verification or Owner EKYC is not done",
                 icon: "error",

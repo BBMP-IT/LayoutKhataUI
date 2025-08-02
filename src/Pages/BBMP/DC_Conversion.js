@@ -27,7 +27,7 @@ export const useLoader = () => {
 };
 
 
-const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
+const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsDCSectionSaved }) => {
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
     const [dcNumber, setDcNumber] = useState("");
     const [dcDate, setDCdate] = useState('');
@@ -200,23 +200,6 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
             return;
         }
 
-
-        // //  DC Date Validation
-        // if (!dcDate) {
-        //     newErrors.dcDate = "DC Conversion Order Date is required.";
-        // } else if (new Date(dcDate) > new Date()) {
-        //     newErrors.dcDate = "Date cannot be in the future.";
-        // }
-
-        // //  File Upload Validation
-        // if (!uploadDCFile) {
-        //     newErrors.file = "Please upload the conversion order PDF.";
-        // } else if (uploadDCFile.type !== "application/pdf") {
-        //     newErrors.file = "Only PDF files are allowed.";
-        // } else if (uploadDCFile.size > 5 * 1024 * 1024) {
-        //     newErrors.file = "File size must be less than 5MB.";
-        // }
-
         setErrors(newErrors);
 
         if (Object.keys(newErrors).length > 0) {
@@ -231,7 +214,7 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
 
 
         try {
-
+            start_loader();
             const response = await bhommiDCConversionFetchAPI(affidavitID, localLKRSID);
 
             if (response.responsE_CODE === "200" && response.isvalidSurveyNo === true) {
@@ -281,6 +264,7 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
 
                                 }));
                                 setRecords(formattedList);
+                                setIsDCSectionSaved(true);
                             }
                             stop_loader();
                         } catch (error) {
@@ -298,11 +282,12 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
                             confirmButtonText: "OK",
                         });
                     }
-
+                    stop_loader();
                 } catch (error) {
                     console.error("API Error:", error);
                     alert("Failed to save DC details. Please try again.");
-                }
+
+                } finally { stop_loader(); }
 
             } else if (response.responsE_CODE === "200" && response.isvalidSurveyNo === false) {
                 Swal.fire({
@@ -321,11 +306,14 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
 
         } catch (error) {
             console.error("API Error:", error);
-              Swal.fire({
-                    title:"Something went wrong, Please try again later!",
-                    icon: "error",
-                    confirmButtonText: "OK",
-                });
+            Swal.fire({
+                title: "Something went wrong, Please try again later!",
+                icon: "error",
+                confirmButtonText: "OK",
+            });
+        } finally {
+            stop_loader();
+
         }
     };
 
@@ -352,6 +340,9 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
 
                 }));
                 setRecords(formattedList);
+                setIsDCSectionSaved(true);
+            }else{
+                setIsDCSectionSaved(false);
             }
             stop_loader();
         } catch (error) {
@@ -555,6 +546,7 @@ const DCConversion = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, }) => {
 
                     if (response.responseStatus === true) {
                         await fetch_DCConversion(localLKRSID);
+                        setIsDCSectionSaved(false);
                         Swal.fire(response.responseMessage, "", "success");
                     } else {
                         Swal.fire("Error!", "Failed to delete. Please try again.", "error");

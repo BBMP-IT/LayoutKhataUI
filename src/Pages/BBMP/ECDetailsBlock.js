@@ -694,6 +694,18 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsE
                 response.json
             ) {
                 const deedData = JSON.parse(response.json);
+
+                // if (deedData.naturedeed !== 'Joint Development Agreement') {
+                //     Swal.fire({
+                //         html: `Only <b>Joint Development Agreement Deed</b> is allowed.`,
+                //         icon: "warning",
+                //         confirmButtonText: "OK",
+                //     });
+                //     return; // Stop further execution if not a Release deed
+                // }
+
+
+
                 setJdaDocumentDate(deedData.registrationdatetime);
                 setShowViewDeedButton(true);
                 setIsDEEDReadOnly(true);
@@ -894,7 +906,7 @@ const ECDetailsBlock = ({ LKRS_ID, isRTCSectionSaved, isEPIDSectionSaved, setIsE
                                             className="form-control"
                                             placeholder="Enter your Deed Number"
                                             value={deedNumber}
-                                            onChange={handleDeedChange} maxLength={50} readOnly={isJDASectionDisabled}
+                                            onChange={handleDeedChange} maxLength={20} readOnly={isJDASectionDisabled}
                                         />
                                         {deedError && <div className="text-danger">{deedError}</div>}
                                     </div>

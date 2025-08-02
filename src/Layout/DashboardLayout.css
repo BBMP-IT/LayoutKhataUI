@@ -16491,3 +16491,48 @@
 .button_size{
   background-color: red;
 }
+
+@media print {
+    #print-header {
+        display: block !important;
+    }
+    .no-print {
+        display: none !important;
+    }
+}
+
+@media print {
+    body {
+    margin: 0;
+    padding: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .print-table-container {
+    width: 100%;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+    table {
+    width: 100% !important;
+    border-collapse: collapse;
+    page-break-inside: auto;
+  }
+
+  th, td {
+    border: 1px solid #000; /* black border on all sides */
+    padding: 6px;
+    font-size: 12px;
+    text-align: left;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tr {
+    page-break-inside: avoid;
+  }
+}

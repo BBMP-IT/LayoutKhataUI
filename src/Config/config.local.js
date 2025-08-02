@@ -75,6 +75,7 @@ const config = {
         fetchZoneWard: '/api/LKRS/fnGetZonefromWardList',
         fetchStreet: '/api/LKRS/fnGetStreetList',
         fetchARO: '/api/LKRS/fnGetARODetails',
+        relinquishmentDeed: '/api/LKRS/fnRelinquishmentDeed'
     },
     citizenServicesURL: {
         login: "https://testlayoutkhata.bbmpgov.in/Login",
