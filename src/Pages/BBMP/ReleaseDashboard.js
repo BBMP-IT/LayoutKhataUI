@@ -639,7 +639,7 @@ const ReleaseDashboard = () => {
             width: '120px', center: true
         },
         {
-            name: "No of sides",
+            name: "No of Sides",
             selector: row => row.sitE_NO_OF_SIDES || '',
             width: '120px', center: true
         },
@@ -706,6 +706,8 @@ const ReleaseDashboard = () => {
         {
             name: "Latitude, Longitude",
             selector: row => `${row.sitE_LATITUDE}, ${row.sitE_LONGITUDE}`,
+            center: true,
+            width: '200px'
         },
     ];
     const [is40PercentDone, setIs40PercentDone] = useState(false);
@@ -2055,8 +2057,8 @@ const ReleaseDashboard = () => {
     };
     const [isEKYCCompleted, setIsEKYCCompleted] = useState(false);
     const [ekyc_Data, setEkyc_Data] = useState(null);
-   
-   //bypass set to true
+
+    //bypass set to true
     const [isEKYCVerified, setIsEKYCVerified] = useState(true);
     const [isEKYCAttempted, setIsEKYCAttempted] = useState(false);
     const [orderReleaseStatus, setOrderReleaseStatus] = useState(false);
@@ -3060,7 +3062,7 @@ const ReleaseDashboard = () => {
                 </div>
                 <div className="card">
                     <div className="card-header layout_btn_color">
-                        <h5 className="card-title" style={{ textAlign: 'center' }}>Sites to be released</h5>
+                        <h5 className="card-title" style={{ textAlign: 'center' }}>Sites to be Released</h5>
                     </div>
                     <div className="card-body">
                         <div className='row'>
@@ -3103,11 +3105,16 @@ const ReleaseDashboard = () => {
 
                                                 return (
                                                     <div className="col-md-4 col-lg-3 col-xl-2 mb-3" key={row.id}>
-                                                        <div className={`card h-100 shadow p-2 blue-bordered-card position-relative ${isSelected ? 'border-primary' : ''}`}>
+                                                        <div
+                                                            className={`card h-100 shadow p-2 blue-bordered-card position-relative ${isSelected ? 'border-primary' : ''}`}
+                                                            onClick={() => handleRowSelect(index)}
+                                                            style={{ cursor: 'pointer' }} // Optional: to show clickable behavior
+                                                        >
                                                             <div className="d-flex justify-content-between align-items-center">
                                                                 <input
                                                                     type="checkbox"
                                                                     checked={isSelected}
+                                                                    onClick={(e) => e.stopPropagation()} // Prevent checkbox click from toggling twice
                                                                     onChange={() => handleRowSelect(index)}
                                                                 />
                                                                 <span className="badge bg-secondary">{row.sitE_SHAPETYPE}</span>
@@ -3121,6 +3128,7 @@ const ReleaseDashboard = () => {
                                                                 <div className="small"><strong>Road Facing:</strong> {roadFacing}</div>
                                                             </div>
                                                         </div>
+
                                                     </div>
                                                 );
                                             })}
@@ -3157,7 +3165,7 @@ const ReleaseDashboard = () => {
                 {releasedData.length > 0 && (
                     <div className="card">
                         <div className="card-header layout_btn_color">
-                            <h5 className="card-title" style={{ textAlign: 'center' }}>Selected sites</h5>
+                            <h5 className="card-title" style={{ textAlign: 'center' }}>Selected Sites</h5>
                         </div>
                         <div className="card-body">
                             <div className='row'>

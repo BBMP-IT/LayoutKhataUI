@@ -1307,7 +1307,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         }
         const totalAddedSites = allSites.filter(site => site.sitE_TYPE !== "Road").length;
         console.log("Filtered Sites Count:", totalAddedSites);
-        
+
         if (totalSitesCount !== totalAddedSites) return;
 
         if (totalSitesCount === totalAddedSites) {
@@ -1521,7 +1521,6 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         }
     };
     const loadStreetsForWard = async (wardId) => {
-
         setStreetOptions([]);
         setSelectedStreet('');
         if (!wardId) return;
@@ -1529,14 +1528,12 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         try {
             start_loader();
             const res = await fetchStreetFromWardList(wardId); // ✅ res is array
-            console.log("Raw API Response:", res);
 
             const streets = (res || []).map((s) => ({
-                label: s.streetName,
-                value: s.streetId,
+                label: `${s.streetName} `,
+                value: JSON.stringify({ id: s.streetId, name: s.streetName }), // ← embed both
             }));
 
-            console.log("Mapped streets:", streets);
             setStreetOptions(streets);
             stop_loader();
         } catch (err) {
@@ -1545,6 +1542,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             stop_loader();
         }
     };
+
 
 
     const moveMapTo = (location, title, formatted_address = '') => {
@@ -1796,16 +1794,8 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
         const existingSiteNumbers = allSites.map(site => site.sitE_NO);
         const siteNumberToCheck = shape === "regular" ? regular_siteNumber : irregular_siteNumber;
 
-        if (existingSiteNumbers.includes(siteNumberToCheck)) {
-            Swal.fire({
-                icon: "warning",
-                title: "Duplicate Site Number",
-                text: `Site number "${siteNumberToCheck}" already exists. Please enter a new site number.`,
-            });
-            return;
-        }
-
-        if (isChecked) {
+        // Skip duplicate check if siteType is '8'
+        if (siteType !== '8') {
             if (existingSiteNumbers.includes(siteNumberToCheck)) {
                 Swal.fire({
                     icon: "warning",
@@ -1814,7 +1804,17 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                 });
                 return;
             }
+
+            if (isChecked && existingSiteNumbers.includes(siteNumberToCheck)) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Duplicate Site Number",
+                    text: `Site number "${siteNumberToCheck}" already exists. Please enter a new site number.`,
+                });
+                return;
+            }
         }
+
 
         let isValid = "";
         if (siteType === '8') {
@@ -3732,7 +3732,12 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                                         {/* Street name */}
                                         <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4 mb-3">
                                             <label className="form-label">Street Name <span className='mandatory_color'>*</span></label>
-                                            <select className="form-select" value={selectedStreet} ref={streetRef} onChange={(e) => setSelectedStreet(e.target.value)}>
+                                            <select
+                                                className="form-select"
+                                                value={selectedStreet}
+                                                ref={streetRef}
+                                                onChange={(e) => setSelectedStreet(e.target.value)}
+                                            >
                                                 <option value="">Select Street</option>
                                                 {streetOptions.map((opt) => (
                                                     <option key={opt.value} value={opt.value}>
@@ -3740,6 +3745,8 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                                                     </option>
                                                 ))}
                                             </select>
+
+
 
                                             {streetError && <div className="text-danger">{streetError}</div>}
 

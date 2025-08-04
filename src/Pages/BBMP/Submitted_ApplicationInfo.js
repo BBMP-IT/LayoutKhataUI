@@ -246,7 +246,7 @@ const BBMP_SubmittedInfo = () => {
             with: '150px'
         },
         {
-            name: 'DC Conersion Date',
+            name: 'DC Conversion Date',
             selector: row => {
                 const date = new Date(row.dateOfOrder);
 
@@ -610,7 +610,7 @@ const BBMP_SubmittedInfo = () => {
             name: "Approved Order",
             cell: row => {
                 if (row.approvalOrder) {
-                    const blob = base64ToBlob(row.approvalOrder);
+                    const blob = base64ToBlob(row.approvalOrder, 'application/pdf');
 
                     if (blob) {
                         const fileUrl = URL.createObjectURL(blob);
@@ -1102,10 +1102,10 @@ const BBMP_SubmittedInfo = () => {
                             <h5 className="card-title" style={{ margin: 0 }}>Submitted Application information</h5>
                             <h5 style={{ color: '#fff' }}>KRSID : {display_LKRS_ID}</h5>
                         </div>
-                        <div id="print-header" style={{ display: 'none', textAlign: 'center', marginBottom: '20px', marginTop: '50px' }}>
-                            <h4>Online BBMP New Khata Issuance System</h4>
-                            <p>(Only for properties without BBMP Khata. If property has manual khata & you want eKhata then get at <br />
-                                <a href="https://bbmpeaasthi.karnataka.gov.in" target="_blank">https://bbmpeaasthi.karnataka.gov.in</a>)</p>
+                        <div id="print-header" style={{ display: 'none', textAlign: 'center', marginBottom: '20px', marginTop: '50px',color:'#c41130' }}>
+                            <h2>Online BBMP New Khata Issuance System<br/>
+                            (Only for properties without BBMP Khata. If property has manual khata & you want eKhata then get at <br />
+                                <a style={{color:'blue'}} href="https://bbmpeaasthi.karnataka.gov.in" target="_blank">https://bbmpeaasthi.karnataka.gov.in</a>)</h2>
                         </div>
                         <div className="card-body">
                             <Link className='no-print'
@@ -1318,9 +1318,9 @@ const BBMP_SubmittedInfo = () => {
                                             </div>
                                         )}
 
-                                        {epid_fetchedData && (
-                                            <>
-                                                <style>{`
+                                       {epid_fetchedData && (
+                <>
+                    <style>{`
       /* Wrapper for horizontal scroll on small screens */
       .table-responsive-wrapper { /* Renamed to avoid conflict if parent also uses table-responsive */
       width: 100%;
@@ -1365,159 +1365,159 @@ const BBMP_SubmittedInfo = () => {
         margin-bottom: 10px; /* Space between heading/button and table */
       }
     `}</style>
-                                                <div className="table-responsive-wrapper">
-                                                    <div className="header-with-button">
-                                                        <h4>Property Details</h4>
-                                                        {/* <button className='btn btn-warning' onClick={showImplementationAlert}>View eKhata</button> */}
-                                                    </div>
+                    <div className="table-responsive-wrapper">
+                        <div className="header-with-button">
+                            <h4>Property Details</h4>
+                            
+                        </div>
 
-                                                    {/* Property Details */}
-                                                    <table>
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Property ID</th>
-                                                                <th>Category</th>
-                                                                <th>Classification</th>
-                                                                <th>Ward Number</th>
-                                                                <th>Ward Name</th>
-                                                                <th>Street Name</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr>
-                                                                <td>{epid_fetchedData.PropertyID?.toString().trim() || '-'}</td>
-                                                                <td>{epid_fetchedData.PropertyCategory?.toString().trim() || '-'}</td>
-                                                                <td>{epid_fetchedData.PropertyClassification?.toString().trim() || '-'}</td>
-                                                                <td>{epid_fetchedData.WardNumber?.toString().trim() || '-'}</td>
-                                                                <td>{epid_fetchedData.WardName?.toString().trim() || '-'}</td>
-                                                                <td>{epid_fetchedData.StreetName?.toString().trim() || '-'}</td>
-                                                            </tr>
+                        {/* Property Details */}
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Property ID</th>
+                                    <th>Category</th>
+                                    <th>Classification</th>
+                                    <th>Ward Number</th>
+                                    <th>Ward Name</th>
+                                    <th>Street Name</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{epid_fetchedData.PropertyID?.toString().trim() || '-'}</td>
+                                    <td>{epid_fetchedData.PropertyCategory?.toString().trim() || '-'}</td>
+                                    <td>{epid_fetchedData.PropertyClassification?.toString().trim() || '-'}</td>
+                                    <td>{epid_fetchedData.WardNumber?.toString().trim() || '-'}</td>
+                                    <td>{epid_fetchedData.WardName?.toString().trim() || '-'}</td>
+                                    <td>{epid_fetchedData.StreetName?.toString().trim() || '-'}</td>
+                                </tr>
 
-                                                        </tbody>
-                                                    </table>
+                            </tbody>
+                        </table>
 
-                                                    {/* Kaveri Registration Numbers */}
-                                                    {epid_fetchedData.KaveriRegistrationNumber && (
-                                                        <>
-                                                            <h4>Kaveri Registration Numbers</h4>
-                                                            <table>
-                                                                <thead>
-                                                                    <tr>
-                                                                        <th>Registration Number</th>
-                                                                        <th>EC Number</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    {epid_fetchedData.KaveriRegistrationNumber.map((item, idx) => (
-                                                                        <tr key={idx}>
-                                                                            <td>{item.kaveriRegistrationNumber?.trim() ? item.kaveriRegistrationNumber : '-'}</td>
-                                                                            <td>{item.kaveriECNumber?.trim() ? item.kaveriECNumber : '-'}</td>
+                        {/* Kaveri Registration Numbers */}
+                        {epid_fetchedData.KaveriRegistrationNumber && (
+                            <>
+                                <h4>Kaveri Registration Numbers</h4>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Registration Number</th>
+                                            <th>EC Number</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {epid_fetchedData.KaveriRegistrationNumber.map((item, idx) => (
+                                            <tr key={idx}>
+                                                <td>{item.kaveriRegistrationNumber?.trim() ? item.kaveriRegistrationNumber : '-'}</td>
+                                                <td>{item.kaveriECNumber?.trim() ? item.kaveriECNumber : '-'}</td>
 
-                                                                        </tr>
-                                                                    ))}
-                                                                </tbody>
-                                                            </table>
-                                                        </>
-                                                    )}
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </>
+                        )}
 
-                                                    {/* More Property Info */}
-                                                    <table>
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Street Code</th>
-                                                                <th>SAS Application No</th>
-                                                                <th>Is Mutation</th>
-                                                                <th>Assessment No</th>
-                                                                <th>Court Stay</th>
-                                                                <th>Enquiry Dispute</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr>
-                                                                <td>{epid_fetchedData.Streetcode?.toString().trim() ? epid_fetchedData.Streetcode : '-'}</td>
-                                                                <td>{epid_fetchedData.SASApplicationNumber?.toString().trim() ? epid_fetchedData.SASApplicationNumber : '-'}</td>
-                                                                <td>{epid_fetchedData.IsMuation?.toString().trim() ? epid_fetchedData.IsMuation : '-'}</td>
-                                                                <td>{epid_fetchedData.AssessmentNumber?.toString().trim() ? epid_fetchedData.AssessmentNumber : '-'}</td>
-                                                                <td>{epid_fetchedData.courtStay?.toString().trim() ? epid_fetchedData.courtStay : '-'}</td>
-                                                                <td>{epid_fetchedData.enquiryDispute?.toString().trim() ? epid_fetchedData.enquiryDispute : '-'}</td>
-                                                            </tr>
+                        {/* More Property Info */}
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Street Code</th>
+                                    <th>SAS Application No</th>
+                                    <th>Is Mutation</th>
+                                    <th>Assessment No</th>
+                                    <th>Court Stay</th>
+                                    <th>Enquiry Dispute</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{epid_fetchedData.Streetcode?.toString().trim() ? epid_fetchedData.Streetcode : '-'}</td>
+                                    <td>{epid_fetchedData.SASApplicationNumber?.toString().trim() ? epid_fetchedData.SASApplicationNumber : '-'}</td>
+                                    <td>{epid_fetchedData.IsMuation?.toString().trim() ? epid_fetchedData.IsMuation : '-'}</td>
+                                    <td>{epid_fetchedData.AssessmentNumber?.toString().trim() ? epid_fetchedData.AssessmentNumber : '-'}</td>
+                                     <td>{epid_fetchedData.courtStay?.toString().trim() || '-'}</td>
+                                    <td>{epid_fetchedData.enquiryDispute?.toString().trim() ? epid_fetchedData.enquiryDispute : '-'}</td>
+                                </tr>
 
-                                                        </tbody>
-                                                    </table>
+                            </tbody>
+                        </table>
 
-                                                    {/* Check Bandi */}
-                                                    <h4>Chakbandi</h4>
-                                                    <table>
-                                                        <thead>
-                                                            <tr>
-                                                                <th>North</th>
-                                                                <th>South</th>
-                                                                <th>East</th>
-                                                                <th>West</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr>
-                                                                <td>{epid_fetchedData.CheckBandi?.north?.toString().trim() ? epid_fetchedData.CheckBandi.north : '-'}</td>
-                                                                <td>{epid_fetchedData.CheckBandi?.south?.toString().trim() ? epid_fetchedData.CheckBandi.south : '-'}</td>
-                                                                <td>{epid_fetchedData.CheckBandi?.east?.toString().trim() ? epid_fetchedData.CheckBandi.east : '-'}</td>
-                                                                <td>{epid_fetchedData.CheckBandi?.west?.toString().trim() ? epid_fetchedData.CheckBandi.west : '-'}</td>
+                        {/* Check Bandi */}
+                        <h4>Chakbandi</h4>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>North</th>
+                                    <th>South</th>
+                                    <th>East</th>
+                                    <th>West</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{epid_fetchedData.CheckBandi?.north?.toString().trim() ? epid_fetchedData.CheckBandi.north : '-'}</td>
+                                    <td>{epid_fetchedData.CheckBandi?.south?.toString().trim() ? epid_fetchedData.CheckBandi.south : '-'}</td>
+                                    <td>{epid_fetchedData.CheckBandi?.east?.toString().trim() ? epid_fetchedData.CheckBandi.east : '-'}</td>
+                                    <td>{epid_fetchedData.CheckBandi?.west?.toString().trim() ? epid_fetchedData.CheckBandi.west : '-'}</td>
 
 
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
+                                </tr>
+                            </tbody>
+                        </table>
 
-                                                    {/* Site Details */}
-                                                    <h4>Site Details</h4>
-                                                    <table>
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Site Area (SQ Mtr)</th>
-                                                                <th>East-West Dimension</th>
-                                                                <th>North-South Dimension</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr>
-                                                                <td>{epid_fetchedData.SiteDetails?.siteArea ? parseFloat(epid_fetchedData.SiteDetails.siteArea).toFixed(1) : ''}</td>
-                                                                <td>{epid_fetchedData.SiteDetails?.dimensions?.eastWest || '-'}</td>
-                                                                <td>{epid_fetchedData.SiteDetails?.dimensions?.northSouth || '-'}</td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
+                        {/* Site Details */}
+                        <h4>Site Details</h4>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Site Area (SQ Mtr)</th>
+                                    <th>East-West Dimension</th>
+                                    <th>North-South Dimension</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{epid_fetchedData.SiteDetails?.siteArea ? parseFloat(epid_fetchedData.SiteDetails.siteArea).toFixed(1) : ''}</td>
+                                    <td>{epid_fetchedData.SiteDetails?.dimensions?.eastWest || '-'}</td>
+                                    <td>{epid_fetchedData.SiteDetails?.dimensions?.northSouth || '-'}</td>
+                                </tr>
+                            </tbody>
+                        </table>
 
-                                                    {/* Owner Details */}
-                                                    <h4>Owner Details</h4>
-                                                    <table>
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Owner Name</th>
-                                                                <th>ID Type</th>
-                                                                {/* <th>ID Number</th> */}
-                                                                <th>Address</th>
-                                                                <th>Identifier Name</th>
-                                                                <th>Gender</th>
-                                                                <th>Mobile Number</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {epid_fetchedData.OwnerDetails?.map((owner, index) => (
-                                                                <tr key={index}>
-                                                                    <td>{owner.ownerName}</td>
-                                                                    <td>{owner.idType}</td>
-                                                                    {/* <td>{owner.idNumber ? owner.idNumber.replace(/\d(?=\d{4})/g, 'X') : '-'}</td> */}
-                                                                    <td>{owner.ownerAddress}</td>
-                                                                    <td>{owner.identifierName}</td>
-                                                                    <td>{owner.gender}</td>
-                                                                    <td>{owner.mobileNumber}</td>
-                                                                </tr>
-                                                            ))}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </>
-                                        )}
+                        {/* Owner Details */}
+                        <h4>Owner Details</h4>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Owner Name</th>
+                                    <th>ID Type</th>
+                                    {/* <th>ID Number</th> */}
+                                    <th>Address</th>
+                                    <th>Identifier Name</th>
+                                    <th>Gender</th>
+                                    <th>Mobile Number</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {epid_fetchedData.OwnerDetails?.map((owner, index) => (
+                                    <tr key={index}>
+                                        <td>{owner.ownerName}</td>
+                                        <td>{owner.idType}</td>
+                                        {/* <td>{owner.idNumber ? owner.idNumber.replace(/\d(?=\d{4})/g, 'X') : '-'}</td> */}
+                                        <td>{owner.ownerAddress}</td>
+                                        <td>{owner.identifierName}</td>
+                                        <td>{owner.gender}</td>
+                                        <td>{owner.mobileNumber}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </>
+            )}
 
                                         <hr />
                                     </>
@@ -1525,7 +1525,7 @@ const BBMP_SubmittedInfo = () => {
 
                                 {records.length > 0 && (
                                     <div className="mt-4">
-                                        <h4>Layout Approval order</h4>
+                                        <h4>Layout Approval Order</h4>
                                         <DataTable
                                             columns={approval_columns}
                                             data={records}
@@ -1903,8 +1903,71 @@ const BBMP_SubmittedInfo = () => {
 }
 const Preview_siteDetailsTable = ({ data, setData, totalSitesCount, }) => {
 
-    useEffect(() => {
-    }, [data]);
+      const [areaSummary, setAreaSummary] = useState({
+           total: 0,
+           civicAmenity: 0,
+           commercial: 0,
+           industrial: 0,
+           park: 0,
+           residential: 0,
+           sump: 0,
+           utility: 0,
+           road: 0
+       });
+   
+       useEffect(() => {
+           const summary = {
+               total: 0,
+               civicAmenity: 0,
+               commercial: 0,
+               industrial: 0,
+               park: 0,
+               residential: 0,
+               sump: 0,
+               utility: 0,
+               road: 0
+           };
+   
+           data.forEach(site => {
+               const type = site.sitE_TYPE;
+               const area = parseFloat(site.sitE_AREAINSQFT || 0);
+   
+               if (!isNaN(area)) {
+                   summary.total += area;
+   
+                   switch (type) {
+                       case 'Civic Amenity':
+                           summary.civicAmenity += area;
+                           break;
+                       case 'Commercial':
+                           summary.commercial += area;
+                           break;
+                       case 'Industrial':
+                           summary.industrial += area;
+                           break;
+                       case 'Park':
+                           summary.park += area;
+                           break;
+                       case 'Residential':
+                           summary.residential += area;
+                           break;
+                       case 'Sump':
+                           summary.sump += area;
+                           break;
+                       case 'Utility':
+                           summary.utility += area;
+                           break;
+                       case 'Road':
+                           summary.road += area;
+                           break;
+                       default:
+                           break;
+                   }
+               }
+           });
+   
+           setAreaSummary(summary);
+       }, [data]);
 
     const { loading, start_loader, stop_loader } = useLoader(); // Use loader context
     const totalAddedSites = data.length;
@@ -2173,6 +2236,157 @@ const Preview_siteDetailsTable = ({ data, setData, totalSitesCount, }) => {
                                 </option>
                             ))}
                         </select>
+                    </div>
+                </div>
+                <br/>
+                <div className='row'>
+                    <h3 style={{ color: '#023e8a' }}>Overall abstract of Area use</h3>
+                    <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4 mb-3">
+                        <div className="form-group">
+                            <label htmlFor="totalArea" className="col-form-label fw-semibold">
+                                Total Area
+                            </label>
+                            <div className="input-group">
+                                <input
+                                    type="tel"
+                                    className="form-control"
+                                    placeholder="Total Area"
+                                    value={areaSummary.total}
+                                    readOnly
+                                />
+                                <span className="input-group-text">Sq Ft</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="col-0 col-sm-0 col-md-8 col-lg-8 col-xl-8 mb-3"></div>
+                    <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                        <div className="form-group">
+                            <label htmlFor="totalArea" className="col-form-label fw-semibold">
+                                Civic Amenity
+                            </label>
+                            <div className="input-group">
+                                <input
+                                    type="tel"
+                                    className="form-control"
+                                    placeholder="Civic Amenity" value={areaSummary.civicAmenity}
+                                    readOnly
+                                />
+                                <span className="input-group-text">Sq Ft</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                        <div className="form-group">
+                            <label htmlFor="totalArea" className="col-form-label fw-semibold">
+                                Commercial
+                            </label>
+                            <div className="input-group">
+                                <input
+                                    type="tel"
+                                    className="form-control"
+                                    placeholder="Commercial" value={areaSummary.commercial}
+                                    readOnly
+                                />
+                                <span className="input-group-text">Sq Ft</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                        <div className="form-group">
+                            <label htmlFor="totalArea" className="col-form-label fw-semibold">
+                                Industrial
+                            </label>
+                            <div className="input-group">
+                                <input
+                                    type="tel"
+                                    className="form-control" value={areaSummary.industrial}
+                                    placeholder="Industrial"
+                                    readOnly
+                                />
+                                <span className="input-group-text">Sq Ft</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                        <div className="form-group">
+                            <label htmlFor="totalArea" className="col-form-label fw-semibold">
+                                Park
+                            </label>
+                            <div className="input-group">
+                                <input
+                                    type="tel"
+                                    className="form-control"
+                                    placeholder="Park" value={areaSummary.park}
+                                    readOnly
+                                />
+                                <span className="input-group-text">Sq Ft</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                        <div className="form-group">
+                            <label htmlFor="totalArea" className="col-form-label fw-semibold">
+                                Residential
+                            </label>
+                            <div className="input-group">
+                                <input
+                                    type="tel"
+                                    className="form-control"
+                                    placeholder="Residential" value={areaSummary.residential}
+                                    readOnly
+                                />
+                                <span className="input-group-text">Sq Ft</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                        <div className="form-group">
+                            <label htmlFor="totalArea" className="col-form-label fw-semibold">
+                                Sump
+                            </label>
+                            <div className="input-group">
+                                <input
+                                    type="tel"
+                                    className="form-control" value={areaSummary.sump}
+                                    placeholder="Sump"
+                                    readOnly
+                                />
+                                <span className="input-group-text">Sq Ft</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                        <div className="form-group">
+                            <label htmlFor="totalArea" className="col-form-label fw-semibold">
+                                Utility
+                            </label>
+                            <div className="input-group">
+                                <input
+                                    type="tel"
+                                    className="form-control"
+                                    placeholder="Utility" value={areaSummary.utility}
+                                    readOnly
+                                />
+                                <span className="input-group-text">Sq Ft</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                        <div className="form-group">
+                            <label htmlFor="totalArea" className="col-form-label fw-semibold">
+                                Road
+                            </label>
+                            <div className="input-group">
+                                <input
+                                    type="tel"
+                                    className="form-control"
+                                    placeholder="Road" value={areaSummary.road}
+                                    readOnly
+                                />
+                                <span className="input-group-text">Sq Ft</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

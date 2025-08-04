@@ -338,7 +338,7 @@ export const handleFetchEPIDDetails = async (epidNumber, createdBy, createdName,
       }
     } else {
       return {
-        error: "EPID is invalid. Please provide a correct EPID",
+        error: response?.responseMessage,
         responseMessage: response?.responseMessage,
         fullResponse: response
       };

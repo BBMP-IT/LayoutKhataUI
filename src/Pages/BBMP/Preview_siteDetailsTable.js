@@ -37,9 +37,72 @@ export const useLoader = () => {
 
     return { loading, start_loader, stop_loader };
 };
-	const Preview_siteDetailsTable = ({ data, setData, totalSitesCount, onSave, onEdit, LKRS_ID, createdBy, createdName, roleID }) => {
+const Preview_siteDetailsTable = ({ data, setData, totalSitesCount, onSave, onEdit, LKRS_ID, createdBy, createdName, roleID }) => {
+
+    const [areaSummary, setAreaSummary] = useState({
+        total: 0,
+        civicAmenity: 0,
+        commercial: 0,
+        industrial: 0,
+        park: 0,
+        residential: 0,
+        sump: 0,
+        utility: 0,
+        road: 0
+    });
 
     useEffect(() => {
+        const summary = {
+            total: 0,
+            civicAmenity: 0,
+            commercial: 0,
+            industrial: 0,
+            park: 0,
+            residential: 0,
+            sump: 0,
+            utility: 0,
+            road: 0
+        };
+
+        data.forEach(site => {
+            const type = site.sitE_TYPE;
+            const area = parseFloat(site.sitE_AREAINSQFT || 0);
+
+            if (!isNaN(area)) {
+                summary.total += area;
+
+                switch (type) {
+                    case 'Civic Amenity':
+                        summary.civicAmenity += area;
+                        break;
+                    case 'Commercial':
+                        summary.commercial += area;
+                        break;
+                    case 'Industrial':
+                        summary.industrial += area;
+                        break;
+                    case 'Park':
+                        summary.park += area;
+                        break;
+                    case 'Residential':
+                        summary.residential += area;
+                        break;
+                    case 'Sump':
+                        summary.sump += area;
+                        break;
+                    case 'Utility':
+                        summary.utility += area;
+                        break;
+                    case 'Road':
+                        summary.road += area;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        });
+
+        setAreaSummary(summary);
     }, [data]);
 
     const [localLKRSID, setLocalLKRSID] = useState("");
@@ -60,159 +123,159 @@ export const useLoader = () => {
 
 
 
-  const columns = React.useMemo(
-          () => [
+    const columns = React.useMemo(
+        () => [
 
-              {
-                  Header: "S.No",
-                  id: "serialNo",
-                  accessor: (row, index) => index + 1,
-              },
-              {
-                  Header: "Shape",
-                  accessor: (row) => {
-                      return row.sitE_SHAPETYPE ? row.sitE_SHAPETYPE : "-";
-                  },
-              },
-              {
-                  Header: "Site Number",
-                  accessor: (row) => {
-                      return row.sitE_NO ? row.sitE_NO : "-";
-                  },
-              },
-              {
-                  Header: "Block/Area",
-                  accessor: (row) => {
-                      return row.sitE_AREA ? row.sitE_AREA : "-";
-                  },
-              },
-              {
-                  Header: "Number of sides",
-                  accessor: (row) => {
-                      return row.sitE_NO_OF_SIDES ? row.sitE_NO_OF_SIDES : "-";
-                  },
-              },
-              {
-                  Header: "Dimension",
-                  accessor: (row) => {
-  
-                      if (row.sitE_SHAPETYPE === "Regular") {
-                          // Extract arrays for each property
-                          const feetSides = row.siteDimensions.map(dim => dim.sitediM_SIDEINFT);
-                          const meterSides = row.siteDimensions.map(dim => dim.sitediM_SIDEINMT);
-                          const roadFacingStatuses = row.siteDimensions.map(dim => dim.sitediM_ROADFACING ? "yes" : "no");
-  
-                          return (
-                              <>
-                                  {feetSides.join(" x ")} (ft)<br />
-                                  {meterSides.join(" x ")} (mtr)<br />
-                                  <b>Road Facing:</b> {roadFacingStatuses.join(", ")}
-                              </>
-                          );
-                      } else if (row.sitE_SHAPETYPE === "Irregular" && Array.isArray(row.siteDimensions)) {
-                          const feetString = row.siteDimensions.map(side => side.sitediM_SIDEINFT).join(' x ');
-                          const meterString = row.siteDimensions.map(side => side.sitediM_SIDEINMT).join(' x ');
-                          const roadFacingString = row.siteDimensions.map(side => side.sitediM_ROADFACING ? "Yes" : "No").join(', ');
-  
-                          return (
-                              <div>
-                                  <div>{feetString} (ft)</div>
-                                  <div>{meterString} (m)</div>
-                                  <div><b>Road Facing:</b> {roadFacingString}</div>
-                              </div>
-                          );
-                      } else {
-                          return "-";
-                      }
-  
-                  },
-                  Footer: (info) => {
-  
-                      return (
-                          <strong>
-                              Total Area:
-                          </strong>
-                      );
-                  },
-              },
-              // {
-              //     Header: "Total Area",
-              //     accessor: (row) => {
-              //         if (row.sitE_AREAINSQFT && row.sitE_AREAINSQMT) {
-              //             return `${row.sitE_AREAINSQFT} [Sq.ft] - ${row.sitE_AREAINSQMT} [Sq.mtr]`;
-              //         } else {
-              //             return "-";
-              //         }
-              //     },
-              // },
-              {
-                  Header: "Total Area",
-                  accessor: (row) => {
-                      if (row.sitE_AREAINSQFT && row.sitE_AREAINSQMT) {
-                          return `${row.sitE_AREAINSQFT} [Sq.ft] - ${row.sitE_AREAINSQMT} [Sq.mtr]`;
-                      } else {
-                          return "-";
-                      }
-                  },
-                  Footer: (info) => {
-                      const totalSqft = info.rows.reduce((sum, row) => {
-                          const value = parseFloat(row.original.sitE_AREAINSQFT);
-                          return isNaN(value) ? sum : sum + value;
-                      }, 0);
-  
-                      const totalSqmt = info.rows.reduce((sum, row) => {
-                          const value = parseFloat(row.original.sitE_AREAINSQMT);
-                          return isNaN(value) ? sum : sum + value;
-                      }, 0);
-  
-                      return (
-                          <strong>
-                              {totalSqft.toLocaleString()} [Sq.ft] - {totalSqmt.toLocaleString()} [Sq.mtr]
-                          </strong>
-                      );
-                  },
-              },
-  
-              {
-                  Header: "Corner Site",
-                  accessor: (row) => {
-                      return row.sitE_NO ? row.sitE_NO : "-";
-  
-                      return row.sitE_CORNERPLOT ? "YES" : "NO";
-                  },
-              },
-              {
-                  Header: "Type of Site",
-                  accessor: (row) => {
-                      return row.sitE_TYPE ? row.sitE_TYPE : "-";
-                      // return `${row.sitE_TYPE}`;
-                  },
-              },
-              {
-                  id: "chakbandi",
-                  Header: (
-                      <>
-                          Chakbandi<br />
-                          [East | West | North | South]
-                      </>
-                  ),
-                  accessor: (row) => {
-                      const east = row.sitE_EAST || "-";
-                      const west = row.sitE_WEST || "-";
-                      const north = row.sitE_NORTH || "-";
-                      const south = row.sitE_SOUTH || "-";
-                      return `${east} | ${west} | ${north} | ${south}`;
-                  },
-              },
-              {
-                  Header: "Latitude, Longitude",
-                  accessor: (row) => {
-                      return `${row.sitE_LATITUDE}, ${row.sitE_LONGITUDE}`;
-                  },
-              },
-          ],
-          []
-      );
+            {
+                Header: "S.No",
+                id: "serialNo",
+                accessor: (row, index) => index + 1,
+            },
+            {
+                Header: "Shape",
+                accessor: (row) => {
+                    return row.sitE_SHAPETYPE ? row.sitE_SHAPETYPE : "-";
+                },
+            },
+            {
+                Header: "Site Number",
+                accessor: (row) => {
+                    return row.sitE_NO ? row.sitE_NO : "-";
+                },
+            },
+            {
+                Header: "Block/Area",
+                accessor: (row) => {
+                    return row.sitE_AREA ? row.sitE_AREA : "-";
+                },
+            },
+            {
+                Header: "Number of sides",
+                accessor: (row) => {
+                    return row.sitE_NO_OF_SIDES ? row.sitE_NO_OF_SIDES : "-";
+                },
+            },
+            {
+                Header: "Dimension",
+                accessor: (row) => {
+
+                    if (row.sitE_SHAPETYPE === "Regular") {
+                        // Extract arrays for each property
+                        const feetSides = row.siteDimensions.map(dim => dim.sitediM_SIDEINFT);
+                        const meterSides = row.siteDimensions.map(dim => dim.sitediM_SIDEINMT);
+                        const roadFacingStatuses = row.siteDimensions.map(dim => dim.sitediM_ROADFACING ? "yes" : "no");
+
+                        return (
+                            <>
+                                {feetSides.join(" x ")} (ft)<br />
+                                {meterSides.join(" x ")} (mtr)<br />
+                                <b>Road Facing:</b> {roadFacingStatuses.join(", ")}
+                            </>
+                        );
+                    } else if (row.sitE_SHAPETYPE === "Irregular" && Array.isArray(row.siteDimensions)) {
+                        const feetString = row.siteDimensions.map(side => side.sitediM_SIDEINFT).join(' x ');
+                        const meterString = row.siteDimensions.map(side => side.sitediM_SIDEINMT).join(' x ');
+                        const roadFacingString = row.siteDimensions.map(side => side.sitediM_ROADFACING ? "Yes" : "No").join(', ');
+
+                        return (
+                            <div>
+                                <div>{feetString} (ft)</div>
+                                <div>{meterString} (m)</div>
+                                <div><b>Road Facing:</b> {roadFacingString}</div>
+                            </div>
+                        );
+                    } else {
+                        return "-";
+                    }
+
+                },
+                Footer: (info) => {
+
+                    return (
+                        <strong>
+                            Total Area:
+                        </strong>
+                    );
+                },
+            },
+            // {
+            //     Header: "Total Area",
+            //     accessor: (row) => {
+            //         if (row.sitE_AREAINSQFT && row.sitE_AREAINSQMT) {
+            //             return `${row.sitE_AREAINSQFT} [Sq.ft] - ${row.sitE_AREAINSQMT} [Sq.mtr]`;
+            //         } else {
+            //             return "-";
+            //         }
+            //     },
+            // },
+            {
+                Header: "Total Area",
+                accessor: (row) => {
+                    if (row.sitE_AREAINSQFT && row.sitE_AREAINSQMT) {
+                        return `${row.sitE_AREAINSQFT} [Sq.ft] - ${row.sitE_AREAINSQMT} [Sq.mtr]`;
+                    } else {
+                        return "-";
+                    }
+                },
+                Footer: (info) => {
+                    const totalSqft = info.rows.reduce((sum, row) => {
+                        const value = parseFloat(row.original.sitE_AREAINSQFT);
+                        return isNaN(value) ? sum : sum + value;
+                    }, 0);
+
+                    const totalSqmt = info.rows.reduce((sum, row) => {
+                        const value = parseFloat(row.original.sitE_AREAINSQMT);
+                        return isNaN(value) ? sum : sum + value;
+                    }, 0);
+
+                    return (
+                        <strong>
+                            {totalSqft.toLocaleString()} [Sq.ft] - {totalSqmt.toLocaleString()} [Sq.mtr]
+                        </strong>
+                    );
+                },
+            },
+
+            {
+                Header: "Corner Site",
+                accessor: (row) => {
+                    return row.sitE_NO ? row.sitE_NO : "-";
+
+                    return row.sitE_CORNERPLOT ? "YES" : "NO";
+                },
+            },
+            {
+                Header: "Type of Site",
+                accessor: (row) => {
+                    return row.sitE_TYPE ? row.sitE_TYPE : "-";
+                    // return `${row.sitE_TYPE}`;
+                },
+            },
+            {
+                id: "chakbandi",
+                Header: (
+                    <>
+                        Chakbandi<br />
+                        [East | West | North | South]
+                    </>
+                ),
+                accessor: (row) => {
+                    const east = row.sitE_EAST || "-";
+                    const west = row.sitE_WEST || "-";
+                    const north = row.sitE_NORTH || "-";
+                    const south = row.sitE_SOUTH || "-";
+                    return `${east} | ${west} | ${north} | ${south}`;
+                },
+            },
+            {
+                Header: "Latitude, Longitude",
+                accessor: (row) => {
+                    return `${row.sitE_LATITUDE}, ${row.sitE_LONGITUDE}`;
+                },
+            },
+        ],
+        []
+    );
     const {
         getTableProps,
         getTableBodyProps,
@@ -360,12 +423,163 @@ export const useLoader = () => {
                         </select>
                     </div>
                 </div>
+                <br />
+                <div className='row'>
+                    <h3 style={{ color: '#023e8a' }}>Overall abstract of Area use</h3>
+                    <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4 mb-3">
+                        <div className="form-group">
+                            <label htmlFor="totalArea" className="col-form-label fw-semibold">
+                                Total Area
+                            </label>
+                            <div className="input-group">
+                                <input
+                                    type="tel"
+                                    className="form-control"
+                                    placeholder="Total Area"
+                                    value={areaSummary.total}
+                                    readOnly
+                                />
+                                <span className="input-group-text">Sq Ft</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="col-0 col-sm-0 col-md-8 col-lg-8 col-xl-8 mb-3"></div>
+                    <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                        <div className="form-group">
+                            <label htmlFor="totalArea" className="col-form-label fw-semibold">
+                                Civic Amenity
+                            </label>
+                            <div className="input-group">
+                                <input
+                                    type="tel"
+                                    className="form-control"
+                                    placeholder="Civic Amenity" value={areaSummary.civicAmenity}
+                                    readOnly
+                                />
+                                <span className="input-group-text">Sq Ft</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                        <div className="form-group">
+                            <label htmlFor="totalArea" className="col-form-label fw-semibold">
+                                Commercial
+                            </label>
+                            <div className="input-group">
+                                <input
+                                    type="tel"
+                                    className="form-control"
+                                    placeholder="Commercial" value={areaSummary.commercial}
+                                    readOnly
+                                />
+                                <span className="input-group-text">Sq Ft</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                        <div className="form-group">
+                            <label htmlFor="totalArea" className="col-form-label fw-semibold">
+                                Industrial
+                            </label>
+                            <div className="input-group">
+                                <input
+                                    type="tel"
+                                    className="form-control" value={areaSummary.industrial}
+                                    placeholder="Industrial"
+                                    readOnly
+                                />
+                                <span className="input-group-text">Sq Ft</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                        <div className="form-group">
+                            <label htmlFor="totalArea" className="col-form-label fw-semibold">
+                                Park
+                            </label>
+                            <div className="input-group">
+                                <input
+                                    type="tel"
+                                    className="form-control"
+                                    placeholder="Park" value={areaSummary.park}
+                                    readOnly
+                                />
+                                <span className="input-group-text">Sq Ft</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                        <div className="form-group">
+                            <label htmlFor="totalArea" className="col-form-label fw-semibold">
+                                Residential
+                            </label>
+                            <div className="input-group">
+                                <input
+                                    type="tel"
+                                    className="form-control"
+                                    placeholder="Residential" value={areaSummary.residential}
+                                    readOnly
+                                />
+                                <span className="input-group-text">Sq Ft</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                        <div className="form-group">
+                            <label htmlFor="totalArea" className="col-form-label fw-semibold">
+                                Sump
+                            </label>
+                            <div className="input-group">
+                                <input
+                                    type="tel"
+                                    className="form-control" value={areaSummary.sump}
+                                    placeholder="Sump"
+                                    readOnly
+                                />
+                                <span className="input-group-text">Sq Ft</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                        <div className="form-group">
+                            <label htmlFor="totalArea" className="col-form-label fw-semibold">
+                                Utility
+                            </label>
+                            <div className="input-group">
+                                <input
+                                    type="tel"
+                                    className="form-control"
+                                    placeholder="Utility" value={areaSummary.utility}
+                                    readOnly
+                                />
+                                <span className="input-group-text">Sq Ft</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                        <div className="form-group">
+                            <label htmlFor="totalArea" className="col-form-label fw-semibold">
+                                Road
+                            </label>
+                            <div className="input-group">
+                                <input
+                                    type="tel"
+                                    className="form-control"
+                                    placeholder="Road" value={areaSummary.road}
+                                    readOnly
+                                />
+                                <span className="input-group-text">Sq Ft</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );
 
 };
 
-			
-			
-			export default Preview_siteDetailsTable;
+
+
+export default Preview_siteDetailsTable;

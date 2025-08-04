@@ -681,7 +681,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
             with: '150px'
         },
         {
-            name: 'DC Conersion Date',
+            name: 'DC Conversion Date',
             selector: row => {
                 const date = new Date(row.dateOfOrder);
 
@@ -778,13 +778,13 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
             selector: row => row.idType || '-',
             sortable: true
         },
-        {
-            name: 'ID Number',
-            selector: row => row.idNumber
-                ? row.idNumber.replace(/\d(?=\d{4})/g, 'X')  // masks all digits except last 4
-                : '-',
-            sortable: true
-        },
+        // {
+        //     name: 'ID Number',
+        //     selector: row => row.idNumber
+        //         ? row.idNumber.replace(/\d(?=\d{4})/g, 'X')  // masks all digits except last 4
+        //         : '-',
+        //     sortable: true
+        // },
         {
             name: 'Relation Type',
             selector: row => row.relationShipType || '-',
@@ -1044,21 +1044,16 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
     ];
 
     const approval_columns = [
-        {
-            name: t('translation.BDA.table.slno'),
-            cell: (row, index) => index + 1,
-            width: '80px',
-            center: true,
-        },
+
         {
             name: "Approval No",
             selector: row => row.layoutApprovalNumber,
             sortable: true,
             center: true,
-            with: '150px'
+            width: '150px'
         },
         {
-            name: 'Date of Approval',
+            name: 'Date Of App.',
             selector: row => {
                 const date = new Date(row.dateOfApproval);
 
@@ -1078,7 +1073,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
             width: '150px',
         },
         {
-            name: t('translation.BDA.table.approvalOrder'),
+            name: "Approved Order",
             cell: row => {
                 if (row.approvalOrder) {
                     const blob = base64ToBlob(row.approvalOrder);
@@ -1109,7 +1104,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
             width: '150px',
         },
         {
-            name: t('translation.BDA.table.approvalMap'),
+            name: "Approved Order",
             cell: row => {
                 if (row.approvalMap) {
                     const blob = base64ToBlob(row.approvalMap);
@@ -1139,7 +1134,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
             center: true,
         },
         {
-            name: 'Layout Approval Authority',
+            name: 'Approval Authority',
             selector: row => row.approvalAuthorityPlanning,
             sortable: true,
             minWidth: '220px', center: true,
@@ -1148,10 +1143,10 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
             name: "Designation of Approval Authority",
             selector: row => row.approvalAuthority,
             sortable: true,
-            minWidth: '280px', center: true,
+            minWidth: '300px', center: true,
         },
         {
-            name: "Total No of sites",
+            name: "Total Sites",
             selector: row => row.totalNoOfSites,
             sortable: true,
             minWidth: '150px', center: true,
@@ -1317,6 +1312,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
             stop_loader();
         }
     };
+    
 
     // =============================================OwnerEKYC details starts=====================================
 
@@ -1839,7 +1835,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                                             <div className="table-responsive-wrapper">
                                                 <div className="header-with-button">
                                                     <h4>Property Details</h4>
-                                                    {/* <button className='btn btn-warning' onClick={showImplementationAlert}>View eKhata</button> */}
+                                                    <button className='btn btn-warning' onClick={showImplementationAlert}>View eKhata</button>
                                                 </div>
 
                                                 {/* Property Details */}
@@ -1856,18 +1852,19 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                                                     </thead>
                                                     <tbody>
                                                         <tr>
-                                                            <td>{epid_fetchedData.PropertyID}</td>
-                                                            <td>{epid_fetchedData.PropertyCategory}</td>
-                                                            <td>{epid_fetchedData.PropertyClassification}</td>
-                                                            <td>{epid_fetchedData.WardNumber}</td>
-                                                            <td>{epid_fetchedData.WardName?.trim()}</td>
-                                                            <td>{epid_fetchedData.StreetName?.trim()}</td>
+                                                            <td>{epid_fetchedData.PropertyID?.toString().trim() || '-'}</td>
+                                                            <td>{epid_fetchedData.PropertyCategory?.toString().trim() || '-'}</td>
+                                                            <td>{epid_fetchedData.PropertyClassification?.toString().trim() || '-'}</td>
+                                                            <td>{epid_fetchedData.WardNumber?.toString().trim() || '-'}</td>
+                                                            <td>{epid_fetchedData.WardName?.toString().trim() || '-'}</td>
+                                                            <td>{epid_fetchedData.StreetName?.toString().trim() || '-'}</td>
                                                         </tr>
+
                                                     </tbody>
                                                 </table>
 
                                                 {/* Kaveri Registration Numbers */}
-                                                {epid_fetchedData.KaveriRegistrationNumber?.length > 0 && (
+                                                {epid_fetchedData.KaveriRegistrationNumber && (
                                                     <>
                                                         <h4>Kaveri Registration Numbers</h4>
                                                         <table>
@@ -1880,8 +1877,9 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                                                             <tbody>
                                                                 {epid_fetchedData.KaveriRegistrationNumber.map((item, idx) => (
                                                                     <tr key={idx}>
-                                                                        <td>{item.kaveriRegistrationNumber}</td>
-                                                                        <td>{item.kaveriECNumber}</td>
+                                                                        <td>{item.kaveriRegistrationNumber?.trim() ? item.kaveriRegistrationNumber : '-'}</td>
+                                                                        <td>{item.kaveriECNumber?.trim() ? item.kaveriECNumber : '-'}</td>
+
                                                                     </tr>
                                                                 ))}
                                                             </tbody>
@@ -1903,18 +1901,19 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                                                     </thead>
                                                     <tbody>
                                                         <tr>
-                                                            <td>{epid_fetchedData.Streetcode}</td>
-                                                            <td>{epid_fetchedData.SASApplicationNumber}</td>
-                                                            <td>{epid_fetchedData.IsMuation}</td>
-                                                            <td>{epid_fetchedData.AssessmentNumber}</td>
-                                                            <td>{epid_fetchedData.courtStay}</td>
-                                                            <td>{epid_fetchedData.enquiryDispute}</td>
+                                                            <td>{epid_fetchedData.Streetcode?.toString().trim() ? epid_fetchedData.Streetcode : '-'}</td>
+                                                            <td>{epid_fetchedData.SASApplicationNumber?.toString().trim() ? epid_fetchedData.SASApplicationNumber : '-'}</td>
+                                                            <td>{epid_fetchedData.IsMuation?.toString().trim() ? epid_fetchedData.IsMuation : '-'}</td>
+                                                            <td>{epid_fetchedData.AssessmentNumber?.toString().trim() ? epid_fetchedData.AssessmentNumber : '-'}</td>
+                                                            <td>{epid_fetchedData.courtStay?.toString().trim() ? epid_fetchedData.courtStay : '-'}</td>
+                                                            <td>{epid_fetchedData.enquiryDispute?.toString().trim() ? epid_fetchedData.enquiryDispute : '-'}</td>
                                                         </tr>
+
                                                     </tbody>
                                                 </table>
 
                                                 {/* Check Bandi */}
-                                                <h4>Check Bandi</h4>
+                                                <h4>Chakbandi</h4>
                                                 <table>
                                                     <thead>
                                                         <tr>
@@ -1926,10 +1925,12 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                                                     </thead>
                                                     <tbody>
                                                         <tr>
-                                                            <td>{epid_fetchedData.CheckBandi?.north}</td>
-                                                            <td>{epid_fetchedData.CheckBandi?.south}</td>
-                                                            <td>{epid_fetchedData.CheckBandi?.east}</td>
-                                                            <td>{epid_fetchedData.CheckBandi?.west}</td>
+                                                            <td>{epid_fetchedData.CheckBandi?.north?.toString().trim() ? epid_fetchedData.CheckBandi.north : '-'}</td>
+                                                            <td>{epid_fetchedData.CheckBandi?.south?.toString().trim() ? epid_fetchedData.CheckBandi.south : '-'}</td>
+                                                            <td>{epid_fetchedData.CheckBandi?.east?.toString().trim() ? epid_fetchedData.CheckBandi.east : '-'}</td>
+                                                            <td>{epid_fetchedData.CheckBandi?.west?.toString().trim() ? epid_fetchedData.CheckBandi.west : '-'}</td>
+
+
                                                         </tr>
                                                     </tbody>
                                                 </table>
@@ -1939,14 +1940,14 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                                                 <table>
                                                     <thead>
                                                         <tr>
-                                                            <th>Site Area (SQMtr)</th>
+                                                            <th>Site Area (SQ Mtr)</th>
                                                             <th>East-West Dimension</th>
                                                             <th>North-South Dimension</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         <tr>
-                                                            <td>{epid_fetchedData.SiteDetails?.siteArea}</td>
+                                                            <td>{epid_fetchedData.SiteDetails?.siteArea ? parseFloat(epid_fetchedData.SiteDetails.siteArea).toFixed(1) : ''}</td>
                                                             <td>{epid_fetchedData.SiteDetails?.dimensions?.eastWest || '-'}</td>
                                                             <td>{epid_fetchedData.SiteDetails?.dimensions?.northSouth || '-'}</td>
                                                         </tr>
@@ -2053,6 +2054,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                                         roleID={roleID}
                                     />
                                     <hr />
+                                   
                                 </>
                             )}
 
@@ -2061,7 +2063,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
                                 <>
                                     <div style={{ marginTop: '20px' }}>
                                         <h5>EC Details & JDA Details</h5>
-                                        <p className='mb-4'>Note : EC should be atleast 1 day before registered deed of property until 31-10-2024 or later. If sale / registered deed date is before 01-04-2004 then EC should be from 01-04-2004 to 31-10-2024 after</p>
+                                        {/* <p className='mb-4'>Note : EC should be atleast 1 day before registered deed of property until 31-10-2024 or later. If sale / registered deed date is before 01-04-2004 then EC should be from 01-04-2004 to 31-10-2024 after</p> */}
 
                                         <div className='row'>
                                             <div className="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mt-3">

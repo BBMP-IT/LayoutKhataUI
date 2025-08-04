@@ -746,17 +746,17 @@
         "action":"Action"
       },
       "Subdivision1":{
-        "heading":"Order of site release",
+        "heading":"Order of Site Release",
         "orderNo":"Site Release Order Number",
         "orderNoPlaceholder":"Enter Layout Site Release Order Number",
-        "scanUploadOrder":"Scan & Upload Order of site release",
+        "scanUploadOrder":"Scan & Upload Order of Site Release",
         "noteFile":"[ Only PDF files are allowed, file size must be less than 5MB ]",
         "dateofOrder":"Date Of Order",
-        "designation":"Designation of Authority issued site Release Order",
+        "designation":"Designation of Authority issued Site Release Order",
         "placeholderDesignation":"Enter a Designation of Authority issued site Release Order"
       },
       "table1":{
-        "heading":"Layout Release order",
+        "heading":"Layout Release Order",
         "slno":"S.No",
         "siteOrderNo":"Site Release Order Number",
         "siteOrder":"Order of site Release",

@@ -292,7 +292,7 @@ const BBMP_LayoutForm = () => {
                         </div>
                     </div>
                     {selectedLandType === "convertedRevenue" && (
-                        <DCConversion LKRS_ID={LKRS_ID} isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsDCSectionSaved={setIsDCSectionSaved}/>
+                        <DCConversion LKRS_ID={LKRS_ID} isRTCSectionSaved={isRTCSectionSaved} isEPIDSectionSaved={isEPIDSectionSaved} setIsDCSectionSaved={setIsDCSectionSaved} />
                     )}
 
 
@@ -310,7 +310,7 @@ const BBMP_LayoutForm = () => {
 
                     <DeclarationBlock LKRS_ID={LKRS_ID} createdBy={CreatedBy} createdName={CreatedName} roleID={RoleID} display_LKRS_ID={display_LKRS_ID} isRTCSectionSaved={isRTCSectionSaved}
                         isEPIDSectionSaved={isEPIDSectionSaved} isApprovalSectionSaved={isApprovalSectionSaved} isReleaseSectionSaved={isReleaseSectionSaved} validate_ownerDataList={validate_ownerDataList}
-                        isSitesSectionSaved={isSitesSectionSaved} isECSectionSaved={isECSectionSaved} isJDAEKYCSectionSaved={isJDAEKYCSectionSaved} isOwnerEKYCSectionSaved={isOwnerEKYCSectionSaved} isDCSectionSaved={isDCSectionSaved}/>
+                        isSitesSectionSaved={isSitesSectionSaved} isECSectionSaved={isECSectionSaved} isJDAEKYCSectionSaved={isJDAEKYCSectionSaved} isOwnerEKYCSectionSaved={isOwnerEKYCSectionSaved} isDCSectionSaved={isDCSectionSaved} />
                 </div>
             </div>
             {/* </div> */}
@@ -730,13 +730,16 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
             setTotal_FGunta(mainOwnerRecord.ext_fgunta);
         }
 
-        // Step 6: Survey info for modal title
-        const surveyDetails = newOwners
-            .map(o => `${o.survey_no}/${o.surnoc}/${o.hissa_no}`)
-            .join(', ');
+        // Step 6: Survey info for modal title (remove duplicates)
+        const uniqueSurveyDetails = Array.from(
+            new Set(
+                newOwners.map(o => `${o.survey_no}/${o.surnoc}/${o.hissa_no}`)
+            )
+        ).join(', ');
 
         // Step 7: Show modal with MyFormComponent
-        setModalTitle(`Survey Number/Surnoc/Hissa No Details: ${surveyDetails}`);
+        setModalTitle(`Survey Number/Surnoc/Hissa No Details: ${uniqueSurveyDetails}`);
+
         setModalContent(
             <MyFormComponent
                 totalAcre={mainOwnerRecord?.ext_acre}
@@ -1386,7 +1389,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                                     <th>Village</th>
                                     <th>Owner Name</th>
                                     <th>Survey Number / Surnoc / Hissa Number</th>
-                                    
+
                                     <th>LDA Extent (Acre.Gunta.Fgunta)</th>
                                     <th>LDA Total Area in SqFt</th>
                                     <th>LDA Total Area in SqM</th>
@@ -1413,7 +1416,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                                         <td>{row.village}</td>
                                         <td>{row.owner}</td>
                                         <td>{`${row.survey_no}/${row.surnoc}/${row.hissa_no}`}</td>
-                                        
+
                                         {/* LDA extent */}
                                         <td>{`${row.lda_acre ?? ''}.${row.lda_gunta ?? ''}.${row.lda_fgunta ?? ''}`}</td>
                                         {/* LDA extent total area */}
@@ -1461,7 +1464,7 @@ const NoBBMPKhata = ({ Language, rtc_AddedData, setRtc_AddedData, onDisableEPIDS
                                 <tr>
                                     <th colSpan={6}></th>
                                     <th colSpan={2} className="text-end fw-bold">Total Area:</th>
-                                    
+
                                     <th className="text-left fw-bold">{`${totalAcre_LDA}.${totalGunta_LDA}.${totalFGunta_LDA}`}</th>
                                     <th className='fw-bold' style={{ backgroundColor: 'orange', color: '#fff' }}>
                                         {Math.floor(totalSqFt_LDA)}
@@ -2299,7 +2302,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
             <button className='btn btn-block' onClick={handleGetLKRSID} ref={buttonRef} hidden>Click me</button>
             <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4  mt-3">
                 <div className="form-group mt-2">
-                    <label className='form-label'>Enter EPID of eKhata of A-property <span className='mandatory_color'>*</span></label>
+                    <label className='form-label'>Enter EPID of BBMP A-Khata Property <span className='mandatory_color'>*</span></label>
                     <input
                         type="text"
                         className="form-control"
@@ -2308,7 +2311,7 @@ const BBMPKhata = ({ onDisableEPIDSection, setAreaSqft, LKRS_ID, setLKRS_ID, set
                             const onlyNums = e.target.value.replace(/\D/g, ""); // remove non-numeric chars
                             setEpidNumber(onlyNums);
                         }}
-                        placeholder="Enter EPID of eKhata of A-property"
+                        placeholder="Enter EPID of BBMP A-Khata Property"
                         maxLength={10} disabled={isEPIDSectionDisabled} // <-- disable condition
                     />
 

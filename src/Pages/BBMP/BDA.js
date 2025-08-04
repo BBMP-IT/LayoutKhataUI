@@ -682,7 +682,7 @@ const BDA = ({ approval_details, setApprovalDetails, order_details, setOrderDeta
             width: '150px',
         },
         {
-            name: "Approved Order",
+            name: "Approved Map",
             cell: row => {
                 if (row.approvalMap) {
                     const blob = base64ToBlob(row.approvalMap);
