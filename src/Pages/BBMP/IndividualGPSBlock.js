@@ -236,6 +236,39 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                 setTotalSQFT(Math.floor(response.lkrS_SITEAREA_SQFT));       // Only integer
                 setTotalSQM(Number(response.lkrS_SITEAREA_SQMT).toFixed(1)); // One decimal place
                 setLayoutSiteCount(response.lkrS_NUMBEROFSITES);
+
+                if (response.lkrS_LANDTYPE === "khata") {
+
+
+                    try {
+                        const khataJsonString = response.khataDetails?.khatA_JSON;
+                        if (khataJsonString) {
+                            const parsedKhata = JSON.parse(khataJsonString);
+                            const wardNo = parsedKhata?.response?.approvedPropertyDetails?.wardNumber;
+                            const streetNo = parsedKhata?.response?.approvedPropertyDetails?.streetcode;
+
+                            if (wardNo) {
+                                const requestWardId = [parseInt(wardNo, 10)];
+                                const zoneWardResponse = await fetchZoneFromWardList(requestWardId, response.lkrS_ID);
+
+                                if (
+                                    Array.isArray(zoneWardResponse) &&
+                                    zoneWardResponse.length > 0 &&
+                                    zoneWardResponse[0].wardName &&
+                                    zoneWardResponse[0].zoneName
+                                ) {
+                                    // Set name values
+
+                                    setDisplay_ZoneName(zoneWardResponse[0].zoneName);
+                                    setDisplay_WardName(zoneWardResponse[0].wardName);
+                                    setDisplay_StreetName(parsedKhata?.response?.approvedPropertyDetails?.streetName);
+                                }
+                            }
+                        }
+                    } catch (err) {
+                        console.error("Failed to parse khata JSON or fetch zone/ward", err);
+                    }
+                }
                 stop_loader();
             } else {
                 stop_loader();
@@ -1736,6 +1769,9 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
         return isValid;
     };
+    const [display_ZoneName, setDisplay_ZoneName] = useState("");
+    const [display_WardName, setDisplay_WardName] = useState("");
+    const [display_StreetName, setDisplay_StreetName] = useState("");
 
     //Add site button click API
     const addSites = async (shape) => {
@@ -2008,6 +2044,9 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                                 wardName = zoneWardResponse[0].wardId;
                                 zoneName = zoneWardResponse[0].zoneID;
                                 streetName = streetNo;
+                                setDisplay_ZoneName(zoneWardResponse[0].zoneName);
+                                setDisplay_WardName(zoneWardResponse[0].wardName);
+                                setDisplay_StreetName(parsedKhata?.response?.approvedPropertyDetails?.streetName);
                             }
                         }
                     }
@@ -3750,6 +3789,48 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
 
                                             {streetError && <div className="text-danger">{streetError}</div>}
 
+                                        </div>
+                                    </>
+                                )}
+                                {landDetails === "khata" && (
+                                    <>
+                                        {/* Zone name */}
+                                        <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4 mb-3">
+                                            <label className="form-label">
+                                                Zone Name <span className='mandatory_color'>*</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                value={display_ZoneName}
+                                                readOnly
+                                            />
+                                        </div>
+
+                                        {/* Ward name */}
+                                        <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4 mb-3">
+                                            <label className="form-label">
+                                                Ward Name <span className='mandatory_color'>*</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                value={display_WardName}
+                                                readOnly
+                                            />
+                                        </div>
+
+                                        {/* Street name */}
+                                        <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4 mb-3">
+                                            <label className="form-label">
+                                                Street Name <span className='mandatory_color'>*</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                value={display_StreetName}
+                                                readOnly
+                                            />
                                         </div>
                                     </>
                                 )}
