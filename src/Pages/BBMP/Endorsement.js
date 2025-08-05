@@ -62,7 +62,8 @@ const Endorsement = () => {
         setZoneName(aro_response[0].bbmpZoneName);
         setWardName(aro_response[0].bbmpWardName);
         setAROName(aro_response[0].aronamE_EN)
-        setReason(response.lkrS_REASON_FOR_REFFERAL);
+        // setReason(response.lkrS_REASON_FOR_REFFERAL);
+        document.getElementById("reasonDisplay").innerHTML = response.lkrS_REASON_FOR_REFFERAL;
       }
 
     } catch (error) {
@@ -170,10 +171,11 @@ const Endorsement = () => {
             </div>
             <div className='row' >
               <p style={{ fontSize: 18 }}><strong>For the following reasons/purposes:</strong> <br /></p>
-              <p style={{ fontSize: 18 }}>{reason}</p>
+              <div style={{ fontSize: 18 }} id="reasonDisplay"></div>
 
-
+              
             </div>
+            <br/>
             <p style={{ fontSize: 18 }}>
               <b>Note:</b> Please wait for verification which may take upto 60 days and do not visit anyone in ARO & BBMP office. There upon decision on <u>Final Transactable New Khata</u> will be given.
             </p>

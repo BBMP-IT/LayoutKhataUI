@@ -21,7 +21,10 @@ const config = {
     redirectBaseURL: ApiCredentials.credentials.layoutForm,
     redirectionTypeURL: ApiCredentials.credentials.ekycRequestURL,
     rd_nameScore: ApiCredentials.credentials.releaseEKYCnamescore,
-      sites:  ApiCredentials.credentials.totalNoofSites,
+    sites: ApiCredentials.credentials.totalNoofSites,
+    NLK: ApiCredentials.credentials.nav_layoutKhata,
+    NLKD: ApiCredentials.credentials.nav_layoutKhataDashboard,
+    NLKR: ApiCredentials.credentials.nav_layoutKhataRelease,
 
     credentials: ApiCredentials.credentials,
     endpoints: {
@@ -70,7 +73,7 @@ const config = {
         fetchARO: '/api/LKRS/fnGetARODetails',
         relinquishmentDeed: '/api/LKRS/fnRelinquishmentDeed',
     },
-        citizenServicesURL: {
+    citizenServicesURL: {
         login: "https://testlayoutkhata.bbmpgov.in/Login",
         getEkhata: "",
         layoutDashboard: "https://testlayoutkhata.bbmpgov.in/LayoutForm",

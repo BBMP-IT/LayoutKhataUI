@@ -606,6 +606,13 @@ const BBMP_SubmittedInfo = () => {
             center: true,
             width: '200px',
         },
+         {
+            name: "Approval No",
+            selector: row => row.approvalOrder,
+            sortable: true,
+            center: true,
+            width: '180px'
+        },
         {
             name: "Approved Order",
             cell: row => {
@@ -713,6 +720,7 @@ const BBMP_SubmittedInfo = () => {
             return null; // return null if decoding fails
         }
     };
+    const [file, setFile] = useState("");
     const fetchApprovalList = async (localLKRSID) => {
         start_loader();
         try {
@@ -731,8 +739,9 @@ const BBMP_SubmittedInfo = () => {
                 const formattedList = listResponse.map((item, index) => {
                     // Try to match approval number with current formData if available
                     const isCurrent = item.apr_Approval_No;
-
+setFile(approvalFileResponse[index]?.doctrN_DOCBASE64,"base64");
                     return {
+                        
                         layoutApprovalNumber: item.apr_Approval_No,
                         dateOfApproval: item.apr_Approval_Date,
                         approvalOrder: approvalFileResponse[index]?.doctrN_DOCBASE64 || null,
@@ -742,6 +751,7 @@ const BBMP_SubmittedInfo = () => {
                         releaseType: item.sitE_RELS_SITE_RELSTYPE,
                         totalNoOfSites: item.lkrS_NUMBEROFSITES,
                     };
+                    
                 });
 
                 setRecords(formattedList);
@@ -1107,6 +1117,7 @@ const BBMP_SubmittedInfo = () => {
                             (Only for properties without BBMP Khata. If property has manual khata & you want eKhata then get at <br />
                                 <a style={{color:'blue'}} href="https://bbmpeaasthi.karnataka.gov.in" target="_blank">https://bbmpeaasthi.karnataka.gov.in</a>)</h2>
                         </div>
+                        {/* <a href={file}> */}
                         <div className="card-body">
                             <Link className='no-print'
                                 onClick={handleBackToDashboard}
@@ -1160,10 +1171,10 @@ const BBMP_SubmittedInfo = () => {
                                                                 <th>Village</th>
                                                                 <th>Owner Name</th>
                                                                 <th>Survey Number / Surnoc / Hissa Number</th>
-                                                                <th>Bhoomi Extent (Acre.Gunta.Fgunta)</th>
                                                                 <th>LDA Extent (Acre.Gunta.Fgunta)</th>
                                                                 <th>LDA Total Area in SqFt</th>
                                                                 <th>LDA Total Area in SqM</th>
+                                                                <th>Bhoomi Extent (Acre.Gunta.Fgunta)</th>
                                                                 <th>Bhoomi Total Area in SqFt</th>
                                                                 <th>Bhoomi Total Area in SqM</th>
                                                             </tr>
@@ -1182,8 +1193,7 @@ const BBMP_SubmittedInfo = () => {
                                                                     <td>{row.village}</td>
                                                                     <td>{row.owner}</td>
                                                                     <td>{`${row.survey_no}/${row.surnoc}/${row.hissa_no}`}</td>
-                                                                    {/* Bhoomi extent */}
-                                                                    <td>{`${row.ext_acre}.${row.ext_gunta}.${row.ext_fgunta}`}</td>
+                                                                   
                                                                     {/* LDA extent */}
                                                                     <td>{`${row.lda_acre ?? ''}.${row.lda_gunta ?? ''}.${row.lda_fgunta ?? ''}`}</td>
                                                                     {/* LDA extent total area */}
@@ -1203,6 +1213,8 @@ const BBMP_SubmittedInfo = () => {
                                                                             ) * 0.092903
                                                                         ).toFixed(1)}
                                                                     </td>
+                                                                     {/* Bhoomi extent */}
+                                                                    <td>{`${row.ext_acre}.${row.ext_gunta}.${row.ext_fgunta}`}</td>
                                                                     {/* Bhommi extent total area */}
                                                                     <td>
                                                                         {Math.floor(

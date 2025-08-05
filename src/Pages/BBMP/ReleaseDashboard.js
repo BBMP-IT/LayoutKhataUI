@@ -2059,7 +2059,7 @@ const ReleaseDashboard = () => {
     const [ekyc_Data, setEkyc_Data] = useState(null);
 
     //bypass set to true
-    const [isEKYCVerified, setIsEKYCVerified] = useState(true);
+    const [isEKYCVerified, setIsEKYCVerified] = useState(false);
     const [isEKYCAttempted, setIsEKYCAttempted] = useState(false);
     const [orderReleaseStatus, setOrderReleaseStatus] = useState(false);
 

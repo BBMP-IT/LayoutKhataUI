@@ -24,6 +24,9 @@ const config = {
     redirectionTypeURL: ApiCredentials.credentials.ekycRequestURL,
     rd_nameScore: ApiCredentials.credentials.releaseEKYCnamescore,
     sites: ApiCredentials.credentials.totalNoofSites,
+    NLK: ApiCredentials.credentials.nav_layoutKhata,
+    NLKD: ApiCredentials.credentials.nav_layoutKhataDashboard,
+    NLKR: ApiCredentials.credentials.nav_layoutKhataRelease,
 
     credentials: ApiCredentials.credentials,
 

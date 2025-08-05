@@ -610,7 +610,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             }
 
             // Street name Validation
-            if (!selectedStreet || isNaN(selectedStreet)) {
+            if (!selectedStreet) {
                 setStreetError('Please select a street');
                 if (!firstErrorField) firstErrorField = streetRef;
                 isValid = false;
@@ -955,7 +955,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             }
 
             // Street name Validation
-            if (!selectedStreet || isNaN(selectedStreet)) {
+            if (!selectedStreet) {
                 setStreetError('Please select a street');
                 if (!firstErrorField) firstErrorField = streetRef;
                 isValid = false;
@@ -1753,7 +1753,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             }
 
             // Street name Validation
-            if (!selectedStreet || isNaN(selectedStreet)) {
+            if (!selectedStreet) {
                 setStreetError('Please select a street');
                 if (!firstErrorField) firstErrorField = streetRef;
                 isValid = false;
@@ -2017,7 +2017,9 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
             if (response.lkrS_LANDTYPE === "surveyNo") {
                 zoneName = selectedZone;
                 wardName = selectedWard;
-                streetName = selectedStreet;
+                const parsedStreet = JSON.parse(selectedStreet);
+                streetName = parsedStreet.id;
+                // streetName = selectedStreet.id;
 
                 // Case 2: Land type is "khata"
             } else if (response.lkrS_LANDTYPE === "khata") {
@@ -2358,12 +2360,14 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
     const [checkDeedStatus, setCheckDeedStatus] = useState(false);
 
     const handleEditClick = () => {
-        setIsDeedReadOnly(false);
-        setIsFetchDisabled(false);
-        setShowEditButton(false);
-        setShowViewDeedButton(false);
-        setDeedNumber('');
-        setDeedError('');
+        setIsDeedSectionDisabled(false);  // Enable input
+        setIsFetchDisabled(false);        // Enable fetch button
+        setShowEditButton(false);         // Hide Edit button
+        setShowViewDeedButton(false);     // Hide View Deed button
+        setDeedFetchSuccess(false);       // Hide success message
+        setDeedNumber('');                // Clear deed number input
+        setDeedError('');                 // Clear error
+        setCheckDeedStatus(false);        // Optional: Reset this if used elsewhere
     };
 
     const handleDeedNumberChange = (e) => {
@@ -2555,7 +2559,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                 setDeedNumber(firstDeed);
                 setDeedDocumentDate(registrationDate);
                 setIsDeedFetchedOnLoad(true);
-
+                setIsDeedFinalized(true);
                 // Mimic successful fetch
                 setIsDeedSectionDisabled(true);
                 setDeedFetchSuccess(true);
@@ -2575,7 +2579,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
     };
 
 
-
+    const [isDeedFinalized, setIsDeedFinalized] = useState(false);
     const handleInsertDeed = async () => {
         const payload = {
             lkrS_ID: localLKRSID,
@@ -2597,23 +2601,21 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                     icon: "success",
                     confirmButtonText: "OK",
                 });
-                stop_loader();
+                setIsDeedFinalized(true); // ✅ disable buttons
             } else {
-                stop_loader();
                 Swal.fire({
                     text: response.responseMessage,
                     icon: "error",
                     confirmButtonText: "OK",
                 });
-                console.log("failed to fetch data!")
+                setIsDeedFinalized(false);
             }
         } catch (error) {
-            stop_loader();
             console.error("Failed to fetch LKRSID data:", error);
         } finally {
             stop_loader();
         }
-    }
+    };
 
 
 
@@ -2736,19 +2738,19 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                                     </button>
                                 </div>
                             </div>
-                            {/* {showEditButton && (
-                                // <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-1">
-                                //     <div className="form-group mt-6">
-                                //         <button
-                                //             className="btn btn-info btn-block"
-                                //             onClick={handleEditClick}
-                                //             disabled={isDeedSectionDisabled}
-                                //         >
-                                //             Edit
-                                //         </button>
-                                //     </div>
-                                // </div>
-                            )} */}
+                            {showEditButton && (
+                                <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2 mt-1">
+                                    <div className="form-group mt-6">
+                                        <button
+                                            className="btn btn-info btn-block"
+                                            onClick={handleEditClick}
+                                            disabled={isDeedFinalized} // ✅ disable when finalized
+                                        >
+                                            Edit
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
 
 
                             {/* Deed View Button */}
@@ -2767,7 +2769,7 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                                 </>
                             )}
 
-                            {deedFetchSuccess === false && (
+                            {/* {deedFetchSuccess === false && (
                                 <div className="row mt-3">
                                     <strong className='text-danger'>Deed Check Failed <i className="fa fa-times-circle"></i></strong>
 
@@ -2789,12 +2791,12 @@ const IndividualGPSBlock = ({ areaSqft, LKRS_ID, createdBy, createdName, roleID,
                                     </div>
                                 </div>
 
-                            )}
+                            )} */}
                             <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 mt-2">
                                 <div className='row'>
                                     <div className="col-10 col-sm-10 col-md-10 col-lg-10 col-xl-10"></div>
                                     <div className="col-12 col-sm-12 col-md-2 col-lg-2 col-xl-2">
-                                        <button className="btn btn-success btn-block" onClick={handleInsertDeed} disabled={isDeedSectionDisabled} >
+                                        <button className="btn btn-success btn-block" onClick={handleInsertDeed} disabled={isDeedFinalized} >
                                             Save and Continue
                                         </button>
                                     </div>
@@ -4386,7 +4388,7 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
             <br />
             <div className='row'>
                 <h3 style={{ color: '#023e8a' }}>Overall abstract of Area use</h3>
-                <div className="col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4 mb-3">
+                <div className="col-4 col-sm-4 col-md-4 col-lg-4 col-xl-4 mb-3">
                     <div className="form-group">
                         <label htmlFor="totalArea" className="col-form-label fw-semibold">
                             Total Area
@@ -4404,7 +4406,7 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
                     </div>
                 </div>
                 <div className="col-0 col-sm-0 col-md-8 col-lg-8 col-xl-8 mb-3"></div>
-                <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                <div className="col-3 col-sm-3 col-md-3 col-lg-3 col-xl-3 mb-3">
                     <div className="form-group">
                         <label htmlFor="totalArea" className="col-form-label fw-semibold">
                             Civic Amenity
@@ -4421,7 +4423,7 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
                     </div>
                 </div>
 
-                <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                <div className="col-3 col-sm-3 col-md-3 col-lg-3 col-xl-3 mb-3">
                     <div className="form-group">
                         <label htmlFor="totalArea" className="col-form-label fw-semibold">
                             Commercial
@@ -4437,7 +4439,7 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
                         </div>
                     </div>
                 </div>
-                <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                <div className="col-3 col-sm-3 col-md-3 col-lg-3 col-xl-3 mb-3">
                     <div className="form-group">
                         <label htmlFor="totalArea" className="col-form-label fw-semibold">
                             Industrial
@@ -4453,7 +4455,7 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
                         </div>
                     </div>
                 </div>
-                <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                <div className="col-3 col-sm-3 col-md-3 col-lg-3 col-xl-3 mb-3">
                     <div className="form-group">
                         <label htmlFor="totalArea" className="col-form-label fw-semibold">
                             Park
@@ -4469,7 +4471,7 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
                         </div>
                     </div>
                 </div>
-                <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                <div className="col-3 col-sm-3 col-md-3 col-lg-3 col-xl-3 mb-3">
                     <div className="form-group">
                         <label htmlFor="totalArea" className="col-form-label fw-semibold">
                             Residential
@@ -4485,7 +4487,7 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
                         </div>
                     </div>
                 </div>
-                <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                <div className="col-3 col-sm-3 col-md-3 col-lg-3 col-xl-3 mb-3">
                     <div className="form-group">
                         <label htmlFor="totalArea" className="col-form-label fw-semibold">
                             Sump
@@ -4501,7 +4503,7 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
                         </div>
                     </div>
                 </div>
-                <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                <div className="col-3 col-sm-3 col-md-3 col-lg-3 col-xl-3 mb-3">
                     <div className="form-group">
                         <label htmlFor="totalArea" className="col-form-label fw-semibold">
                             Utility
@@ -4517,7 +4519,7 @@ const IndividualRegularTable = ({ data, setData, totalSitesCount, onSave, onEdit
                         </div>
                     </div>
                 </div>
-                <div className="col-12 col-sm-12 col-md-3 col-lg-3 col-xl-3 mb-3">
+                <div className="col-3 col-sm-3 col-md-3 col-lg-3 col-xl-3 mb-3">
                     <div className="form-group">
                         <label htmlFor="totalArea" className="col-form-label fw-semibold">
                             Road

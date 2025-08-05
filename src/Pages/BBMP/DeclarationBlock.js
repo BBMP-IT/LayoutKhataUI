@@ -195,9 +195,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
     const [jdaSection, setJDASection] = useState(false);
     //final Save API integration
     const final_Save = async () => {
-        let isOwnerEKYCSectionSaved = true;
-        let isJDAEKYCSectionSaved = true;
-
+       
 
         if (isRTCSectionSaved === false && isEPIDSectionSaved === false) {
             Swal.fire({
@@ -356,9 +354,7 @@ const DeclarationBlock = ({ LKRS_ID, createdBy, createdName, roleID, display_LKR
 
     //Final API for Redirecting to RELEASE DASHBOARD
     const final_Save_Release = async () => {
-        let isOwnerEKYCSectionSaved = true;
-        let isJDAEKYCSectionSaved = true;
-
+       
         if (isRTCSectionSaved === false && isEPIDSectionSaved === false) {
             Swal.fire({
                 icon: 'warning',

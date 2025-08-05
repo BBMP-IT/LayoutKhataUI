@@ -1,14 +1,18 @@
 // config.prod.js
 const ApiCredentials = {
     credentials: {
-        apiUrl: "https://testapps.bbmpgov.in/LayoutKhataAPI",
-        loginUrl: "https://testapps.bbmpgov.in/testEaasthiAPI/api/values",
+        apiUrl: "https://bbmpeaasthi.karnataka.gov.in/LayoutKhataAPI",
+        loginUrl: "https://bbmpeaasthi.karnataka.gov.in/objection_api_test/api/values",
         username: "BBMPOTP",
         password: "10750b6bdc29495297efd2fb29047a94",
         layoutForm: "https://testlayoutkhata.bbmpgov.in",
         ekycRequestURL: 1,
         releaseEKYCnamescore: 1,
         totalNoofSites: 5,
+        nav_layoutKhata: '/LayoutForm',
+        nav_layoutKhataDashboard: '/LayoutDashboard',
+        nav_layoutKhataRelease: '/Release',
+
     }
 };
 
@@ -18,7 +22,10 @@ const config = {
     redirectBaseURL: ApiCredentials.credentials.layoutForm,
     redirectionTypeURL: ApiCredentials.credentials.ekycRequestURL,
     rd_nameScore: ApiCredentials.releaseEKYCnamescore,
-      sites:  ApiCredentials.credentials.totalNoofSites,
+    sites: ApiCredentials.credentials.totalNoofSites,
+    NLK: ApiCredentials.credentials.nav_layoutKhata,
+    NLKD: ApiCredentials.credentials.nav_layoutKhataDashboard,
+    NLKR: ApiCredentials.credentials.nav_layoutKhataRelease,
 
     credentials: ApiCredentials.credentials,
     endpoints: {
@@ -71,7 +78,7 @@ const config = {
         relinquishmentDeed: '/api/LKRS/fnRelinquishmentDeed'
 
     },
-    
+
 };
 
 

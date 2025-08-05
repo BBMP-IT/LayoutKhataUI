@@ -128,25 +128,25 @@ const DashboardLayout = ({ children }) => {
   const handleClick = () => {
     navigate('/homePage');
   };
-  const handleLogout = () => {
-    Swal.fire({
-      title: 'Are you sure?',
-      text: 'You will be logged out from your session.',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, log out!',
-      cancelButtonText: 'Cancel'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        sessionStorage.clear();
-        UseLogout();
-        navigate("/Login", { replace: true });
-      }
-      // If cancelled, do nothing
-    });
-  };
+const handleLogout = () => {
+  Swal.fire({
+    title: 'Are you sure?',
+    text: 'You will be logged out from your session.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Yes, log out!',
+    cancelButtonText: 'Cancel'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      sessionStorage.clear();
+      UseLogout();
+      window.location.replace("https://bbmpeaasthi.karnataka.gov.in/");
+    }
+  });
+};
+
 
   const [isDropdownOneOpen, setIsDropdownOneOpen] = useState(false);
   const [isDropdownTwoOpen, setIsDropdownTwoOpen] = useState(false);
@@ -155,6 +155,7 @@ const DashboardLayout = ({ children }) => {
 const [isDropdownFourOpen, setIsDropdownFourOpen] = useState(false);
 const [isDropdownFiveOpen, setIsDropdownFiveOpen] = useState(false);
   
+const [isDropdownuserOpen, setIsDropdownuserOpen] = useState(false);
 
   const toggleDropdownOne = () => {
     setIsDropdownOneOpen(!isDropdownOneOpen);
@@ -194,6 +195,14 @@ const [isDropdownFiveOpen, setIsDropdownFiveOpen] = useState(false);
     setIsDropdownThreeOpen(false);
     setIsDropdownFourOpen(false);
   };
+    const toggleDropdownUser = () => {
+    setIsDropdownuserOpen(!isDropdownuserOpen);
+    setIsDropdownOneOpen(false);
+    setIsDropdownTwoOpen(false); // close the other one
+    setIsDropdownThreeOpen(false);
+    setIsDropdownFourOpen(false);
+    setIsDropdownFiveOpen(false);
+  };
 
 
   const handleLayoutFormClick = (e) => {
@@ -211,7 +220,7 @@ const [isDropdownFiveOpen, setIsDropdownFiveOpen] = useState(false);
     sessionStorage.removeItem('display_LKRSID');
     sessionStorage.removeItem('totalNoOfSites');
     sessionStorage.removeItem('ownerName');
-    window.open(`${window.location.origin}/SiteRelease`);
+    navigate(`/SiteRelease`);
   };
 
 
@@ -224,9 +233,10 @@ const [isDropdownFiveOpen, setIsDropdownFiveOpen] = useState(false);
   const hideModal = () => setModalVisible(false);
   const setModalContent = (content) => setModalBody(content);
   const setModalTitleSafe = (title) => setModalTitle(title);
-
+const [phoneNumber, setPhoneNumber] = useState("");
 
 useEffect(() => {
+  setPhoneNumber(sessionStorage.getItem('PhoneNumber'));
   const navbar = document.querySelector('.navbar1');
   const header = document.querySelector('.header1');
   const main = document.querySelector('.main_style');
@@ -255,6 +265,7 @@ useEffect(() => {
       setIsDropdownThreeOpen(false);
       setIsDropdownFourOpen(false);
       setIsDropdownFiveOpen(false);
+      setIsDropdownuserOpen(false);
     }
   };
 
@@ -623,6 +634,22 @@ useEffect(() => {
                         </ul>
                       </li>
                     </ul>
+                     <li className="nav-item dropdown">
+                        <a
+                          href="#"
+                          className={`nav-link dropdown-toggle ${isDropdownuserOpen ? "show" : ""}`}
+                          role="button"
+                          onClick={toggleDropdownUser}
+                          aria-expanded={isDropdownuserOpen}
+                        >
+                          <i className="fa fa-user"></i>
+                        </a>
+                        <ul className={`dropdown-menu ${isDropdownuserOpen ? "show" : ""}`}>
+                          <li>
+                           <p style={{textAlign:'center'}}>Phone Number: {phoneNumber}</p>
+                          </li>
+                        </ul>
+                      </li>
                     {/* logout */}
                     <div className="d-flex align-items-center">
                       <button
@@ -659,6 +686,7 @@ useEffect(() => {
                           English
                         </button>
                       </div>
+                     
 
                     </div>
                   </div>
